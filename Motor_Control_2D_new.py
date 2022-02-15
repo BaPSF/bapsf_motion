@@ -12,7 +12,7 @@ import math
 from Single_Motor_Control import Motor_Control
 import time
 import numpy as np
-
+from scipy.optimize import fsolve
 
 #############################################################################################
 #############################################################################################
@@ -33,7 +33,7 @@ class Motor_Control_2D:
         #measured dec 14, 2metre stick
         self.d_inside = 64.0 #cm distance from the ball valve to the center of the chamber (0,0) point
         self.d_offset = 20.7 #cm
-
+        self.alpha = -0.9*np.pi/180 #rad
         self.x_mc.steps_per_rev(20000)
         self.y_mc.steps_per_rev(20000)
 
@@ -43,7 +43,7 @@ class Motor_Control_2D:
         a = self.d_outside
         b = self.d_inside
         
-        alpha = -0.9*np.pi/180 #rad
+        alpha = self.alpha
         #dy = P*L^3/(E*3/2*pi*r^4) for load (castigliano's method) P, = KL^4/(E*8/2*pi*r^4) for self weight. K = density*A*g
        #self-weight deflection from cns.gatech.edu/~predrag/GTcourses/PHYS-4421-04/lautrup/2.8/rods.pdf [pg 166]
         #r =1.9cm E = 195*10^9 Pa, density = 7970 kg/m^3
@@ -185,10 +185,35 @@ class Motor_Control_2D:
         """ Might need a encoder_unit_per_step, if encoder feedback != input step """
         mx_pos = self.x_mc.current_position() / self.steps_per_cm *5
         my_pos = self.y_mc.current_position() / self.steps_per_cm *5 #Seems that 1 encoder unit = 5 motor step unit
-       
-
-        return mx_pos, my_pos
-
+        a = self.d_outside
+        b = self.d_inside
+        
+        if my_pos <0:
+            C = np.abs(my_pos) - a*np.tan(self.alpha) - self.offset/np.cos(self.alpha)
+        
+        
+            def func(x):
+                return a*np.tan(x) + self.offset/np.cos(x) - 50
+        
+            theta = fsolve(func, 0)
+            x = (b+mx_pos)*np.cos(theta)
+            y = (b+mx_pos)*np.sin(theta)
+        
+            return x, y
+        
+        else: 
+            C = np.abs(my_pos) + a*np.tan(self.alpha) + self.offset/np.cos(self.alpha)
+        
+        
+            def func(x):
+                return a*np.tan(x) - self.offset/np.cos(x) - 50
+        
+            theta = fsolve(func, 0)
+            x = (b+mx_pos)*np.cos(theta)
+            y = (b+mx_pos)*np.sin(theta)
+        
+            return x, y
+        
 
 #-------------------------------------------------------------------------------------------
 
