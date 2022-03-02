@@ -10,7 +10,6 @@ if sys.version_info[0] < 3:
 
 import socket
 import time
-from find_ip_addr import find_ip_addr
 
 
 class Motor_Control:
@@ -58,11 +57,10 @@ class Motor_Control:
                 )
                 t = self.send_text("RS")
                 print("status =", t[5:])
-                if (
-                    t is not None
-                ):  # TODO: link different response to corresponding motor status
+                if t is not None:
+                    # TODO: link different response to corresponding motor status
                     print("...found")
-                    # 					self.reset_motor()
+                    # self.reset_motor()
                     self.inhibit(inh=False)
                     self.send_text("IFD")  # set response format to decimal
 
@@ -390,7 +388,10 @@ if __name__ == "__main__":
     # y = 0
     #
     # # allocate the (legacy format) positions array, fill it with zeros
-    # positions = numpy.zeros((nx*ny), dtype=[('Line_number', '>u4'), ('x', '>f4'), ('y', '>f4')])
+    # positions = numpy.zeros(
+    #     (nx*ny),
+    #     dtype=[('Line_number', '>u4'), ('x', '>f4'), ('y', '>f4')],
+    # )
     #
     # index = 0
     # for x in xpos:
@@ -398,7 +399,10 @@ if __name__ == "__main__":
     #     index += 1
     #
     # mc = Motor_Control(verbose=True, server_ip_addr="192.168.0.40")
-    # # mc = motor_control(verbose=True, msipa_cache_fn='motor_control_test_msipa_cache.tmp');
+    # # mc = motor_control(
+    # #     verbose=True,
+    # #     msipa_cache_fn='motor_control_test_msipa_cache.tmp',
+    # # )
     #
     #
     # failed = False
