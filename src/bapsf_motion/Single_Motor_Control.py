@@ -9,7 +9,6 @@ if sys.version_info[0] < 3:
     raise RuntimeError("This script should be run under Python 3")
 
 import socket
-import select
 import time
 from find_ip_addr import find_ip_addr
 
