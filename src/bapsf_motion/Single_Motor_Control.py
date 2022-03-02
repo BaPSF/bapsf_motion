@@ -23,7 +23,12 @@ class Motor_Control:
     # To search IP address:
     last_pos = 999
 
-    def __init__(self, server_ip_addr=None, msipa_cache_fn=None, verbose=True):
+    def __init__(
+        self,
+        server_ip_addr: str = None,
+        msipa_cache_fn: str = None,
+        verbose: bool = True,
+    ):
         self.verbose = verbose
         if msipa_cache_fn is None:
             self.msipa_cache_fn = self.MSIPA_CACHE_FN
