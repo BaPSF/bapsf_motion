@@ -1,3 +1,9 @@
+# LabView files
+# https://labviewwiki.org/wiki/ALIASES_File_Extension
+*.aliases
+# https://labviewwiki.org/wiki/LVLPS_File_Extension
+*lvlps
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
