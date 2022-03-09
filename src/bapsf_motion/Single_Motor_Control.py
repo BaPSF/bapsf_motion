@@ -17,7 +17,7 @@ class Motor_Control:
     MSIPA_CACHE_FN = "motor_server_ip_address_cache.tmp"
     MOTOR_SERVER_PORT = 7776
     BUF_SIZE = 1024
-    # server_ip_addr = '10.10.10.10' # for direct ethernet connection to PC
+    # server_ip_addr = '10.10.10.10'  # for direct ethernet connection to PC
 
     # - - - - - - - - - - - - - - - - -
     # To search IP address:
@@ -90,7 +90,7 @@ class Motor_Control:
     #     print('Encoder step/rev is not equal to motor step/rev. Check!!!')
     def __repr__(self):
         """return a printable version: not a useful function"""
-        return self.server_ip_addr + "; " + self.msipa_cache_fn + "; " + self.verbose
+        return f"{self.server_ip_addr}; {self.msipa_cache_fn}; {self.verbose}"
 
     def __str__(self):
         """return a string representation:"""
@@ -133,27 +133,15 @@ class Motor_Control:
             except ConnectionRefusedError:
                 retry_count += 1
                 print(
-                    "...connection refused, at",
-                    time.ctime(),
-                    " Is motor_server process running on remote machine?",
-                    "  Retry",
-                    retry_count,
-                    "/",
-                    RETRIES,
-                    "on",
-                    str(self.server_ip_addr),
+                    f"...connection refused, at {time.ctime()}.  Is motor_server "
+                    f"process running on remote machine?  Retry "
+                    f"{retry_count} / {RETRIES} on {self.server_ip_addr}"
                 )
             except TimeoutError:
                 retry_count += 1
                 print(
-                    "...connection attempt timed out, at",
-                    time.ctime(),
-                    "  Retry",
-                    retry_count,
-                    "/",
-                    RETRIES,
-                    "on",
-                    str(self.server_ip_addr),
+                    f"...connection attempt timed out, at {time.ctime()}.  "
+                    f"  Retry {retry_count} / {RETRIES} on {self.server_ip_addr}"
                 )
 
         if retry_count >= RETRIES:
