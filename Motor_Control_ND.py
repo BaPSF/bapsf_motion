@@ -18,7 +18,7 @@ from scipy.optimize import fsolve
 #############################################################################################
 
 
-class Motor_Control:
+class Motor_Control_ND:
 
     def __init__(self, x_ip_addr = None, y_ip_addr = None, z_ip_addr = None):
 
@@ -114,9 +114,9 @@ class Motor_Control:
 
         c = np.sqrt(x**2  + y**2)
         if y>=0:
-            theta = math.atan( np.abs(y)/(b+x) ) + alpha + math.atan(0.005*(np.abs(y)**0.9)/184.4)
+            theta = math.atan( np.abs(y)/(b+x) ) + alpha #+ math.atan(0.005*(np.abs(y)**0.9)/184.4)
         else:
-            theta = math.atan( np.abs(y)/(b+x) ) - alpha + math.atan(0.051*(np.abs(y)**0.8)/184.4)
+            theta = math.atan( np.abs(y)/(b+x) ) - alpha #+ math.atan(0.051*(np.abs(y)**0.8)/184.4)
 
 
         l2 = (b**2 +c**2 + 2*b*c*math.cos(phi))**0.5
@@ -127,7 +127,7 @@ class Motor_Control:
 
         if y>=0:
             y_new = -1*(l1*math.sin(theta)- self.d_offset*(1/math.cos(alpha)-1/math.cos(theta)) - a*math.tan(alpha))
-            x_new = l1 + l2 - a/math.cos(alpha) -b - (a)*(1/math.cos(theta) -1/math.cos(alpha)) + 0.7*(math.tan(theta -alpha))
+            x_new = l1 + l2 - a/math.cos(alpha) -b - (a)*(1/math.cos(theta) -1/math.cos(alpha)) #+ 0.7*(math.tan(theta -alpha))
         else:
             y_new = l1*math.sin(theta) + self.d_offset*(1/math.cos(alpha)-1/math.cos(theta)) +a*math.tan(alpha)
             x_new = l1 + l2 - a/math.cos(alpha) -b - (a)*(1/math.cos(theta) -1/math.cos(alpha)) - 0.7*(math.tan(theta - alpha))
@@ -290,11 +290,11 @@ class Motor_Control:
         b = self.d_inside
         
         if my_pos <0:
-            C = np.abs(my_pos) - a*np.tan(self.alpha) - self.offset/np.cos(self.alpha)
+            C = np.abs(my_pos) - a*np.tan(self.alpha) - self.d_offset/np.cos(self.alpha)
         
         
             def func(x):
-                return a*np.tan(x) + self.offset/np.cos(x) - 50
+                return a*np.tan(x) + self.d_offset/np.cos(x) - 50
         
             theta = fsolve(func, 0)
             x = (b+mx_pos)*np.cos(theta)
@@ -303,11 +303,11 @@ class Motor_Control:
             return x, y
         
         else: 
-            C = np.abs(my_pos) + a*np.tan(self.alpha) + self.offset/np.cos(self.alpha)
+            C = np.abs(my_pos) + a*np.tan(self.alpha) + self.d_offset/np.cos(self.alpha)
         
         
             def func(x):
-                return a*np.tan(x) - self.offset/np.cos(x) - 50
+                return a*np.tan(x) - self.d_offset/np.cos(x) - 50
         
             theta = fsolve(func, 0)
             x = (b+mx_pos)*np.cos(theta)
@@ -373,8 +373,13 @@ class Motor_Control:
         if self.z_mc != None:
             self.z_mc.set_input_usage(usage)
 
-
-
+    def close_connection(self):
+        if self.x_mc != None:
+            self.x_mc.close_connection()
+        if self.y_mc != None:
+            self.y_mc.close_connection()
+        if self.z_mc != None:
+            self.z_mc.close_connection()
 ########################################################################################################
 # standalone testing:
 

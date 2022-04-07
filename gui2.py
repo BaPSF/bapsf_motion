@@ -19,7 +19,7 @@ import os.path
 import time
 import subprocess
 import datetime
-from Motor_Control_2D_new import Motor_Control_2D
+from Motor_Control_ND import Motor_Control_ND
 from LeCroy_Scope import LeCroy_Scope, WAVEDESC_SIZE
 from LeCroy_Scope import EXPANDED_TRACE_NAMES
 import tkinter
@@ -27,7 +27,7 @@ from tkinter import filedialog
 import tkinter.messagebox
 import h5py as h5py
 dir_path=os.path.dirname(os.path.realpath(__file__))
-version_number="02/24/2018 1:33pm"            # update this when a change has been made
+version_number="02/22/2022 "            # update this when a change has been made
 
 from PyQt5 import QtCore
 # from PyQt5.QtWidgets import (QApplication, QBoxLayout, QCheckBox, QComboBox,
@@ -223,7 +223,7 @@ class Motor_Movement(QGroupBox):
 
         self.setLayout(MMLayout)
 
-        self.mc = Motor_Control_2D(x_ip_addr = self.x_ip_addr, y_ip_addr = self.y_ip_addr)
+        self.mc = Motor_Control_ND(x_ip_addr = self.x_ip_addr, y_ip_addr = self.y_ip_addr)
 
 #----------------------------------------------------------------------
 
@@ -271,8 +271,8 @@ class Motor_Movement(QGroupBox):
         self.speedx, self.speedy = self.ask_velocity()
         self.velocityInput.setText("(" + str(self.speedx) + " ," + str(self.speedy) +")")
 
-    def set_input_usage(self, usage):
-        self.mc.set_input_usage(usage)
+    # def set_input_usage(self, usage):
+    #     self.mc.set_input_usage(usage)
 
 
 
@@ -703,7 +703,7 @@ class Window(QWidget):
         self.scope_ip = "192.168.0.60"
         self.port_ip = int(7776)
         self.mm = Motor_Movement(x_ip_addr = self.x_ip, y_ip_addr = self.y_ip, MOTOR_PORT = self.port_ip)
-        self.mm.set_input_usage(3)
+        # self.mm.set_input_usage(3)
 
 
 
@@ -900,8 +900,10 @@ class Window(QWidget):
         self.close()
 
     def closeEvent(self, ce):
+        '''Call function to close socket, maybe other things later'''
+        super(QtGui.QMainWindow, self).closeEvent(*args, **kwargs)
         self.fileQuit()
-
+        self.mc.close_connection()
 
 
 if __name__ == '__main__':
