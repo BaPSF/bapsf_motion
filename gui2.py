@@ -898,10 +898,10 @@ class Window(QWidget):
         self.close()
 
     def closeEvent(self, ce):
-        '''Call function to close socket, maybe other things later'''
-        super(QtGui.QMainWindow, self).closeEvent(*args, **kwargs)
+        """Call function to close socket, maybe other things later"""
+        super(Window, self).closeEvent(ce)
         self.fileQuit()
-        self.mc.close_connection()
+        self.mm.mc.close_connection()
 
 
 if __name__ == '__main__':
