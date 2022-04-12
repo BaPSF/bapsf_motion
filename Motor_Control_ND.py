@@ -284,8 +284,8 @@ class Motor_Control_ND:
     def current_probe_position(self):
         # Obtain encoder feedback and calculate probe position
         """ Might need a encoder_unit_per_step, if encoder feedback != input step """
-        mx_pos = self.x_mc.current_position() / self.steps_per_cm *5
-        my_pos = self.y_mc.current_position() / self.steps_per_cm *5 #Seems that 1 encoder unit = 5 motor step unit
+        mx_pos = self.x_mc.current_position() / self.steps_per_cm * 5
+        my_pos = self.y_mc.current_position() / self.steps_per_cm * 5  # Seems that 1 encoder unit = 5 motor step unit
         a = self.d_outside
         b = self.d_inside
         
