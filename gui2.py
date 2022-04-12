@@ -759,7 +759,9 @@ class Window(QWidget):
             self.xnow, self.ynow = self.mm.current_probe_position()
             self.canvas.point.remove()
             self.canvas.update_probe(self.xnow, self.ynow)
-            self.mm.CurposInput.setText("(" + str(round(self.xnow, 2)) + " ," + str(round(self.ynow, 2)) +")")
+            self.mm.CurposInput.setText(
+                f"({round(self.xnow[0], 2)} ,{round(self.ynow[0], 2)})"
+            )
 
         else:
             pass
