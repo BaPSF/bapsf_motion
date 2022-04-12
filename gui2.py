@@ -766,7 +766,6 @@ class Window(QWidget):
         else:
             pass
 
-
     def update_current_position_during_data_run(self, xnow, ynow):
         if data_running == True:
             self.xnow = xnow
@@ -789,7 +788,6 @@ class Window(QWidget):
             self.canvas.finished_positions(self.xdone, self.ydone)
         else:
             print("Why is this called when data_running == False ?")
-
 
     def update_current_speed(self):
             self.speedx, self.speedy = self.mm.ask_velocity()
@@ -847,7 +845,6 @@ class Window(QWidget):
         QMessageBox.about(self, "Acquisition Status", "Data acquisition cancelled.")
         self.enable_all_controls()
 
-
     def data_run_finished(self):
         QMessageBox.about(self, "Acquisition Status", "Data acquisition complete.")
         self.enable_all_controls()
@@ -881,13 +878,12 @@ class Window(QWidget):
         global data_running
         data_running = False
         # self.pc.setEnabled(True)
-#self.ac.setEnabled(True)
+        # self.ac.setEnabled(True)
         self.sc.setEnabled(True)
         self.mm.MoveButton.setEnabled(True)
         self.mm.SetZero.setEnabled(True)
         self.mm.SetVelocity.setEnabled(True)
         self.mm.velocityButton.setEnabled(True)
-
 
     def start_test_shot(self):
         self.ip_addrs = {}
