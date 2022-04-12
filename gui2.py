@@ -484,7 +484,7 @@ class Data_Run_Thread(QRunnable):
             positions = list(zip(x,y,z)) #in cm
         #============================
 
-        mc = Motor_Control_2D(x_ip_addr = self.ip_addrs['x'], y_ip_addr = self.ip_addrs['y'])
+        mc = Motor_Control_ND(x_ip_addr = self.ip_addrs['x'], y_ip_addr = self.ip_addrs['y'])
         nowx, nowy = (-999, -999)
 
         ######### HDF5 OUTPUT FILE SETUP #########
