@@ -416,7 +416,7 @@ class Data_Run_Thread(QRunnable):
 
         for tr in traces:
             try:
-                hdr_data[tr][pos_ndx] = numpy.void(scope.header_bytes())    # valid after scope.acquire()
+                hdr_data[tr][pos_ndx] = np.void(scope.header_bytes())    # valid after scope.acquire()
                 #?# hdr_data[tr].flush()
                 #?# are there consequences in timing or compression size if we do the flush()s recommend for the SWMR function?
             except KeyError:
