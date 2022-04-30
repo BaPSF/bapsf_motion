@@ -17,13 +17,13 @@ import numpy as np
 import math
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from mpl_toolkits.mplot3d import Axes3D
-import tomli
 from matplotlib.figure import Figure
 # from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from GUI.MainWindow import Ui_MainWindow
+from Configurator.TomlLoader import Loader
 import datetime
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-
+import subprocess
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
@@ -61,14 +61,51 @@ class MyMplCanvas(FigureCanvas):
         yss = 50 * np.sin(uss)
         self.ax.plot_surface(xss,yss,zss,alpha = 0.5, color = 'grey')
 
-    def update_figure(self,x,y,z):
-        with open('res.txt') as f:
-            p = [float(l) for l in next(f).split()]
+    def update_graph(self, poslist, nx, ny,nz, barlist, mode):
+        ''' ROutine to update Matplotlib graph displaying actual data points defined so far, 
+        as well as barriers and no-go zones'''
+        self.ax.clear()
 
-        s = min(p[0],p[1],p[2])
-        self.s = s
-        self.matrix = self.ax.scatter(x, y,z, color = 'blue', marker = 'o',s = self.s)
-        self.draw()
+        self.ax.grid()
+        self.initialize_visited_points()
+
+        self.matrix = self.ax.scatter(0, 0, 0, color = 'blue', marker = 'o')
+        self.point = self.ax.scatter(0, 0, 0, color = 'red', marker = '*')
+        
+        # self.ax.set_xticks(np.arange(-60,60,1))
+        uss = np.linspace(0, 2 * np.pi, 32)
+        zss = np.linspace(-100, 100, 2)
+
+        uss, zss = np.meshgrid(uss, zss)
+
+        xss = 50 * np.cos(uss)
+        yss = 50 * np.sin(uss)
+        self.ax.plot_surface(xss,yss,zss,alpha = 0.5, color = 'grey')
+
+        xs = [x[0] for x in poslist]
+        ys = [x[1] for x in poslist]
+        zs = [x[2] for x in poslist]
+        if mode == 'circle':
+            size = nx/5
+        else:
+            size = min([nx/2, ny/2])
+
+        self.ax.scatter(xs, ys, zs, s=size)
+
+        # for posgroup in barlist:
+        #     # posgroup is [(xorg,y,z),(xe),(xvo),(xve)]
+
+        #     self.ax.plot([posgroup[0][0], posgroup[1][0]],
+        #                          [posgroup[0][1], posgroup[1][1]], color='#800000'
+        #                          )
+        #     self.ax.plot([posgroup[0][0], posgroup[2][0]],
+        #                          [posgroup[0][1], posgroup[2][1]], color='red'
+        #                          )
+        #     self.ax.plot([posgroup[1][0], posgroup[3][0]],
+        #                          [posgroup[1][1], posgroup[3][1]], color='red'
+        #                          )
+        
+        
 
     def update_probe(self, xnow, ynow):
         self.point = self.ax.scatter(xnow, ynow, 0, color = 'red', marker = '*', s = self.s)
@@ -135,35 +172,8 @@ class Motor_Movement():
     # def set_input_usage(self, usage):
     #     self.mc.set_input_usage(usage)
     
-    
-class Loader():
-      
-    def getgroup(self,arg):
-        
-        filename , check = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()",
-                                               "C:\\Users\\risha\\Desktop\\daq-mod-probedrives\\Groups", "toml files (*.toml)")       
-        self.drivefile = filename
 
-        if check:
-            f = open(filename, 'r')
-            
-            with f:
-                data = f.read()
-                arg.GroupText.setText(data)
-            f = open(filename, 'rb')
-            with f:
-                self.toml_dict = tomli.load(f)
-                self.x_ip = self.toml_dict['drive']['IPx']
-                self.y_ip = self.toml_dict['drive']['IPy']
-                self.z_ip = self.toml_dict['drive']['IPz']
-
-        self.ConnectMotor(arg)
         
-    def ConnectMotor(self,arg):
-        self.port_ip = int(7776)
-        self.mm = Motor_Movement(x_ip_addr = self.x_ip, y_ip_addr = self.y_ip, MOTOR_PORT = self.port_ip)
-        arg.ConnectMotor()
-    
 class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, *args, **kwargs):
@@ -174,14 +184,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.canvas = MyMplCanvas()
         self.canvas.setMaximumSize(QtCore.QSize(300, 300))
         self.canvas.setObjectName("Canvas")
-        # self.canvas.initialize()
-        # self.canvas = QtWidgets.QTextEdit(self.horizontalLayoutWidget_6)
         self.horizontalLayout_7.removeWidget(self.Canvas)
         self.Canvas.deleteLater()
         self.Canvas = None    
         self.horizontalLayout_7.addWidget(self.canvas)
         self.Loader = Loader()
         self.load.clicked.connect(lambda: self.Loader.getgroup(self))
+        self.create.clicked.connect(lambda: self.create_config())
         self.xcoord.editingFinished.connect(lambda: self.getVals())
         self.ycoord.editingFinished.connect(lambda: self.getVals())
         self.zcoord.editingFinished.connect(lambda: self.getVals())
@@ -199,7 +208,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(self.update_current_position)
         self.timer.start(500)
         
-
+    def create_config(self):
+        subprocess.call(" python Configurator\\paintergui.py 1", shell = True)
 
     def getVals(self):
         try:
@@ -230,7 +240,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.timeout.connect(lambda: [self.update_current_position(),self.update_current_speed() ])
         self.timer.start(500)
 
-
+    def update_diagram(self, poslist, nx,ny,nz,barlist,mode):
+        self.canvas.update_graph(poslist, nx,ny,nz,barlist,mode)
 
 
     def update_current_position(self):
