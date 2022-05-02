@@ -1801,7 +1801,6 @@ class Canvas(QLabel):
             arg.eb.setText(str(len(ypos)))
             arg.ec.setText(str(len(zvals)))
     
-
     def checklist(self, arg):
         '''Final verification routine to check no point is in a no-go region or an unreachable 
         region.
@@ -3157,27 +3156,39 @@ class Canvas(QLabel):
 
     def save_file(self):
         
-        with open("file.txt", 'w') as file:
-            for row in self.poslist:
-                s = " ".join(map(str, row))
-                file.write(s+'\n')
-
-        with open("res.txt", 'w') as file:
-            file.write(str(self.nx/5) + ' ' +
-                       str(self.ny/5)+' ' + str(self.nz/5))
+        zs = []
+        for z in self.zpos:
+            zs.append(z/5)     
+        self.zpos = zs
         
-        # self.date = today.strftime("%m/%d/%y")
-
-        Dict = {'group.id': self.id, 'mode': self.mode, 'grid': self.grid, 'dx': self.nx/5, 'dy': self.ny/5, 'dz': self.nz/5,
-                'xs': self.xpos, 'ys': self.ypos  , 'zs': np.array(self.zpos)/5, 'bar': self.barlist,  'close': self.closeit, 'centers': self.centers}
+        xs = []
+        for x in self.xpos:
+            xs.append(x/5)     
+        self.xpos = xs
         
-        tomli_string = tomli_w.dumps(Dict)  # Output to a string
+        ys = []
+        for y in self.ypos:
+            ys.append(y/5)     
+        self.ypos = ys
+        
+        Dict1 = {'group.id': self.id, 'mode': self.mode, 'grid': self.grid, 'dx': self.nx/5, 'dy': self.ny/5, 'dz': self.nz/5,
+                'xs': self.xpos, 'ys': self.ypos  , 'zs': self.zpos, 'bar': self.barlist.tolist(),  'close': self.closeit, 'centers': self.centers}
+        
+
+        
+        # tomli_string = tomli_w.dumps(Dict1)  # Output to a string
         save_path = 'C:\\Users\\risha\\Desktop\\daq-mod-probedrives\\Groups'
         output_file_name = str(self.name)
-        completeName = os.path.join(save_path, output_file_name+"LIST.toml")
+        completeName = os.path.join(save_path, output_file_name+".toml")
+    
+        f = open(completeName, 'rb')
+        with f:
+            self.toml_dict = tomli.load(f)
+    
+        self.toml_dict['Motion List'] = Dict1    
     
         with open(completeName, "wb") as tomli_file:
-            tomli_w.dump(Dict, tomli_file)
+            tomli_w.dump(self.toml_dict, tomli_file)
 
 class ProbeDriveConfig():
     
@@ -3515,7 +3526,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.checkBoxlabel = None
         self.ecc = None
         self.eccentricity = 0.5
-        self.closeit = None
+        self.closeit = False
         self.probedrive = ProbeDriveConfig()
         self.probe = ProbeConfig()
         self.group = MotionGroup()

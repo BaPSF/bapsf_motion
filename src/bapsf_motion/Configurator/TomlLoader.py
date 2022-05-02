@@ -6,13 +6,13 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import numpy as np
 import math
-
+from Controllers.MotionGroup import Motor_Movement
 import tomli
 # from mpl_toolkits.mplot3d.art3d import Poly3DCollection
     
 class Loader():
       
-    def getgroup(self,arg):
+    def getgroup(self,arg,arg2,index):
         
         filename , check = QFileDialog.getOpenFileName(None, "QFileDialog.getOpenFileName()",
                                                "C:\\Users\\risha\\Desktop\\daq-mod-probedrives\\Groups", "toml files (*.toml)")       
@@ -44,14 +44,17 @@ class Loader():
         
         self.string1 = list(zip(self.xs,self.ys, self.zs))
         self.string1 = str(self.string1).strip('[]')
-  
-        self.create_list(arg)
-        # self.ConnectMotor(arg)
+        arg2.tabWidget.setTabText(index, self.toml_dict["port_number"] + '-' +self.toml_dict["port_location"]) 
 
-    def ConnectMotor(self,arg):
+        self.create_list(arg)
+        self.ConnectMotor(arg2)
+       #set tab name to port location
+       
+        
+    def ConnectMotor(self,arg2):
         self.port_ip = int(7776)
         self.mm = Motor_Movement(x_ip_addr = self.x_ip, y_ip_addr = self.y_ip, MOTOR_PORT = self.port_ip)
-        arg.ConnectMotor()
+        arg2.ConnectMotor()
     
     def create_list(self,arg):
         res = min(self.nx, self.ny, self.nz)
@@ -907,6 +910,6 @@ class Loader():
                         self, "Error", "Position should be valid numbers.")
 
     
-        arg.update_diagram(self.poslist, self.nx, self.ny,self.nz, self.bar, self.mode)
+        arg.canvas.update_graph(self.poslist, self.nx, self.ny,self.nz, self.bar, self.mode)
         
         
