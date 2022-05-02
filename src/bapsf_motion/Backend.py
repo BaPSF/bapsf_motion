@@ -21,6 +21,7 @@ from matplotlib.figure import Figure
 # from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from GUI.MainWindow import Ui_MainWindow
 from Configurator.TomlLoader import Loader
+from GUI.MainWindow import TabPage
 import datetime
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import subprocess
@@ -28,7 +29,7 @@ import subprocess
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
 
-    def __init__(self, parent=None, width=6, height=3, dpi=100):
+    def __init__(self, parent=None, width=10, height=8, dpi=100):
         fig = Figure(figsize=(width, height), dpi=dpi)
         self.ax = fig.add_subplot(111,projection='3d')
         self.ax.grid()
@@ -126,51 +127,7 @@ class MyMplCanvas(FigureCanvas):
         self.finished_y = []
         self.visited_points = self.ax.scatter(self.finished_x, self.finished_y,0, color = 'green', marker = 'o')
 
-class Motor_Movement():
 
-    def __init__(self, x_ip_addr = None, y_ip_addr = None, MOTOR_PORT = None):
-        super().__init__()
-
-        self.x_ip_addr = x_ip_addr
-        self.y_ip_addr = y_ip_addr
-        self.MOTOR_PORT = MOTOR_PORT
-        self.mc = Motor_Control_ND(x_ip_addr = self.x_ip_addr, y_ip_addr = self.y_ip_addr)
-
-    def move_to_position(self,x,y):
-        # Directly move the motor to their absolute position
-        self.mc.move_to_position(x, y)
-
-    def stop_now(self):
-        # Stop motor movement now
-        self.mc.stop_now()
-
-
-    def zero(self):
-        zeroreply=QMessageBox.question(self, "Set Zero",
-            "You are about to set the current probe position to (0,0). Are you sure?",
-            QMessageBox.Yes, QMessageBox.No)
-        if zeroreply == QMessageBox.Yes:
-            QMessageBox.about(self, "Set Zero", "Probe position is now (0,0).")
-            self.mc.set_zero()
-
-
-    def ask_velocity(self):
-        return self.mc.ask_velocity()
-
-
-    def set_velocity(self,xv,yv):
-        self.mc.set_velocity(xv, yv)
-
-
-    def current_probe_position(self):
-        return self.mc.current_probe_position()
-
-    def update_current_speed(self):
-        self.speedx, self.speedy = self.ask_velocity()
-        self.velocityInput.setText("(" + str(self.speedx) + " ," + str(self.speedy) +")")
-
-    # def set_input_usage(self, usage):
-    #     self.mc.set_input_usage(usage)
     
 
         
@@ -180,29 +137,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         '''connect UI to functions'''
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
-
-        self.canvas = MyMplCanvas()
-        self.canvas.setMaximumSize(QtCore.QSize(300, 300))
-        self.canvas.setObjectName("Canvas")
-        self.horizontalLayout_7.removeWidget(self.Canvas)
-        self.Canvas.deleteLater()
-        self.Canvas = None    
-        self.horizontalLayout_7.addWidget(self.canvas)
-        self.Loader = Loader()
-        self.load.clicked.connect(lambda: self.Loader.getgroup(self))
-        self.create.clicked.connect(lambda: self.create_config())
-        self.xcoord.editingFinished.connect(lambda: self.getVals())
-        self.ycoord.editingFinished.connect(lambda: self.getVals())
-        self.zcoord.editingFinished.connect(lambda: self.getVals())
-        self.xspeed.editingFinished.connect(lambda: self.getVals())
-        self.yspeed.editingFinished.connect(lambda: self.getVals())
-        self.zspeed.editingFinished.connect(lambda: self.getVals())
-
+        
+        self.i = 0
+        self.tabs = {}
+        
+        self.button.clicked.connect(lambda: [self.addNewTab()])
+        self.addNewTab()
         self.show()
-
+        
+     
 
         data_running = False
 
+    def addNewTab(self):
+        
+        index = 'Tab %d' % (self.tabWidget.count())
+        self.tabs[index] = TabPage(self.tabWidget)
+        self.tabWidget.addTab(self.tabs[index], index)
+        self.tabs[index].Loader = Loader()
+        self.connect_buttons(index)
+        self.i +=1
+    def connect_buttons(self,index):
+ 
+        self.tabs[index].load.clicked.connect(lambda: self.tabs[index].Loader.getgroup(self.tabs[index],self,self.i))
+        
+        self.tabs[index].canvas = MyMplCanvas()
+        self.tabs[index].canvas.setMaximumSize(QtCore.QSize(400, 400))
+        self.tabs[index].canvas.setObjectName("Canvas")
+        self.tabs[index].mainHorizontalLayout.addWidget(self.tabs[index].canvas)
+        
+        self.tabs[index].create.clicked.connect(lambda: self.create_config())
+        self.tabs[index].xcoord.editingFinished.connect(lambda: self.getVals())
+        self.tabs[index].ycoord.editingFinished.connect(lambda: self.getVals())
+        self.tabs[index].zcoord.editingFinished.connect(lambda: self.getVals())
+        self.tabs[index].xspeed.editingFinished.connect(lambda: self.getVals())
+        self.tabs[index].yspeed.editingFinished.connect(lambda: self.getVals())
+        self.tabs[index].zspeed.editingFinished.connect(lambda: self.getVals())
+
+        
     def update_timer(self):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.update_current_position)
@@ -211,56 +183,60 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def create_config(self):
         subprocess.call(" python Configurator\\paintergui.py 1", shell = True)
 
-    def getVals(self):
+
+
+    def getVals(self,index):
         try:
-            if self.xcoord.text() != '':
-                self.x = float(self.xcoord.text())
-            if self.ycoord.text() != '':
-                self.y = float(self.ycoord.text())
-            if self.zcoord.text() != '':
-                self.z = float(self.zcoord.text())
-            if self.xspeed.text() != '':
-                self.xv = float(self.xpeed.text())
-            if self.yspeed.text() != '':
-                self.yv = float(self.ypeed.text())
-            if self.zspeed.text() != '':
-                self.zv = float(self.zpeed.text())
+            if self.tabs[index].xcoord.text() != '':
+                self.tabs[index].x = float(self.tabs[index].xcoord.text())
+            if self.tabs[index].ycoord.text() != '':
+                self.tabs[index].y = float(self.tabs[index].ycoord.text())
+            if self.tabs[index].zcoord.text() != '':
+                self.tabs[index].z = float(self.tabs[index].zcoord.text())
+            if self.tabs[index].xspeed.text() != '':
+                self.tabs[index].xv = float(self.tabs[index].xpeed.text())
+            if self.tabs[index].yspeed.text() != '':
+                self.tabs[index].yv = float(self.tabs[index].ypeed.text())
+            if self.tabs[index].zspeed.text() != '':
+                self.tabs[index].zv = float(self.tabs[index].zpeed.text())
         except ValueError:
             QMessageBox.about(self, "Error", "Position should be valid numbers.")
 
             
-    def ConnectMotor(self):
-        self.move.clicked.connect(lambda: self.Loader.mm.move_to_position(self.x,self.y))
-        self.STOP.clicked.connect(lambda: self.Loader.mm.stop_now())
-        self.zero.clicked.connect(lambda: self.Loader.mm.zero())
-        self.set_speed.clicked.connect(lambda: self.Loader.mm.set_velocity(self.xv,self.xy))
+    def ConnectMotor(self,index):
+        self.tabs[index].move.clicked.connect(lambda: self.tabs[index].Loader.mm.move_to_position(self.tabs[index].x,self.tabs[index].y))
+        self.tabs[index].STOP.clicked.connect(lambda: self.tabs[index].Loader.mm.stop_now())
+        self.tabs[index].zero.clicked.connect(lambda: self.tabs[index].Loader.mm.zero())
+        self.tabs[index].set_speed.clicked.connect(lambda: self.tabs[index].Loader.mm.set_velocity(self.tabs[index].xv,self.tabs[index].xy))
 
         # Set timer to update current probe position and instant motor velocity
         self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(lambda: [self.update_current_position(),self.update_current_speed() ])
+        self.timer.timeout.connect(lambda: [self.update_current_position(index),self.update_current_speed(index) ])
         self.timer.start(500)
 
-    def update_diagram(self, poslist, nx,ny,nz,barlist,mode):
-        self.canvas.update_graph(poslist, nx,ny,nz,barlist,mode)
 
 
-    def update_current_position(self):
-        self.xnow, self.ynow = self.Loader.mm.current_probe_position()
-        self.canvas.point.remove()
-        self.canvas.update_probe(self.xnow, self.ynow)
-        self.PositionLabel.setText(f"Current Probe Position: ( {np.round(self.xnow, 2)} ,  {np.round(self.ynow, 2)} )")
+    def update_current_position(self,index):
+        
+        for i in range(index):
+            self.tabs[i].xnow, self.tabs[i].ynow = self.tabs[i].Loader.mm.current_probe_position()
+            self.tabs[i].canvas.point.remove()
+            self.tabs[i].canvas.update_probe(self.tabs[i].xnow, self.tabs[i].ynow)
+            self.tabs[i].PositionLabel.setText(f"Current Probe Position: ( {np.round(self.tabs[index].xnow, 2)} ,  {np.round(self.tabs[index].ynow, 2)} )")
 
 
-    def mark_finished_positions(self, x, y):
-        self.xdone = x
-        self.ydone = y
-        self.canvas.visited_points.remove()
-        self.canvas.finished_positions(self.xdone, self.ydone)
+    def mark_finished_positions(self, index, x, y):
+        for i in range(index):
+            self.tabs[i].xdone = x
+            self.tabs[i].ydone = y
+            self.tabs[i].canvas.visited_points.remove()
+            self.tabs[i].canvas.finished_positions(self.tabs[i].xdone, self.tabs[i].ydone)
       
 
-    def update_current_speed(self):
-        self.speedx, self.speedy, self.speedz = self.Loader.mm.ask_velocity()
-        self.VelocityLabel.setText(f"Current Motor Speed: ( {self.speedx}  , {self.speedy} )")
+    def update_current_speed(self,index):
+         for i in range(index):   
+            self.tabs[i].speedx, self.tabs[i].speedy, self.tabs[i].speedz = self.tabs[i].Loader.mm.ask_velocity()
+            self.tabs[i].VelocityLabel.setText(f"Current Motor Speed: ( {self.tabs[i].speedx}  , {self.tabs[i].speedy} )")
 #################################################################################
 if __name__ == '__main__':
 
