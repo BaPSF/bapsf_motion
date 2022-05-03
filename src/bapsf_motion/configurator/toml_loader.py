@@ -6,7 +6,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 import numpy as np
 import math
-from Controllers.MotionGroup import Motor_Movement
+from Controllers.MotionGroup import MotorMovement
 import tomli
 # from mpl_toolkits.mplot3d.art3d import Poly3DCollection
     
@@ -53,7 +53,7 @@ class Loader():
         
     def ConnectMotor(self,arg2):
         self.port_ip = int(7776)
-        self.mm = Motor_Movement(x_ip_addr = self.x_ip, y_ip_addr = self.y_ip, MOTOR_PORT = self.port_ip)
+        self.mm = MotorMovement(x_ip_addr = self.x_ip, y_ip_addr = self.y_ip, MOTOR_PORT = self.port_ip)
         arg2.ConnectMotor()
     
     def create_list(self,arg):
