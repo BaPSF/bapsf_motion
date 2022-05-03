@@ -9,7 +9,7 @@ Nov 2021
 '''
 
 import math
-from Controllers.Motor import MotorControl
+from .motor import MotorControl
 import time
 import numpy as np
 from scipy.optimize import fsolve
