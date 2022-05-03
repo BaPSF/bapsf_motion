@@ -9,10 +9,13 @@ Nov 2021
 '''
 
 import math
-from .motor import MotorControl
-import time
 import numpy as np
+import time
+
 from scipy.optimize import fsolve
+
+from .motor import MotorControl
+
 
 #############################################################################################
 #############################################################################################
