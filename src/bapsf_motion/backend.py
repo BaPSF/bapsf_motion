@@ -5,25 +5,19 @@ Created on Sat Apr 23 18:03:45 2022
 @author: risha
 """
 
-
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import os
-from datetime import date
 import numpy as np
-import math
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from mpl_toolkits.mplot3d import Axes3D
-from matplotlib.figure import Figure
-# from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from GUI.MainWindow import Ui_MainWindow
-from Configurator.TomlLoader import Loader
-from GUI.MainWindow import TabPage
-import datetime
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import subprocess
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
+from .gui.main_window import TabPage, Ui_MainWindow
+from .configurator.toml_loader import Loader
+
 
 class MyMplCanvas(FigureCanvas):
     """Ultimately, this is a QWidget (as well as a FigureCanvasAgg, etc.)."""
