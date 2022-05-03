@@ -18,7 +18,7 @@ from scipy.optimize import fsolve
 #############################################################################################
 
 
-class Motor_Control_ND:
+class DriveControl:
 
     def __init__(self, x_ip_addr = None, y_ip_addr = None, z_ip_addr = None):
 
@@ -26,13 +26,16 @@ class Motor_Control_ND:
         self.y_mc = None
         self.z_mc = None
         if x_ip_addr != None:
-            self.x_mc = Motor_Control(verbose=True, server_ip_addr= x_ip_addr)
+            self.x_mc = MotorControl(verbose=True, server_ip_addr= x_ip_addr)
+
             self.x_mc.send_text("MT")
         if y_ip_addr != None:
-            self.y_mc = Motor_Control(verbose=True, server_ip_addr= y_ip_addr)
+            self.y_mc = MotorControl(verbose=True, server_ip_addr= y_ip_addr)
+
             self.y_mc.send_text("MT")
         if z_ip_addr != None:
-            self.z_mc = Motor_Control(verbose=True, server_ip_addr= y_ip_addr)
+            self.z_mc = MotorControl(verbose=True, server_ip_addr= y_ip_addr)
+
             self.z_mc.send_text("MT")
 
 
