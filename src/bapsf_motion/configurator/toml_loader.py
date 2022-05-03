@@ -1,16 +1,16 @@
 
-
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import numpy as np
 import math
-from Controllers.MotionGroup import MotorMovement
+import numpy as np
 import tomli
+
 # from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-    
-class Loader():
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+
+from ..controllers.motion_group import MotorMovement
+
+
+class Loader:
       
     def getgroup(self,arg,arg2,index):
         
