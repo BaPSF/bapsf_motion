@@ -6,7 +6,8 @@
 
 
 import sys
-if sys.version_info[0] < 3: raise RuntimeError('This script should be run under Python 3')
+if sys.version_info[0] < 3:
+    raise RuntimeError('This script should be run under Python 3')
 
 import socket
 import select
