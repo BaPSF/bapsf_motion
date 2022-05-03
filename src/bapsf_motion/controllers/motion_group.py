@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from Controllers.Drive import DriveControl
 
 
-class Motor_Movement():
+class MotorMovement():
 
     def __init__(self, x_ip_addr = None, y_ip_addr = None, MOTOR_PORT = None):
         super().__init__()
