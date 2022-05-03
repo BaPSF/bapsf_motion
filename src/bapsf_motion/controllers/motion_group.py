@@ -13,7 +13,8 @@ class Motor_Movement():
         self.x_ip_addr = x_ip_addr
         self.y_ip_addr = y_ip_addr
         self.MOTOR_PORT = MOTOR_PORT
-        self.mc = Motor_Control_ND(x_ip_addr = self.x_ip_addr, y_ip_addr = self.y_ip_addr)
+        self.mc = DriveControl(x_ip_addr = self.x_ip_addr, y_ip_addr = self.y_ip_addr)
+
 
     def move_to_position(self,x,y):
         # Directly move the motor to their absolute position
