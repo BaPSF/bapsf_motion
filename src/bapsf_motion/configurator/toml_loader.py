@@ -348,8 +348,7 @@ class Loader():
 
                     poslist = []
                     for i in range(0, len(xs)-1, 2):
-                        p.drawRect(
-                            QRectF(xs[i]+300, -ys[i]+300, xs[i+1]-xs[i], -ys[i+1]+ys[i]))
+                       
                         xmax = max([xs[i+1], xs[i]])
                         xmin = min([xs[i+1], xs[i]])
                         ymax = max([ys[i+1], ys[i]])
@@ -431,7 +430,7 @@ class Loader():
                         dr = self.nx
                         dtheta = self.ny
 
-                        p.drawEllipse(QPointF(xs[i]+300, -ys[i]+300), r, r)
+                       
                         linval = math.floor(r/(dr))
 
                         thetavals = np.linspace(
@@ -511,7 +510,7 @@ class Loader():
                         ymax = cy + r
                         ymin = cy - r
 
-                        p.drawEllipse(QPointF(xs[i]+300, -ys[i]+300), r, r)
+                        
 
                         linvalz = abs(math.floor((zmax-zmin)/(nz)))
 
@@ -577,7 +576,6 @@ class Loader():
                         ymax = cy + rc
                         ymin = cy - rc
 
-                        p.drawEllipse(QPointF(xs[i]+300, -ys[i]+300), rc, rc)
 
                         r = 0.5*(np.sqrt((xmax-xmin)**2 + (ymax-ymin)**2) + (zmax-zmin)**2)
 
@@ -651,7 +649,6 @@ class Loader():
                         xpos = np.append(xpos, cx)
                         ypos = np.append(ypos, cy)
 
-                        p.drawEllipse(QPointF(xs[i]+300, -ys[i]+300), r, r)
                         linval = math.floor((min([a, b]))/(dr))
 
                         thetavals = np.linspace(
@@ -724,8 +721,7 @@ class Loader():
                         xpos = np.append(xpos, cx)
                         ypos = np.append(ypos, cy)
 
-                        p.drawEllipse(
-                            QRect(QPoint(xposi+300, -yposi+300), QPoint(xposi2+300, -yposi2+300)))
+                        
                         linval = math.floor((min([a, b]))/(dr))
 
                         thetavals = np.linspace(
@@ -785,8 +781,7 @@ class Loader():
                         cy = (yposi + yposi2)/2
                         cz = (zmax + zmin)/2
 
-                        p.drawEllipse(
-                            QRect(QPoint(xposi+300, -yposi+300), QPoint(xposi2+300, -yposi2+300)))
+                       
                        
                         nx = self.nx
                         ny = self.ny
@@ -855,8 +850,7 @@ class Loader():
                         linvalz = abs(math.floor((zmax-zmin)/(nz)))
 
                         zvals = np.linspace(zmin, zmax, linvalz+1)
-                        p.drawEllipse(
-                            QRect(QPoint(xposi+300, -yposi+300), QPoint(xposi2+300, -yposi2+300)))
+                       
                        
                        
                         cx = (xposi + xposi2)/2
