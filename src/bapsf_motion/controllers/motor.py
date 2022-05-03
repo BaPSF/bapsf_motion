@@ -21,7 +21,7 @@ import time
 ########################################################################################################
 
 
-class Motor_Control:
+class MotorControl:
 
     MSIPA_CACHE_FN = 'motor_server_ip_address_cache.tmp'
     MOTOR_SERVER_PORT = 7776
@@ -384,7 +384,7 @@ class Motor_Control:
 
 if __name__ == '__main__':
 
-    mc1 = Motor_Control(verbose=True, server_ip_addr="192.168.0.40")
+    mc1 = MotorControl(verbose=True, server_ip_addr="192.168.0.40")
     mc1.set_position(0)
     mc1.current_position()
 
