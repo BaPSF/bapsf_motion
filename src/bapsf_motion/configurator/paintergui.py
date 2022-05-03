@@ -1,22 +1,21 @@
 
-
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-import os
-from datetime import date
-import numpy as np
+import datetime
 import math
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from mpl_toolkits.mplot3d import Axes3D
+import numpy as np
+import os
 import tomli
 import tomli_w
-from matplotlib.figure import Figure
-# from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from MainWindow import Ui_MainWindow
-import datetime
+
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
+from .main_window import Ui_MainWindow
+
 
 MODES = [
 
