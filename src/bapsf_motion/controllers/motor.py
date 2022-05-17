@@ -267,11 +267,59 @@ class MotorControl:
         #     # W = Wait Input (WI command executing)
         #     """)
         return self.send_text("RS")
+    
+    def set_jog_velocity(self,speed):
+        self.send_text("JS" + str(speed))
+    
+    def commence_jogging(self):
+        self.send_text("CJ")
+        
+    def stop_jogging(self):
+        self.send_text("SJ")
+        
+    def set_jog_acceleration(self,acceleration):
+        self.send_text("JA" + str(acceleration))
+        self.send_text("JL" + str(acceleration))
 
     def reset_motor(self):
 
         self.send_text("RE", timeout=5)
         print("reset motor\n")
+
+    def get_alarm_code(self):
+        code = self.send_text("AL", timeout=5)
+
+        if code == "0000":
+            text = "No Alarms"
+
+        elif code == "0001":
+            text = "Alert! Position Limit"
+
+        elif code == "0002":
+            text = "Alert! CCW Limit"
+
+        elif code == "0004":
+            text = "Alert! CW Limit"
+
+        elif code == "0008":
+            text = "Alert! Over Heated"
+
+        elif code == "0020":
+            text = "Alert! Over Voltage"
+            
+        elif code == "0040":
+            text = "Alert! Under Voltage"
+            
+        elif code == "0080":
+            text == "Alert! Over Current"
+        
+        elif code == "1000":
+            text == "Alert! No Move!"
+        
+        elif code == "4000":
+            text == "Alert! Blank Q-Segment!"
+            
+        return text
 
     def clear_alarm(self):
 
@@ -328,8 +376,32 @@ class MotorControl:
         print("set x3 input usage to SI" + str(usage) + "\n")
 
     def close_connection(self):
-        self.s.close()
-
+        if( self.s != None ):
+          self.s.close()
+          self.s = None
+        
+    def seek_home(self):
+        self.send_text("SH")
+        
+    def go_to_zero(self):
+        self.set_position(0)
+        
+    def get_status(self):
+        code = self.send_text("SC")
+        if code == "0010":
+            self.is_moving = True
+        else:
+            self.is_moving = False
+        
+    def set_position_limit(self, steps):
+        self.send_text("PL" + (str)(steps))
+    
+    def heartbeat(self):
+        code = self.get_alarm_code()
+        pos = self.current_position()
+        vel = self.motor_velocity()
+        self.get_status()
+        return code, pos, vel, self.is_moving
 
 if __name__ == "__main__":
 
