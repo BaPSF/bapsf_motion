@@ -168,6 +168,11 @@ class MotorControl:
         return_text = data.decode("ASCII")
         return return_text
 
+    def set_limits(self,cw,ccw):
+        self.send_text("LP" + str(cw))
+        self.send_text("LM" + str(ccw))
+        
+        
     def motor_velocity(self):
 
         resp = self.send_text("IV")
@@ -388,7 +393,7 @@ class MotorControl:
         
     def get_status(self):
         code = self.send_text("SC")
-        if code == "0010":
+        if code[2] == "1":
             self.is_moving = True
         else:
             self.is_moving = False
