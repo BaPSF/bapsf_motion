@@ -839,12 +839,15 @@ length = max(len(groups[group].poslist) for group in groups)
 
 for i in range(length):
     for group in groups:
-        x  = groups[group].poslist[i][0]
-        y  = groups[group].poslist[i][1]
-        z  = groups[group].poslist[i][2]
-        print(x,y,z)
-        groups[group].mm.move_to_position(x,y,z)
-        
+        try:
+            if i < len(groups[group]):
+                x  = groups[group].poslist[i][0]
+                y  = groups[group].poslist[i][1]
+                z  = groups[group].poslist[i][2]
+            # print(x,y,z)
+                groups[group].mm.move_to_position(x,y,z)
+        except:
+            IndexError("Why is this happening?")
     for group in groups:
         
         codex, codey, codez, posx, posy, posz, velx, vely, velz, is_movingx, is_movingy, is_movingz = groups[group].mm.heartbeat()
