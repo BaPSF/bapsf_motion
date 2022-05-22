@@ -3635,7 +3635,7 @@ class ProbeDriveConfig:
         if index == 0:
             pass
         if index == 1:
-            arg.templatename.setText("Standard X-Y")
+            arg.templatename.setText("Standard XY")
             arg.AxesBox.setCurrentIndex(0)
             arg.ipx.setText("2")
             arg.ipy.setText("1")
@@ -3644,6 +3644,7 @@ class ProbeDriveConfig:
             arg.stepRev.setText("1")
             arg.TPIBox.setCurrentIndex(1)  # in order to trigger threading label update
             arg.TPIBox.setCurrentIndex(0)
+            arg.group.getdrive(arg,"C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XY.toml")
             pass
         if index == 2:
             arg.templatename.setText("Standard XYZ")
@@ -3655,6 +3656,7 @@ class ProbeDriveConfig:
             arg.stepRev.setText("1")
             arg.TPIBox.setCurrentIndex(1)  # in order to trigger threading label update
             arg.TPIBox.setCurrentIndex(0)
+            arg.group.getdrive(arg,"C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XYZ.toml")
             pass
         if index == 3:
             arg.templatename.setText("Standard X-ϴ")
@@ -3666,6 +3668,8 @@ class ProbeDriveConfig:
             arg.stepRev.setText("1")
             arg.TPIBox.setCurrentIndex(1)  # in order to trigger threading label update
             arg.TPIBox.setCurrentIndex(0)
+            arg.group.getdrive(arg,"C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard X-ϴ.toml")
+
             pass
 
     def getStepCm(self, arg):
@@ -3748,6 +3752,18 @@ class ProbeConfig:
         # self.date = today.strftime("%m/%d/%y")
         self.save(arg)
 
+
+    def probeBoxSetter(self,arg):
+        index = arg.probeDriveBox.currentIndex()
+        if index == None:
+            pass
+        if index == 0:
+            pass
+        if index == 1:
+            arg.group.getprobe(arg,"C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probes\\Langmuir.toml")
+            pass
+        
+        
     def save(self, arg):
         Dict = {
             "id": self.id,
@@ -3802,14 +3818,16 @@ class ProbeConfig:
 
 
 class MotionGroup:
-    def getdrive(self, arg):
+    def getdrive(self, arg, filename = None):
 
-        filename, check = QFileDialog.getOpenFileName(
+        if filename is None:
+            filename, check = QFileDialog.getOpenFileName(
             None,
             "QFileDialog.getOpenFileName()",
             "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probe Drives",
             "toml files (*.toml)",
         )
+        
         self.drivefile = filename
 
         if check:
@@ -3819,9 +3837,10 @@ class MotionGroup:
                 data = f.read()
                 arg.DriveContents.setText(data)
 
-    def getprobe(self, arg):
+    def getprobe(self, arg, filename = None):
 
-        filename, check = QFileDialog.getOpenFileName(
+        if filename is None:
+            filename, check = QFileDialog.getOpenFileName(
             None,
             "QFileDialog.getOpenFileName()",
             "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probes",
