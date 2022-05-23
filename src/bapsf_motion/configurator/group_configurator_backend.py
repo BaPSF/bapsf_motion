@@ -13,17 +13,22 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
+
 class MotionGroup:
-    def getdrive(self, arg, filename = None):
+    def getdrive(self, arg, filename=None):
+        """Opens FileExplorer to allow loading drive config files from database.
+        Or, prexisting config file is preloaded from drop down box selection,
+        if file name is provided. Also populates contents of the config file
+        into 'Drive Contents' textbox in gui. 
+        """
 
         if filename is None:
             filename, check = QFileDialog.getOpenFileName(
-            None,
-            "QFileDialog.getOpenFileName()",
-            "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probe Drives",
-            "toml files (*.toml)",
-        )
-        
+                None,
+                "QFileDialog.getOpenFileName()",
+                "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probe Drives",
+                "toml files (*.toml)",
+            )
         self.drivefile = filename
 
         if check:
@@ -33,15 +38,19 @@ class MotionGroup:
                 data = f.read()
                 arg.DriveContents.setText(data)
 
-    def getprobe(self, arg, filename = None):
-
+    def getprobe(self, arg, filename=None):
+        """Opens FileExplorer to allow loading probe config files from database.
+        Or, prexisting config file is preloaded from drop down box selection,
+        if file name is provided. Also populates contents of the config file
+        into 'Probe Contents' textbox in gui. 
+        """
         if filename is None:
             filename, check = QFileDialog.getOpenFileName(
-            None,
-            "QFileDialog.getOpenFileName()",
-            "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probes",
-            "toml files (*.toml)",
-        )
+                None,
+                "QFileDialog.getOpenFileName()",
+                "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probes",
+                "toml files (*.toml)",
+            )
         self.probefile = filename
         if check:
             f = open(filename, "r")
@@ -51,6 +60,8 @@ class MotionGroup:
                 arg.ProbeContents.setText(data)
 
     def getAttributes(self, arg):
+        ''' Saves text inputs provided by user defining 
+        meta-data pertaining to group'''
         try:
             self.name = arg.GroupName.text()
             self.d1 = float(arg.Dist1.text())
@@ -64,6 +75,7 @@ class MotionGroup:
             QMessageBox.about(None, "Error", "Missing Information.")
 
     def save(self, arg):
+        '''Saves group config details'''
         Dict = {
             "group.id": self.id,
             "name": self.name,
@@ -116,6 +128,8 @@ class MotionGroup:
                 pass
 
     def moveon(self, arg):
+        '''Combines configs of drive, probe, and group, saves the config file, 
+            and enables motion list generator tab'''
 
         Dict = {
             "group.id": self.id,
@@ -172,6 +186,8 @@ class MotionGroup:
 
 class ProbeConfig:
     def getAttributes(self, arg):
+        ''' Saves text inputs provided by user defining 
+        meta-data pertaining to probe'''
         self.name = arg.ProbeName.text()
         self.datefabricated = str(arg.dateedit.date().toPyDate())
         self.dateserviced = str(arg.dateedit2.date().toPyDate())
@@ -185,19 +201,37 @@ class ProbeConfig:
         # self.date = today.strftime("%m/%d/%y")
         self.save(arg)
 
+    def probeBoxSetter(self, arg):
+        '''
+        
 
-    def probeBoxSetter(self,arg):
+        Parameters
+        ----------
+        arg : main gui window
+            Necessary as this function updates the gui to display 
+            the parameters of the probe chosen from drop-down.
+
+        Returns: Gui update.
+        -------
+        None.
+
+        '''
         index = arg.probeDriveBox.currentIndex()
         if index == None:
             pass
         if index == 0:
             pass
         if index == 1:
-            arg.group.getprobe(arg,"C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probes\\Langmuir.toml")
+            arg.group.getprobe(
+                arg,
+                "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probes\\Langmuir.toml",
+            )
             pass
-        
-        
+
     def save(self, arg):
+        '''Save defined config file to database. 
+        Saves a timestamped backup in case filename is overwritten
+        '''
         Dict = {
             "id": self.id,
             "name": self.name,
@@ -252,7 +286,7 @@ class ProbeConfig:
 
 class ProbeDriveConfig:
     def IPBoxsetter(self, arg):
-        """ Disables third motor ip address input for <3 axes drives"""
+        """ Disables third motor ip address input for < 3 axes drives"""
         index = arg.AxesBox.currentIndex()
         if index == None:
             pass
@@ -268,6 +302,8 @@ class ProbeDriveConfig:
             arg.ymotorLabel.setText("ϴ-motor")
 
     def getAttributes(self, arg):
+        ''' Saves text inputs provided by user defining 
+        meta-data pertaining to probe drive'''
 
         self.name = arg.templatename.text()
         self.id = self.name.replace(" ", "_").lower()
@@ -278,11 +314,19 @@ class ProbeDriveConfig:
         self.Countperstep = float(arg.countStep.text())
         self.Stepperrev = float(arg.stepRev.text())
         self.Threading = float(arg.customThreading.text())
-        # self.date = today.strftime("%m/%d/%y")
-
         self.save(arg)
 
     def TPIsetter(self, arg):
+        '''
+        Parameters
+        ----------
+        arg : gui main window
+
+        Returns: Updates threading parameter as per the threading chosen from
+        drop down box.
+   
+
+        '''
         index = arg.TPIBox.currentIndex()
         if index == 0:
             arg.customThreading.setText("0.0508")
@@ -311,7 +355,10 @@ class ProbeDriveConfig:
             arg.stepRev.setText("1")
             arg.TPIBox.setCurrentIndex(1)  # in order to trigger threading label update
             arg.TPIBox.setCurrentIndex(0)
-            arg.group.getdrive(arg,"C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XY.toml")
+            arg.group.getdrive(
+                arg,
+                "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XY.toml",
+            )
             pass
         if index == 2:
             arg.templatename.setText("Standard XYZ")
@@ -323,7 +370,10 @@ class ProbeDriveConfig:
             arg.stepRev.setText("1")
             arg.TPIBox.setCurrentIndex(1)  # in order to trigger threading label update
             arg.TPIBox.setCurrentIndex(0)
-            arg.group.getdrive(arg,"C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XYZ.toml")
+            arg.group.getdrive(
+                arg,
+                "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XYZ.toml",
+            )
             pass
         if index == 3:
             arg.templatename.setText("Standard X-ϴ")
@@ -335,11 +385,16 @@ class ProbeDriveConfig:
             arg.stepRev.setText("1")
             arg.TPIBox.setCurrentIndex(1)  # in order to trigger threading label update
             arg.TPIBox.setCurrentIndex(0)
-            arg.group.getdrive(arg,"C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard X-ϴ.toml")
+            arg.group.getdrive(
+                arg,
+                "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard X-ϴ.toml",
+            )
 
             pass
 
     def getStepCm(self, arg):
+        '''Uses defined parameters of threading, step per rev, etc to calculate
+        and update the steps per cm value of configuration'''
         try:
             StepPerRev = float(arg.stepRev.text())
             CmPerRev = float(arg.customThreading.text())
@@ -349,6 +404,9 @@ class ProbeDriveConfig:
             pass
 
     def save(self, arg):
+        '''Save defined config file to database. 
+        Saves a timestamped backup in case filename is overwritten
+        '''
         Dict = {
             "id": self.id,
             "name": self.name,

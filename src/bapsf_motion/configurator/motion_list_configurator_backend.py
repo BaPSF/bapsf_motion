@@ -258,7 +258,9 @@ class Canvas(QLabel):
         arg.update_canvas(self.poslist)
 
     def set_hand(self, arg):
-        """ Sets ''chirality'' i.e. Left or Right entry point."""
+        """ Sets ''chirality'' i.e. Left or Right entry point.
+        Can add more options for more entry angles
+        """
         if arg == 0:
             self.hand = 0
         elif arg == 1:
@@ -797,6 +799,8 @@ class Canvas(QLabel):
         self.reset_mode()
 
     def resetpos(self, arg):
+        '''Clear position lists and any defined data points, and settings.
+        '''
         self.xpos = []
         self.ypos = []
         self.poslist = []
@@ -3509,6 +3513,7 @@ class Canvas(QLabel):
                 pass
 
     def set_name(self, name):
+        #outdated
         self.name = name
         self.id = self.name.replace(" ", "_").lower()
 
