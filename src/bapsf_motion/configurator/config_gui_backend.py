@@ -12,9 +12,7 @@ from PyQt5.QtWidgets import *
 from motion_list_configurator_backend import Canvas
 
 from main_window import Ui_MainWindow
-from group_configurator_backend import ProbeConfig , ProbeDriveConfig , MotionGroup
-
-
+from group_configurator_backend import ProbeConfig, ProbeDriveConfig, MotionGroup
 
 
 class MplCanvas(FigureCanvas):
@@ -35,13 +33,6 @@ class MplCanvas(FigureCanvas):
         yss = 50 * np.sin(uss)
         self.ax.plot_surface(xss, yss, zss, alpha=0.5, color="grey")
         super(MplCanvas, self).__init__(self.fig)
-
-
-
-
-
-
-
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -91,7 +82,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         # Connect TPI box to TPI input
-        self.TPIBox.currentIndexChanged.connect(lambda: [self.probedrive.TPIsetter(self),self.probedrive.getStepCm(self)])
+        self.TPIBox.currentIndexChanged.connect(
+            lambda: [self.probedrive.TPIsetter(self), self.probedrive.getStepCm(self)]
+        )
 
         # Connect preset Probe drive box:
         self.probeDriveBox.currentIndexChanged.connect(
@@ -261,8 +254,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.show()
 
     def update_graph(self, poslist, nx, ny, barlist, mode):
-        """ ROutine to update Matplotlib graph displaying actual data points defined so far, 
-        as well as barriers and no-go zones"""
+        """
+        Routine to update Matplotlib graph displaying actual data
+        points defined so far, as well as barriers and no-go zones.
+        """
         self.canvasLayout.removeWidget(self.canvas2)
         self.canvas2.deleteLater()
         self.canvas2 = None
@@ -302,8 +297,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_canvas(poslist)
 
     def update_canvas(self, poslist):
-        """ Updates points onto the 2D projection. Redraws defined shapes, draws points ontop. 
-        Size of the points is determined by resolution values. 
+        """
+        Updates points onto the 2D projection. Redraws defined shapes,
+        draws points on top.  Size of the points is determined by
+        resolution values.
         """
 
         self.canvas.reset()
@@ -331,28 +328,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 C = (yorg) / (xorg + 250)
                 xvo = (
                     -(500 * C * C)
-                    + np.sqrt((C * C * 500) ** 2 - 4 * (C * C * C * C - 1) * (250 ** 2))
+                    + np.sqrt((C * C * 500) ** 2 - 4 * (C * C * C * C - 1) * (250**2))
                 ) / (2 * (C * C + 1))
                 yvo = C * (xvo + 250)
 
                 C = ye / (xe + 250)
                 xve = (
                     -(C * C * 500)
-                    + np.sqrt((C * C * 500) ** 2 - 4 * (C * C * C * C - 1) * (250 ** 2))
+                    + np.sqrt((C * C * 500) ** 2 - 4 * (C * C * C * C - 1) * (250**2))
                 ) / (2 * (C * C + 1))
                 yve = C * (xve + 250)
             elif self.canvas.hand == 0:
                 C = (yorg) / (xorg - 250)
                 xvo = (
                     (C * C * 500)
-                    - np.sqrt((C * C * 500) ** 2 - 4 * (C * C * C * C - 1) * (250 ** 2))
+                    - np.sqrt((C * C * 500) ** 2 - 4 * (C * C * C * C - 1) * (250**2))
                 ) / (2 * (C * C + 1))
                 yvo = C * (xvo - 250)
 
                 C = (ye) / (xe - 250)
                 xve = (
                     (C * C * 500)
-                    - np.sqrt((C * C * 500) ** 2 - 4 * (C * C * C * C - 1) * (250 ** 2))
+                    - np.sqrt((C * C * 500) ** 2 - 4 * (C * C * C * C - 1) * (250**2))
                 ) / (2 * (C * C + 1))
                 yve = C * (xve - 250)
             else:
@@ -387,7 +384,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         p.setOpacity(0.5)
 
         if self.mode == "rect":
-
             for i in range(self.canvas.bar, len(xs) - 1, 2):
 
                 p.drawRect(
@@ -396,18 +392,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     )
                 )
             p.end()
-        if self.mode == "line":
 
+        elif self.mode == "line":
             for i in range(self.canvas.bar, len(xs) - 1, 2):
                 p.drawLine(
                     QPointF(xs[i] + 300, -ys[i] + 300),
                     QPointF(300 + xs[i + 1], -ys[i + 1] + 300),
                 )
             p.end()
-        if self.mode == "polyline":
+
+        elif self.mode == "polyline":
             xs = np.delete(self.canvas.xpos, -1)
             ys = np.delete(self.canvas.ypos, -1)
-            if self.closeit == True:
+            if self.closeit is True:
                 index = -1
             else:
                 index = 0
@@ -417,9 +414,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             xs = xs[bar:]
             ys = ys[bar:]
 
-            if self.closeit == True:
+            if self.closeit is True:
                 index = -1
-            elif self.closeit == False:
+            elif self.closeit is False:
                 index = 0
             for i in range(index, len(xs) - 1):
                 p.drawLine(
@@ -427,14 +424,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     QPointF(xs[i + 1] + 300, -ys[i + 1] + 300),
                 )
             p.end()
-        if self.mode == "circle":
+
+        elif self.mode == "circle":
             for i in range(self.canvas.bar, len(xs) - 1, 2):
 
                 r = np.sqrt((xs[i] - xs[i + 1]) ** 2 + (ys[i] - ys[i + 1]) ** 2)
 
                 p.drawEllipse(QPointF(xs[i] + 300, -ys[i] + 300), r, r)
             p.end()
-        if self.mode == "ellipse":
+
+        elif self.mode == "ellipse":
             for i in range(self.canvas.bar, len(xs) - 1):
 
                 p.drawEllipse(
@@ -444,8 +443,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     )
                 )
             p.end()
-        if len(poslist) != 0:
 
+        if len(poslist) != 0:
             p = QPainter(self.canvas.pixmap())
             xss = [300 + x[0] for x in poslist]
             yss = [300 - x[1] for x in poslist]
@@ -473,30 +472,36 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             p.end()
 
     def updateCoord(self, x, y, poslist, bar):
-        """Display current cursor coordinates in LAPD, cm units"""
+        """Display current cursor coordinates in LAPD, cm units."""
         self.cursorLabel.setText(
             "Cursor Coordinates:\n" + "( %d , %d )" % ((x - 300) / 5, (-y + 300) / 5)
         )
-        self.pointnumberLabel.setText("Number of points defined: " + str(len(poslist)))
+        self.pointnumberLabel.setText(f"Number of points defined: {len(poslist)}")
         self.timeLabel.setText(
             "Estimated Time Required: "
             + str(datetime.timedelta(seconds=12 * len(poslist)))
         )
 
     def probeBoxSetter(self):
-        """ Preset probe configurations are saved here. This function 
-        automatically fills out the configuration details as per the presets"""
+        """
+        Preset probe configurations are saved here. This function
+        automatically fills out the configuration details as per the
+        presets.
+        """
         index = self.probeBox.getCurrentIndex()
-        if index == None:
+        if index is None:
             pass
         if index == 0:
             pass
         pass
 
     def get_index(self):
-        """UI dynamism. Changes resolution text etc as per shape mode selected"""
+        """
+        UI dynamism. Changes resolution text etc. as per shape mode
+        selected.
+        """
         index = self.modeBox.currentIndex()
-        if index == None:
+        if index is None:
             pass
         if index == 5:
             self.mode = "barrier"
@@ -566,11 +571,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.checkBoxlabel = None
 
     def get_index2(self):
-        """UI dynamism. Changes resolution text etc as per grid mode selected"""
+        """
+        UI dynamism. Changes resolution text etc. as per grid mode
+        selected.
+        """
 
         index = self.gridBox.currentIndex()
 
-        if index == None:
+        if index is None:
             pass
         if index == 0:
             self.grid = "rect"
@@ -620,16 +628,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             QMessageBox.about(self, "Error", "Eccentricity should be valid numbers.")
 
     def btnstate(self, b):
-        """ Updates polygon auto-close setting"""
-        if b.isChecked() == True:
+        """Updates polygon auto-close setting"""
+        if b.isChecked() is True:
             self.closeit = True
         else:
             self.closeit = False
         self.canvas.set_status(self)
 
     def btnstate2(self, b, n=0):
-        """UI Dynamism. Controls switching between drawn vs autogenerated data regions"""
-        if b.isChecked() == True:
+        """
+        UI Dynamism. Controls switching between drawn vs autogenerated
+        data regions.
+        """
+        if b.isChecked() is True:
             self.gridBox.setEnabled(False)
             self.la.setEnabled(False)
             self.lb.setEnabled(False)
@@ -885,10 +896,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.z2.setEnabled(True)
 
     def MGroupBoxsetter(self):
-        """ Preset motion group configurations are saved here. This function 
-        automatically fills out the configuration details as per the presets"""
+        """
+        Preset motion group configurations are saved here. This function
+        automatically fills out the configuration details as per the
+        presets.
+        """
         index = self.MgroupBox.currentIndex()
-        if index == None:
+        if index is None:
             pass
         if index == 0:
             self.GroupName.setText("Name1")
