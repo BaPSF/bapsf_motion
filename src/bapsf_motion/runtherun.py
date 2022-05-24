@@ -10,34 +10,30 @@ class Loader:
     def getgroup(self, filename=None):
         f = open(filename, "rb")
         with f:
-                    self.toml_dict = tomli.load(f)
-                    self.x_ip = self.toml_dict["drive"]["IPx"]
-                    self.y_ip = self.toml_dict["drive"]["IPy"]
-                    self.z_ip = self.toml_dict["drive"]["IPz"]
-                    self.centers = self.toml_dict["Motion List"]["centers"]
-                    self.mode = self.toml_dict["Motion List"]["mode"]
-                    self.grid = self.toml_dict["Motion List"]["grid"]
-                    self.nx = self.toml_dict["Motion List"]["dx"]
-                    self.ny = self.toml_dict["Motion List"]["dy"]
-                    self.nz = self.toml_dict["Motion List"]["dz"]
-                    self.xs = self.toml_dict["Motion List"]["xs"]
-                    self.ys = self.toml_dict["Motion List"]["ys"]
-                    self.zs = self.toml_dict["Motion List"]["zs"]
-                    self.bar = self.toml_dict["Motion List"]["bar"]
-                    self.close = self.toml_dict["Motion List"]["close"]
-                    self.axes = self.toml_dict["drive"]["axes"]
-                    self.string1 = list(zip(self.xs, self.ys, self.zs))
-                    self.string1 = str(self.string1).strip("[]")
-        
-
-       
-        self.create_list()        
+            self.toml_dict = tomli.load(f)
+            self.x_ip = self.toml_dict["drive"]["IPx"]
+            self.y_ip = self.toml_dict["drive"]["IPy"]
+            self.z_ip = self.toml_dict["drive"]["IPz"]
+            self.centers = self.toml_dict["Motion List"]["centers"]
+            self.mode = self.toml_dict["Motion List"]["mode"]
+            self.grid = self.toml_dict["Motion List"]["grid"]
+            self.nx = self.toml_dict["Motion List"]["dx"]
+            self.ny = self.toml_dict["Motion List"]["dy"]
+            self.nz = self.toml_dict["Motion List"]["dz"]
+            self.xs = self.toml_dict["Motion List"]["xs"]
+            self.ys = self.toml_dict["Motion List"]["ys"]
+            self.zs = self.toml_dict["Motion List"]["zs"]
+            self.bar = self.toml_dict["Motion List"]["bar"]
+            self.close = self.toml_dict["Motion List"]["close"]
+            self.axes = self.toml_dict["drive"]["axes"]
+            self.string1 = list(zip(self.xs, self.ys, self.zs))
+            self.string1 = str(self.string1).strip("[]")
+        self.create_list()
         StepPerRev = self.toml_dict["drive"]["step_per_rev"]
         CmPerRev = self.toml_dict["drive"]["threading"]
         self.steps_per_cm = StepPerRev / CmPerRev
-        
+
         self.ConnectMotor()
-        
 
     def ConnectMotor(self):
         self.port_ip = int(7776)
@@ -47,13 +43,10 @@ class Loader:
             z_ip_addr=self.z_ip,
             axes=self.axes,
             MOTOR_PORT=self.port_ip,
-            d_outside = self.toml_dict["pivot_valve_distance"],
-            d_inside = self.toml_dict["valve_centre_distance"],
-            steps_per_cm = self.steps_per_cm
+            d_outside=self.toml_dict["pivot_valve_distance"],
+            d_inside=self.toml_dict["valve_centre_distance"],
+            steps_per_cm=self.steps_per_cm,
         )
-
-    
-    
 
     def create_list(self):
         res = min(self.nx, self.ny, self.nz)
@@ -103,9 +96,9 @@ class Loader:
                         xval = xposi + t * (xposi2 - xposi)
                         yval = yposi + t * (yposi2 - yposi)
                         zval = zposi + t * (zposi2 - zposi)
-                        xpos = np.append(xpos, np.round(xval,3))
-                        ypos = np.append(ypos, np.round(yval,3))
-                        zpos = np.append(zpos, np.round(zval,3))
+                        xpos = np.append(xpos, np.round(xval, 3))
+                        ypos = np.append(ypos, np.round(yval, 3))
+                        zpos = np.append(zpos, np.round(zval, 3))
                 positions = list(zip(xpos, ypos, zpos))
                 self.poslist = positions
             except ValueError:
@@ -146,13 +139,13 @@ class Loader:
                         xval = xposi + t * (xposi2 - xposi)
                         yval = yposi + t * (yposi2 - yposi)
                         zval = zposi + t * (zposi2 - zposi)
-                        xpos = np.append(xpos, np.round(xval,3))
-                        ypos = np.append(ypos, np.round(yval,3))
-                        zpos = np.append(zpos, np.round(zval,3))
+                        xpos = np.append(xpos, np.round(xval, 3))
+                        ypos = np.append(ypos, np.round(yval, 3))
+                        zpos = np.append(zpos, np.round(zval, 3))
                 positions = list(zip(xpos, ypos, zpos))
                 self.poslist = positions
             except ValueError:
-                pass       
+                pass
         elif self.mode == "rect":
 
             if self.grid == "rect":
@@ -189,7 +182,9 @@ class Loader:
                         for z in zvals:
                             for x in xvals:
                                 for y in yvals:
-                                    positions.append([np.round(x,3),np.round( y,3), np.round( z,3)])
+                                    positions.append(
+                                        [np.round(x, 3), np.round(y, 3), np.round(z, 3)]
+                                    )
                         poslist.extend(positions)
                         # print(poslist)
                     self.poslist = poslist
@@ -245,10 +240,10 @@ class Loader:
                                 ):
                                     pass
                                 else:
-                                    xpos = np.append(xpos, np.round(xval,3))
-                                    ypos = np.append(ypos, np.round(yval,3))
+                                    xpos = np.append(xpos, np.round(xval, 3))
+                                    ypos = np.append(ypos, np.round(yval, 3))
                         for z in zvals:
-                            zpos = np.round(z * np.ones(len(xpos)),3)
+                            zpos = np.round(z * np.ones(len(xpos)), 3)
                             positions = list(zip(xpos, ypos, zpos))
                             poslist = poslist + positions
                         self.poslist = poslist
@@ -308,10 +303,10 @@ class Loader:
                                 ):
                                     pass
                                 else:
-                                    xpos = np.append(xpos, np.round(xval,3))
-                                    ypos = np.append(ypos, np.round(yval,3))
+                                    xpos = np.append(xpos, np.round(xval, 3))
+                                    ypos = np.append(ypos, np.round(yval, 3))
                         for z in zvals:
-                            zpos = np.round(z * np.ones(len(xpos)),3)
+                            zpos = np.round(z * np.ones(len(xpos)), 3)
                             positions = list(zip(xpos, ypos, zpos))
                             poslist = poslist + positions
                     self.poslist = poslist
@@ -372,7 +367,13 @@ class Loader:
                                     ):
                                         pass
                                     else:
-                                        positions.append([np.round(xval,3), np.round(yval,3), np.round(zval,3)])
+                                        positions.append(
+                                            [
+                                                np.round(xval, 3),
+                                                np.round(yval, 3),
+                                                np.round(zval, 3),
+                                            ]
+                                        )
                         poslist.extend(positions)
                     self.poslist = poslist
                 except ValueError:
@@ -425,16 +426,15 @@ class Loader:
                                 xval = xposi + t * r * np.cos(th * 2 * np.pi)
                                 yval = yposi + t * r * np.sin(th * 2 * np.pi)
 
-                                xpos = np.append(xpos, np.round(xval,3))
-                                ypos = np.append(ypos, np.round(yval,3))
+                                xpos = np.append(xpos, np.round(xval, 3))
+                                ypos = np.append(ypos, np.round(yval, 3))
                         for z in zvals:
-                            zpos = np.round(z * np.ones(len(xpos)),3)
+                            zpos = np.round(z * np.ones(len(xpos)), 3)
                             positions = list(zip(xpos, ypos, zpos))
                             poslist = poslist + positions
                     self.poslist = poslist
                 except ValueError:
                     pass
-                
             if self.grid == "rect":
                 poslist = []
                 bar = self.bar
@@ -467,7 +467,6 @@ class Loader:
                         cx = xposi
                         cy = yposi
                         cz = (zmax + zmin) / 2
-                        
 
                         r = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
                         xmax = cx + r
@@ -494,14 +493,19 @@ class Loader:
                                         and zvals[z] <= zmax
                                         and zvals[z] >= zmin
                                     ):
-                                        positions.append([np.round(xvals[x],3), np.round(yvals[y],3), np.round(zvals[z],3)])
+                                        positions.append(
+                                            [
+                                                np.round(xvals[x], 3),
+                                                np.round(yvals[y], 3),
+                                                np.round(zvals[z], 3),
+                                            ]
+                                        )
                                     else:
                                         pass
                     poslist.extend(positions)
                     self.poslist = poslist
                 except ValueError:
                     pass
-                
             if self.grid == "sphere":
                 poslist = []
                 bar = self.bar
@@ -567,12 +571,17 @@ class Loader:
                                 ):
                                     pass
                                 else:
-                                    positions.append([np.round(xval,3), np.round(yval,3), np.round(zval,3)])
+                                    positions.append(
+                                        [
+                                            np.round(xval, 3),
+                                            np.round(yval, 3),
+                                            np.round(zval, 3),
+                                        ]
+                                    )
                         poslist = poslist + positions
                     self.poslist = poslist
                 except ValueError:
                     pass
-                
             if self.grid == "ellipse":
                 poslist = []
                 bar = self.bar
@@ -625,16 +634,15 @@ class Loader:
                                 xval = cx + t * a * np.cos(z * 2 * np.pi)
                                 yval = cy + t * b * np.sin(z * 2 * np.pi)
                                 if (xval - cx) ** 2 + (yval - cy) ** 2 <= b ** 2:
-                                    xpos = np.append(xpos, np.round(xval,3))
-                                    ypos = np.append(ypos, np.round(yval,3))
+                                    xpos = np.append(xpos, np.round(xval, 3))
+                                    ypos = np.append(ypos, np.round(yval, 3))
                         for z in zvals:
-                            zpos = np.round(z * np.ones(len(xpos)),3)
+                            zpos = np.round(z * np.ones(len(xpos)), 3)
                             positions = list(zip(xpos, ypos, zpos))
                             poslist = poslist + positions
                     self.poslist = poslist
                 except ValueError:
                     pass
-                
         elif self.mode == "ellipse":
 
             if self.grid == "ellipse":
@@ -686,16 +694,15 @@ class Loader:
                             for z in thetavals[1:]:
                                 xval = cx + t * a * np.cos(z * 2 * np.pi)
                                 yval = cy + t * b * np.sin(z * 2 * np.pi)
-                                xpos = np.append(xpos, np.round(xval,3))
-                                ypos = np.append(ypos, np.round(yval,3))
+                                xpos = np.append(xpos, np.round(xval, 3))
+                                ypos = np.append(ypos, np.round(yval, 3))
                         for z in zvals:
-                            zpos = np.round(z * np.ones(len(xpos)),3)
+                            zpos = np.round(z * np.ones(len(xpos)), 3)
                             positions = list(zip(xpos, ypos, zpos))
                             poslist = poslist + positions
                     self.poslist = poslist
                 except ValueError:
                     pass
-                
             if self.grid == "rect":
                 poslist = []
                 bar = self.bar
@@ -733,7 +740,6 @@ class Loader:
                         a = np.abs(xmax - xmin) / 2
                         b = np.abs(ymax - ymin) / 2
 
-
                         linvalx = abs(math.floor((xmax - xmin) / (nx)))
                         linvaly = abs(math.floor((ymax - ymin) / (ny)))
                         xpos = np.linspace(xmin, xmax, linvalx + 1)
@@ -745,14 +751,19 @@ class Loader:
                                     if ((xpos[x] - cx) / a) ** 2 + (
                                         (ypos[y] - cy) / b
                                     ) ** 2 <= 1:
-                                        positions.append([np.round(xpos[x],3), np.round(ypos[y],3), np.round(zvals[z],3)])
+                                        positions.append(
+                                            [
+                                                np.round(xpos[x], 3),
+                                                np.round(ypos[y], 3),
+                                                np.round(zvals[z], 3),
+                                            ]
+                                        )
                                     else:
                                         pass
                         poslist.extend(positions)
                     self.poslist = poslist
                 except ValueError:
                     pass
-                
             if self.grid == "circle":
                 poslist = []
                 bar = self.bar
@@ -791,7 +802,6 @@ class Loader:
                         b = np.abs(ymax - ymin) / 2
                         r = np.sqrt((xposi2 - xposi) ** 2 + (yposi - yposi2) ** 2) * 0.5
 
-       
                         xpos = [cx]
                         ypos = [cy]
                         linval = math.floor(r / dr)
@@ -804,53 +814,67 @@ class Loader:
                                 xval = cx + t * r * np.cos(z * 2 * np.pi)
                                 yval = cy + t * r * np.sin(z * 2 * np.pi)
                                 if ((xval - cx) / a) ** 2 + ((yval - cy) / b) ** 2 <= 1:
-                                    xpos = np.append(np.round(xpos,3), xval)
-                                    ypos = np.append(np.round(ypos,3), yval)
+                                    xpos = np.append(np.round(xpos, 3), xval)
+                                    ypos = np.append(np.round(ypos, 3), yval)
                     for z in range(0, len(zvals)):
-                        zpos = np.round(z * np.ones(len(xpos)),3)
+                        zpos = np.round(z * np.ones(len(xpos)), 3)
                         positions = list(zip(xpos, ypos, zpos))
                         poslist = poslist + positions
                     self.poslist = poslist
                 except ValueError:
-                   pass
-
-
-
-
+                    pass
 
 
 filename = "C://Users//risha//Desktop//daq-mod-probedrives-main//Runs//kj.txt"
+
+time_at_each_spot = 12
+
 with open(filename, "r") as grilled_cheese:
     data = grilled_cheese.read()
     groupnames = data.split("\n")
-    groupnames.pop()
-
-
+    groupnames.pop()  # remove extra "" character
 groups = {}
 i = 1
 for group in groupnames:
     groups[i] = Loader()
     groups[i].getgroup(group)
     i += 1
-
-
+    
 length = max(len(groups[group].poslist) for group in groups)
 
 
-for i in range(length):
+for index in range(length):
     for group in groups:
         try:
-            if i < len(groups[group]):
-                x  = groups[group].poslist[i][0]
-                y  = groups[group].poslist[i][1]
-                z  = groups[group].poslist[i][2]
-            # print(x,y,z)
-                groups[group].mm.move_to_position(x,y,z)
+            if index < len(groups[group]):
+                x = groups[group].poslist[index][0]
+                y = groups[group].poslist[index][1]
+                z = groups[group].poslist[index][2]
+                groups[group].mm.move_to_position(x, y, z)
         except:
             IndexError("Why is this happening?")
+   
+     
+     
+     
+     
     for group in groups:
-        
-        codex, codey, codez, posx, posy, posz, velx, vely, velz, is_movingx, is_movingy, is_movingz = groups[group].mm.heartbeat()
+
+        (
+            codex,
+            codey,
+            codez,
+            posx,
+            posy,
+            posz,
+            velx,
+            vely,
+            velz,
+            is_movingx,
+            is_movingy,
+            is_movingz,
+        ) = groups[group].mm.heartbeat()
         while is_movingx or is_movingy or is_movingz:
-            time.sleep(0.3)
-        
+            time.sleep(0.3) #check if all probes have finished moving to index.
+                            #every 0.3 seconds
+    time.sleep(time_at_each_spot)
