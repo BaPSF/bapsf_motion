@@ -7,12 +7,10 @@ Created on Sat Apr 23 18:03:45 2022
 
 import numpy as np
 import subprocess
-import time
+
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import *
 
 from gui.main_window import TabPage, Ui_MainWindow, GroupLayout
@@ -35,7 +33,9 @@ class MyMplCanvas(FigureCanvas):
         FigureCanvas.updateGeometry(self)
 
         self.ax.grid()
-        # self.ax.add_patch(patches.Rectangle((-38, -50), 76, 100, fill = False, edgecolor = 'red'))
+        # self.ax.add_patch(
+        #     patches.Rectangle((-38, -50), 76, 100, fill=False, edgecolor='red')
+        # )
 
         self.matrix = self.ax.scatter(0, 0, 0, color="blue", marker="o")
         self.point = self.ax.scatter(0, 0, 0, color="red", marker="*")
@@ -52,8 +52,10 @@ class MyMplCanvas(FigureCanvas):
         self.ax.plot_surface(xss, yss, zss, alpha=0.5, color="grey")
 
     def update_graph(self, poslist, nx, ny, nz, barlist, mode):
-        """ ROutine to update Matplotlib graph displaying actual data points defined so far, 
-        as well as barriers and no-go zones"""
+        """
+        Routine to update Matplotlib graph displaying actual data
+        points defined so far, as well as barriers and no-go zones.
+        """
         self.ax.clear()
 
         self.ax.grid()
@@ -83,7 +85,7 @@ class MyMplCanvas(FigureCanvas):
 
         # for posgroup in barlist:
         #     # posgroup is [(xorg,y,z),(xe),(xvo),(xve)]
-
+        #
         #     self.ax.plot([posgroup[0][0], posgroup[1][0]],
         #                          [posgroup[0][1], posgroup[1][1]], color='#800000'
         #                          )
@@ -208,7 +210,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.tabs[index].remove.clicked.connect(lambda: self.remove_tab(index))
 
-
     def update_timer(self):
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(self.heartbeat)
@@ -306,7 +307,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             status2 = "None"
         if status3 is None:
             status3 = "None"
-        self.tabs[i].statuslabel.setText(
+        self.tabs[index].statuslabel.setText(
             f"Motor X:{status1}, Motor Y:{status2}, Motor Z:{status3}"
         )
 
@@ -333,7 +334,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tabs[i].canvas.point.remove()
         self.tabs[i].canvas.update_probe(self.tabs[i].xnow, self.tabs[i].ynow)
         self.tabs[i].PositionLabel.setText(
-            f"Current Probe Position: ( {np.round(self.tabs[index].xnow, 2)} ,  {np.round(self.tabs[index].ynow, 2)}, {np.round(self.tabs[index].znow, 2)} )"
+            f"Current Probe Position: ( {np.round(self.tabs[i].xnow, 2)} ,  "
+            f"{np.round(self.tabs[i].ynow, 2)}, {np.round(self.tabs[i].znow, 2)} )"
         )
 
     def list_mover(self, index):
@@ -350,28 +352,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.groups[index].z.setText(z)
         self.getVals(index)
 
-
     def move_all(self, index, p):
-        if p ==0:
-            for i in range(1,index):
-                y = self.groups[i].list.currentIndex()
-                self.groups[i].list.setCurrentIndex(y+1)
-                self.movelabel.setText(f"Move all to index: {y+1}")
-        if p ==1:
-            for i in range(1,index):
-                y = self.groups[i].list.currentIndex()
-                self.groups[i].list.setCurrentIndex(y-1)
-                self.movelabel.setText(f"Move all to index: {y-1}")
-
-#todo
-    # def mark_finished_positions(self, index, x, y):
-    #     for i in range(index):
-    #         self.tabs[i].xdone = x
-    #         self.tabs[i].ydone = y
-    #         self.tabs[i].canvas.visited_points.remove()
-    #         self.tabs[i].canvas.finished_positions(
-    #             self.tabs[i].xdone, self.tabs[i].ydone
-    # )
+        if p in (0, 1):
+            for i in range(1, index):
+                y = self.groups[i].list.currentIndex() + 1 - 2 * p
+                self.groups[i].list.setCurrentIndex(y)
+                self.movelabel.setText(f"Move all to index: {y}")
 
 
 #################################################################################
