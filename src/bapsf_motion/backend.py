@@ -156,25 +156,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tabs[index].x = None
         self.tabs[index].y = None
         self.tabs[index].z = None
-        
-        for i in range(1,index):
+
+        for i in range(1, index):
             self.tabs[i].remove.setEnabled(False)
 
     def remove_tab(self, index):
-        
+
         qm = QtWidgets.QMessageBox
         ret = qm.warning(
-                self.centralwidget,
-                "WARNING",
-                "Are you sure you want to delete this group?",
-                qm.Yes | qm.No,
-            )
-        
+            self.centralwidget,
+            "WARNING",
+            "Are you sure you want to delete this group?",
+            qm.Yes | qm.No,
+        )
+
         if ret == qm.Yes:
             self.tabWidget.widget(index).deleteLater()
             self.tabWidget.removeTab(index)
             self.tabs[index] = None
-            self.tabs[index-1].remove.setEnabled(True)
+            self.tabs[index - 1].remove.setEnabled(True)
             self.groups[index].deleteLater()
             self.verticalLayout_6.removeWidget(self.groups[index])
             self.groups[index] = None
@@ -280,7 +280,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def heartbeat(self, index):
 
-        for i in range(1,index+1):
+        for i in range(1, index + 1):
             (
                 codex,
                 codey,
