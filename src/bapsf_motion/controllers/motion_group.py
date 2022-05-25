@@ -1,6 +1,9 @@
-from PyQt5.QtWidgets import *
-from .drive import DriveControl
+import math
 import numpy as np
+
+from PyQt5.QtWidgets import *
+
+from .drive import DriveControl
 
 
 class MotorMovement:
@@ -15,7 +18,7 @@ class MotorMovement:
         d_inside=64.0,
         d_offset=20.7,
         alpha=-0.9 * np.pi / 180,  # rad
-        steps_per_cm  = 39370.0787402
+        steps_per_cm=39370.0787402,
     ):
         super().__init__()
 
@@ -44,20 +47,26 @@ class MotorMovement:
             b = self.d_inside
 
             alpha = self.alpha
-            # dy = P*L^3/(E*3/2*pi*r^4) for load (castigliano's method) P, = KL^4/(E*8/2*pi*r^4) for self weight. K = density*A*g
-            # self-weight deflection from cns.gatech.edu/~predrag/GTcourses/PHYS-4421-04/lautrup/2.8/rods.pdf [pg 166]
+            # dy = P * L^3 / (E * 3 / 2 * pi * r^4) for load (castigliano's method)
+            # P, = KL^4 / (E * 8/2 * pi * r^4) for self weight.
+            # K = density * A * g
+            # self-weight deflection from
+            # cns.gatech.edu/~predrag/GTcourses/PHYS-4421-04/lautrup/2.8/rods.pdf [pg 166]
+            #
             # r =1.9cm E = 195*10^9 Pa, density = 7970 kg/m^3
-            c = np.sqrt(x ** 2 + y ** 2)
-            # deflection differential  from cns.gatech.edu/~predrag/GTcourses/PHYS-4421-04/lautrup/2.8/rods.pdf [pg 166]
+            c = np.sqrt(x**2 + y**2)
+            # deflection differential from
+            # cns.gatech.edu/~predrag/GTcourses/PHYS-4421-04/lautrup/2.8/rods.pdf [pg 166]
+            #
             # E = 205*10^9 Pa, density = 7970 kg/m^3
             P = 0.040 * 9.81  # kg load at end
-            E = 190 * (10 ** 9)  # Pa
+            E = 190 * (10**9)  # Pa
             r = 0.0046625  # m
             r2 = 0.00394
             density = 7990  # kg/m^3
             g = 9.81  # m/s^2
-            K = density * np.pi * (r ** 2) * g
-            I = np.pi * (r ** 4 - r2 ** 4) / 2
+            K = density * np.pi * (r**2) * g
+            I = np.pi * (r**4 - r2**4) / 2
 
             if x == 0:
                 phi = np.pi / 2
@@ -65,11 +74,15 @@ class MotorMovement:
                 phi = math.atan(y / x) + np.pi
             else:
                 phi = math.atan(y / x)
-            l2 = (b ** 2 + c ** 2 + 2 * b * c * math.cos(phi)) ** 0.5
+            l2 = (b**2 + c**2 + 2 * b * c * math.cos(phi)) ** 0.5
             L = l2 / 100
 
-            # dy_selfweight = 100*K*(L**4)/(E*8*I) - 100*K*((b/100)**4)/(E*8*I)
-            # dy_weight = 100*P*(L**3)/(E*1.5*np.pi*(r**4-r2**4)) -100*P*((b/100)**3)/(E*1.5*np.pi*(r**4-r2**4))
+            # dy_selfweight = 100 * K * (L**4) / (E * 8 * I) - 100 * K * (
+            #     (b / 100) ** 4
+            # ) / (E * 8 * I)
+            # dy_weight = 100 * P * (L**3) / (
+            #     E * 1.5 * np.pi * (r**4 - r2**4)
+            # ) - 100 * P * ((b / 100) ** 3) / (E * 1.5 * np.pi * (r**4 - r2**4))
 
             if y >= 0:
                 theta = math.atan(np.abs(y) / (b + x))
@@ -78,9 +91,9 @@ class MotorMovement:
             L = L * np.cos(theta)
 
             dy_total = 100 * (
-                ((L ** 3) / (4 * E * I)) * (2 * P + K * L)
-                + (L ** 3 / (6 * E * I)) * (-P - K * L)
-                + K * (L ** 4) / (24 * E * I)
+                ((L**3) / (4 * E * I)) * (2 * P + K * L)
+                + (L**3 / (6 * E * I)) * (-P - K * L)
+                + K * (L**4) / (24 * E * I)
                 - (
                     (((b / 100) ** 3) / (4 * E * I)) * (2 * P + K * ((b / 100)))
                     + ((b / 100) ** 3 / (6 * E * I)) * (-P - K * (b / 100))
@@ -88,8 +101,8 @@ class MotorMovement:
                 )
             )
 
-            ########y-corr.
-            y = y + 1 * (dy_total)
+            # y-corr.
+            y = y + 1 * dy_total
 
             if x == 0:
                 phi = np.pi / 2
@@ -97,7 +110,7 @@ class MotorMovement:
                 phi = math.atan(y / x) + np.pi
             else:
                 phi = math.atan(y / x)
-            c = np.sqrt(x ** 2 + y ** 2)
+            c = np.sqrt(x**2 + y**2)
             if y >= 0:
                 theta = (
                     math.atan(np.abs(y) / (b + x)) + alpha
@@ -106,7 +119,7 @@ class MotorMovement:
                 theta = (
                     math.atan(np.abs(y) / (b + x)) - alpha
                 )  # + math.atan(0.051*(np.abs(y)**0.8)/184.4)
-            l2 = (b ** 2 + c ** 2 + 2 * b * c * math.cos(phi)) ** 0.5
+            l2 = (b**2 + c**2 + 2 * b * c * math.cos(phi)) ** 0.5
 
             l1 = a / math.cos(theta)
 
@@ -121,7 +134,7 @@ class MotorMovement:
                     + l2
                     - a / math.cos(alpha)
                     - b
-                    - (a) * (1 / math.cos(theta) - 1 / math.cos(alpha))
+                    - a * (1 / math.cos(theta) - 1 / math.cos(alpha))
                 )  # + 0.7*(math.tan(theta -alpha))
             else:
                 y_new = (
@@ -183,7 +196,7 @@ class MotorMovement:
         if self.speedz is None:
             self.speedz = "None"
         self.velocityInput.setText(
-            "(" + str(self.speedx) + " ," + str(self.speedy) + str(self.speedz) + ")"
+            f"({self.speedx}, {self.speedy}, {self.speedz})"
         )
 
     def get_alarm_code(self):
