@@ -1,25 +1,20 @@
 import datetime
-import math
-import numpy as np
 import os
 import tomli
 import tomli_w
 
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
 
 class MotionGroup:
     def getdrive(self, arg, filename=None):
-        """Opens FileExplorer to allow loading drive config files from database.
-        Or, prexisting config file is preloaded from drop down box selection,
-        if file name is provided. Also populates contents of the config file
-        into 'Drive Contents' textbox in gui. 
+        """
+        Opens FileExplorer to allow loading drive config files from
+        database.  Or, preexisting config file is preloaded from
+        dropdown box selection, if file name is provided. Also
+        populates contents of the config file into 'Drive Contents'
+        textbox in gui.
         """
 
         if filename is None:
@@ -32,17 +27,17 @@ class MotionGroup:
         self.drivefile = filename
 
         if check:
-            f = open(filename, "r")
-
-            with f:
+            with open(filename, "r") as f:
                 data = f.read()
                 arg.DriveContents.setText(data)
 
     def getprobe(self, arg, filename=None):
-        """Opens FileExplorer to allow loading probe config files from database.
-        Or, prexisting config file is preloaded from drop down box selection,
-        if file name is provided. Also populates contents of the config file
-        into 'Probe Contents' textbox in gui. 
+        """
+        Opens FileExplorer to allow loading probe config files from
+        database.  Or, preexisting config file is preloaded from
+        dropdown box selection, if file name is provided. Also
+        populates contents of the config file into 'Probe Contents'
+        textbox in gui.
         """
         if filename is None:
             filename, check = QFileDialog.getOpenFileName(
@@ -53,15 +48,15 @@ class MotionGroup:
             )
         self.probefile = filename
         if check:
-            f = open(filename, "r")
-
-            with f:
+            with open(filename, "r") as f:
                 data = f.read()
                 arg.ProbeContents.setText(data)
 
     def getAttributes(self, arg):
-        ''' Saves text inputs provided by user defining 
-        meta-data pertaining to group'''
+        """
+        Saves text inputs provided by user defining meta-data
+        pertaining to group.
+        """
         try:
             self.name = arg.GroupName.text()
             self.d1 = float(arg.Dist1.text())
@@ -75,7 +70,7 @@ class MotionGroup:
             QMessageBox.about(None, "Error", "Missing Information.")
 
     def save(self, arg):
-        '''Saves group config details'''
+        """Saves group config details."""
         Dict = {
             "group.id": self.id,
             "name": self.name,
@@ -95,7 +90,8 @@ class MotionGroup:
             ret = qm.warning(
                 arg.centralwidget,
                 "WARNING",
-                "A Motion Group with the same name already exists. Are you sure you want to overwrite it?",
+                "A Motion Group with the same name already exists. "
+                "Are you sure you want to overwrite it?",
                 qm.Yes | qm.No,
             )
             if ret == qm.Yes:
@@ -124,12 +120,12 @@ class MotionGroup:
             if ret == qm.Yes:
                 with open(completeName, "wb") as tomli_file:
                     tomli_w.dump(Dict, tomli_file)
-            else:
-                pass
 
     def moveon(self, arg):
-        '''Combines configs of drive, probe, and group, saves the config file, 
-            and enables motion list generator tab'''
+        """
+        Combines configs of drive, probe, and group, saves the config
+        file, and enables motion list generator tab.
+        """
 
         Dict = {
             "group.id": self.id,
@@ -166,7 +162,7 @@ class MotionGroup:
 
         save_path = "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Groups"
         output_file_name = str(self.name)
-        completeName = os.path.join(save_path, output_file_name + ".toml")
+        completeName = os.path.join(save_path, f"{output_file_name}.toml")
         qm = QtWidgets.QMessageBox
         ret = qm.question(
             arg.centralwidget, "", "Are you sure you want to proceed?", qm.Yes | qm.No
@@ -180,14 +176,14 @@ class MotionGroup:
             arg.tabWidget.setTabEnabled(1, False)
             arg.tabWidget.setTabEnabled(2, False)
             arg.tabWidget.setTabEnabled(3, True)
-        else:
-            pass
 
 
 class ProbeConfig:
     def getAttributes(self, arg):
-        ''' Saves text inputs provided by user defining 
-        meta-data pertaining to probe'''
+        """
+        Saves text inputs provided by user defining meta-data
+        pertaining to probe.
+        """
         self.name = arg.ProbeName.text()
         self.datefabricated = str(arg.dateedit.date().toPyDate())
         self.dateserviced = str(arg.dateedit2.date().toPyDate())
@@ -202,36 +198,26 @@ class ProbeConfig:
         self.save(arg)
 
     def probeBoxSetter(self, arg):
-        '''
-        
-
+        """
         Parameters
         ----------
         arg : main gui window
-            Necessary as this function updates the gui to display 
+            Necessary as this function updates the gui to display
             the parameters of the probe chosen from drop-down.
-
-        Returns: Gui update.
-        -------
-        None.
-
-        '''
+        """
         index = arg.probeDriveBox.currentIndex()
-        if index == None:
+        if index is None:
             pass
-        if index == 0:
-            pass
-        if index == 1:
+        elif index == 1:
             arg.group.getprobe(
                 arg,
                 "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probes\\Langmuir.toml",
             )
-            pass
 
     def save(self, arg):
-        '''Save defined config file to database. 
+        """Save defined config file to database.
         Saves a timestamped backup in case filename is overwritten
-        '''
+        """
         Dict = {
             "id": self.id,
             "name": self.name,
@@ -253,7 +239,8 @@ class ProbeConfig:
             ret = qm.warning(
                 arg.centralwidget,
                 "WARNING",
-                "A Probe configuration with the same name already exists. Are you sure you want to overwrite it?",
+                "A Probe configuration with the same name already exists."
+                " Are you sure you want to overwrite it?",
                 qm.Yes | qm.No,
             )
             if ret == qm.Yes:
@@ -280,15 +267,13 @@ class ProbeConfig:
             if ret == qm.Yes:
                 with open(completeName, "wb") as tomli_file:
                     tomli_w.dump(Dict, tomli_file)
-            else:
-                pass
 
 
 class ProbeDriveConfig:
     def IPBoxsetter(self, arg):
-        """ Disables third motor ip address input for < 3 axes drives"""
+        """Disables third motor ip address input for < 3 axes drives"""
         index = arg.AxesBox.currentIndex()
-        if index == None:
+        if index is None:
             pass
         if index == 0:
 
@@ -302,8 +287,10 @@ class ProbeDriveConfig:
             arg.ymotorLabel.setText("ϴ-motor")
 
     def getAttributes(self, arg):
-        ''' Saves text inputs provided by user defining 
-        meta-data pertaining to probe drive'''
+        """
+        Saves text inputs provided by user defining meta-data
+        pertaining to probe drive.
+        """
 
         self.name = arg.templatename.text()
         self.id = self.name.replace(" ", "_").lower()
@@ -317,35 +304,34 @@ class ProbeDriveConfig:
         self.save(arg)
 
     def TPIsetter(self, arg):
-        '''
+        """
+        Updates threading parameter as per the threading chosen from
+        drop down box.
+
         Parameters
         ----------
         arg : gui main window
-
-        Returns: Updates threading parameter as per the threading chosen from
-        drop down box.
-   
-
-        '''
+        """
         index = arg.TPIBox.currentIndex()
         if index == 0:
             arg.customThreading.setText("0.0508")
-        if index == 1:
+        elif index == 1:
             arg.customThreading.setText("0.254")
-        if index == 2:
+        elif index == 2:
             arg.customThreading.setText("0.508")
-        if index == 3:
+        elif index == 3:
             arg.customThreading.setText("0.02")
 
     def pdBoxsetter(self, arg):
-        """ Preset probe drive configurations are saved here. This function 
-        automatically fills out the configuration details as per the presets"""
+        """
+        Preset probe drive configurations are saved here. This function
+        automatically fills out the configuration details as per the
+        presets.
+        """
         index = arg.probeDriveBox.currentIndex()
-        if index == None:
+        if index is None or index == 0:
             pass
-        if index == 0:
-            pass
-        if index == 1:
+        elif index == 1:
             arg.templatename.setText("Standard XY")
             arg.AxesBox.setCurrentIndex(0)
             arg.ipx.setText("2")
@@ -359,8 +345,8 @@ class ProbeDriveConfig:
                 arg,
                 "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XY.toml",
             )
-            pass
-        if index == 2:
+
+        elif index == 2:
             arg.templatename.setText("Standard XYZ")
             arg.AxesBox.setCurrentIndex(1)
             arg.ipx.setText("2")
@@ -374,8 +360,8 @@ class ProbeDriveConfig:
                 arg,
                 "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XYZ.toml",
             )
-            pass
-        if index == 3:
+
+        elif index == 3:
             arg.templatename.setText("Standard X-ϴ")
             arg.AxesBox.setCurrentIndex(2)
             arg.ipx.setText("2")
@@ -390,23 +376,24 @@ class ProbeDriveConfig:
                 "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard X-ϴ.toml",
             )
 
-            pass
-
     def getStepCm(self, arg):
-        '''Uses defined parameters of threading, step per rev, etc to calculate
-        and update the steps per cm value of configuration'''
+        """
+        Uses defined parameters of threading, step per rev, etc. to
+        calculate and update the steps per cm value of configuration.
+        """
         try:
             StepPerRev = float(arg.stepRev.text())
             CmPerRev = float(arg.customThreading.text())
             StepPerCm = StepPerRev / CmPerRev
-            arg.StepPerCmLabel.setText("Calculated Steps/cm :" + str(StepPerCm))
+            arg.StepPerCmLabel.setText(f"Calculated Steps/cm : {StepPerCm}")
         except ValueError:
             pass
 
     def save(self, arg):
-        '''Save defined config file to database. 
-        Saves a timestamped backup in case filename is overwritten
-        '''
+        """
+        Save defined config file to database.  Saves a timestamped
+        backup in case filename is overwritten.
+        """
         Dict = {
             "id": self.id,
             "name": self.name,
@@ -428,7 +415,8 @@ class ProbeDriveConfig:
             ret = qm.warning(
                 arg.centralwidget,
                 "WARNING",
-                "A Probe Drive configuration with the same name already exists. Are you sure you want to overwrite it?",
+                "A Probe Drive configuration with the same name already exists."
+                " Are you sure you want to overwrite it?",
                 qm.Yes | qm.No,
             )
             if ret == qm.Yes:
@@ -439,9 +427,9 @@ class ProbeDriveConfig:
                     "%b-%d-%Y_%H.%M.%S"
                 )
 
-                newName = save_path + "\\Backup\\" + output_file_name
+                newName = f"{save_path}\\Backup\\{output_file_name}"
 
-                os.rename(completeName, newName + "_" + timestamp + ".toml")
+                os.rename(completeName, f"{newName}_{timestamp}.toml")
 
                 with open(completeName, "wb") as tomli_file:
                     tomli_w.dump(Dict, tomli_file)
