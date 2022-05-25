@@ -4,28 +4,24 @@ import os
 import tomli
 import tomli_w
 
-
-from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-
-
 MODES = ["line", "polyline", "rect", "barrier", "circle", "ellipse"]
-
-
 GRIDS = ["rect", "circle", "ellipse", "sphere"]
-
 
 CANVAS_DIMENSIONS = 600, 600
 
 SELECTION_PEN = QPen(QColor(0xFF, 0xFF, 0xFF), 1, Qt.DashLine)
 PREVIEW_PEN = QPen(QColor(0xFF, 0xFF, 0xFF), 1, Qt.SolidLine)
 
+
 class Canvas(QLabel):
-    """This class controls the "canvas" where one can draw the shapes to define
-    data acquisition regions in 2D (3D with z-axis extrusion). """
+    """
+    This class controls the "canvas" where one can draw the shapes to
+    define data acquisition regions in 2D (3D with z-axis extrusion).
+    """
 
     mode = "rect"
     grid = "rect"
@@ -110,13 +106,13 @@ class Canvas(QLabel):
         p.setOpacity(0.2)
         for x in xs:
             p.drawLine(
-                QPointF(x, 300 + np.sqrt(250 ** 2 - (x - 300) ** 2)),
-                QPointF(x, 300 - np.sqrt(250 ** 2 - (x - 300) ** 2)),
+                QPointF(x, 300 + np.sqrt(250**2 - (x - 300) ** 2)),
+                QPointF(x, 300 - np.sqrt(250**2 - (x - 300) ** 2)),
             )
         for y in ys:
             p.drawLine(
-                QPointF(300 + np.sqrt(250 ** 2 - (y - 300) ** 2), y),
-                QPointF(300 - np.sqrt(250 ** 2 - (y - 300) ** 2), y),
+                QPointF(300 + np.sqrt(250**2 - (y - 300) ** 2), y),
+                QPointF(300 - np.sqrt(250**2 - (y - 300) ** 2), y),
             )
         p.setPen(
             QPen(
@@ -148,7 +144,7 @@ class Canvas(QLabel):
         self.update()
 
     def reset(self):
-        """ Reset the canvas, and associated data"""
+        """Reset the canvas, and associated data."""
         # Create the pixmap for display.
         self.setPixmap(QPixmap(*CANVAS_DIMENSIONS))
 
@@ -191,15 +187,15 @@ class Canvas(QLabel):
         p.setOpacity(0.2)
         for x in xs:
             p.drawLine(
-                QPointF(x, 300 + np.sqrt(250 ** 2 - (x - 300) ** 2)),
-                QPointF(x, 300 - np.sqrt(250 ** 2 - (x - 300) ** 2)),
+                QPointF(x, 300 + np.sqrt(250**2 - (x - 300) ** 2)),
+                QPointF(x, 300 - np.sqrt(250**2 - (x - 300) ** 2)),
             )
         for y in ys:
             p.drawLine(
-                QPointF(300 + np.sqrt(250 ** 2 - (y - 300) ** 2), y),
-                QPointF(300 - np.sqrt(250 ** 2 - (y - 300) ** 2), y),
+                QPointF(300 + np.sqrt(250**2 - (y - 300) ** 2), y),
+                QPointF(300 - np.sqrt(250**2 - (y - 300) ** 2), y),
             )
-        if self.plasmacolumn == True:
+        if self.plasmacolumn is True:
             p.setPen(
                 QPen(
                     QColor(Qt.red),
@@ -211,7 +207,7 @@ class Canvas(QLabel):
             )
             p.setOpacity(0.4)
             p.drawEllipse(QPoint(300, 300), 150, 150)
-        if self.maincathode == True:
+        if self.maincathode is True:
             p.setPen(
                 QPen(
                     QColor("#FFA500"),
@@ -223,7 +219,7 @@ class Canvas(QLabel):
             )
             p.setOpacity(0.4)
             p.drawEllipse(QPoint(300, 300), 95, 95)
-        if self.secondarycathode == True:
+        if self.secondarycathode is True:
             p.setPen(
                 QPen(
                     QColor("#ff4500"),
@@ -258,8 +254,9 @@ class Canvas(QLabel):
         arg.update_canvas(self.poslist)
 
     def set_hand(self, arg):
-        """ Sets ''chirality'' i.e. Left or Right entry point.
-        Can add more options for more entry angles
+        """
+        Sets ''chirality'' i.e. Left or Right entry point.  Can add
+        more options for more entry angles.
         """
         if arg == 0:
             self.hand = 0
@@ -268,8 +265,10 @@ class Canvas(QLabel):
         self.reset()
 
     def set_mode(self, mode):
-        """ This mode controls the shape painting function,
-        as well as the point generator"""
+        """
+        This mode controls the shape painting function, as well as the
+        point generator.
+        """
         # Clean up active timer animations.
         self.timer_cleanup()
         # Reset mode-specific vars (all)
@@ -287,8 +286,10 @@ class Canvas(QLabel):
         self.mode = mode
 
     def set_status(self, arg):
-        """ Register resolution and z-axis extrusion inputs.
-        5x factor for cm to pixel conversion"""
+        """
+        Register resolution and z-axis extrusion inputs.  5x factor for
+        cm to pixel conversion.
+        """
         self.nx = 5 * float(arg.xres.text())
         self.ny = 5 * float(arg.yres.text())
         self.nz = 5 * float(arg.zres.text())
@@ -312,7 +313,7 @@ class Canvas(QLabel):
             self.secondarycathode = False
 
     def set_grid(self, grid):
-        """ similar to mode system, sets the grid system"""
+        """similar to mode system, sets the grid system."""
         self.grid = grid
 
     def reset_mode(self):
@@ -330,24 +331,27 @@ class Canvas(QLabel):
             timer_event(final=True)
 
     # Mouse events.
-    """ redefining pyqt mouse events... depending on chosen mode,
-    this will also call  a mode specific  drawing function to paint shape
-    on the canvas"""
-
-    """Everything internal is handled in coordinate units.
-    # EXCEPT THE BARLIST
-    # All inputs are taken in cm units.
-    # means output list is also in coord units.
-    # 1 cm = 5pixel, as per the set size of the canvas.
-    # self.xpos, self.ypos (and self.zpos) are containers for all vertex points.
-    Basic point verification routine- distance from centre (is_inside_machine?)
-
+    # - redefining pyqt mouse events... depending on chosen mode,
+    #   this will also call  a mode specific  drawing function to
+    #   paint shape on the canvas
+    #
+    # - Everything internal is handled in coordinate units, EXCEPT the
+    #   BARLIST
+    # - All inputs are taken in cm units.  Means output list is also in
+    #   coord units.
+    # - 1 cm = 5 pixel, as per the set size of the canvas.
+    # - self.xpos, self.ypos (and self.zpos) are containers for all
+    #   vertex points.
+    # - Basic point verification routine- distance from centre (is_inside_machine?)
+    #
     ### CURRENTLY COMPLETELY AD-HOC #####
-    Angle from entry point (can probe reach via ball-valve. )
-    Current angle-restriction setup-
-    \_ Hole perfectly aligned with centre of lapd, + exacty at the edge of lapd.
-    valve is 2 cm long, and 2 cm above and below hole. SO shaft makes 45 degree angles at max.. definitely incorrect.
-    """
+    # Angle from entry point (can probe reach via ball-valve. )
+    # Current angle-restriction setup-
+    # \_ Hole perfectly aligned with centre of lapd, + exactly at the
+    # edge of lapd.
+    #
+    # valve is 2 cm long, and 2 cm above and below hole. SO shaft makes
+    # 45 degree angles at max.. definitely incorrect.
 
     def mousePressEvent(self, e):
         fn = getattr(self, "%s_mousePressEvent" % self.mode, None)
@@ -375,13 +379,13 @@ class Canvas(QLabel):
         self.cx = e.x()
         self.cy = e.y()
         self.move.emit()
-        fn = getattr(self, "%s_mouseMoveEvent" % self.mode, None)
+        fn = getattr(self, f"{self.mode}_mouseMoveEvent", None)
         if fn:
             return fn(e)
 
     def mouseReleaseEvent(self, e):
 
-        fn = getattr(self, "%s_mouseReleaseEvent" % self.mode, None)
+        fn = getattr(self, f"{self.mode}_mouseReleaseEvent", None)
         # calls mode_specific function-
 
         # Basic Point validity verification routine:
@@ -402,7 +406,7 @@ class Canvas(QLabel):
                 return fn(e)
 
     def mouseDoubleClickEvent(self, e):
-        fn = getattr(self, "%s_mouseDoubleClickEvent" % self.mode, None)
+        fn = getattr(self, f"{self.mode}_mouseDoubleClickEvent", None)
         if fn:
             return fn(e)
         self.last_pos = None
@@ -515,42 +519,42 @@ class Canvas(QLabel):
             if theta >= np.pi:
                 C = (yorg - r * np.sin(theta)) / (xorg - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xorg * (C ** 2) + 2 * C * yorg
-                c = (C ** 2) * xorg + yorg ** 2 - 2 * C * yorg * xorg - r ** 2
+                a = 1 + C**2
+                b = -2 * xorg * (C**2) + 2 * C * yorg
+                c = (C**2) * xorg + yorg**2 - 2 * C * yorg * xorg - r**2
 
-                xvo = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xvo = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yvo = C * (xvo - xorg) + yorg
                 p.drawLine(self.origin_pos, QPointF(xvo + 300, 300 - yvo))
                 C = (ye - r * np.sin(theta)) / (xe - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xe * (C ** 2) + 2 * C * ye
-                c = (C ** 2) * xe + ye ** 2 - 2 * C * ye * xe - r ** 2
+                a = 1 + C**2
+                b = -2 * xe * (C**2) + 2 * C * ye
+                c = (C**2) * xe + ye**2 - 2 * C * ye * xe - r**2
 
-                xve = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xve = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yve = C * (xve - xe) + ye
                 p.drawLine(e.pos(), QPointF(xve + 300, 300 - yve))
             if theta < np.pi:
                 C = (yorg - r * np.sin(theta)) / (xorg - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xorg * (C ** 2) + 2 * C * yorg
-                c = (C ** 2) * xorg + yorg ** 2 - 2 * C * yorg * xorg - r ** 2
+                a = 1 + C**2
+                b = -2 * xorg * (C**2) + 2 * C * yorg
+                c = (C**2) * xorg + yorg**2 - 2 * C * yorg * xorg - r**2
 
-                xvo = (-b - np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xvo = (-b - np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yvo = C * (xvo - xorg) + yorg
                 p.drawLine(self.origin_pos, QPointF(xvo + 300, 300 - yvo))
                 C = (ye - r * np.sin(theta)) / (xe - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xe * (C ** 2) + 2 * C * ye
-                c = (C ** 2) * xe + ye ** 2 - 2 * C * ye * xe - r ** 2
+                a = 1 + C**2
+                b = -2 * xe * (C**2) + 2 * C * ye
+                c = (C**2) * xe + ye**2 - 2 * C * ye * xe - r**2
 
-                xve = (-b - np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xve = (-b - np.sqrt(b**2 - 4 * a * c)) / (2 * a)
                 yve = C * (xve - xe) + ye
                 p.drawLine(e.pos(), QPointF(xve + 300, 300 - yve))
             self.update()
@@ -799,8 +803,9 @@ class Canvas(QLabel):
         self.reset_mode()
 
     def resetpos(self, arg):
-        '''Clear position lists and any defined data points, and settings.
-        '''
+        """
+        Clear position lists and any defined data points, and settings.
+        """
         self.xpos = []
         self.ypos = []
         self.poslist = []
@@ -822,19 +827,22 @@ class Canvas(QLabel):
 
     def set_numpoint(self, arg):
         """
-        sets input (no. of points) for shape autogeneration scheme.
+        Sets input (no. of points) for shape autogeneration scheme.
         """
         self.ea = str(arg.ea.text())
         self.eb = str(arg.eb.text())
 
     def print_positions(self, arg):
-        """ Position generating function, for display purposes.
-        First- Generates the barrier from given points, as well as the
-         region that becomes no-go zone.  Currently based off ad-hoc
-         assumptions for the angular reach of a probe shaft from a particular
-         valve.
-        Second- Calls point generating function depending on the mode.
-        Each point generating function further looks at grid config to setup points.
+        """
+        Position generating function, for display purposes.
+
+        - Firstly, generates the barrier from given points, as well as
+          the region that becomes no-go zone.  Currently based off
+          ad-hoc assumptions for the angular reach of a probe shaft
+          from a particular ball valve.
+        - Secondly, calls point generating function depending on the
+          mode.  Each point generating function further looks at grid
+          config to set up points.
         """
 
         mode = self.mode
@@ -859,60 +867,60 @@ class Canvas(QLabel):
             if theta >= np.pi:
                 C = (yorg - r * np.sin(theta)) / (xorg - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xorg * (C ** 2) + 2 * C * yorg
-                c = (C ** 2) * xorg + yorg ** 2 - 2 * C * yorg * xorg - r ** 2
+                a = 1 + C**2
+                b = -2 * xorg * (C**2) + 2 * C * yorg
+                c = (C**2) * xorg + yorg**2 - 2 * C * yorg * xorg - r**2
 
-                xvo = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xvo = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yvo = C * (xvo - xorg) + yorg
 
                 C = (ye - r * np.sin(theta)) / (xe - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xe * (C ** 2) + 2 * C * ye
-                c = (C ** 2) * xe + ye ** 2 - 2 * C * ye * xe - r ** 2
+                a = 1 + C**2
+                b = -2 * xe * (C**2) + 2 * C * ye
+                c = (C**2) * xe + ye**2 - 2 * C * ye * xe - r**2
 
-                xve = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xve = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yve = C * (xve - xe) + ye
                 C = (yorg - r * np.sin(theta)) / (xorg - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xorg * (C ** 2) + 2 * C * yorg
-                c = (C ** 2) * xorg + yorg ** 2 - 2 * C * yorg * xorg - r ** 2
+                a = 1 + C**2
+                b = -2 * xorg * (C**2) + 2 * C * yorg
+                c = (C**2) * xorg + yorg**2 - 2 * C * yorg * xorg - r**2
 
-                xvo = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xvo = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yvo = C * (xvo - xorg) + yorg
 
                 C = (ye - r * np.sin(theta)) / (xe - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xe * (C ** 2) + 2 * C * ye
-                c = (C ** 2) * xe + ye ** 2 - 2 * C * ye * xe - r ** 2
+                a = 1 + C**2
+                b = -2 * xe * (C**2) + 2 * C * ye
+                c = (C**2) * xe + ye**2 - 2 * C * ye * xe - r**2
 
-                xve = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xve = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yve = C * (xve - xe) + ye
             if theta < np.pi:
                 C = (yorg - r * np.sin(theta)) / (xorg - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xorg * (C ** 2) + 2 * C * yorg
-                c = (C ** 2) * xorg + yorg ** 2 - 2 * C * yorg * xorg - r ** 2
+                a = 1 + C**2
+                b = -2 * xorg * (C**2) + 2 * C * yorg
+                c = (C**2) * xorg + yorg**2 - 2 * C * yorg * xorg - r**2
 
-                xvo = (-b - np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xvo = (-b - np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yvo = C * (xvo - xorg) + yorg
 
                 C = (ye - r * np.sin(theta)) / (xe - r * np.cos(theta))
 
-                a = 1 + C ** 2
-                b = -2 * xe * (C ** 2) + 2 * C * ye
-                c = (C ** 2) * xe + ye ** 2 - 2 * C * ye * xe - r ** 2
+                a = 1 + C**2
+                b = -2 * xe * (C**2) + 2 * C * ye
+                c = (C**2) * xe + ye**2 - 2 * C * ye * xe - r**2
 
-                xve = (-b - np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                xve = (-b - np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                 yve = C * (xve - xe) + ye
             barlist.append(
@@ -938,7 +946,10 @@ class Canvas(QLabel):
             self.get_positionsellipse(arg)
 
     def get_positionsrect(self, arg):
-        """ point generator for rectangular/cuboidal shapes. Defined by corner vertices"""
+        """
+        Point generator for rectangular/cuboidal shapes. Defined by
+        corner vertices.
+        """
         bar = self.bar
         poslist = []
         strx = ""
@@ -960,14 +971,14 @@ class Canvas(QLabel):
                 lx = abs(xmax - xmin)
                 ly = abs(ymax - ymin)
                 lz = abs(zmax - zmin)
-                strx = strx + str(lx / 5) + ","
-                stry = stry + str(ly / 5) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{lx / 5},"
+                stry += f"{ly / 5},"
+                strz += f"{lz / 5},"
 
-                linvalz = abs(math.floor((self.z2 - self.z1) / (nz)))
+                linvalz = abs(math.floor((self.z2 - self.z1) / nz))
 
-                linvalx = abs(math.floor((xmax - xmin) / (nx)))
-                linvaly = abs(math.floor((ymax - ymin) / (ny)))
+                linvalx = abs(math.floor((xmax - xmin) / nx))
+                linvaly = abs(math.floor((ymax - ymin) / ny))
 
                 zvals = np.linspace(self.z1, self.z2, linvalz + 1)
                 xvals = np.linspace(xmin, xmax, linvalx + 1)
@@ -975,16 +986,7 @@ class Canvas(QLabel):
                 cx = (xmax + xmin) / 2
                 cy = (ymax + ymin) / 2
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
                 positions = []
                 for z in range(0, len(zvals)):
                     for x in range(0, len(xvals)):
@@ -1016,23 +1018,14 @@ class Canvas(QLabel):
                 lx = abs(xmax - xmin)
                 ly = abs(ymax - ymin)
                 lz = abs(zmax - zmin)
-                strx = strx + str(lx / 5) + ","
-                stry = stry + str(ly / 5) + ","
-                strz = strz + str(lz / 5) + ","
-                linvalz = abs(math.floor((self.z2 - self.z1) / (nz)))
+                strx += f"{lx / 5},"
+                stry += f"{ly / 5},"
+                strz += f"{lz / 5},"
+                linvalz = abs(math.floor((self.z2 - self.z1) / nz))
                 cx = (xmax + xmin) / 2
                 cy = (ymax + ymin) / 2
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
 
                 zvals = np.linspace(self.z1, self.z2, linvalz + 1)
                 xpos = np.append(xpos, cx)
@@ -1047,7 +1040,8 @@ class Canvas(QLabel):
                 positions = []
                 # first start point already initialized in array.
                 for t in parvals[1:]:
-                    # Other start points are incorporated as the end points of previous segment.
+                    # Other start points are incorporated as the end points of
+                    # previous segment.
                     for z in thetavals[1:]:
                         xval = cx + t * r * np.cos(z * 2 * np.pi)
                         yval = cy + t * r * np.sin(z * 2 * np.pi)
@@ -1086,22 +1080,13 @@ class Canvas(QLabel):
                 lx = abs(xmax - xmin)
                 ly = abs(ymax - ymin)
                 lz = abs(zmax - zmin)
-                strx = strx + str(lx / 5) + ","
-                stry = stry + str(ly / 5) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{lx / 5},"
+                stry += f"{ly / 5},"
+                strz += f"{lz / 5},"
                 cx = (xmax + xmin) / 2
                 cy = (ymax + ymin) / 2
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
 
                 r = (
                     np.sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2)
@@ -1116,7 +1101,8 @@ class Canvas(QLabel):
                 positions = [[cx, cy, cz]]
                 # first start point already initialized in array.
                 for t in parvals[1:]:
-                    # Other start points are incorporated as the end points of previous segment.
+                    # Other start points are incorporated as the end points of
+                    # previous segment.
                     for z in thetavals[1:]:
                         for p in phivals[1:]:
                             xval = cx + t * r * np.cos(z * 2 * np.pi) * np.sin(
@@ -1169,34 +1155,26 @@ class Canvas(QLabel):
                 lx = abs(xmax - xmin)
                 ly = abs(ymax - ymin)
                 lz = abs(zmax - zmin)
-                strx = strx + str(lx / 5) + ","
-                stry = stry + str(ly / 5) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{lx / 5},"
+                stry += f"{ly / 5},"
+                strz += f"{lz / 5},"
                 cx = (xmax + xmin) / 2
                 cy = (ymax + ymin) / 2
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
 
-                # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET APPROPRIATE ONES WITHIN THE REGION.
-                linvalz = abs(math.floor((zmax - zmin) / (dz)))
+                # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET
+                # APPROPRIATE ONES WITHIN THE REGION.
+                linvalz = abs(math.floor((zmax - zmin) / dz))
                 zvals = np.linspace(zmin, zmax, linvalz + 1)
 
                 a = max([(xmax - xmin), (ymax - ymin)])
-                b = a * np.sqrt(1 - e ** 2)
+                b = a * np.sqrt(1 - e**2)
 
                 xpos = np.append(xpos, cx)
                 ypos = np.append(ypos, cy)
 
-                linval = math.floor((min([a, b])) / (dr))
+                linval = math.floor((min([a, b])) / dr)
 
                 thetavals = np.linspace(0, 1, math.floor(360 / dtheta) + 1)
                 parvals = np.linspace(0, 1, linval + 1)
@@ -1229,7 +1207,7 @@ class Canvas(QLabel):
             arg.ec.setText(str(len(zvals)))
 
     def get_positionsline(self):
-        """ point generator for lines"""
+        """Point generator for lines."""
 
         poslist = []
         bar = self.bar
@@ -1238,7 +1216,7 @@ class Canvas(QLabel):
 
         nz = self.nz
 
-        linvalz = abs(math.floor((self.z2 - self.z1) / (nz)))
+        linvalz = abs(math.floor((self.z2 - self.z1) / nz))
         zvals = np.linspace(self.z1, self.z2, linvalz + 1)
         xpos = []
         ypos = []
@@ -1247,10 +1225,10 @@ class Canvas(QLabel):
         for i in range(bar, len(xs) - 1, 2):
 
             # general idea for motion list- user gave end points of line segments.
-            # each point is essentially a location in the array. Get distance between the
-            # two array points.    #Get an equation of the line joining two points in the array.
-            # Get real coordinates of the point on this line at every
-            #  'res' distance.
+            # each point is essentially a location in the array. Get distance
+            # between the two array points.  Get an equation of the line joining
+            # two points in the array.  Get real coordinates of the point on
+            # this line at every 'res' distance.
 
             # the coordinates of the two end points of line segment
 
@@ -1261,8 +1239,8 @@ class Canvas(QLabel):
             yposi2 = ys[i + 1]
 
             # zposi = zs[i]
-            # zposi2 =zs[i+1]
-            res = (self.nx ** 2 + self.ny ** 2) ** 0.5
+            # zposi2 = zs[i+1]
+            res = (self.nx**2 + self.ny**2) ** 0.5
             length = ((xposi2 - xposi) ** 2 + (yposi2 - yposi) ** 2) ** 0.5
             linval = math.floor(length / (res))
 
@@ -1282,10 +1260,13 @@ class Canvas(QLabel):
         self.poslist = poslist
 
     def get_positionspoly(self):
-        """ point generator for polygonal lines. Currently defaults to not closing shape"""
+        """
+        Point generator for polygonal lines. Currently defaults to not
+        closing shape.
+        """
 
         poslist = []
-        if self.closeit == True:
+        if self.closeit is True:
             index = -1
         else:
             index = 0
@@ -1300,7 +1281,7 @@ class Canvas(QLabel):
         xpos = [xs[bar]]
         ypos = [ys[bar]]
 
-        if self.closeit == True:
+        if self.closeit is True:
             p = QPainter(self.pixmap())
 
             p.setPen(
@@ -1324,7 +1305,7 @@ class Canvas(QLabel):
             yposi = ys[i]
             yposi2 = ys[i + 1]
 
-            res = (self.nx ** 2 + self.ny ** 2) ** 0.5
+            res = (self.nx**2 + self.ny**2) ** 0.5
             length = ((xposi2 - xposi) ** 2 + (yposi2 - yposi) ** 2) ** 0.5
             linval = math.floor(length / (res))
 
@@ -1339,7 +1320,7 @@ class Canvas(QLabel):
                 ypos = np.append(ypos, yval)
         nz = self.nz
 
-        linvalz = abs(math.floor((self.z2 - self.z1) / (nz)))
+        linvalz = abs(math.floor((self.z2 - self.z1) / nz))
         zvals = np.linspace(self.z1, self.z2, linvalz + 1)
 
         for z in range(0, len(zvals)):
@@ -1349,8 +1330,11 @@ class Canvas(QLabel):
         self.poslist = poslist
 
     def get_positionscircle(self, arg):
-        """ point generator for circular/cylindrical shapes.
-        Circles are defined by point at centrre and random point on the circular edge."""
+        """
+        Point generator for circular/cylindrical shapes.  Circles are
+        defined by point at center and random point on the circular
+        edge.
+        """
         strc = ""
         poslist = []
         bar = self.bar
@@ -1377,16 +1361,7 @@ class Canvas(QLabel):
                 cx = xposi
                 cy = yposi
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
 
                 xmax = cx + r
                 xmin = cx - r
@@ -1394,14 +1369,14 @@ class Canvas(QLabel):
                 ymin = cy - r
                 lz = abs(zmax - zmin)
 
-                strx = strx + str(round(r / 5, 3)) + ","
-                stry = stry + str(round(r / 5, 3)) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{round(r / 5, 3)},"
+                stry += f"{round(r / 5, 3)},"
+                strz += f"{lz / 5},"
 
                 linvalz = abs(math.floor(lz / nz))
 
-                linvalx = abs(math.floor((xmax - xmin) / (nx)))
-                linvaly = abs(math.floor((ymax - ymin) / (ny)))
+                linvalx = abs(math.floor((xmax - xmin) / nx))
+                linvaly = abs(math.floor((ymax - ymin) / ny))
 
                 zvals = np.linspace(self.z1, self.z2, linvalz + 1)
                 xpos = np.linspace(xmin, xmax, linvalx + 1)
@@ -1451,24 +1426,15 @@ class Canvas(QLabel):
                 cx = xposi
                 cy = yposi
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
                 r = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
                 lz = abs(zmax - zmin)
 
-                strx = strx + str(round(r / 5, 3)) + ","
-                stry = stry + str(round(r / 5, 3)) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{round(r / 5, 3)},"
+                stry += f"{round(r / 5, 3)},"
+                strz += f"{lz / 5},"
 
-                linval = math.floor(r / (dr))
+                linval = math.floor(r / dr)
 
                 thetavals = np.linspace(0, 1, math.floor(360 / dtheta) + 1)
                 parvals = np.linspace(0, 1, linval + 1)
@@ -1517,22 +1483,13 @@ class Canvas(QLabel):
                 cx = xposi
                 cy = yposi
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
                 rc = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
                 lz = abs(zmax - zmin)
 
-                strx = strx + str(round(rc / 5, 3)) + ","
-                stry = stry + str(round(rc / 5, 3)) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{round(rc / 5, 3)},"
+                stry += f"{round(rc / 5, 3)},"
+                strz += f"{lz / 5},"
                 if self.centers == "":
                     cx = xposi
                     cy = yposi
@@ -1558,7 +1515,7 @@ class Canvas(QLabel):
                     + (zmax - zmin) ** 2
                 )
 
-                linval = math.floor(r / (dr))
+                linval = math.floor(r / dr)
 
                 thetavals = np.linspace(0, 1, math.floor(360 / dtheta) + 1)
                 phivals = np.linspace(0, 1, math.floor(180 / dphi) + 1)
@@ -1566,7 +1523,8 @@ class Canvas(QLabel):
                 positions = [[cx, cy, cz]]
                 # first start point already initialized in array.
                 for t in parvals[1:]:
-                    # Other start points are incorporated as the end points of previous segment.
+                    # Other start points are incorporated as the end points of
+                    # previous segment.
                     for z in thetavals[1:]:
                         for p in phivals[1:]:
                             xval = cx + t * r * np.cos(z * 2 * np.pi) * np.sin(
@@ -1577,7 +1535,7 @@ class Canvas(QLabel):
                             )
                             zval = cz + t * r * np.cos(p * np.pi)
                         if (
-                            (xval - cx) ** 2 + (yval - cy) ** 2 > rc ** 2
+                            (xval - cx) ** 2 + (yval - cy) ** 2 > rc**2
                             or zval > zmax
                             or zval < zmin
                         ):
@@ -1624,25 +1582,16 @@ class Canvas(QLabel):
                 cx = xposi
                 cy = yposi
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
 
-                strz = strz + str(lz / 5) + ","
-                linvalz = abs(math.floor((zmax - zmin) / (dz)))
+                strz += f"{lz / 5},"
+                linvalz = abs(math.floor((zmax - zmin) / dz))
 
                 zvals = np.linspace(zmin, zmax, linvalz + 1)
                 b = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
-                a = b / np.sqrt(1 - e ** 2)
-                strx = strx + str(round(a / 5, 3)) + ","
-                stry = stry + str(round(a / 5, 3)) + ","
+                a = b / np.sqrt(1 - e**2)
+                strx += f"{round(a / 5, 3)},"
+                stry += f"{round(a / 5, 3)},"
 
                 cx = xposi
                 cy = yposi
@@ -1658,7 +1607,7 @@ class Canvas(QLabel):
                     for z in thetavals[1:]:
                         xval = cx + t * a * np.cos(z * 2 * np.pi)
                         yval = cy + t * b * np.sin(z * 2 * np.pi)
-                        if (xval - cx) ** 2 + (yval - cy) ** 2 <= b ** 2:
+                        if (xval - cx) ** 2 + (yval - cy) ** 2 <= b**2:
                             xpos = np.append(xpos, xval)
                             ypos = np.append(ypos, yval)
             for z in range(0, len(zvals)):
@@ -1680,8 +1629,10 @@ class Canvas(QLabel):
             arg.ec.setText(str(len(zvals)))
 
     def get_positionsellipse(self, arg):
-        """ point generator for elliptical shapes. 
-        Ellipse defined by circumscribing rectangle"""
+        """
+        Point generator for elliptical shapes.  Ellipse defined by
+        circumscribing rectangle.
+        """
 
         poslist = []
         bar = self.bar
@@ -1689,7 +1640,7 @@ class Canvas(QLabel):
         ys = self.ypos
 
         nz = self.nz
-        linvalz = abs(math.floor((self.z2 - self.z1) / (nz)))
+        linvalz = abs(math.floor((self.z2 - self.z1) / nz))
         zvals = np.linspace(self.z1, self.z2, linvalz + 1)
         strx = ""
         stry = ""
@@ -1716,25 +1667,16 @@ class Canvas(QLabel):
 
                 lz = abs(zmax - zmin)
 
-                strx = strx + str(round(a / 5, 3)) + ","
-                stry = stry + str(round(b / 5, 3)) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{round(a / 5, 3)},"
+                stry += f"{round(b / 5, 3)},"
+                strz += f"{lz / 5},"
                 cx = (xposi + xposi2) / 2
                 cy = (yposi + yposi2) / 2
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
                 xpos = [cx]
                 ypos = [cy]
-                linval = math.floor((min([a, b])) / (dr))
+                linval = math.floor((min([a, b])) / dr)
 
                 thetavals = np.linspace(0, 1, math.floor(360 / dtheta) + 1)
                 parvals = np.linspace(0, 1, linval + 1)
@@ -1778,19 +1720,10 @@ class Canvas(QLabel):
                 cx = (xmax + xmin) / 2
                 cy = (ymax + ymin) / 2
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
-                strx = strx + str(round(a / 5, 3)) + ","
-                stry = stry + str(round(b / 5, 3)) + ","
-                strz = strz + str(lz / 5) + ","
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
+                strx += f"{round(a / 5, 3)},"
+                stry += f"{round(b / 5, 3)},"
+                strz += f"{lz / 5},"
 
                 linvalz = abs(math.floor((self.z2 - self.z1) / (nz)))
 
@@ -1841,22 +1774,13 @@ class Canvas(QLabel):
                 r = np.sqrt((xposi2 - xposi) ** 2 + (yposi - yposi2) ** 2) * 0.5
                 lz = abs(zmax - zmin)
 
-                strx = strx + str(round(a / 5, 3)) + ","
-                stry = stry + str(round(b / 5, 3)) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{round(a / 5, 3)},"
+                stry += f"{round(b / 5, 3)},"
+                strz += f"{lz / 5},"
                 cx = (xposi + xposi2) / 2
                 cy = (yposi + yposi2) / 2
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
                 xpos = [cx]
                 ypos = [cy]
                 linval = math.floor(r / dr)
@@ -1914,24 +1838,15 @@ class Canvas(QLabel):
                 )
                 lz = abs(zmax - zmin)
 
-                strx = strx + str(round(a / 5, 3)) + ","
-                stry = stry + str(round(b / 5, 3)) + ","
-                strz = strz + str(lz / 5) + ","
+                strx += f"{round(a / 5, 3)},"
+                stry += f"{round(b / 5, 3)},"
+                strz += f"{lz / 5},"
                 cx = (xposi + xposi2) / 2
                 cy = (yposi + yposi2) / 2
                 cz = (zmax + zmin) / 2
-                strc = (
-                    strc
-                    + "("
-                    + str(cx / 5)
-                    + ","
-                    + str(cy / 5)
-                    + ","
-                    + str(cz / 5)
-                    + "), "
-                )
+                strc += f"({cx / 5}, {cy / 5}, {cz / 5}), "
 
-                linval = math.floor(r / (dr))
+                linval = math.floor(r / dr)
 
                 thetavals = np.linspace(0, 1, math.floor(360 / dtheta) + 1)
                 phivals = np.linspace(0, 1, math.floor(180 / dphi) + 1)
@@ -1939,7 +1854,8 @@ class Canvas(QLabel):
                 positions = [[cx, cy, cz]]
                 # first start point already initialized in array.
                 for t in parvals[1:]:
-                    # Other start points are incorporated as the end points of previous segment.
+                    # Other start points are incorporated as the end points of
+                    # previous segment.
                     for z in thetavals[1:]:
                         for p in phivals[1:]:
                             xval = cx + t * r * np.cos(z * 2 * np.pi) * np.sin(
@@ -1973,9 +1889,10 @@ class Canvas(QLabel):
             arg.ec.setText(str(len(zvals)))
 
     def checklist(self, arg):
-        """Final verification routine to check no point is in a no-go region or an unreachable 
-        region.
-        Must be run to save the config/text coordinate files. 
+        """
+        Final verification routine to check no point is in a no-go
+        region or an unreachable region.  Must be run to save the
+        config/text coordinate files.
         """
         self.set_status(arg)
         xs = [x[0] for x in self.poslist]
@@ -2001,6 +1918,7 @@ class Canvas(QLabel):
                 msg.setWindowTitle("Error")
                 msg.exec_()
                 return
+
             if theta < np.pi:
                 if (
                     ys[i]
@@ -2083,7 +2001,7 @@ class Canvas(QLabel):
                     msg.setWindowTitle("Error")
                     msg.exec_()
                     return
-            #########################NO-GO ZONE CHECKS#################
+            ######################## NO-GO ZONE CHECKS ################
             if theta >= np.pi:
                 # posgroup is [(xorg,y,z),(xe),(xvo),(xve)]
                 for posgroup in barlist:
@@ -2200,8 +2118,9 @@ class Canvas(QLabel):
         arg.saveButton.setEnabled(True)
 
     def coordEnter(self, arg, n=0):
-        """massive function, should probably be restructured, rewritten? 
-        Same functionality as print_position() + get_*mode*_positions(), 
+        """
+        Massive function, should probably be restructured, rewritten?
+        Same functionality as print_position() + get_*mode*_positions(),
         Used when precise coordinates are fed by the user to the module.
         """
         res = min(self.nx, self.ny, self.nz)
@@ -2227,7 +2146,12 @@ class Canvas(QLabel):
         except ValueError:
             pass
             # QMessageBox.about(
-            #     self, "Error", "Coordinates and number of points should be valid numbers. Coordinates should be specified as (x,y,z), (x,y,z)")
+            #     self,
+            #     "Error",
+            #     "Coordinates and number of points should be valid numbers. "
+            #     "Coordinates should be specified as (x,y,z), (x,y,z)",
+            # )
+
         if bar[0] == "(":
             try:
                 bar = np.array(
@@ -2247,41 +2171,41 @@ class Canvas(QLabel):
                     if theta >= np.pi:
                         C = (yorg - r * np.sin(theta)) / (xorg - r * np.cos(theta))
 
-                        a = 1 + C ** 2
-                        b = -2 * xorg * (C ** 2) + 2 * C * yorg
-                        c = (C ** 2) * xorg + yorg ** 2 - 2 * C * yorg * xorg - r ** 2
+                        a = 1 + C**2
+                        b = -2 * xorg * (C**2) + 2 * C * yorg
+                        c = (C**2) * xorg + yorg**2 - 2 * C * yorg * xorg - r**2
 
-                        xvo = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                        xvo = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                         yvo = C * (xvo - xorg) + yorg
 
                         C = (ye - r * np.sin(theta)) / (xe - r * np.cos(theta))
 
-                        a = 1 + C ** 2
-                        b = -2 * xe * (C ** 2) + 2 * C * ye
-                        c = (C ** 2) * xe + ye ** 2 - 2 * C * ye * xe - r ** 2
+                        a = 1 + C**2
+                        b = -2 * xe * (C**2) + 2 * C * ye
+                        c = (C**2) * xe + ye**2 - 2 * C * ye * xe - r**2
 
-                        xve = (-b + np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                        xve = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                         yve = C * (xve - xe) + ye
                     if theta < np.pi:
                         C = (yorg - r * np.sin(theta)) / (xorg - r * np.cos(theta))
 
-                        a = 1 + C ** 2
-                        b = -2 * xorg * (C ** 2) + 2 * C * yorg
-                        c = (C ** 2) * xorg + yorg ** 2 - 2 * C * yorg * xorg - r ** 2
+                        a = 1 + C**2
+                        b = -2 * xorg * (C**2) + 2 * C * yorg
+                        c = (C**2) * xorg + yorg**2 - 2 * C * yorg * xorg - r**2
 
-                        xvo = (-b - np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                        xvo = (-b - np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                         yvo = C * (xvo - xorg) + yorg
 
                         C = (ye - r * np.sin(theta)) / (xe - r * np.cos(theta))
 
-                        a = 1 + C ** 2
-                        b = -2 * xe * (C ** 2) + 2 * C * ye
-                        c = (C ** 2) * xe + ye ** 2 - 2 * C * ye * xe - r ** 2
+                        a = 1 + C**2
+                        b = -2 * xe * (C**2) + 2 * C * ye
+                        c = (C**2) * xe + ye**2 - 2 * C * ye * xe - r**2
 
-                        xve = (-b - np.sqrt(b ** 2 - 4 * a * c)) / (2 * a)
+                        xve = (-b - np.sqrt(b**2 - 4 * a * c)) / (2 * a)
 
                         yve = C * (xve - xe) + ye
                     p = QPainter(self.pixmap())
@@ -2367,10 +2291,7 @@ class Canvas(QLabel):
                 )
                 p.setBrush(QBrush(QColor(Qt.black)))
 
-                if self.closeit == True:
-                    index = -1
-                elif self.closeit == False:
-                    index = 0
+                index = -1 if self.closeit else 0
                 for i in range(index, len(xs) - 1):
                     p.drawLine(
                         QPointF(xs[i] + 300, -ys[i] + 300),
@@ -2392,7 +2313,7 @@ class Canvas(QLabel):
                         + (yposi2 - yposi) ** 2
                         + (zposi2 - zposi) ** 2
                     ) ** 0.5
-                    linval = math.floor(length / (res))
+                    linval = math.floor(length / res)
 
                     parvals = np.linspace(0, 1, linval + 1)
 
@@ -2453,7 +2374,7 @@ class Canvas(QLabel):
                         + (yposi2 - yposi) ** 2
                         + (zposi2 - zposi) ** 2
                     ) ** 0.5
-                    linval = math.floor(length / (res))
+                    linval = math.floor(length / res)
 
                     parvals = np.linspace(0, 1, linval + 1)
 
@@ -2566,15 +2487,18 @@ class Canvas(QLabel):
                         #     cz = (zmax+zmin)/2
                         # else:
                         #     str1 = self.centers
-                        #     str1 = np.array(str1.replace('(', '').replace(')', '').split(
-                        #         ','), dtype=float).reshape(-1, 3)
+                        #     str1 = np.array(
+                        #         str1.replace('(', '').replace(')', '').split(','),
+                        #         dtype=float,
+                        #     ).reshape(-1, 3)
                         #     xs1 = [5*x[0] for x in str1]
                         #     ys1 = [5*x[1] for x in str1]
                         #     zs1 = [5*x[2] for x in str1]
                         #     cx = (xs1[i] + xs1[i+1])/2
                         #     cy = (ys1[i] + ys1[i+1])/2
                         #     cz = (zs1[i] + zs1[i+1])/2
-                        # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET APPROPRIATE ONES WITHIN THE REGION.
+                        # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET
+                        # APPROPRIATE ONES WITHIN THE REGION.
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
 
                         r = 0.5 * (np.sqrt((xmax - xmin) ** 2 + (ymax - ymin) ** 2))
@@ -2648,8 +2572,10 @@ class Canvas(QLabel):
                         #     cz = (zmax+zmin)/2
                         # else:
                         #     str1 = self.centers
-                        #     str1 = np.array(str1.replace('(', '').replace(')', '').split(
-                        #         ','), dtype=float).reshape(-1, 3)
+                        #     str1 = np.array(
+                        #         str1.replace('(', '').replace(')', '').split(','),
+                        #         dtype=float,
+                        #     ).reshape(-1, 3)
                         #     xs1 = [5*x[0] for x in str1]
                         #     ys1 = [5*x[1] for x in str1]
                         #     zs1 = [5*x[2] for x in str1]
@@ -2659,12 +2585,13 @@ class Canvas(QLabel):
                         cx = (xmax + xmin) / 2
                         cy = (ymax + ymin) / 2
                         cz = (zmax + zmin) / 2
-                        # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET APPROPRIATE ONES WITHIN THE REGION.
+                        # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET
+                        # APPROPRIATE ONES WITHIN THE REGION.
                         linvalz = abs(math.floor((zmax - zmin) / (dz)))
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
 
                         a = max([(xmax - xmin), (ymax - ymin)])
-                        b = a * np.sqrt(1 - e ** 2)
+                        b = a * np.sqrt(1 - e**2)
 
                         xpos = np.append(xpos, cx)
                         ypos = np.append(ypos, cy)
@@ -2734,8 +2661,10 @@ class Canvas(QLabel):
                         #     cz = (zmax+zmin)/2
                         # else:
                         #     str1 = self.centers
-                        #     str1 = np.array(str1.replace('(', '').replace(')', '').split(
-                        #         ','), dtype=float).reshape(-1, 3)
+                        #     str1 = np.array(
+                        #         str1.replace('(', '').replace(')', '').split(','),
+                        #         dtype=float,
+                        #     ).reshape(-1, 3)
                         #     xs1 = [5*x[0] for x in str1]
                         #     ys1 = [5*x[1] for x in str1]
                         #     zs1 = [5*x[2] for x in str1]
@@ -2886,8 +2815,10 @@ class Canvas(QLabel):
                         #     cz = (zmax+zmin)/2
                         # else:
                         #     str1 = self.centers
-                        #     str1 = np.array(str1.replace('(', '').replace(')', '').split(
-                        #         ','), dtype=float).reshape(-1, 3)
+                        #     str1 = np.array(
+                        #         str1.replace('(', '').replace(')', '').split( ','),
+                        #         dtype=float,
+                        #     ).reshape(-1, 3)
                         #     xs = [5*x[0] for x in str1]
                         #     ys = [5*x[1] for x in str1]
                         #     zs = [5*x[2] for x in str1]
@@ -2918,7 +2849,7 @@ class Canvas(QLabel):
                                 for y in yvals:
                                     if (
                                         (xvals[x] - cx) ** 2 + (yvals[y] - cy) ** 2
-                                        <= r ** 2
+                                        <= r**2
                                         and zvals[z] <= zmax
                                         and zvals[z] >= zmin
                                     ):
@@ -2968,8 +2899,10 @@ class Canvas(QLabel):
                         #     cz = (zmax+zmin)/2
                         # else:
                         #     str1 = self.centers
-                        #     str1 = np.array(str1.replace('(', '').replace(')', '').split(
-                        #         ','), dtype=float).reshape(-1, 3)
+                        #     str1 = np.array(
+                        #         str1.replace('(', '').replace(')', '').split(','),
+                        #         dtype=float,
+                        #     ).reshape(-1, 3)
                         #     xs = [5*x[0] for x in str1]
                         #     ys = [5*x[1] for x in str1]
                         #     zs = [5*x[2] for x in str1]
@@ -2990,7 +2923,7 @@ class Canvas(QLabel):
                             + (zmax - zmin) ** 2
                         )
 
-                        linval = math.floor(r / (dr))
+                        linval = math.floor(r / dr)
 
                         thetavals = np.linspace(0, 1, math.floor(360 / dtheta) + 1)
                         phivals = np.linspace(0, 1, math.floor(180 / dphi) + 1)
@@ -2998,7 +2931,8 @@ class Canvas(QLabel):
                         positions = [[cx, cy, cz]]
                         # first start point already initialized in array.
                         for t in parvals[1:]:
-                            # Other start points are incorporated as the end points of previous segment.
+                            # Other start points are incorporated as the end points
+                            # of previous segment.
                             for z in thetavals[1:]:
                                 for p in phivals[1:]:
                                     xval = cx + t * r * np.cos(z * 2 * np.pi) * np.sin(
@@ -3009,7 +2943,7 @@ class Canvas(QLabel):
                                     )
                                     zval = cz + t * r * np.cos(p * np.pi)
                                 if (
-                                    (xval - cx) ** 2 + (yval - cy) ** 2 > rc ** 2
+                                    (xval - cx) ** 2 + (yval - cy) ** 2 > rc**2
                                     or zval > zmax
                                     or zval < zmin
                                 ):
@@ -3052,13 +2986,13 @@ class Canvas(QLabel):
 
                         zmax = zs[i + 1]
                         zmin = zs[i]
-                        linvalz = abs(math.floor((zmax - zmin) / (dz)))
+                        linvalz = abs(math.floor((zmax - zmin) / dz))
 
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
                         b = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
-                        a = b / np.sqrt(1 - e ** 2)
+                        a = b / np.sqrt(1 - e**2)
                         # zposi = zs[i]
-                        # zposi2 =zs[i+1]
+                        # zposi2 = zs[i+1]
 
                         cx = xposi
                         cy = yposi
@@ -3067,7 +3001,7 @@ class Canvas(QLabel):
                         ypos = np.append(ypos, cy)
 
                         p.drawEllipse(QPointF(xs[i] + 300, -ys[i] + 300), r, r)
-                        linval = math.floor((min([a, b])) / (dr))
+                        linval = math.floor((min([a, b])) / dr)
 
                         thetavals = np.linspace(0, 1, math.floor(360 / dtheta) + 1)
                         parvals = np.linspace(0, 1, linval + 1)
@@ -3076,7 +3010,7 @@ class Canvas(QLabel):
                             for z in thetavals[1:]:
                                 xval = cx + t * a * np.cos(z * 2 * np.pi)
                                 yval = cy + t * b * np.sin(z * 2 * np.pi)
-                                if (xval - cx) ** 2 + (yval - cy) ** 2 <= b ** 2:
+                                if (xval - cx) ** 2 + (yval - cy) ** 2 <= b**2:
                                     xpos = np.append(xpos, xval)
                                     ypos = np.append(ypos, yval)
                         for z in zvals:
@@ -3211,8 +3145,10 @@ class Canvas(QLabel):
                         #         cy = (ymax + ymin)/2
                         # else:
                         #         str1 = self.centers
-                        #         str1 = np.array(str1.replace('(', '').replace(')', '').split(
-                        #             ','), dtype=float).reshape(-1, 3)
+                        #         str1 = np.array(
+                        #             str1.replace('(', '').replace(')', '').split(','),
+                        #             dtype=float,
+                        #         ).reshape(-1, 3)
                         #         xs = [5*x[0] for x in str1]
                         #         ys = [5*x[1] for x in str1]
                         #         zs = [5*x[2] for x in str1]
@@ -3266,7 +3202,7 @@ class Canvas(QLabel):
                         ymin = self.ypos[i]
                         zmax = zs[i + 1]
                         zmin = zs[i]
-                        linvalz = abs(math.floor((zmax - zmin) / (nz)))
+                        linvalz = abs(math.floor((zmax - zmin) / nz))
 
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
                         p.drawEllipse(
@@ -3292,8 +3228,10 @@ class Canvas(QLabel):
                         #     cy = (yposi + yposi2)/2
                         # else:
                         #     str1 = self.centers
-                        #     str1 = np.array(str1.replace('(', '').replace(')', '').split(
-                        #         ','), dtype=float).reshape(-1, 3)
+                        #     str1 = np.array(
+                        #         str1.replace('(', '').replace(')', '').split(','),
+                        #         dtype=float,
+                        #     ).reshape(-1, 3)
                         #     xs = [5*x[0] for x in str1]
                         #     ys = [5*x[1] for x in str1]
                         #     zs = [5*x[2] for x in str1]
@@ -3325,7 +3263,10 @@ class Canvas(QLabel):
                     )
 
     def enter(self, arg, mode):
-        """ Handles dynamic updating of shapes, points as per user input in autogeneration mode"""
+        """
+        Handles dynamic updating of shapes, points as per user input in
+        autogeneration mode.
+        """
 
         if (
             self.centers == ""
@@ -3353,6 +3294,7 @@ class Canvas(QLabel):
                     eb = [int(s) for s in eb.split(",")]
             except ValueError:
                 pass
+
             str1 = ""
             strx = ""
             stry = ""
@@ -3370,25 +3312,14 @@ class Canvas(QLabel):
                         r = ringnum * dr
                         rz = (ec[i] - 1) * dz / 2
                         str0 = (
-                            "("
-                            + str(xs1[i])
-                            + ","
-                            + str(ys1[i])
-                            + ","
-                            + str(zs1[i] + rz)
-                            + "), ("
-                            + str(xs1[i] + r)
-                            + ","
-                            + str(ys1[i])
-                            + ","
-                            + str(zs1[i] - rz)
-                            + ")"
+                            f"({xs1[i]}, {ys1[i]}, {zs1[i] + rz}), "
+                            f"({xs1[i] + r}, {ys1[i]}, {zs1[i] - rz})"
                         )
-                        str1 = str1 + str0 + ", "
-                        strz = strz + str(2 * rz) + ","
-                        strx = strx + str(r) + ","
-                    strx = strx.rstrip(strz[-1]) + "cm"
-                    strz = strz.rstrip(strz[-1]) + "cm"
+                        str1 += f"{str0}, "
+                        strz += f"{2 * rz},"
+                        strx += f"{r},"
+                    strx = f"{strx.rstrip(strz[-1])} cm"
+                    strz = f"{strz.rstrip(strz[-1])} cm"
                     str1 = str1.rstrip(str1[-1])
                     str1 = str1.rstrip(str1[-1])
                     arg.la.setText(strx)
@@ -3404,7 +3335,7 @@ class Canvas(QLabel):
                     )
                 except ValueError:
                     pass
-            if mode == "rect":
+            elif mode == "rect":
                 try:
                     dx = self.nx / 5
                     dy = self.ny / 5
@@ -3415,29 +3346,18 @@ class Canvas(QLabel):
                         ry = (eb[i] - 1) * dy / 2
                         rz = (ec[i] - 1) * dz / 2
                         str0 = (
-                            "("
-                            + str(rx + xs1[i])
-                            + ","
-                            + str(ry + ys1[i])
-                            + ","
-                            + str(rz + zs1[i])
-                            + "), ("
-                            + str(xs1[i] - rx)
-                            + ","
-                            + str(ys1[i] - ry)
-                            + ","
-                            + str(zs1[i] - rz)
-                            + ")"
+                            f"({rx + xs1[i]}, {ry + ys1[i]}, {rz + zs1[i]}), "
+                            f"({xs1[i] - rx}, {ys1[i] - ry}, {zs1[i] - rz})"
                         )
-                        str1 = str1 + str0 + ", "
-                        strx = strx + str(2 * rx) + ","
-                        stry = stry + str(2 * ry) + ","
-                        strz = strz + str(2 * rz) + ","
+                        str1 += f"{str0}, "
+                        strx += f"{2 * rx},"
+                        stry += f"{2 * ry},"
+                        strz += f"{2 * rz},"
                     str1 = str1.rstrip(str1[-1])
                     str1 = str1.rstrip(str1[-1])
-                    strx = strx.rstrip(strx[-1]) + "cm"
-                    stry = stry.rstrip(stry[-1]) + "cm"
-                    strz = strz.rstrip(strz[-1]) + "cm"
+                    strx = f"{strx.rstrip(strx[-1])} cm"
+                    stry = f"{stry.rstrip(stry[-1])} cm"
+                    strz = f"{strz.rstrip(strz[-1])} cm"
                     arg.la.setText(strx)
                     arg.lb.setText(stry)
                     arg.lc.setText(strz)
@@ -3453,9 +3373,10 @@ class Canvas(QLabel):
                     QMessageBox.about(
                         self,
                         "Error",
-                        "Coordinates and number of points should be valid numbers. Coordinates should be specified as (x,y,z), (x,y,z)",
+                        "Coordinates and number of points should be valid numbers. "
+                        "Coordinates should be specified as (x,y,z), (x,y,z)",
                     )
-            if mode == "ellipse":
+            elif mode == "ellipse":
                 try:
                     dr = self.nx / 5
                     dtheta = self.ny / 5
@@ -3464,34 +3385,23 @@ class Canvas(QLabel):
 
                     for i in range(0, len(xs1)):
                         perRing = 360 / dtheta
-                        a = (ea[i] / perRing) * (dr / (1 - e ** 2) ** 0.5)
+                        a = (ea[i] / perRing) * (dr / (1 - e**2) ** 0.5)
                         b = (ea[i] / perRing) * dr
                         rz = (ec[i] - 1) * dz / 2
 
                         str0 = (
-                            "("
-                            + str(a + xs1[i])
-                            + ","
-                            + str(b + ys1[i])
-                            + ","
-                            + str(zs1[i] + rz)
-                            + "), ("
-                            + str(xs1[i] - a)
-                            + ","
-                            + str(ys1[i] - b)
-                            + ","
-                            + str(zs1[i] - rz)
-                            + ")"
+                            f"({a + xs1[i]}, {b + ys1[i]}, {zs1[i] + rz}), "
+                            f"({xs1[i] - a}, {ys1[i] - b}, {zs1[i] - rz})"
                         )
-                        str1 = str1 + str0 + ", "
-                        strx = str(round(2 * a, 3)) + ","
-                        stry = str(round(2 * b, 3)) + ","
-                        strz = str(round(2 * rz, 3)) + ","
+                        str1 += f"{str0}, "
+                        strx = f"{round(2 * a, 3)},"
+                        stry = f"{round(2 * b, 3)},"
+                        strz = f"{round(2 * rz, 3)},"
                     str1 = str1.rstrip(str1[-1])
                     str1 = str1.rstrip(str1[-1])
-                    strx = strx.rstrip(strx[-1]) + "cm"
-                    stry = stry.rstrip(stry[-1]) + "cm"
-                    strz = strz.rstrip(strz[-1]) + "cm"
+                    strx = f"{strx.rstrip(strx[-1])} cm"
+                    stry = f"{stry.rstrip(stry[-1])} cm"
+                    strz = f"{strz.rstrip(strz[-1])} cm"
                     arg.la.setText(strx)
                     arg.lb.setText(stry)
                     arg.lc.setText(strz)
@@ -3507,13 +3417,14 @@ class Canvas(QLabel):
                     QMessageBox.about(
                         self,
                         "Error",
-                        "Coordinates and number of points should be valid numbers. Coordinates should be specified as (x,y,z), (x,y,z)",
+                        "Coordinates and number of points should be valid numbers. "
+                        "Coordinates should be specified as (x,y,z), (x,y,z)",
                     )
-            if mode == "sphere":
+            elif mode == "sphere":
                 pass
 
     def set_name(self, name):
-        #outdated
+        # outdated
         self.name = name
         self.id = self.name.replace(" ", "_").lower()
 
@@ -3551,15 +3462,13 @@ class Canvas(QLabel):
 
         # tomli_string = tomli_w.dumps(Dict1)  # Output to a string
         save_path = "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Groups"
-        output_file_name = str(self.name)
-        completeName = os.path.join(save_path, output_file_name + ".toml")
+        output_file_name = f"{self.name}"
+        completeName = os.path.join(save_path, f"{output_file_name}.toml")
 
-        f = open(completeName, "rb")
-        with f:
+        with open(completeName, "rb") as f:
             self.toml_dict = tomli.load(f)
+
         self.toml_dict["Motion List"] = Dict1
 
         with open(completeName, "wb") as tomli_file:
             tomli_w.dump(self.toml_dict, tomli_file)
-
-
