@@ -43,7 +43,7 @@ class MotorControl:
                 with open(self.msipa_cache_fn, "r") as f:
                     self.server_ip_addr = f.readline()
             except FileNotFoundError:
-                self.server_ip_adddr = None
+                self.server_ip_addr = None
         self.connect()
 
         # - - - - - - - - - - - - - - - - - - - - - - -
