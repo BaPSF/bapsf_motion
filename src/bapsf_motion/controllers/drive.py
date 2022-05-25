@@ -7,7 +7,6 @@ Modified by: Rishabh Singh
 Nov 2021
 """
 
-import math
 import numpy as np
 import time
 
@@ -16,12 +15,10 @@ from scipy.optimize import fsolve
 from .motor import MotorControl
 
 
-#############################################################################################
-#############################################################################################
-
-
 class DriveControl:
-    def __init__(self, x_ip_addr=None, y_ip_addr=None, z_ip_addr=None, steps_per_cm = 39370.0787402 ):
+    def __init__(
+        self, x_ip_addr=None, y_ip_addr=None, z_ip_addr=None, steps_per_cm=39370.0787402
+    ):
 
         self.x_mc = None
         self.y_mc = None
@@ -38,20 +35,14 @@ class DriveControl:
             self.z_mc = MotorControl(verbose=True, server_ip_addr=y_ip_addr)
 
             self.z_mc.send_text("MT")
-        self.steps_per_cm = steps_per_cm 
+        self.steps_per_cm = steps_per_cm
 
         self.motor_moving = False
 
-
-
-
-
-    # --------------------------------------------------------------------------------------------------
-    def move_to_position(self, x, y = None, z = None):
+    def move_to_position(self, x, y=None, z=None):
         """Coordinate transformation for 3 axes"""
         # Directly move the motor to their absolute position
 
-        
         x_step = self.cm_to_steps(x)
         if y is not None:
             y_step = self.cm_to_steps(y)
@@ -67,8 +58,6 @@ class DriveControl:
 
         self.motor_moving = True
         # self.wait_for_motion_complete()
-
- 
 
     def stop_now(self):
         # Stop motor movement now
@@ -95,8 +84,6 @@ class DriveControl:
         if self.z_mc is not None:
             self.z_mc.reset_motor()
 
-    # --------------------------------------------------------------------------------------------------
-
     def ask_velocity(self):
         self.speedx = None
         self.speedy = None
@@ -118,8 +105,6 @@ class DriveControl:
         if self.z_mc is not None:
             self.z_mc.set_speed(vz)
 
-    # -------------------------------------------------------------------------------------------
-
     def cm_to_steps(self, d: float) -> int:
         # convert distance d in cm to motor position
         return int(d * self.steps_per_cm)
@@ -130,10 +115,8 @@ class DriveControl:
         # convert angle d in degree to motor position
         return int(d * self.steps_per_degree)
 
-    # -------------------------------------------------------------------------------------------
-
     def current_probe_position2D(self):
-        """ Might need a encoder_unit_per_step, if encoder feedback != input step """
+        """Might need a encoder_unit_per_step, if encoder feedback != input step"""
         # Obtain encoder feedback and calculate probe position
         timeout = time.time() + 300
         x_stat = self.x_mc.check_status()
@@ -152,7 +135,7 @@ class DriveControl:
             self.motor_moving = False
         elif time.time() > timeout:
             raise TimeoutError("Motor has been moving for over 5min???")
-            self.motor_moving = False
+
         mx_pos = self.x_mc.current_position() / self.steps_per_cm * 5
         my_pos = (
             self.y_mc.current_position() / self.steps_per_cm * 5
@@ -193,43 +176,37 @@ class DriveControl:
 
     def current_probe_position1D(self):
         # Obtain encoder feedback and calculate probe position
-        """ Might need a encoder_unit_per_step, if encoder feedback != input step """
+        """Might need a encoder_unit_per_step, if encoder feedback != input step"""
         mx_pos = self.x_mc.current_position() / self.steps_per_cm * 5
         # my_pos = self.y_mc.current_position() / self.steps_per_cm * 5  # Seems that 1 encoder unit = 5 motor step unit
 
         return mx_pos
 
-
     def current_probe_position3D(self):
-        
         pass
-
 
     def current_probe_positionZTh(self):
         pass
-    
-        
+
     def get_alarm_code(self):
         if self.x_mc is not None:
             alarmx = self.x_mc.get_alarm_code()
         else:
             alarmx = None
-       
+
         if self.y_mc is not None:
             alarmy = self.y_mc.get_alarm_code()
         else:
             alarmy = None
-        
+
         if self.z_mc is not None:
             alarmz = self.z_mc.get_alarm_code()
         else:
             alarmz = None
-            
-        return alarmx, alarmy, alarmz
-    # -------------------------------------------------------------------------------------------
-    # def translate_Coord(self,x,y):
 
-    def set_jog_speed(self,vx = None,vy = None,vz = None):
+        return alarmx, alarmy, alarmz
+
+    def set_jog_speed(self, vx=None, vy=None, vz=None):
         if self.x_mc is not None:
             self.x_mc.set_jog_velocity(vx)
         if self.y_mc is not None:
@@ -237,7 +214,7 @@ class DriveControl:
         if self.z_mc is not None:
             self.z_mc.set_jog_velocity(vz)
 
-    def set_jog_acceleration(self,ax = None,ay = None,az = None):
+    def set_jog_acceleration(self, ax=None, ay=None, az=None):
         if self.x_mc is not None:
             self.x_mc.set_jog_acceleration(ax)
         if self.y_mc is not None:
@@ -251,7 +228,7 @@ class DriveControl:
         if self.y_mc is not None:
             self.y_mc.commence_jogging()
         if self.z_mc is not None:
-            self.z_mc.commence_jogging()       
+            self.z_mc.commence_jogging()
 
     def stop_jog(self):
         if self.x_mc is not None:
@@ -259,7 +236,7 @@ class DriveControl:
         if self.y_mc is not None:
             self.y_mc.stop_jogging()
         if self.z_mc is not None:
-            self.z_mc.stop_jogging()   
+            self.z_mc.stop_jogging()
 
     def disable(self):
         if self.x_mc is not None:
@@ -295,21 +272,29 @@ class DriveControl:
 
     def heartbeat(self):
         if self.x_mc is not None:
-            codex, posx, velx,is_movingx = self.x_mc.heartbeat()
+            codex, posx, velx, is_movingx = self.x_mc.heartbeat()
         else:
-            codex, posx, velx,is_movingx = None, None, None, False
+            codex, posx, velx, is_movingx = None, None, None, False
         if self.y_mc is not None:
-            codey, posy, vely,is_movingy = self.y_mc.heartbeat()
+            codey, posy, vely, is_movingy = self.y_mc.heartbeat()
         else:
-            codey, posy, vely,is_movingy = None, None, None, False
+            codey, posy, vely, is_movingy = None, None, None, False
         if self.z_mc is not None:
             codez, posz, velz, is_movingz = self.z_mc.heartbeat()
         else:
-            codez, posz, velz,is_movingz = None, None, None, False
-        
-        return codex, codey, codez, posx, posy, posz, velx, vely, velz, is_movingx, is_movingy, is_movingz
-########################################################################################################
-# standalone testing:
+            codez, posz, velz, is_movingz = None, None, None, False
 
-if __name__ == "__main__":
-    pass
+        return (
+            codex,
+            codey,
+            codez,
+            posx,
+            posy,
+            posz,
+            velx,
+            vely,
+            velz,
+            is_movingx,
+            is_movingy,
+            is_movingz,
+        )
