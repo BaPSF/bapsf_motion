@@ -85,7 +85,7 @@ class MotorControl:
 
     def __repr__(self):
         """return a printable version: not a useful function"""
-        return self.server_ip_addr + "; " + self.msipa_cache_fn + "; " + self.verbose
+        return f"{self.server_ip_addr}; {self.msipa_cache_fn}; {self.verbose}"
 
     def __str__(self):
         """return a string representation:"""
@@ -114,7 +114,11 @@ class MotorControl:
 
                 # if timeout is not None:
                 #     # not on windows: socket.settimeout(timeout)
-                #     s.setsockopt(socket.SOL_SOCKET, socket.SO_RCVTIMEO, struct.pack('LL', timeout, 0))
+                #     s.setsockopt(
+                #         socket.SOL_SOCKET,
+                #         socket.SO_RCVTIMEO,
+                #         struct.pack('LL', timeout, 0),
+                #     )
                 s.connect((self.server_ip_addr, self.MOTOR_SERVER_PORT))
                 s.settimeout(6)
                 self.s = s
@@ -168,15 +172,13 @@ class MotorControl:
         return_text = data.decode("ASCII")
         return return_text
 
-    def set_limits(self,cw,ccw):
-        self.send_text("LP" + str(cw))
-        self.send_text("LM" + str(ccw))
-        
-        
+    def set_limits(self, cw, ccw):
+        self.send_text(f"LP{cw}")
+        self.send_text(f"LM{ccw}")
+
     def motor_velocity(self):
 
         resp = self.send_text("IV")
-        # return rpm
         rpm = float(resp[5:])
         return rpm
 
@@ -196,7 +198,7 @@ class MotorControl:
     def set_position(self, step):
 
         try:
-            self.send_text("DI" + str(step))
+            self.send_text(f"DI{step}")
             self.send_text("FP")
             time.sleep(0.1)
 
@@ -220,8 +222,8 @@ class MotorControl:
         self.send_text("ST")
 
     def steps_per_rev(self, stepsperrev):
-        self.send_text("EG" + str(stepsperrev))
-        print("set steps/rev = " + str(stepsperrev) + "\n")
+        self.send_text(f"EG{stepsperrev}")
+        print(f"set steps/rev = {stepsperrev}\n")
 
     def set_zero(self):
         self.send_text("EP0")  # Set encoder position to zero
@@ -238,14 +240,14 @@ class MotorControl:
             print("Fail to set encoder to zero\n")
 
     def set_acceleration(self, acceleration):
-        self.send_text("AC" + str(acceleration))
+        self.send_text(f"AC{acceleration}")
 
     def set_decceleration(self, decceleration):
-        self.send_text("DE" + str(decceleration))
+        self.send_text(f"DE{decceleration}")
 
     def set_speed(self, speed):
         try:
-            self.send_text("VE" + str(speed))
+            self.send_text(f"VE{speed}")
         except ConnectionResetError as err:
             print(f"*** connection to server failed: '{err.strerror}'")
             return False
@@ -272,19 +274,19 @@ class MotorControl:
         #     # W = Wait Input (WI command executing)
         #     """)
         return self.send_text("RS")
-    
-    def set_jog_velocity(self,speed):
-        self.send_text("JS" + str(speed))
-    
+
+    def set_jog_velocity(self, speed):
+        self.send_text(f"JS{speed}")
+
     def commence_jogging(self):
         self.send_text("CJ")
-        
+
     def stop_jogging(self):
         self.send_text("SJ")
-        
-    def set_jog_acceleration(self,acceleration):
-        self.send_text("JA" + str(acceleration))
-        self.send_text("JL" + str(acceleration))
+
+    def set_jog_acceleration(self, acceleration):
+        self.send_text(f"JA{acceleration}")
+        self.send_text(f"JL{acceleration}")
 
     def reset_motor(self):
 
@@ -311,19 +313,21 @@ class MotorControl:
 
         elif code == "0020":
             text = "Alert! Over Voltage"
-            
+
         elif code == "0040":
             text = "Alert! Under Voltage"
-            
+
         elif code == "0080":
-            text == "Alert! Over Current"
-        
+            text = "Alert! Over Current"
+
         elif code == "1000":
-            text == "Alert! No Move!"
-        
+            text = "Alert! No Move!"
+
         elif code == "4000":
-            text == "Alert! Blank Q-Segment!"
-            
+            text = "Alert! Blank Q-Segment!"
+        else:
+            text = ""
+
         return text
 
     def clear_alarm(self):
@@ -377,36 +381,35 @@ class MotorControl:
         return self.inhibit(not en)
 
     def set_input_usage(self, usage):
-        self.send_text("SI" + str(usage))
-        print("set x3 input usage to SI" + str(usage) + "\n")
+        self.send_text(f"SI{usage}")
+        print(f"set x3 input usage to SI {usage}\n")
 
     def close_connection(self):
-        if( self.s != None ):
-          self.s.close()
-          self.s = None
-        
+        if self.s is not None:
+            self.s.close()
+            self.s = None
+
     def seek_home(self):
         self.send_text("SH")
-        
+
     def go_to_zero(self):
         self.set_position(0)
-        
+
     def get_status(self):
         code = self.send_text("SC")
-        if code[2] == "1":
-            self.is_moving = True
-        else:
-            self.is_moving = False
-        
+
+        self.is_moving = True if code[2] == "1" else False
+
     def set_position_limit(self, steps):
-        self.send_text("PL" + (str)(steps))
-    
+        self.send_text(f"PL{steps}")
+
     def heartbeat(self):
         code = self.get_alarm_code()
         pos = self.current_position()
         vel = self.motor_velocity()
         self.get_status()
         return code, pos, vel, self.is_moving
+
 
 if __name__ == "__main__":
 
