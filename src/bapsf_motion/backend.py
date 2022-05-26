@@ -216,7 +216,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.start(500)
 
     def create_config(self):
-        subprocess.call(" python configurator\\paintergui.py 1", shell=True)
+        subprocess.call(" python configurator\\config_gui_backend.py 1", shell=True)
 
     def getVals(self, index):
         try:
