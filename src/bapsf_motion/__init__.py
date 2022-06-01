@@ -34,7 +34,7 @@ except pkg_resources.DistributionNotFound:
         from setuptools_scm import get_version
 
         __version__ = get_version(
-            root="..", relative_to=__file__, fallback_version=fallback_version
+            root="../..", relative_to=__file__, fallback_version=fallback_version
         )
         del get_version
         warn_add = "setuptools_scm failed to detect the version"
