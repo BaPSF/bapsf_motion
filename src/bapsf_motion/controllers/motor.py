@@ -2,10 +2,7 @@
 This program translates ASCII commands and sends messages to an Applied
 Motion motor.  It can be used in drive.py for multidimensional movement.
 """
-import sys
-
-if sys.version_info[0] < 3:
-    raise RuntimeError("This script should be run under Python 3")
+__all__ = ["MotorControl"]
 
 import socket
 import time

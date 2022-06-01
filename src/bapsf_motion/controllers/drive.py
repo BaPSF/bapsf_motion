@@ -6,13 +6,14 @@ Oct 2017
 Modified by: Rishabh Singh
 Nov 2021
 """
+__all__ = ["DriveControl"]
 
 import numpy as np
 import time
 
 from scipy.optimize import fsolve
 
-from .motor import MotorControl
+from bapsf_motion.controllers.motor import MotorControl
 
 
 class DriveControl:
