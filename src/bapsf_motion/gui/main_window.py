@@ -56,41 +56,37 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.Save = QtWidgets.QPushButton(self.runVerticalControlLayout)
         self.Save.setObjectName("Save")
         self.verticalLayout_5.addWidget(self.Save)
-        
+
         self.movelabel = QtWidgets.QLabel(self.runVerticalControlLayout)
         self.movelabel.setText("Move all to index: 0")
         self.movelabel.setAlignment(QtCore.Qt.AlignCenter)
         self.verticalLayout_5.addWidget(self.movelabel)
-        
+
         self.moverlayout = QtWidgets.QHBoxLayout(self.runVerticalControlLayout)
-        
+
         self.next = QtWidgets.QPushButton(self.runVerticalControlLayout)
         self.next.setText("Next")
-        self.next.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.SP_ArrowForward)
-        )
-       
+        self.next.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_ArrowForward))
+
         self.previous = QtWidgets.QPushButton(self.runVerticalControlLayout)
         self.previous.setText("Prev")
-        self.previous.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.SP_ArrowBack)
-        )
-        
+        self.previous.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_ArrowBack))
+
         self.moverlayout.addWidget(self.previous)
         self.moverlayout.addWidget(self.next)
 
         self.verticalLayout_5.addLayout(self.moverlayout)
-        
+
         self.moveall = QtWidgets.QPushButton(self.runVerticalControlLayout)
         self.moveall.setText("Execute Move")
         self.verticalLayout_5.addWidget(self.moveall)
-        
-               
+
         self.StopAll = QtWidgets.QPushButton(self.runVerticalControlLayout)
         self.StopAll.setObjectName("StopAll")
         self.verticalLayout_5.addWidget(self.StopAll)
         self.StopAll.setMinimumHeight(300)
-        self.StopAll.setStyleSheet(    "QPushButton"
+        self.StopAll.setStyleSheet(
+            "QPushButton"
             "{"
             "background-color : #D21404;"
             "border:5px solid #E3242B; font-size: 20px; font: Agency"
@@ -99,18 +95,15 @@ class Ui_MainWindow(QtWidgets.QWidget):
             "{"
             "background-color : red;"
             "}"
-            
-            )
-            
-            
-        self.StopAll.setText("STOP ALL")
+        )
 
+        self.StopAll.setText("STOP ALL")
 
         self.img = QtWidgets.QLabel(self.RunTab)
         self.img.setGeometry(QtCore.QRect(0, 0, 965, 151))
         self.img.setObjectName("img")
-        
-        self.scroll = QtWidgets.QScrollArea(self.RunTab)  
+
+        self.scroll = QtWidgets.QScrollArea(self.RunTab)
         # # Scroll Area which contains the widgets, set as the centralWidget
         self.scroll.setGeometry(QtCore.QRect(170, 160, 800, 490))
 
@@ -119,14 +112,13 @@ class Ui_MainWindow(QtWidgets.QWidget):
         self.scrollAreaWidgetContents = QtWidgets.QWidget()
         self.scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 750, 490))
         self.scrollAreaWidgetContents.setObjectName("scrollAreaWidgetContents")
-        
-    
+
         self.verticalLayout_6 = QtWidgets.QVBoxLayout(self.scrollAreaWidgetContents)
         self.verticalLayout_6.setContentsMargins(0, 0, 0, 0)
-        self.scrollAreaWidgetContents.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        self.scrollAreaWidgetContents.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
+        )
         self.verticalLayout_6.setObjectName("verticalLayout_6")
-
-
 
         self.labelslayout = QtWidgets.QHBoxLayout(self.scrollAreaWidgetContents)
         self.labelslayout.setContentsMargins(0, 0, 0, 0)
@@ -232,7 +224,6 @@ class TabPage(QtWidgets.QWidget):
         self.remove.setText("REMOVE GROUP")
         self.configButtonVLayout.addWidget(self.remove)
 
-        
         self.firstButtonHLayout.addLayout(self.configButtonVLayout)
         self.line = QtWidgets.QFrame(self.mainHorizontalLayoutWidget)
         self.line.setFrameShape(QtWidgets.QFrame.VLine)
@@ -342,9 +333,7 @@ class TabPage(QtWidgets.QWidget):
         self.GroupText.setObjectName("GroupText")
         self.GroupText.setReadOnly(True)
         self.groupTextLayout.addWidget(self.GroupText)
-        
-        
-        
+
         self.runInfoLayout = QtWidgets.QWidget(self.groupBox)
         self.runInfoLayout.setGeometry(QtCore.QRect(10, 330, 371, 300))
         self.runInfoLayout.setObjectName("runInfoLayout")
@@ -360,8 +349,8 @@ class TabPage(QtWidgets.QWidget):
         self.timelabel.setObjectName("timelabel")
         self.timelabel.setMaximumHeight(20)
         self.infoLayout.addWidget(self.timelabel)
-        
-        self.statuslabel =  QtWidgets.QLabel(self.runInfoLayout)
+
+        self.statuslabel = QtWidgets.QLabel(self.runInfoLayout)
         self.statuslabel.setObjectName("statuslabel")
         self.statuslabel.setText("Motor Status:")
         self.statuslabel.setMaximumHeight(20)
@@ -369,14 +358,12 @@ class TabPage(QtWidgets.QWidget):
         self.infovert.addWidget(self.statuslabel)
         self.infovert.addLayout(self.infoLayout)
 
-
-        
-        
         self.STOP = QtWidgets.QPushButton(self.runInfoLayout)
         self.STOP.setObjectName("STOP")
         self.STOP.setMinimumHeight(200)
         self.STOP.setText("STOP MOVEMENT")
-        self.STOP.setStyleSheet(    "QPushButton"
+        self.STOP.setStyleSheet(
+            "QPushButton"
             "{"
             "background-color : #D21404;"
             "border:5px solid #E3242B; font-size: 20px; font: Agency"
@@ -385,8 +372,7 @@ class TabPage(QtWidgets.QWidget):
             "{"
             "background-color : red;"
             "}"
-            
-            )        
+        )
         self.infovert.addWidget(self.STOP)
 
         self.load.setText("LOAD GROUP CONFIGURATION")
