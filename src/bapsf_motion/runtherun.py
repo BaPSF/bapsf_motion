@@ -281,7 +281,7 @@ class Loader:
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
 
                         a = max([(xmax - xmin), (ymax - ymin)])
-                        b = a * np.sqrt(1 - e ** 2)
+                        b = a * np.sqrt(1 - e**2)
 
                         xpos = np.append(xpos, cx)
                         ypos = np.append(ypos, cy)
@@ -489,7 +489,7 @@ class Loader:
                                 for y in yvals:
                                     if (
                                         (xvals[x] - cx) ** 2 + (yvals[y] - cy) ** 2
-                                        <= r ** 2
+                                        <= r**2
                                         and zvals[z] <= zmax
                                         and zvals[z] >= zmin
                                     ):
@@ -565,7 +565,7 @@ class Loader:
                                     )
                                     zval = cz + t * r * np.cos(p * np.pi)
                                 if (
-                                    (xval - cx) ** 2 + (yval - cy) ** 2 > rc ** 2
+                                    (xval - cx) ** 2 + (yval - cy) ** 2 > rc**2
                                     or zval > zmax
                                     or zval < zmin
                                 ):
@@ -614,7 +614,7 @@ class Loader:
 
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
                         b = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
-                        a = b / np.sqrt(1 - e ** 2)
+                        a = b / np.sqrt(1 - e**2)
                         # zposi = zs[i]
                         # zposi2 =zs[i+1]
 
@@ -633,7 +633,7 @@ class Loader:
                             for z in thetavals[1:]:
                                 xval = cx + t * a * np.cos(z * 2 * np.pi)
                                 yval = cy + t * b * np.sin(z * 2 * np.pi)
-                                if (xval - cx) ** 2 + (yval - cy) ** 2 <= b ** 2:
+                                if (xval - cx) ** 2 + (yval - cy) ** 2 <= b**2:
                                     xpos = np.append(xpos, np.round(xval, 3))
                                     ypos = np.append(ypos, np.round(yval, 3))
                         for z in zvals:
@@ -839,7 +839,7 @@ for group in groupnames:
     groups[i] = Loader()
     groups[i].getgroup(group)
     i += 1
-    
+
 length = max(len(groups[group].poslist) for group in groups)
 
 
@@ -853,13 +853,8 @@ for index in range(length):
                 groups[group].mm.move_to_position(x, y, z)
         except:
             IndexError("Why is this happening?")
-   
-     
-     
-     
-     
-    for group in groups:
 
+    for group in groups:
         (
             codex,
             codey,
@@ -875,6 +870,7 @@ for index in range(length):
             is_movingz,
         ) = groups[group].mm.heartbeat()
         while is_movingx or is_movingy or is_movingz:
-            time.sleep(0.3) #check if all probes have finished moving to index.
-                            #every 0.3 seconds
+            # check if all probes have finished moving to index.
+            # every 0.3 seconds
+            time.sleep(0.3)
     time.sleep(time_at_each_spot)
