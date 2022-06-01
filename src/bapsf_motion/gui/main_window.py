@@ -5,10 +5,10 @@
 # Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
+__all__ = ["GroupLayout", "TabPage", "Ui_MainWindow"]
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 from matplotlib.pyplot import imread
-import sys
 
 
 class Ui_MainWindow(QtWidgets.QWidget):
