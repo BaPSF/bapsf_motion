@@ -1,7 +1,7 @@
+import math
 import numpy as np
 import time
 import tomli
-import math
 
 from bapsf_motion.controllers import MotorMovement
 

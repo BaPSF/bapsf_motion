@@ -13,8 +13,8 @@ from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import *
 
-from bapsf_motion.gui import TabPage, Ui_MainWindow, GroupLayout
 from bapsf_motion.configurator import Loader
+from bapsf_motion.gui import GroupLayout, TabPage, Ui_MainWindow
 
 
 class MyMplCanvas(FigureCanvas):

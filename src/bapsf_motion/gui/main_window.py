@@ -7,8 +7,8 @@
 # WARNING! All changes made in this file will be lost!
 __all__ = ["GroupLayout", "TabPage", "Ui_MainWindow"]
 
-from PyQt5 import QtCore, QtGui, QtWidgets
 from matplotlib.pyplot import imread
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class Ui_MainWindow(QtWidgets.QWidget):

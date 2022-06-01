@@ -12,12 +12,12 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-from bapsf_motion.configurator.main_window import Ui_MainWindow
 from bapsf_motion.configurator.group_configurator_backend import (
+    MotionGroup,
     ProbeConfig,
     ProbeDriveConfig,
-    MotionGroup,
 )
+from bapsf_motion.configurator.main_window import Ui_MainWindow
 from bapsf_motion.configurator.motion_list_configurator_backend import Canvas
 
 
