@@ -1,3 +1,5 @@
+__all__ = ["MplCanvas", "MainWindow"]
+
 import datetime
 import numpy as np
 import os
@@ -9,10 +11,14 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from motion_list_configurator_backend import Canvas
 
-from main_window import Ui_MainWindow
-from group_configurator_backend import ProbeConfig, ProbeDriveConfig, MotionGroup
+from bapsf_motion.configurator.main_window import Ui_MainWindow
+from bapsf_motion.configurator.group_configurator_backend import (
+    ProbeConfig,
+    ProbeDriveConfig,
+    MotionGroup,
+)
+from bapsf_motion.configurator.motion_list_configurator_backend import Canvas
 
 
 class MplCanvas(FigureCanvas):

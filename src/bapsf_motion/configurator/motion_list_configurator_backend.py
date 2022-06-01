@@ -1,3 +1,5 @@
+__all__ = ["Canvas"]
+
 import math
 import numpy as np
 import os
