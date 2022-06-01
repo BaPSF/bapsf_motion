@@ -1,9 +1,9 @@
 import numpy as np
 import time
 import tomli
-import os
 import math
-from controllers.motion_group import MotorMovement
+
+from bapsf_motion.controllers import MotorMovement
 
 
 class Loader:
