@@ -1,3 +1,9 @@
+# LabView files
+# https://labviewwiki.org/wiki/ALIASES_File_Extension
+*.aliases
+# https://labviewwiki.org/wiki/LVLPS_File_Extension
+*.lvlps
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -134,6 +140,7 @@ untitled*
 .DS_Store
 */cython_version.py
 .mypy_cache
+*.tmp
 
 # Documentation files
 auto_examples
