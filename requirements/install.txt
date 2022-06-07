@@ -4,4 +4,5 @@ matplotlib >= 3.3.0
 numpy >= 1.18.1
 PyQt5
 qtwidgets
-toml
+tomli
+tomli_w
