@@ -47,8 +47,8 @@ except pkg_resources.DistributionNotFound:
         from warnings import warn
 
         warn(
-            f"bapsf_motion.__version__ not generated (set to 'unknown'), PlasmaPy is "
-            f"not an installed package and {warn_add}.",
+            f"bapsf_motion.__version__ not generated (set to 'unknown'), "
+            f"bapsf_motion is not an installed package and {warn_add}.",
             RuntimeWarning,
         )
 
