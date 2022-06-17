@@ -1,5 +1,3 @@
-__all__ = ["MotionGroup", "ProbeConfig", "ProbeDriveConfig"]
-
 import datetime
 import os
 import tomli
@@ -18,12 +16,12 @@ class MotionGroup:
         populates contents of the config file into 'Drive Contents'
         textbox in gui.
         """
-
+        check = True
         if filename is None:
             filename, check = QFileDialog.getOpenFileName(
                 None,
                 "QFileDialog.getOpenFileName()",
-                "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probe Drives",
+                "Probe Drives",
                 "toml files (*.toml)",
             )
         self.drivefile = filename
@@ -41,14 +39,17 @@ class MotionGroup:
         populates contents of the config file into 'Probe Contents'
         textbox in gui.
         """
+        check = True
+
         if filename is None:
             filename, check = QFileDialog.getOpenFileName(
                 None,
                 "QFileDialog.getOpenFileName()",
-                "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probes",
+                "Probes",
                 "toml files (*.toml)",
             )
         self.probefile = filename
+        
         if check:
             with open(filename, "r") as f:
                 data = f.read()
@@ -82,8 +83,8 @@ class MotionGroup:
             "port_location": self.portloc,
         }
         tomli_string = tomli_w.dumps(Dict)  # Output to a string
-
-        save_path = "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Groups"
+        dirname = os.path.dirname(__file__)
+        save_path = os.path.join(dirname, "Groups")
         output_file_name = str(self.name)
         completeName = os.path.join(save_path, output_file_name + ".toml")
 
@@ -161,8 +162,8 @@ class MotionGroup:
         arg.canvas.set_hand(self.hand)
         arg.canvas.set_name(self.name)
         tomli_string = tomli_w.dumps(Dict)  # Output to a string
-
-        save_path = "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Groups"
+        dirname = os.path.dirname(__file__)
+        save_path = os.path.join(dirname, "Groups")
         output_file_name = str(self.name)
         completeName = os.path.join(save_path, f"{output_file_name}.toml")
         qm = QtWidgets.QMessageBox
@@ -207,13 +208,17 @@ class ProbeConfig:
             Necessary as this function updates the gui to display
             the parameters of the probe chosen from drop-down.
         """
+        #to do- create list of standard probes, with their properties 
+        #being listed here, just like pdBoxSetter
         index = arg.probeDriveBox.currentIndex()
         if index is None:
+            pass
+        elif index == 0:
             pass
         elif index == 1:
             arg.group.getprobe(
                 arg,
-                "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probes\\Langmuir.toml",
+                "Probes\\Langmuir.toml",
             )
 
     def save(self, arg):
@@ -233,7 +238,8 @@ class ProbeConfig:
             "material": self.material,
         }
         tomli_string = tomli_w.dumps(Dict)  # Output to a string
-        save_path = "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probes"
+        dirname = os.path.dirname(__file__)
+        save_path = os.path.join(dirname, "Probes")
         output_file_name = str(self.name)
         completeName = os.path.join(save_path, output_file_name + ".toml")
         if os.path.exists(completeName):
@@ -345,7 +351,7 @@ class ProbeDriveConfig:
             arg.TPIBox.setCurrentIndex(0)
             arg.group.getdrive(
                 arg,
-                "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XY.toml",
+                "Probe Drives\\Standard XY.toml",
             )
 
         elif index == 2:
@@ -360,7 +366,7 @@ class ProbeDriveConfig:
             arg.TPIBox.setCurrentIndex(0)
             arg.group.getdrive(
                 arg,
-                "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard XYZ.toml",
+                "Probe Drives\\Standard XYZ.toml",
             )
 
         elif index == 3:
@@ -375,7 +381,7 @@ class ProbeDriveConfig:
             arg.TPIBox.setCurrentIndex(0)
             arg.group.getdrive(
                 arg,
-                "C:\\Users\\rish\a\Desktop\\daq-mod-probedrives-main\\Probe Drives\\Standard X-ϴ.toml",
+                "Probe Drives\\Standard X-ϴ.toml",
             )
 
     def getStepCm(self, arg):
@@ -409,7 +415,8 @@ class ProbeDriveConfig:
         }
 
         tomli_string = tomli_w.dumps(Dict)  # Output to a string
-        save_path = "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Probe Drives"
+        dirname = os.path.dirname(__file__)
+        save_path = os.path.join(dirname, "Probe Drives")
         output_file_name = str(self.name)
         completeName = os.path.join(save_path, output_file_name + ".toml")
         if os.path.exists(completeName):
