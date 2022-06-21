@@ -1,10 +1,12 @@
+__all__ = ["Loader"]
+
 import math
 import numpy as np
 import tomli
 
 from PyQt5.QtWidgets import *
 
-from controllers.motion_group import MotionGroup
+from bapsf_motion.controllers import MotionGroup
 
 
 class Loader:
