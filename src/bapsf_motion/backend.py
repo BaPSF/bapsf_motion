@@ -256,7 +256,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i = 0
         for index in self.tabs:
             filename = self.tabs[index].Loader.drivefile
-            filesnames[i] = filename
+            self.filesnames[i] = filename
             i += 1
         return self.filenames
 
