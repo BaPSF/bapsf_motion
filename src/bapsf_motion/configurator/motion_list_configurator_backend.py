@@ -291,15 +291,15 @@ class Canvas(QLabel):
         Register resolution and z-axis extrusion inputs.  5x factor for
         cm to pixel conversion.
         """
-        def strToarray(str1):
+        def str_to_array(str1):
             str1 = np.array(
                         str1.replace("(", "").replace(")", "").split(","), dtype=float
                     )
             return str1
         
-        self.nx = 5 * strToarray(str(arg.xres.text()))
-        self.ny = 5 * strToarray(str(arg.yres.text()))
-        self.nz = 5 * strToarray(str(arg.zres.text()))
+        self.nx = 5 * str_to_array(str(arg.xres.text()))
+        self.ny = 5 * str_to_array(str(arg.yres.text()))
+        self.nz = 5 * str_to_array(str(arg.zres.text()))
         self.z1 = 5 * float(arg.z1.text())
         self.z2 = 5 * float(arg.z2.text())
         self.centers = str(arg.gridCentre.text())

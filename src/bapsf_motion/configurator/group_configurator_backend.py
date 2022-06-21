@@ -210,7 +210,7 @@ class ProbeConfig:
             Necessary as this function updates the gui to display
             the parameters of the probe chosen from drop-down.
         """
-        #to do- create list of standard probes, with their properties 
+        #TODO:- create list of standard probes, with their properties 
         #being listed here, just like pdBoxSetter
         index = arg.probeDriveBox.currentIndex()
         if index is None:

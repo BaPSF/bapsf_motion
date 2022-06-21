@@ -11,7 +11,6 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from motion_list_configurator_backend import Canvas
 
 from bapsf_motion.configurator.group_configurator_backend import (
     MotionGroup,
