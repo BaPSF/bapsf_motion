@@ -8,9 +8,10 @@ Nov 2021
 """
 __all__ = ["DriveControl"]
 
+import math
 import numpy as np
 import time
-import math
+
 from scipy.optimize import fsolve
 
 from bapsf_motion.controllers.motor import MotorControl

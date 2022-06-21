@@ -1,12 +1,11 @@
+import math
 import numpy as np
+import os
+import subprocess
 import time
 import tomli
-import os
-import math
-from controllers.motion_group import MotionGroup
-import subprocess
 
-import os
+from controllers.motion_group import MotionGroup
 
 
 class RunManager:

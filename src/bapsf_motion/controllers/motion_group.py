@@ -5,7 +5,6 @@ import numpy as np
 
 from PyQt5.QtWidgets import *
 
-from .drive import DriveControl
 from bapsf_motion.controllers.drive import DriveControl
 
 
