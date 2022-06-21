@@ -26,6 +26,7 @@ class RunManager:
             data = grilled_cheese.read()
             groupnames = data.split("\n")  # filenames of group toml files
         config = groupnames.pop()  # remove extra "" character
+        self.config = config
         self._validate_config(config)
         self._init_motion_groups(config)
 
@@ -94,7 +95,7 @@ class RunManager:
         
     def move_to_index(self, index, groupnum = 1, everything = True):
         length = max(len(self.groups[group].poslist) for group in self.groups)
-        
+        self.index = index
         if everything == False:
             try:
                 if index < len(self.groups[groupnum]):
@@ -221,13 +222,20 @@ def labview_handler(request, *args , **kwargs):
         "heartbeat": lv_handle_heartbeat,
         "set_velocity": lv_handle_velocity,
         "disconnect": lv_handle_disconnect,
-        "configure": lv_handle_configure
+        "configure": lv_handle_configure,
+        "get_int_names": lv_handle_getintname,
+        "get_integers": lv_handle_getint,
+        "device_request": lv_handle_device_request
     }
     return _requests[request](*args,**kwargs)
 
 
-def lv_handle_connect(filename):
-    return RunManager.__init__(filename)
+def lv_handle_connect(filename = None, config = None):
+    return RunManager.__init__(filename, config)
+
+
+def lv_handle_device_request(request):
+    pass
 
 
 def lv_handle_move_to(index):
@@ -252,3 +260,13 @@ def lv_handle_configure():
     dirname=os.path.dirname
     path = os.path.join(dirname(dirname(dirname(__file__))), "bapsf_motion//backend.py")
     subprocess.call(f" python {path} 1", shell=True)
+
+def lv_handle_getconfig():
+    return RunManager.config
+
+def lv_handle_getint(request):
+    if request == 'last index':
+        return RunManager.index
+    
+def lv_handle_getintname():
+    return "last index"
