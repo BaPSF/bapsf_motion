@@ -28,7 +28,11 @@
 			<Property Name="NI.DISK" Type="Bool">true</Property>
 		</Item>
 		<Item Name="bapsf_motion_lv.vi" Type="VI" URL="../bapsf_motion_lv.vi"/>
-		<Item Name="Dependencies" Type="Dependencies"/>
+		<Item Name="configure.vi" Type="VI" URL="../requests/configure.vi"/>
+		<Item Name="Dependencies" Type="Dependencies">
+			<Item Name="connect.vi" Type="VI" URL="../requests/connect.vi"/>
+			<Item Name="move_to_index.vi" Type="VI" URL="../requests/move_to_index.vi"/>
+		</Item>
 		<Item Name="Build Specifications" Type="Build"/>
 	</Item>
 </Project>
