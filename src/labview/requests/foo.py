@@ -1,3 +1,3 @@
-def foo(x):
+def foo(request):
     """Dummy function for testing with `test_daq_caller.vi`"""
-    return x
+    return f"Response: I received your request '{request}'."
