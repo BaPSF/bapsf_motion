@@ -51,7 +51,8 @@ class Loader:
             arg2.tabs[index].zcoord.setEnabled(False)
             arg2.tabs[index].zspeed.setEnabled(False)
         arg2.tabWidget.setTabText(
-            index, f"{self.toml_dict['port_number']}-{self.toml_dict['port_location']}",
+            index,
+            f"{self.toml_dict['port_number']}-{self.toml_dict['port_location']}",
         )
         arg2.groups[index].GroupName.setText(
             f"{self.toml_dict['port_number']}-{self.toml_dict['port_location']}"
@@ -320,7 +321,7 @@ class Loader:
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
 
                         a = max([(xmax - xmin), (ymax - ymin)])
-                        b = a * np.sqrt(1 - e ** 2)
+                        b = a * np.sqrt(1 - e**2)
 
                         xpos = np.append(xpos, cx)
                         ypos = np.append(ypos, cy)
@@ -531,7 +532,7 @@ class Loader:
                                 for y in yvals:
                                     if (
                                         (xvals[x] - cx) ** 2 + (yvals[y] - cy) ** 2
-                                        <= r ** 2
+                                        <= r**2
                                         and zvals[z] <= zmax
                                         and zvals[z] >= zmin
                                     ):
@@ -609,7 +610,7 @@ class Loader:
                                     )
                                     zval = cz + t * r * np.cos(p * np.pi)
                                 if (
-                                    (xval - cx) ** 2 + (yval - cy) ** 2 > rc ** 2
+                                    (xval - cx) ** 2 + (yval - cy) ** 2 > rc**2
                                     or zval > zmax
                                     or zval < zmin
                                 ):
@@ -658,7 +659,7 @@ class Loader:
 
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
                         b = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
-                        a = b / np.sqrt(1 - e ** 2)
+                        a = b / np.sqrt(1 - e**2)
                         # zposi = zs[i]
                         # zposi2 =zs[i+1]
 
@@ -677,7 +678,7 @@ class Loader:
                             for z in thetavals[1:]:
                                 xval = cx + t * a * np.cos(z * 2 * np.pi)
                                 yval = cy + t * b * np.sin(z * 2 * np.pi)
-                                if (xval - cx) ** 2 + (yval - cy) ** 2 <= b ** 2:
+                                if (xval - cx) ** 2 + (yval - cy) ** 2 <= b**2:
                                     xpos = np.append(xpos, np.round(xval, 3))
                                     ypos = np.append(ypos, np.round(yval, 3))
                         for z in zvals:

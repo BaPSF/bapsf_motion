@@ -8,6 +8,7 @@ import subprocess
 
 import os
 
+
 class RunManager:
     _motion_groups = None
 
@@ -67,7 +68,7 @@ class RunManager:
                 CmPerRev = toml_dict["drive"]["threading"]
                 steps_per_cm = StepPerRev / CmPerRev
                 port_ip = int(7776)
-            
+
             groups[i] = MotionGroup(
                 x_ip_addr=self.x_ip,
                 y_ip_addr=self.y_ip,
@@ -91,9 +92,8 @@ class RunManager:
             )
             i += 1
             return "Connected"
-        
-        
-    def move_to_index(self, index, groupnum = 1, everything = True):
+
+    def move_to_index(self, index, groupnum=1, everything=True):
         length = max(len(self.groups[group].poslist) for group in self.groups)
         self.index = index
         if everything == False:
@@ -103,8 +103,7 @@ class RunManager:
                     y = self.groups[groupnum].poslist[index][1]
                     z = self.groups[groupnum].poslist[index][2]
                     self.groups[groupnum].move_to_position(x, y, z)
-                    
-                    
+
                     (
                         codex,
                         codey,
@@ -123,14 +122,13 @@ class RunManager:
                         self.groups[groupnum].mm.stop()
                         return f"ALERT,ERROR:{codex}, {codey}, {codez}"
                     else:
-                        posx, posy, posz = self.groups[groupnum].mm.current_probe_position()
+                        posx, posy, posz = self.groups[
+                            groupnum
+                        ].mm.current_probe_position()
                         str1 = f"{groupnum}:({posx},{posy},{posz}) "
-                        return  str1
+                        return str1
             except:
                 IndexError("Why is this happening?")
-        
-        
-
 
         for group in self.groups:
             try:
@@ -166,7 +164,7 @@ class RunManager:
         posstr = []
         for group in self.groups:
             posx, posy, posz = self.groups[group].mm.current_probe_position()
-            str1 = [posx,posy,posz]
+            str1 = [posx, posy, posz]
             posstr[group] = str1
         return posstr
 
@@ -186,9 +184,22 @@ class RunManager:
             is_movingy,
             is_movingz,
         ) = self.groups[group].mm.heartbeat()
-        return [codex,codey,codez,posx,posy,posz,velx,vely,velz,is_movingx,is_movingy,is_movingz]
+        return [
+            codex,
+            codey,
+            codez,
+            posx,
+            posy,
+            posz,
+            velx,
+            vely,
+            velz,
+            is_movingx,
+            is_movingy,
+            is_movingz,
+        ]
 
-    def stop(self, groupnum = 1, everything=True):
+    def stop(self, groupnum=1, everything=True):
         if everything == False:
             self.groups[groupnum].stop_now()
         else:
@@ -204,17 +215,18 @@ class RunManager:
                 self.groups[group].set_velocity(vx, vy, vz)
         return "Done"
 
-    def disconnect(self,group, everything = False):
+    def disconnect(self, group, everything=False):
         if everything == False:
             self.groups[group].disconnect()
         else:
             for group in self.groups:
                 self.groups[group].disconnect()
         return "Done"
-        
+
+
 RunManager = RunManager()
 # define wrapper for LabVIEW Python node
-def labview_handler(request, *args , **kwargs):
+def labview_handler(request, *args, **kwargs):
     _requests = {
         "connect": lv_handle_connect,
         "move_to_index": lv_handle_move_to,
@@ -225,12 +237,12 @@ def labview_handler(request, *args , **kwargs):
         "configure": lv_handle_configure,
         "get_int_names": lv_handle_getintname,
         "get_integers": lv_handle_getint,
-        "device_request": lv_handle_device_request
+        "device_request": lv_handle_device_request,
     }
-    return _requests[request](*args,**kwargs)
+    return _requests[request](*args, **kwargs)
 
 
-def lv_handle_connect(filename = None, config = None):
+def lv_handle_connect(filename=None, config=None):
     return RunManager.__init__(filename, config)
 
 
@@ -253,20 +265,25 @@ def lv_handle_heartbeat(group):
 def lv_handle_velocity(group, vx=1, vy=1, vz=1, everything=False):
     return RunManager.set_velocity(group, vx, vy, vz, everything)
 
-def lv_handle_disconnect(group, everything = False):
-    return RunManager.disconnect(group,everything)
+
+def lv_handle_disconnect(group, everything=False):
+    return RunManager.disconnect(group, everything)
+
 
 def lv_handle_configure():
-    dirname=os.path.dirname
+    dirname = os.path.dirname
     path = os.path.join(dirname(dirname(dirname(__file__))), "bapsf_motion//backend.py")
     subprocess.call(f" python {path} 1", shell=True)
+
 
 def lv_handle_getconfig():
     return RunManager.config
 
+
 def lv_handle_getint(request):
-    if request == 'last index':
+    if request == "last index":
         return RunManager.index
-    
+
+
 def lv_handle_getintname():
     return "last index"
