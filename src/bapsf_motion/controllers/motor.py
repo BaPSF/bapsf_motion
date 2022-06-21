@@ -2,6 +2,8 @@
 This program translates ASCII commands and sends messages to an Applied
 Motion motor.  It can be used in drive.py for multidimensional movement.
 """
+__all__ = ["MotorControl"]
+
 import sys
 
 if sys.version_info[0] < 3:

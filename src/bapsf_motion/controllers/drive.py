@@ -6,13 +6,14 @@ Oct 2017
 Modified by: Rishabh Singh
 Nov 2021
 """
+__all__ = ["DriveControl"]
 
 import numpy as np
 import time
 import math
 from scipy.optimize import fsolve
 
-from .motor import MotorControl
+from bapsf_motion.controllers.motor import MotorControl
 
 
 class DriveControl:
@@ -174,83 +175,83 @@ class DriveControl:
         
         
         
-        ###########################TODO.. currently wildly incorrect results.############
+        ##########################TODO.. currently wildly incorrect results.############
 
-        # if my_pos < 0:
-        #     C = (
-        #         np.abs(my_pos)
-        #         - a * np.tan(self.alpha)
-        #         - self.d_offset / np.cos(self.alpha)
-        #     )
+        if my_pos < 0:
+            C = (
+                np.abs(my_pos)
+                - a * np.tan(self.alpha)
+                - self.d_offset / np.cos(self.alpha)
+            )
 
-        #     def func(x):
-        #         return a * np.tan(x) + self.d_offset / np.cos(x)-C
+            def func(x):
+                return a * np.tan(x) + self.d_offset / np.cos(x)-C
 
-        #     theta = fsolve(func, 0)
-        #     x = (b + mx_pos) * np.cos(theta)
-        #     y = (b + mx_pos) * np.sin(theta)
-        #     c = (x**2 + y**2)**0.5
-        #     if x == 0:
-        #         phi = np.pi / 2
-        #     elif x < 0:
-        #         phi = math.atan(y / x) + np.pi
-        #     else:
-        #         phi = math.atan(y / x)
-        #     L = ((b ** 2 + c ** 2 + 2 * b * c * math.cos(phi)) ** 0.5)/100
+            theta = fsolve(func, 0)
+            x = (b + mx_pos) * np.cos(theta)
+            y = (b + mx_pos) * np.sin(theta)
+            c = (x**2 + y**2)**0.5
+            if x == 0:
+                phi = np.pi / 2
+            elif x < 0:
+                phi = math.atan(y / x) + np.pi
+            else:
+                phi = math.atan(y / x)
+            L = ((b ** 2 + c ** 2 + 2 * b * c * math.cos(phi)) ** 0.5)/100
 
 
-        #     dy_total = 100 * (
-        #         ((L ** 3) / (4 * E * I)) * (2 * P + K * L)
-        #         + (L ** 3 / (6 * E * I)) * (-P - K * L)
-        #         + K * (L ** 4) / (24 * E * I)
-        #         - (
-        #             (((b / 100) ** 3) / (4 * E * I)) * (2 * P + K * ((b / 100)))
-        #             + ((b / 100) ** 3 / (6 * E * I)) * (-P - K * (b / 100))
-        #             + K * ((b / 100) ** 4) / (24 * E * I)
-        #         )
-        #     )
+            dy_total = 100 * (
+                ((L ** 3) / (4 * E * I)) * (2 * P + K * L)
+                + (L ** 3 / (6 * E * I)) * (-P - K * L)
+                + K * (L ** 4) / (24 * E * I)
+                - (
+                    (((b / 100) ** 3) / (4 * E * I)) * (2 * P + K * ((b / 100)))
+                    + ((b / 100) ** 3 / (6 * E * I)) * (-P - K * (b / 100))
+                    + K * ((b / 100) ** 4) / (24 * E * I)
+                )
+            )
 
-        #     # y-corr.
-        #     y = y + 1 * dy_total
-        #     return mx_pos, my_pos
-        # else:
-        #     C = (
-        #         np.abs(my_pos)
-        #         + a * np.tan(self.alpha)
-        #         + self.d_offset / np.cos(self.alpha)
-        #     )
+            # y-corr.
+            y = y + 1 * dy_total
+            return mx_pos, my_pos
+        else:
+            C = (
+                np.abs(my_pos)
+                + a * np.tan(self.alpha)
+                + self.d_offset / np.cos(self.alpha)
+            )
 
-        #     def func(x):
-        #         return a * np.tan(x) - self.d_offset / np.cos(x) -C
+            def func(x):
+                return a * np.tan(x) - self.d_offset / np.cos(x) -C
 
-        #     theta = fsolve(func, 0)
-        #     x = (b + mx_pos) * np.cos(theta)
-        #     y = (b + mx_pos) * np.sin(theta)
-        #     c = (x**2 + y**2)**0.5
-        #     if x == 0:
-        #         phi = np.pi / 2
-        #     elif x < 0:
-        #         phi = math.atan(y / x) + np.pi
-        #     else:
-        #         phi = math.atan(y / x)
-        #     L = ((b ** 2 + c ** 2 + 2 * b * c * math.cos(phi)) ** 0.5)*np.cos(theta)/100
+            theta = fsolve(func, 0)
+            x = (b + mx_pos) * np.cos(theta)
+            y = (b + mx_pos) * np.sin(theta)
+            c = (x**2 + y**2)**0.5
+            if x == 0:
+                phi = np.pi / 2
+            elif x < 0:
+                phi = math.atan(y / x) + np.pi
+            else:
+                phi = math.atan(y / x)
+            L = ((b ** 2 + c ** 2 + 2 * b * c * math.cos(phi)) ** 0.5)*np.cos(theta)/100
             
-        #     dy_total = 100 * (
-        #         ((L ** 3) / (4 * E * I)) * (2 * P + K * L)
-        #         + (L ** 3 / (6 * E * I)) * (-P - K * L)
-        #         + K * (L ** 4) / (24 * E * I)
-        #         - (
-        #             (((b / 100) ** 3) / (4 * E * I)) * (2 * P + K * ((b / 100)))
-        #             + ((b / 100) ** 3 / (6 * E * I)) * (-P - K * (b / 100))
-        #             + K * ((b / 100) ** 4) / (24 * E * I)
-        #         )
-        #     )
+            dy_total = 100 * (
+                ((L ** 3) / (4 * E * I)) * (2 * P + K * L)
+                + (L ** 3 / (6 * E * I)) * (-P - K * L)
+                + K * (L ** 4) / (24 * E * I)
+                - (
+                    (((b / 100) ** 3) / (4 * E * I)) * (2 * P + K * ((b / 100)))
+                    + ((b / 100) ** 3 / (6 * E * I)) * (-P - K * (b / 100))
+                    + K * ((b / 100) ** 4) / (24 * E * I)
+                )
+            )
 
-        #     # y-corr.
-        #     y = y + 1 * dy_total
-        #     return x, y, None
+            # y-corr.
+            y = y + 1 * dy_total
+            return x, y, None
         
-        ###########################TODO.. currently wildly incorrect results.############
+        ##########################TODO.. currently wildly incorrect results.############
 
     def current_probe_position1D(self):
         # Obtain encoder feedback and calculate probe position
