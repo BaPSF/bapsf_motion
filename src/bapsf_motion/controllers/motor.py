@@ -6,8 +6,7 @@ __all__ = ["MotorControl"]
 
 import sys
 
-if sys.version_info[0] < 3:
-    raise RuntimeError("This script should be run under Python 3")
+
 
 import socket
 import time
@@ -79,7 +78,7 @@ class MotorControl:
         with open(self.msipa_cache_fn, "w") as f:
             f.write(self.server_ip_addr)
 
-        # Todo : encoder resolution for x/y and z motor is different, but cannot
+        # TODO : encoder resolution for x/y and z motor is different, but cannot
         #        be changed through command ER
         # encoder_resolution = self.send_text('ER')
         # if float(encoder_resolution[5:]) != 4000:
@@ -214,7 +213,7 @@ class MotorControl:
             print("\n______Halted due to Ctrl-C______")
             return False
 
-        # todo: see http://code.activestate.com/recipes/408859/  recv_end() code
+        # TODO: see http://code.activestate.com/recipes/408859/  recv_end() code
         #       We need to include a terminating character for reliability,
         #       e.g.: text += '\n'
 
@@ -366,7 +365,7 @@ class MotorControl:
             print("\n______Halted due to Ctrl-C______")
             return False
 
-        # todo: see http://code.activestate.com/recipes/408859/  recv_end() code
+        # TODO: see http://code.activestate.com/recipes/408859/  recv_end() code
         #       We need to include a terminating character for reliability,
         #       e.g.: text += '\n'
         return True
