@@ -5,7 +5,6 @@ Motion motor.  It can be used in drive.py for multidimensional movement.
 __all__ = ["MotorControl"]
 
 import socket
-import sys
 import time
 
 

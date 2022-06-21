@@ -1,5 +1,3 @@
-import math
-import numpy as np
 import os
 import subprocess
 import time
@@ -9,7 +7,7 @@ from controllers.motion_group import MotionGroup
 
 
 class RunManager:
-    _motion_groups = None
+    groups = None
 
     def __init__(self, filename=None, config=None):
         if filename is not None and config is not None:
@@ -69,35 +67,37 @@ class RunManager:
                 port_ip = int(7776)
 
             groups[i] = MotionGroup(
-                x_ip_addr=self.x_ip,
-                y_ip_addr=self.y_ip,
-                z_ip_addr=self.z_ip,
-                axes=self.axes,
-                MOTOR_PORT=self.port_ip,
-                d_outside=self.toml_dict["pivot_valve_distance"],
-                d_inside=self.toml_dict["valve_centre_distance"],
-                steps_per_cm=self.steps_per_cm,
-                nx=self.nx,
-                ny=self.ny,
-                nz=self.nz,
-                xs=self.xs,
-                ys=self.ys,
-                zs=self.zs,
-                bar=self.bar,
-                close=self.close,
-                centers=self.centers,
-                mode=self.mode,
-                grid=self.grid,
+                x_ip_addr=x_ip,
+                y_ip_addr=y_ip,
+                z_ip_addr=z_ip,
+                axes=axes,
+                MOTOR_PORT=port_ip,
+                d_outside=toml_dict["pivot_valve_distance"],
+                d_inside=toml_dict["valve_centre_distance"],
+                steps_per_cm=steps_per_cm,
+                nx=nx,
+                ny=ny,
+                nz=nz,
+                xs=xs,
+                ys=ys,
+                zs=zs,
+                bar=bar,
+                close=close,
+                centers=centers,
+                mode=mode,
+                grid=grid,
             )
             i += 1
-            return "Connected"
+
+        self.groups = groups
+        return "Connected"
 
     def move_to_index(self, index, groupnum=1, everything=True):
         length = max(len(self.groups[group].poslist) for group in self.groups)
         self.index = index
         if everything == False:
             try:
-                if index < len(self.groups[groupnum]):
+                if index < len(self.groups[groupnum].poslist):
                     x = self.groups[groupnum].poslist[index][0]
                     y = self.groups[groupnum].poslist[index][1]
                     z = self.groups[groupnum].poslist[index][2]
