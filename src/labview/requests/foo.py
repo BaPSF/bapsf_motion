@@ -7,6 +7,6 @@ def foo(request):
         globals()["spam"] += 1
 
     return (
-        f"Response: I received your request '{request}'.  The 'spam' global "
+        f"Response: foo() received your request '{request}'.  The 'spam' global "
         f"variable is now {globals()['spam']}."
     )
