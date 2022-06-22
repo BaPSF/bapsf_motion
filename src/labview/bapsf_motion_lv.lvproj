@@ -1,5 +1,6 @@
 ﻿<?xml version='1.0' encoding='UTF-8'?>
 <Project Type="Project" LVVersion="18008000">
+	<Property Name="SMProvider.SMVersion" Type="Int">201310</Property>
 	<Item Name="My Computer" Type="My Computer">
 		<Property Name="IOScan.Faults" Type="Str"></Property>
 		<Property Name="IOScan.NetVarPeriod" Type="UInt">100</Property>
@@ -28,11 +29,7 @@
 			<Property Name="NI.DISK" Type="Bool">true</Property>
 		</Item>
 		<Item Name="bapsf_motion_lv.vi" Type="VI" URL="../bapsf_motion_lv.vi"/>
-		<Item Name="configure.vi" Type="VI" URL="../requests/configure.vi"/>
-		<Item Name="Dependencies" Type="Dependencies">
-			<Item Name="connect.vi" Type="VI" URL="../requests/connect.vi"/>
-			<Item Name="move_to_index.vi" Type="VI" URL="../requests/move_to_index.vi"/>
-		</Item>
+		<Item Name="Dependencies" Type="Dependencies"/>
 		<Item Name="Build Specifications" Type="Build"/>
 	</Item>
 </Project>
