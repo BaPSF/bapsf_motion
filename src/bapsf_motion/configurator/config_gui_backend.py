@@ -77,7 +77,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ################PROBE CONFIG BUTTON CONNECTIONS
 
         # Connect preset Probe Config box:
-        # self.probeBox.currentIndexChanged.connect(lambda: self.probeBoxsetter())
+        self.probeBox.currentIndexChanged.connect(lambda: self.probe.probeBoxsetter())
 
         self.SaveProbeButton.clicked.connect(lambda: self.probe.getAttributes(self))
 
@@ -276,9 +276,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         ys = [x[1] / 5 for x in poslist]
         zs = [x[2] / 5 for x in poslist]
         if mode == "circle":
-            size = nx / 10
+            size = min(nx) / 10
         else:
-            size = min([nx / 5, ny / 5])
+            size = min([min(nx) / 5, min(ny) / 5])
         self.canvas2.ax.scatter(xs, ys, zs, s=size)
 
         for posgroup in barlist:
@@ -470,9 +470,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # p.end()
 
             if self.mode == "circle":
-                s = self.canvas.nx / 10
+                s = min(self.canvas.nx) / 10
             else:
-                s = min([self.canvas.nx / 5, self.canvas.ny / 5])
+                s = min([min(self.canvas.nx) / 5, min(self.canvas.ny) / 5])
             for i in range(0, len(xss)):
                 p.drawEllipse(QPointF(xss[i], yss[i]), s, s)
             p.end()

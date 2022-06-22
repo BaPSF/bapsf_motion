@@ -142,6 +142,7 @@ class Ui_MainWindow(object):
         self.probeBox = QtWidgets.QComboBox(self.PC)
         self.probeBox.setGeometry(QtCore.QRect(50, 70, 129, 22))
         self.probeBox.setObjectName("probeBox")
+        self.probeBox.addItem("")
         self.probeBox.addItem("Langmuir 1")
 
         self.line_2 = QtWidgets.QFrame(self.PC)
@@ -319,7 +320,7 @@ class Ui_MainWindow(object):
 
         self.tabWidget.addTab(self.GD, "")
 
-        ##################################### MOTION LIST STUFF ##########################
+        ######################################## MOTION LIST STUFF##########################
         self.ML = QtWidgets.QWidget()
         self.ML.setObjectName("ML")
 
@@ -409,9 +410,7 @@ class Ui_MainWindow(object):
         self.ea.setObjectName("ea")
         self.ea.setText("No. of points: X")
         self.ea.setToolTip(
-            "Enter the number of data points you wish to define.\n"
-            "Enter multiple integers separated by commas (i.e '1,2,3') "
-            "for disjoint regions"
+            "Enter the number of data points you wish to define.\n Enter multiple integers separated by commas (i.e '1,2,3') for disjoint regions"
         )
         self.gridL1.addWidget(self.ea)
 
@@ -426,9 +425,7 @@ class Ui_MainWindow(object):
         self.eb.setObjectName("eb")
         self.eb.setText("No. of points: Y")
         self.eb.setToolTip(
-            "Enter the number of data points you wish to define.\n"
-            "Enter multiple integers separated by commas (i.e '1,2,3') "
-            "for disjoint regions"
+            "Enter the number of data points you wish to define.\n Enter multiple integers separated by commas (i.e '1,2,3') for disjoint regions"
         )
         self.gridL2.addWidget(self.eb)
 
@@ -443,9 +440,7 @@ class Ui_MainWindow(object):
         self.ec.setObjectName("ec")
         self.ec.setText("No. of points: Z")
         self.ec.setToolTip(
-            "Enter the number of data points you wish to define.\n"
-            "Enter multiple integers separated by commas (i.e '1,2,3') "
-            "for disjoint regions"
+            "Enter the number of data points you wish to define.\n Enter multiple integers separated by commas (i.e '1,2,3') for disjoint regions"
         )
         self.gridL3.addWidget(self.ec)
 
@@ -504,7 +499,6 @@ class Ui_MainWindow(object):
         self.xres = QtWidgets.QLineEdit(self.groupBox)
         self.xres.setObjectName("xres")
         self.xres.setMaximumWidth(150)
-        self.xres.setValidator(QDoubleValidator())
         self.hl.addWidget(self.xres)
 
         self.hl2 = QtWidgets.QHBoxLayout(self.groupBox)
@@ -516,7 +510,6 @@ class Ui_MainWindow(object):
         self.yres = QtWidgets.QLineEdit(self.groupBox)
         self.yres.setObjectName("yres")
         self.yres.setMaximumWidth(150)
-        self.yres.setValidator(QDoubleValidator())
         self.hl2.addWidget(self.yres)
 
         self.hl3 = QtWidgets.QHBoxLayout(self.groupBox)
@@ -528,7 +521,6 @@ class Ui_MainWindow(object):
         self.zres = QtWidgets.QLineEdit(self.groupBox)
         self.zres.setObjectName("xres")
         self.zres.setMaximumWidth(150)
-        self.zres.setValidator(QDoubleValidator())
         self.hl3.addWidget(self.zres)
 
         self.verticalLayout_2.addLayout(self.hl)
@@ -629,8 +621,7 @@ class Ui_MainWindow(object):
         self.coordinates = QtWidgets.QLineEdit(self.groupBox_2)
         self.coordinates.setObjectName("coordinates")
         self.coordinates.setText(
-            "Enter points separated by commas and space. For eg. - "
-            "(0,0,0), (10,0,0), (0,20,10)"
+            "Enter points separated by commas and space. For eg. - (0,0,0), (10,0,0), (0,20,10)"
         )
         self.coordinatesVert.addWidget(self.coordinates)
 
@@ -794,23 +785,23 @@ class Ui_MainWindow(object):
         self.modeBox.setToolTip(
             _translate(
                 "MainWindow",
-                "RECTANGLE: Click and Drag to define a rectangular area\n"
-                "CIRCLE: Click and Drag to define a circular area\n"
-                "ELLIPSE: Click and Drag to define a rectangle in which the ellipse "
-                "will be inscribed.\n"
-                "LINE: Click, Hold and Drag to define a line path\n"
-                "POLYLINE: Click and Drag to define line path. Click again to start "
-                "second line. Double click to end.\n"
-                "BARRIER: Click, Hold and Drag to define a barrier for the probe.",
+                "RECTANGLE: Click and Drag to define a rectangular area\n\
+                                           CIRCLE: Click and Drag to define a circular area\n\
+                                           ELLIPSE: Click and Drag to define a rectangle in which the ellipse will be inscribed.\n\
+                                           LINE: Click, Hold and Drag to define a line path\n\
+                                           POLYLINE: Click and Drag to define line path. Click again to start second line. Double click to end.\n\
+                                           BARRIER: Click, Hold and Drag to define a barrier for the probe.\n\
+                                               ",
             )
         )
+
         self.gridBox.setToolTip(
             _translate(
                 "MainWindow",
-                "RECTANGLE: Select for Rectangular gridding\n"
-                "CIRCLE: Select for Circular (or cylindrical) gridding\n"
-                "ELLIPSE: Select for Elliptical gridding\n"
-                "SPHERE: Select for Spherical gridding",
+                "RECTANGLE: Select for Rectangular gridding\n\
+                                           CIRCLE: Select for Circular (or cylindrical) gridding\n\
+                                           ELLIPSE: Select for Elliptical gridding\n\
+                                           SPHERE: Select for Spherical gridding",
             )
         )
         self.label_7.setText(_translate("MainWindow", "Choose Grid-Style"))
@@ -822,9 +813,7 @@ class Ui_MainWindow(object):
         self.gridCentre.setToolTip(
             _translate(
                 "MainWindow",
-                "Enter custom-center(s) in the format (x,y,z), (x1,y1,z1,) , or "
-                "leave empty for default gridding (Centers of defined regions). "
-                "Must specify centers for auto-shape generation.",
+                "Enter custom-center(s) in the format (x,y,z), (x1,y1,z1,) , or leave empty for default gridding (Centers of defined regions). Must specify centers for auto-shape generation.",
             )
         )
 

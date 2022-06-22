@@ -8,6 +8,7 @@ Nov 2021
 """
 __all__ = ["DriveControl"]
 
+import math
 import numpy as np
 import time
 
@@ -106,6 +107,14 @@ class DriveControl:
         if self.z_mc is not None:
             self.z_mc.set_speed(vz)
 
+    def set_acceleration(self, ax=1, ay=1, az=1):
+        if self.x_mc is not None:
+            self.x_mc.set_acceleration(ax)
+        if self.y_mc is not None:
+            self.y_mc.set_acceleration(ay)
+        if self.z_mc is not None:
+            self.z_mc.set_acceleration(az)
+
     def cm_to_steps(self, d: float) -> int:
         # convert distance d in cm to motor position
         return int(d * self.steps_per_cm)
@@ -143,6 +152,16 @@ class DriveControl:
         )  # Seems that 1 encoder unit = 5 motor step unit
         a = self.d_outside
         b = self.d_inside
+        P = 0.040 * 9.81  # kg load at end
+        E = 190 * (10**9)  # Pa
+        r = 0.0046625  # m
+        r2 = 0.00394
+        density = 7990  # kg/m^3
+        g = 9.81  # m/s^2
+        K = density * np.pi * (r**2) * g
+        I = np.pi * (r**4 - r2**4) / 2
+
+        ##########################TODO.. currently wildly incorrect results.############
 
         if my_pos < 0:
             C = (
@@ -152,12 +171,33 @@ class DriveControl:
             )
 
             def func(x):
-                return a * np.tan(x) + self.d_offset / np.cos(x) - 50
+                return a * np.tan(x) + self.d_offset / np.cos(x) - C
 
             theta = fsolve(func, 0)
             x = (b + mx_pos) * np.cos(theta)
             y = (b + mx_pos) * np.sin(theta)
+            c = (x**2 + y**2) ** 0.5
+            if x == 0:
+                phi = np.pi / 2
+            elif x < 0:
+                phi = math.atan(y / x) + np.pi
+            else:
+                phi = math.atan(y / x)
+            L = ((b**2 + c**2 + 2 * b * c * math.cos(phi)) ** 0.5) / 100
 
+            dy_total = 100 * (
+                ((L**3) / (4 * E * I)) * (2 * P + K * L)
+                + (L**3 / (6 * E * I)) * (-P - K * L)
+                + K * (L**4) / (24 * E * I)
+                - (
+                    (((b / 100) ** 3) / (4 * E * I)) * (2 * P + K * ((b / 100)))
+                    + ((b / 100) ** 3 / (6 * E * I)) * (-P - K * (b / 100))
+                    + K * ((b / 100) ** 4) / (24 * E * I)
+                )
+            )
+
+            # y-corr.
+            y = y + 1 * dy_total
             return mx_pos, my_pos
         else:
             C = (
@@ -167,13 +207,40 @@ class DriveControl:
             )
 
             def func(x):
-                return a * np.tan(x) - self.d_offset / np.cos(x) - 50
+                return a * np.tan(x) - self.d_offset / np.cos(x) - C
 
             theta = fsolve(func, 0)
             x = (b + mx_pos) * np.cos(theta)
             y = (b + mx_pos) * np.sin(theta)
+            c = (x**2 + y**2) ** 0.5
+            if x == 0:
+                phi = np.pi / 2
+            elif x < 0:
+                phi = math.atan(y / x) + np.pi
+            else:
+                phi = math.atan(y / x)
+            L = (
+                ((b**2 + c**2 + 2 * b * c * math.cos(phi)) ** 0.5)
+                * np.cos(theta)
+                / 100
+            )
 
-            return mx_pos, my_pos
+            dy_total = 100 * (
+                ((L**3) / (4 * E * I)) * (2 * P + K * L)
+                + (L**3 / (6 * E * I)) * (-P - K * L)
+                + K * (L**4) / (24 * E * I)
+                - (
+                    (((b / 100) ** 3) / (4 * E * I)) * (2 * P + K * ((b / 100)))
+                    + ((b / 100) ** 3 / (6 * E * I)) * (-P - K * (b / 100))
+                    + K * ((b / 100) ** 4) / (24 * E * I)
+                )
+            )
+
+            # y-corr.
+            y = y + 1 * dy_total
+            return x, y, None
+
+        ##########################TODO.. currently wildly incorrect results.############
 
     def current_probe_position1D(self):
         # Obtain encoder feedback and calculate probe position
@@ -181,11 +248,15 @@ class DriveControl:
         mx_pos = self.x_mc.current_position() / self.steps_per_cm * 5
         # my_pos = self.y_mc.current_position() / self.steps_per_cm * 5  # Seems that 1 encoder unit = 5 motor step unit
 
-        return mx_pos
+        return mx_pos, None, None
 
     def current_probe_position3D(self):
         pass
 
+    # TODO
+    # TODO
+    # TODO
+    # TODO
     def current_probe_positionZTh(self):
         pass
 

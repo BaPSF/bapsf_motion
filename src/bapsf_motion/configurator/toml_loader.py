@@ -6,7 +6,7 @@ import tomli
 
 from PyQt5.QtWidgets import *
 
-from bapsf_motion.controllers import MotorMovement
+from bapsf_motion.controllers import MotionGroup
 
 
 class Loader:
@@ -16,7 +16,7 @@ class Loader:
             filename, check = QFileDialog.getOpenFileName(
                 None,
                 "QFileDialog.getOpenFileName()",
-                "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\Groups",
+                "configurator\\Groups",
                 "toml files (*.toml)",
             )
             self.drivefile = filename
@@ -74,7 +74,7 @@ class Loader:
 
     def ConnectMotor(self, arg2):
         self.port_ip = int(7776)
-        self.mm = MotorMovement(
+        self.mm = MotionGroup(
             x_ip_addr=self.x_ip,
             y_ip_addr=self.y_ip,
             z_ip_addr=self.z_ip,
@@ -87,7 +87,6 @@ class Loader:
         arg2.ConnectMotor()
 
     def create_list(self, arg):
-        res = min(self.nx, self.ny, self.nz)
 
         str1 = self.string1
         str1 = np.array(
@@ -107,6 +106,7 @@ class Loader:
 
                 index = -1 if self.closeit else 0
                 for i in range(index, len(xs) - 1):
+                    res = min(self.nx[i], self.ny[i], self.nz[i])
 
                     xposi = xs[i]
                     xposi2 = xs[i + 1]
@@ -150,6 +150,7 @@ class Loader:
                 zpos = [zs[0]]
 
                 for i in range(0, len(xs) - 1, 2):
+                    res = min(self.nx[i // 2], self.ny[i // 2], self.nz[i // 2])
 
                     xposi = xs[i]
                     xposi2 = xs[i + 1]
@@ -191,13 +192,12 @@ class Loader:
                     xs = [x[0] for x in str1]
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
-                    nx = self.nx
-                    ny = self.ny
-                    nz = self.nz
 
                     poslist = []
                     for i in range(0, len(xs) - 1, 2):
-
+                        nx = self.nx[i // 2]
+                        ny = self.ny[i // 2]
+                        nz = self.nz[i // 2]
                         xmax = xs[i + 1]
                         xmin = xs[i]
                         ymax = ys[i + 1]
@@ -235,15 +235,14 @@ class Loader:
                     xs = [x[0] for x in str1]
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
-                    dr = self.nx
-                    dtheta = self.ny
-                    nz = self.nz
 
                     xpos = []
                     ypos = []
                     poslist = []
                     for i in range(0, len(xs) - 1, 2):
-
+                        dr = self.nx[i // 2]
+                        dtheta = self.ny[i // 2]
+                        nz = self.nz[i // 2]
                         xmax = max([xs[i + 1], xs[i]])
                         xmin = min([xs[i + 1], xs[i]])
                         ymax = max([ys[i + 1], ys[i]])
@@ -296,16 +295,15 @@ class Loader:
                     xs = [x[0] for x in str1]
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
-                    dr = self.nx
-                    dtheta = self.ny
-                    dz = self.nz
 
                     e = self.eccentricity
                     xpos = []
                     ypos = []
                     poslist = []
                     for i in range(0, len(self.xpos) - 1, 2):
-
+                        dr = self.nx[i // 2]
+                        dtheta = self.ny[i // 2]
+                        dz = self.nz[i // 2]
                         xmax = max([xs[i + 1], xs[i]])
                         xmin = min([xs[i + 1], xs[i]])
                         ymax = max([ys[i + 1], ys[i]])
@@ -363,12 +361,12 @@ class Loader:
                     xs = [x[0] for x in str1]
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
-                    dr = self.nx
-                    dtheta = self.ny
-                    dphi = self.nz
 
                     poslist = []
                     for i in range(0, len(xs) - 1, 2):
+                        dr = self.nx[i // 2]
+                        dtheta = self.ny[i // 2]
+                        dphi = self.nz[i // 2]
 
                         xmax = max([xs[i + 1], xs[i]])
                         xmin = min([xs[i + 1], xs[i]])
@@ -436,13 +434,14 @@ class Loader:
                     xs = [x[0] for x in str1]
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
-                    dr = self.nx
-                    dtheta = self.ny
-                    nz = self.nz
 
                     poslist = []
 
                     for i in range(0, len(xs) - 1, 2):
+                        dr = self.nx[i // 2]
+                        dtheta = self.ny[i // 2]
+                        nz = self.nz[i // 2]
+
                         xpos = []
                         ypos = []
                         xposi = xs[i]
@@ -459,9 +458,6 @@ class Loader:
                         ypos = np.append(ypos, yposi)
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
                         r = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
-
-                        dr = self.nx
-                        dtheta = self.ny
 
                         linval = math.floor(r / dr)
 
@@ -494,17 +490,15 @@ class Loader:
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
 
-                    nx = self.nx
-                    ny = self.ny
-                    nz = self.nz
-
                     poslist = []
                     xpos = []
                     ypos = []
                     zpos = []
 
                     for i in range(0, len(xs) - 1, 2):
-
+                        nx = self.nx[i // 2]
+                        ny = self.ny[i // 2]
+                        nz = self.nz[i // 2]
                         xposi = xs[i]
                         xposi2 = xs[i + 1]
 
@@ -566,14 +560,13 @@ class Loader:
                     xs = [x[0] for x in str1]
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
-                    dr = self.nx
-                    dtheta = self.ny
-                    dphi = self.nz
 
                     poslist = []
 
                     for i in range(0, len(xs) - 1, 2):
-
+                        dr = self.nx[i // 2]
+                        dtheta = self.ny[i // 2]
+                        dphi = self.nz[i // 2]
                         xposi = xs[i]
                         xposi2 = xs[i + 1]
 
@@ -646,16 +639,14 @@ class Loader:
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
 
-                    dr = self.nx
-                    dtheta = self.ny
-                    dz = self.nz
-
                     e = self.eccentricity
                     poslist = []
                     xpos = []
                     ypos = []
                     for i in range(0, len(xs) - 1, 2):
-
+                        dr = self.nx[i // 2]
+                        dtheta = self.ny[i // 2]
+                        dz = self.nz[i // 2]
                         xposi = xs[i]
                         xposi2 = xs[i + 1]
 
@@ -710,13 +701,14 @@ class Loader:
                     xs = [x[0] for x in str1]
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
-                    dr = self.nx
-                    dtheta = self.ny
-                    nz = self.nz
 
                     poslist = []
 
                     for i in range(0, len(xs) - 1, 2):
+                        dr = self.nx[i // 2]
+                        dtheta = self.ny[i // 2]
+                        nz = self.nz[i // 2]
+
                         xpos = []
                         ypos = []
                         xposi = xs[i]
@@ -771,13 +763,12 @@ class Loader:
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
 
-                    nx = self.nx
-                    ny = self.ny
-                    nz = self.nz
                     poslist = []
 
                     for i in range(0, len(xs) - 1, 2):
-
+                        nx = self.nx[i // 2]
+                        ny = self.ny[i // 2]
+                        nz = self.nz[i // 2]
                         xmax = xs[i + 1]
                         xmin = xs[i]
                         ymax = ys[i + 1]
@@ -792,9 +783,6 @@ class Loader:
                         cy = (yposi + yposi2) / 2
                         cz = (zmax + zmin) / 2
 
-                        nx = self.nx
-                        ny = self.ny
-                        nz = self.nz
                         a = np.abs(xmax - xmin) / 2
                         b = np.abs(ymax - ymin) / 2
 
@@ -834,13 +822,13 @@ class Loader:
                     ys = [x[1] for x in str1]
                     zs = [x[2] for x in str1]
 
-                    nx = self.nx
-                    ny = self.ny
-                    nz = self.nz
                     poslist = []
 
                     for i in range(0, len(xs) - 1, 2):
 
+                        nx = self.nx[i // 2]
+                        ny = self.ny[i // 2]
+                        nz = self.nz[i // 2]
                         xmax = xs[i + 1]
                         xmin = xs[i]
                         ymax = ys[i + 1]
@@ -855,9 +843,6 @@ class Loader:
                         cy = (yposi + yposi2) / 2
                         cz = (zmax + zmin) / 2
 
-                        nx = self.nx
-                        ny = self.ny
-                        nz = self.nz
                         a = np.abs(xmax - xmin) / 2
                         b = np.abs(ymax - ymin) / 2
                         r = np.sqrt((xposi2 - xposi) ** 2 + (yposi - yposi2) ** 2) * 0.5

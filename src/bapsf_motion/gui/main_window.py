@@ -5,7 +5,10 @@
 # Created by: PyQt5 UI code generator 5.9.2
 #
 # WARNING! All changes made in this file will be lost!
+
 __all__ = ["GroupLayout", "TabPage", "Ui_MainWindow"]
+
+import sys
 
 from matplotlib.pyplot import imread
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -133,9 +136,7 @@ class Ui_MainWindow(QtWidgets.QWidget):
 
         self.tabWidget.addTab(self.RunTab, "")
         #####################################Image Stuff###################################################################
-        input_image = imread(
-            "C:\\Users\\risha\\Desktop\\daq-mod-probedrives-main\\src\\bapsf_motion\\gui\\LAPD.jpg"
-        )
+        input_image = imread("gui\\LAPD.jpg")
         height, width, channels = input_image.shape
         bytesPerLine = channels * width
         qImg = QtGui.QImage(

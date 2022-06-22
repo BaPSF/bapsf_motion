@@ -251,6 +251,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         subprocess.call(filename, shell=True)
         self.tabs[index].Loader.getgroup(self.tabs[index], self, index, filename)
 
+    def Save(self):
+        self.filenames = []
+        i = 0
+        for index in self.tabs:
+            filename = self.tabs[index].Loader.drivefile
+            self.filesnames[i] = filename
+            i += 1
+        return self.filenames
+
     def ConnectMotor(self, index):
         self.tabs[index].move.clicked.connect(
             lambda: self.tabs[index].Loader.mm.move_to_position(
@@ -359,6 +368,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.groups[i].list.setCurrentIndex(y)
                 self.movelabel.setText(f"Move all to index: {y}")
 
+    def closeEvent(self, event):
+        reply = QMessageBox.question(
+            self,
+            "Window Close",
+            "Are you sure you want to close the window?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No,
+        )
+
+        if reply == QMessageBox.Yes:
+            event.accept()
+            return self.filenames
+        else:
+            event.ignore()
+
 
 #################################################################################
 if __name__ == "__main__":
@@ -366,5 +390,4 @@ if __name__ == "__main__":
     app = QApplication([])
     app.setQuitOnLastWindowClosed(True)
     window = MainWindow()
-
     app.exec_()
