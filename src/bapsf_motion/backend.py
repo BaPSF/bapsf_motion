@@ -13,7 +13,7 @@ from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import *
 
-from bapsf_motion.configurator import Loader
+from configurator.toml_loader import Loader
 from bapsf_motion.gui import GroupLayout, TabPage, Ui_MainWindow
 
 
@@ -256,7 +256,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         i = 0
         for index in self.tabs:
             filename = self.tabs[index].Loader.drivefile
-            self.filesnames[i] = filename
+            filesnames[i] = filename
             i += 1
         return self.filenames
 
@@ -391,3 +391,4 @@ if __name__ == "__main__":
     app.setQuitOnLastWindowClosed(True)
     window = MainWindow()
     app.exec_()
+
