@@ -51,7 +51,7 @@ class MotionGroup:
                 "toml files (*.toml)",
             )
         self.probefile = filename
-
+        
         if check:
             with open(filename, "r") as f:
                 data = f.read()
@@ -210,8 +210,8 @@ class ProbeConfig:
             Necessary as this function updates the gui to display
             the parameters of the probe chosen from drop-down.
         """
-        # TODO:- create list of standard probes, with their properties
-        # being listed here, just like pdBoxSetter
+        #TODO:- create list of standard probes, with their properties 
+        #being listed here, just like pdBoxSetter
         index = arg.probeDriveBox.currentIndex()
         if index is None:
             pass

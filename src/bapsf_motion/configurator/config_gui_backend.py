@@ -278,7 +278,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if mode == "circle":
             size = min(nx) / 10
         else:
-            size = min([min(nx) / 5, min(ny) / 5])
+            size = min([ min(nx) / 5, min(ny) / 5])
         self.canvas2.ax.scatter(xs, ys, zs, s=size)
 
         for posgroup in barlist:
@@ -472,7 +472,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if self.mode == "circle":
                 s = min(self.canvas.nx) / 10
             else:
-                s = min([min(self.canvas.nx) / 5, min(self.canvas.ny) / 5])
+                s = min([ min(self.canvas.nx) / 5, min(self.canvas.ny) / 5])
             for i in range(0, len(xss)):
                 p.drawEllipse(QPointF(xss[i], yss[i]), s, s)
             p.end()
