@@ -5,7 +5,7 @@ import numpy as np
 
 from PyQt5.QtWidgets import *
 
-from bapsf_motion.controllers.drive import DriveControl
+from drive import DriveControl
 
 
 class MotionGroup:
@@ -69,14 +69,14 @@ class MotionGroup:
             z_ip_addr=self.z_ip_addr,
         )
 
-    def _validate_config(self, mg_config=None):
+    def _validate_config(mg_config=None):
 
         """
         Final verification routine to check no point is in a no-go
-        region or an unreachable region.
+        region or an unreachable region. 
         """
 
-        if mg_config is None:
+        if mgconfig is None:
             xs = [x[0] for x in self.poslist]
             ys = [x[1] for x in self.poslist]
             barlist = self.barlist * 5
@@ -93,18 +93,18 @@ class MotionGroup:
                 theta = np.pi
                 ########## TODO    ########## TODO    ########## TODO    ########## TODO
         else:
-            self.centers = mg_config["Motion List"]["centers"]
-            self.mode = mg_config["Motion List"]["mode"]
-            self.grid = mg_config["Motion List"]["grid"]
-            self.nx = mg_config["Motion List"]["dx"]
-            self.ny = mg_config["Motion List"]["dy"]
-            self.nz = mg_config["Motion List"]["dz"]
-            self.xs = mg_config["Motion List"]["xs"]
-            self.ys = mg_config["Motion List"]["ys"]
-            self.zs = mg_config["Motion List"]["zs"]
-            self.bar = mg_config["Motion List"]["bar"]
-            self.close = mg_config["Motion List"]["close"]
-            self.axes = mg_config["drive"]["axes"]
+            self.centers = mgconfig["Motion List"]["centers"]
+            self.mode = mgconfig["Motion List"]["mode"]
+            self.grid = mgconfig["Motion List"]["grid"]
+            self.nx = mgconfig["Motion List"]["dx"]
+            self.ny = mgconfig["Motion List"]["dy"]
+            self.nz = mgconfig["Motion List"]["dz"]
+            self.xs = mgconfig["Motion List"]["xs"]
+            self.ys = mgconfig["Motion List"]["ys"]
+            self.zs = mgconfig["Motion List"]["zs"]
+            self.bar = mgconfig["Motion List"]["bar"]
+            self.close = mgconfig["Motion List"]["close"]
+            self.axes = mgconfig["drive"]["axes"]
             # create coordinate list
             self.create_list()
             # now run same verification routine
@@ -312,19 +312,19 @@ class MotionGroup:
             # cns.gatech.edu/~predrag/GTcourses/PHYS-4421-04/lautrup/2.8/rods.pdf [pg 166]
             #
             # r =1.9cm E = 195*10^9 Pa, density = 7970 kg/m^3
-            c = np.sqrt(x**2 + y**2)
+            c = np.sqrt(x ** 2 + y ** 2)
             # deflection differential from
             # cns.gatech.edu/~predrag/GTcourses/PHYS-4421-04/lautrup/2.8/rods.pdf [pg 166]
             #
             # E = 205*10^9 Pa, density = 7970 kg/m^3
             P = 0.040 * 9.81  # kg load at end
-            E = 190 * (10**9)  # Pa
+            E = 190 * (10 ** 9)  # Pa
             r = 0.0046625  # m
             r2 = 0.00394
             density = 7990  # kg/m^3
             g = 9.81  # m/s^2
-            K = density * np.pi * (r**2) * g
-            I = np.pi * (r**4 - r2**4) / 2
+            K = density * np.pi * (r ** 2) * g
+            I = np.pi * (r ** 4 - r2 ** 4) / 2
 
             if x == 0:
                 phi = np.pi / 2
@@ -332,7 +332,7 @@ class MotionGroup:
                 phi = math.atan(y / x) + np.pi
             else:
                 phi = math.atan(y / x)
-            l2 = (b**2 + c**2 + 2 * b * c * math.cos(phi)) ** 0.5
+            l2 = (b ** 2 + c ** 2 + 2 * b * c * math.cos(phi)) ** 0.5
             L = l2 / 100
 
             # dy_selfweight = 100 * K * (L**4) / (E * 8 * I) - 100 * K * (
@@ -349,9 +349,9 @@ class MotionGroup:
             L = L * np.cos(theta)
 
             dy_total = 100 * (
-                ((L**3) / (4 * E * I)) * (2 * P + K * L)
-                + (L**3 / (6 * E * I)) * (-P - K * L)
-                + K * (L**4) / (24 * E * I)
+                ((L ** 3) / (4 * E * I)) * (2 * P + K * L)
+                + (L ** 3 / (6 * E * I)) * (-P - K * L)
+                + K * (L ** 4) / (24 * E * I)
                 - (
                     (((b / 100) ** 3) / (4 * E * I)) * (2 * P + K * ((b / 100)))
                     + ((b / 100) ** 3 / (6 * E * I)) * (-P - K * (b / 100))
@@ -368,7 +368,7 @@ class MotionGroup:
                 phi = math.atan(y / x) + np.pi
             else:
                 phi = math.atan(y / x)
-            c = np.sqrt(x**2 + y**2)
+            c = np.sqrt(x ** 2 + y ** 2)
             if y >= 0:
                 theta = (
                     math.atan(np.abs(y) / (b + x)) + alpha
@@ -377,7 +377,7 @@ class MotionGroup:
                 theta = (
                     math.atan(np.abs(y) / (b + x)) - alpha
                 )  # + math.atan(0.051*(np.abs(y)**0.8)/184.4)
-            l2 = (b**2 + c**2 + 2 * b * c * math.cos(phi)) ** 0.5
+            l2 = (b ** 2 + c ** 2 + 2 * b * c * math.cos(phi)) ** 0.5
 
             l1 = a / math.cos(theta)
 
@@ -696,7 +696,7 @@ class MotionGroup:
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
 
                         a = max([(xmax - xmin), (ymax - ymin)])
-                        b = a * np.sqrt(1 - e**2)
+                        b = a * np.sqrt(1 - e ** 2)
 
                         xpos = np.append(xpos, cx)
                         ypos = np.append(ypos, cy)
@@ -900,7 +900,7 @@ class MotionGroup:
                                 for y in yvals:
                                     if (
                                         (xvals[x] - cx) ** 2 + (yvals[y] - cy) ** 2
-                                        <= r**2
+                                        <= r ** 2
                                         and zvals[z] <= zmax
                                         and zvals[z] >= zmin
                                     ):
@@ -975,7 +975,7 @@ class MotionGroup:
                                     )
                                     zval = cz + t * r * np.cos(p * np.pi)
                                 if (
-                                    (xval - cx) ** 2 + (yval - cy) ** 2 > rc**2
+                                    (xval - cx) ** 2 + (yval - cy) ** 2 > rc ** 2
                                     or zval > zmax
                                     or zval < zmin
                                 ):
@@ -1023,7 +1023,7 @@ class MotionGroup:
 
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
                         b = np.sqrt((xposi - xposi2) ** 2 + (yposi - yposi2) ** 2)
-                        a = b / np.sqrt(1 - e**2)
+                        a = b / np.sqrt(1 - e ** 2)
                         # zposi = zs[i]
                         # zposi2 =zs[i+1]
 
@@ -1042,7 +1042,7 @@ class MotionGroup:
                             for z in thetavals[1:]:
                                 xval = cx + t * a * np.cos(z * 2 * np.pi)
                                 yval = cy + t * b * np.sin(z * 2 * np.pi)
-                                if (xval - cx) ** 2 + (yval - cy) ** 2 <= b**2:
+                                if (xval - cx) ** 2 + (yval - cy) ** 2 <= b ** 2:
                                     xpos = np.append(xpos, np.round(xval, 3))
                                     ypos = np.append(ypos, np.round(yval, 3))
                         for z in zvals:
