@@ -3,9 +3,8 @@ __all__ = ["MotionGroup"]
 import math
 import numpy as np
 
-from PyQt5.QtWidgets import *
-
 from drive import DriveControl
+from PyQt5.QtWidgets import *
 
 
 class MotionGroup:

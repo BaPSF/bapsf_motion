@@ -1,6 +1,5 @@
 from runtherun import RunManager
 
-
 RunManager = RunManager()
 # define wrapper for LabVIEW Python node
 def labview_handler(request, *args, **kwargs):
