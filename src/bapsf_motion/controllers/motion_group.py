@@ -69,59 +69,48 @@ class MotionGroup:
             z_ip_addr=self.z_ip_addr,
         )
 
-    def _validate_config(mg_config=None):
+    def _validate_config(self, mg_config=None):
 
         """
         Final verification routine to check no point is in a no-go
         region or an unreachable region.
         """
 
-        if mgconfig is None:
+        if mg_config is None:
             xs = [x[0] for x in self.poslist]
             ys = [x[1] for x in self.poslist]
             barlist = self.barlist * 5
-            ########## TODO    ########## TODO    ########## TODO ########## TODO    ########## TODO
-            alpha = np.pi / 4
-            self.hand = 0
-
-            # theta is the angular position of port. alpha is the angular reach of probe.
-            # must map port location with theta (hand), and make some formula to get alpha.
-
-            if self.hand == 0:
-                theta = 0
-            if self.hand == 1:
-                theta = np.pi
-                ########## TODO    ########## TODO    ########## TODO    ########## TODO
         else:
-            self.centers = mgconfig["Motion List"]["centers"]
-            self.mode = mgconfig["Motion List"]["mode"]
-            self.grid = mgconfig["Motion List"]["grid"]
-            self.nx = mgconfig["Motion List"]["dx"]
-            self.ny = mgconfig["Motion List"]["dy"]
-            self.nz = mgconfig["Motion List"]["dz"]
-            self.xs = mgconfig["Motion List"]["xs"]
-            self.ys = mgconfig["Motion List"]["ys"]
-            self.zs = mgconfig["Motion List"]["zs"]
-            self.bar = mgconfig["Motion List"]["bar"]
-            self.close = mgconfig["Motion List"]["close"]
-            self.axes = mgconfig["drive"]["axes"]
+            self.centers = mg_config["Motion List"]["centers"]
+            self.mode = mg_config["Motion List"]["mode"]
+            self.grid = mg_config["Motion List"]["grid"]
+            self.nx = mg_config["Motion List"]["dx"]
+            self.ny = mg_config["Motion List"]["dy"]
+            self.nz = mg_config["Motion List"]["dz"]
+            self.xs = mg_config["Motion List"]["xs"]
+            self.ys = mg_config["Motion List"]["ys"]
+            self.zs = mg_config["Motion List"]["zs"]
+            self.bar = mg_config["Motion List"]["bar"]
+            self.close = mg_config["Motion List"]["close"]
+            self.axes = mg_config["drive"]["axes"]
+
             # create coordinate list
             self.create_list()
             # now run same verification routine
             xs = [x[0] for x in self.poslist]
             ys = [x[1] for x in self.poslist]
             barlist = self.barlist * 5
-            ########## TODO    ########## TODO    ########## TODO ########## TODO    ########## TODO
-            alpha = np.pi / 4
-            self.hand = 0
 
-            # theta is the angular position of port. alpha is the angular reach of probe.
-            # must map port location with theta (hand), and make some formula to get alpha.
-
-            if self.hand == 0:
-                theta = 0
-            if self.hand == 1:
-                theta = np.pi
+        # theta is the angular position of port.
+        # alpha is the angular reach of probe.
+        # must map port location with theta (hand), and make some
+        # formula to get alpha.
+        alpha = np.pi / 4
+        self.hand = 0
+        if self.hand == 0:
+            theta = 0.0
+        else:  # self.hand == 1:
+            theta = np.pi
 
         for i in range(0, len(xs)):
             dist = ((xs[i]) ** 2 + (ys[i]) ** 2) ** 0.5
@@ -691,7 +680,8 @@ class MotionGroup:
                         cx = (xmax + xmin) / 2
                         cy = (ymax + ymin) / 2
                         cz = (zmax + zmin) / 2
-                        # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET APPROPRIATE ONES WITHIN THE REGION.
+                        # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET
+                        # APPROPRIATE ONES WITHIN THE REGION.
                         linvalz = abs(math.floor((zmax - zmin) / (dz)))
                         zvals = np.linspace(zmin, zmax, linvalz + 1)
 
@@ -747,7 +737,8 @@ class MotionGroup:
                         zmax = max([zs[i + 1], zs[i]])
                         zmin = min([zs[i + 1], zs[i]])
 
-                        # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET APPROPRIATE ONES WITHIN THE REGION.
+                        # NEED TO RECALCULATE POINT GENERATING PARAMETERS TO GET
+                        # APPROPRIATE ONES WITHIN THE REGION.
                         cx = (xmax + xmin) / 2
                         cy = (ymax + ymin) / 2
                         cz = (zmax + zmin) / 2
@@ -964,7 +955,8 @@ class MotionGroup:
                         positions = [[cx, cy, cz]]
                         # first start point already initialized in array.
                         for t in parvals[1:]:
-                            # Other start points are incorporated as the end points of previous segment.
+                            # Other start points are incorporated as the end points
+                            # of previous segment.
                             for z in thetavals[1:]:
                                 for p in phivals[1:]:
                                     xval = cx + t * r * np.cos(z * 2 * np.pi) * np.sin(
