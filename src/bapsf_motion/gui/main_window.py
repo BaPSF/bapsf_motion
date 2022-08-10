@@ -8,8 +8,6 @@
 
 __all__ = ["GroupLayout", "TabPage", "Ui_MainWindow"]
 
-import sys
-
 from matplotlib.pyplot import imread
 from PyQt5 import QtCore, QtGui, QtWidgets
 

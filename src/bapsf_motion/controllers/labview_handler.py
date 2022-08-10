@@ -1,6 +1,8 @@
-from runtherun import RunManager
+from bapsf_motion.controllers.runtherun import RunManager
 
 RunManager = RunManager()
+
+
 # define wrapper for LabVIEW Python node
 def labview_handler(request, *args, **kwargs):
     _requests = {

@@ -3,8 +3,9 @@ __all__ = ["MotionGroup"]
 import math
 import numpy as np
 
-from drive import DriveControl
 from PyQt5.QtWidgets import *
+
+from bapsf_motion.controllers.drive import DriveControl
 
 
 class MotionGroup:

@@ -8,12 +8,12 @@ Created on Sat Apr 23 18:03:45 2022
 import numpy as np
 import subprocess
 
-from configurator.toml_loader import Loader
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import *
 
+from bapsf_motion.configurator.toml_loader import Loader
 from bapsf_motion.gui import GroupLayout, TabPage, Ui_MainWindow
 
 

@@ -6,7 +6,7 @@ import tomli
 
 from PyQt5.QtWidgets import *
 
-from .controllers.motion_group import MotionGroup
+from bapsf_motion.controllers.motion_group import MotionGroup
 
 
 class Loader:
