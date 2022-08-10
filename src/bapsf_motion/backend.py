@@ -12,6 +12,7 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtWidgets import *
+from typing import ClassVar, Dict, List
 
 from bapsf_motion.configurator.toml_loader import Loader
 from bapsf_motion.gui import GroupLayout, TabPage, Ui_MainWindow
@@ -83,19 +84,6 @@ class MyMplCanvas(FigureCanvas):
             size = min([nx / 2, ny / 2])
         self.ax.scatter(xs, ys, zs, s=size)
 
-        # for posgroup in barlist:
-        #     # posgroup is [(xorg,y,z),(xe),(xvo),(xve)]
-        #
-        #     self.ax.plot([posgroup[0][0], posgroup[1][0]],
-        #                          [posgroup[0][1], posgroup[1][1]], color='#800000'
-        #                          )
-        #     self.ax.plot([posgroup[0][0], posgroup[2][0]],
-        #                          [posgroup[0][1], posgroup[2][1]], color='red'
-        #                          )
-        #     self.ax.plot([posgroup[1][0], posgroup[3][0]],
-        #                          [posgroup[1][1], posgroup[3][1]], color='red'
-        #                          )
-
     def update_probe(self, xnow, ynow):
         self.point = self.ax.scatter(xnow, ynow, 0, color="red", marker="*", s=self.s)
         self.draw()
@@ -121,14 +109,16 @@ class MyMplCanvas(FigureCanvas):
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
+    _filenames = None  # type: List[str]
+    _tabs = None  # type: Dict[int, ClassVar[TabPage]]
+    _groups = None  # type: Dict[int, ClassVar[GroupLayout]]
+
     def __init__(self, *args, **kwargs):
         """connect UI to functions"""
         super(MainWindow, self).__init__(*args, **kwargs)
         self.setupUi(self)
 
         self.i = 1
-        self.tabs = {}
-        self.groups = {}
         self.button.clicked.connect(lambda: [self.addNewTab()])
         self.next.clicked.connect(lambda: self.move_all(self.i, 0))
         self.previous.clicked.connect(lambda: self.move_all(self.i, 1))
@@ -136,11 +126,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.addNewTab()
         self.show()
 
-        data_running = False
+    @property
+    def filenames(self):
+        if self._filenames is None:
+            self._filenames = []
+
+        return self._filenames
+
+    @filenames.setter
+    def filenames(self, value):
+        if not isinstance(value, list):
+            raise TypeError(
+                f"Expected a list for 'filenames', got type {type(value)}."
+            )
+        if not all(isinstance(item, str) for item in value):
+            raise ValueError("All elements of the 'filenames' list must be strings.")
+
+        self._filenames = value
+
+    @property
+    def tabs(self):
+        if self._tabs is None:
+            self._tabs = {}
+
+        return self._tabs
+
+    @property
+    def groups(self):
+        if self._groups is None:
+            self._groups = {}
+
+        return self._groups
 
     def addNewTab(self):
 
-        name = "Group %d" % (self.tabWidget.count())
+        name = f"Group {self.tabWidget.count()}"
         index = self.tabWidget.count()
         self.tabs[index] = TabPage(self.tabWidget)
         self.tabWidget.addTab(self.tabs[index], name)
@@ -251,14 +271,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         subprocess.call(filename, shell=True)
         self.tabs[index].Loader.getgroup(self.tabs[index], self, index, filename)
 
-    def Save(self):
-        self.filenames = []
-        i = 0
-        for index in self.tabs:
-            filename = self.tabs[index].Loader.drivefile
-            filesnames[i] = filename
-            i += 1
-        return self.filenames
+    def save(self):
+        filenames = []
+        for tab in self.tabs.values():
+            filenames.append(tab.Loader.drivefile)
+
+        self.filenames = filenames
+
+        return filenames
 
     def ConnectMotor(self, index):
         self.tabs[index].move.clicked.connect(
@@ -384,7 +404,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             event.ignore()
 
 
-#################################################################################
 if __name__ == "__main__":
 
     app = QApplication([])
