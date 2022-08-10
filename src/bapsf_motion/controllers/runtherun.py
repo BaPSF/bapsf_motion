@@ -45,26 +45,26 @@ class RunManager:
         for group in config:
             with open(group, "rb") as f:
                 toml_dict = tomli.load(f)
-                x_ip = toml_dict["drive"]["IPx"]
-                y_ip = toml_dict["drive"]["IPy"]
-                z_ip = toml_dict["drive"]["IPz"]
-                centers = toml_dict["Motion List"]["centers"]
-                mode = toml_dict["Motion List"]["mode"]
-                grid = toml_dict["Motion List"]["grid"]
-                nx = toml_dict["Motion List"]["dx"]
-                ny = toml_dict["Motion List"]["dy"]
-                nz = toml_dict["Motion List"]["dz"]
-                xs = toml_dict["Motion List"]["xs"]
-                ys = toml_dict["Motion List"]["ys"]
-                zs = toml_dict["Motion List"]["zs"]
-                bar = toml_dict["Motion List"]["bar"]
-                close = toml_dict["Motion List"]["close"]
-                axes = toml_dict["drive"]["axes"]
+                self.x_ip = toml_dict["drive"]["IPx"]
+                self.y_ip = toml_dict["drive"]["IPy"]
+                self.z_ip = toml_dict["drive"]["IPz"]
+                self.centers = toml_dict["Motion List"]["centers"]
+                self.mode = toml_dict["Motion List"]["mode"]
+                self.grid = toml_dict["Motion List"]["grid"]
+                self.nx = toml_dict["Motion List"]["dx"]
+                self.ny = toml_dict["Motion List"]["dy"]
+                self.nz = toml_dict["Motion List"]["dz"]
+                self.xs = toml_dict["Motion List"]["xs"]
+                self.ys = toml_dict["Motion List"]["ys"]
+                self.zs = toml_dict["Motion List"]["zs"]
+                self.bar = toml_dict["Motion List"]["bar"]
+                self.close = toml_dict["Motion List"]["close"]
+                self.axes = toml_dict["drive"]["axes"]
 
                 StepPerRev = toml_dict["drive"]["step_per_rev"]
                 CmPerRev = toml_dict["drive"]["threading"]
-                steps_per_cm = StepPerRev / CmPerRev
-                port_ip = int(7776)
+                self.steps_per_cm = StepPerRev / CmPerRev
+                self.port_ip = int(7776)
 
             groups[i] = MotionGroup(
                 x_ip_addr=self.x_ip,
@@ -72,8 +72,8 @@ class RunManager:
                 z_ip_addr=self.z_ip,
                 axes=self.axes,
                 MOTOR_PORT=self.port_ip,
-                d_outside=self.toml_dict["pivot_valve_distance"],
-                d_inside=self.toml_dict["valve_centre_distance"],
+                d_outside=toml_dict["pivot_valve_distance"],
+                d_inside=toml_dict["valve_centre_distance"],
                 steps_per_cm=self.steps_per_cm,
                 nx=self.nx,
                 ny=self.ny,
@@ -197,7 +197,7 @@ class RunManager:
         ]
 
     def stop(self, groupnum=1, everything=True):
-        if everything == False:
+        if not everything:
             self.groups[groupnum].stop_now()
         else:
             for group in self.groups:
@@ -205,7 +205,7 @@ class RunManager:
         return "Stopped"
 
     def set_velocity(self, group, vx=1, vy=1, vz=1, everything=False):
-        if everything == False:
+        if not everything:
             self.groups[group].set_velocity(vx, vy, vz)
         else:
             for group in self.groups:
@@ -213,7 +213,7 @@ class RunManager:
         return "Done"
 
     def disconnect(self, group, everything=False):
-        if everything == False:
+        if not everything:
             self.groups[group].disconnect()
         else:
             for group in self.groups:
