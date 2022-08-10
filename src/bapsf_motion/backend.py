@@ -391,4 +391,3 @@ if __name__ == "__main__":
     app.setQuitOnLastWindowClosed(True)
     window = MainWindow()
     app.exec_()
-

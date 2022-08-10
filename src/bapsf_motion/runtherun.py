@@ -10,6 +10,7 @@ import os
 
 __all__ = ["RunManager"]
 
+
 class RunManager:
     _motion_groups = None
 
@@ -69,7 +70,7 @@ class RunManager:
                 CmPerRev = toml_dict["drive"]["threading"]
                 steps_per_cm = StepPerRev / CmPerRev
                 port_ip = int(7776)
-            
+
             groups[i] = MotionGroup(
                 x_ip_addr=self.x_ip,
                 y_ip_addr=self.y_ip,
@@ -93,9 +94,8 @@ class RunManager:
             )
             i += 1
             return "Connected"
-        
-        
-    def move_to_index(self, index, groupnum = 1, everything = True):
+
+    def move_to_index(self, index, groupnum=1, everything=True):
         length = max(len(self.groups[group].poslist) for group in self.groups)
         self.index = index
         if everything == False:
@@ -105,8 +105,7 @@ class RunManager:
                     y = self.groups[groupnum].poslist[index][1]
                     z = self.groups[groupnum].poslist[index][2]
                     self.groups[groupnum].move_to_position(x, y, z)
-                    
-                    
+
                     (
                         codex,
                         codey,
@@ -125,14 +124,13 @@ class RunManager:
                         self.groups[groupnum].mm.stop()
                         return f"ALERT,ERROR:{codex}, {codey}, {codez}"
                     else:
-                        posx, posy, posz = self.groups[groupnum].mm.current_probe_position()
+                        posx, posy, posz = self.groups[
+                            groupnum
+                        ].mm.current_probe_position()
                         str1 = f"{groupnum}:({posx},{posy},{posz}) "
-                        return  str1
+                        return str1
             except:
                 IndexError("Why is this happening?")
-        
-        
-
 
         for group in self.groups:
             try:
@@ -168,7 +166,7 @@ class RunManager:
         posstr = []
         for group in self.groups:
             posx, posy, posz = self.groups[group].mm.current_probe_position()
-            str1 = [posx,posy,posz]
+            str1 = [posx, posy, posz]
             posstr[group] = str1
         return posstr
 
@@ -188,9 +186,22 @@ class RunManager:
             is_movingy,
             is_movingz,
         ) = self.groups[group].mm.heartbeat()
-        return [codex,codey,codez,posx,posy,posz,velx,vely,velz,is_movingx,is_movingy,is_movingz]
+        return [
+            codex,
+            codey,
+            codez,
+            posx,
+            posy,
+            posz,
+            velx,
+            vely,
+            velz,
+            is_movingx,
+            is_movingy,
+            is_movingz,
+        ]
 
-    def stop(self, groupnum = 1, everything=True):
+    def stop(self, groupnum=1, everything=True):
         if everything == False:
             self.groups[groupnum].stop_now()
         else:
@@ -206,7 +217,7 @@ class RunManager:
                 self.groups[group].set_velocity(vx, vy, vz)
         return "Done"
 
-    def disconnect(self,group, everything = False):
+    def disconnect(self, group, everything=False):
         if everything == False:
             self.groups[group].disconnect()
         else:

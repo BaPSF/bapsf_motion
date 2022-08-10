@@ -1,11 +1,9 @@
-
 from runtherun import RunManager
-
 
 
 RunManager = RunManager()
 # define wrapper for LabVIEW Python node
-def labview_handler(request, *args , **kwargs):
+def labview_handler(request, *args, **kwargs):
     _requests = {
         "connect": lv_handle_connect,
         "move_to_index": lv_handle_move_to,
@@ -16,12 +14,12 @@ def labview_handler(request, *args , **kwargs):
         "configure": lv_handle_configure,
         "get_int_names": lv_handle_getintname,
         "get_integers": lv_handle_getint,
-        "device_request": lv_handle_device_request
+        "device_request": lv_handle_device_request,
     }
-    return _requests[request](*args,**kwargs)
+    return _requests[request](*args, **kwargs)
 
 
-def lv_handle_connect(filename = None, config = None):
+def lv_handle_connect(filename=None, config=None):
     return RunManager.__init__(filename, config)
 
 
@@ -44,20 +42,24 @@ def lv_handle_heartbeat(group):
 def lv_handle_velocity(group, vx=1, vy=1, vz=1, everything=False):
     return RunManager.set_velocity(group, vx, vy, vz, everything)
 
-def lv_handle_disconnect(group, everything = False):
-    return RunManager.disconnect(group,everything)
+
+def lv_handle_disconnect(group, everything=False):
+    return RunManager.disconnect(group, everything)
+
 
 def lv_handle_configure():
-    
-    
-    return 
+
+    return
+
 
 def lv_handle_getconfig():
     return RunManager.config
 
+
 def lv_handle_getint(request):
-    if request == 'last index':
+    if request == "last index":
         return RunManager.index
-    
+
+
 def lv_handle_getintname():
     return "last index"

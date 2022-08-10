@@ -7,7 +7,6 @@ __all__ = ["MotorControl"]
 import sys
 
 
-
 import socket
 import time
 
