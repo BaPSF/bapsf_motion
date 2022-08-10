@@ -205,7 +205,7 @@ class RunManager:
         return "Stopped"
 
     def set_velocity(self, group, vx=1, vy=1, vz=1, everything=False):
-        if everything == False:
+        if not everything:
             self.groups[group].set_velocity(vx, vy, vz)
         else:
             for group in self.groups:
@@ -213,7 +213,7 @@ class RunManager:
         return "Done"
 
     def disconnect(self, group, everything=False):
-        if everything == False:
+        if not everything:
             self.groups[group].disconnect()
         else:
             for group in self.groups:
