@@ -93,7 +93,7 @@ class RunManager:
     def move_to_index(self, index, groupnum=1, everything=True):
         length = max(len(self.groups[group].poslist) for group in self.groups)
         self.index = index
-        if everything == False:
+        if not everything:
             try:
                 if index < len(self.groups[groupnum]):
                     x = self.groups[groupnum].poslist[index][0]
