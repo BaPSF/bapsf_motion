@@ -7,7 +7,7 @@ __all__ = ["MotorControl"]
 import re
 import socket
 import time
-from typing import ClassVar, Dict, Optional
+from typing import Any, ClassVar, Dict, Optional
 
 _ipv4_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
@@ -24,6 +24,22 @@ class Motor:
         "socket": None,
         "max_connection_attempts": 3,
     }  # type:  Dict[str, Optional[ClassVar[socket.socket], int]]
+    _status = {
+        "alarm": None,
+        "enabled": None,
+        "fault": None,
+        "moving": None,
+        "homing": None,
+        "jogging": None,
+        "motion_in_progress": None,
+        "position": None,
+        "stopping": None,
+        "wait_time": None,
+        "wait_input": None,
+    }  # type: Dict[str, Any]
+    _commands = {
+        "request_status": {"send": "RS", "recv": None},
+    }
 
     def __init__(self, *, ip: str):
         self.ip = ip
@@ -49,7 +65,7 @@ class Motor:
         return self._settings["buffer_size"]
 
     @property
-    def socket(self):
+    def socket(self) -> socket.socket:
         return self._settings["socket"]
 
     @socket.setter
@@ -85,6 +101,25 @@ class Motor:
                 else:
                     print(msg)
                     raise err
+
+    def send_command(self, command, *args):
+        msg = self._commands[command]["send"]
+
+        cmd_str = bytearray([0, 7])  # header
+        cmd_str.extend(
+            bytearray(msg, encoding="ASCII")
+        )  # command
+        cmd_str.append(13)  # carriage return, end of command
+
+        try:
+            self.socket.send(cmd_str)
+        except ConnectionError:
+            self.connect()
+            self.socket.send(cmd_str)
+
+        data = self.socket.recv(1024)
+        return data[2:-1].decode("ASCII")
+
 
 
 class MotorControl:
