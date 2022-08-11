@@ -4,8 +4,87 @@ Motion motor.  It can be used in drive.py for multidimensional movement.
 """
 __all__ = ["MotorControl"]
 
+import re
 import socket
 import time
+from typing import ClassVar, Dict, Optional
+
+_ipv4_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+
+
+class Motor:
+    _config = {
+        "ip": None,
+        "manufacturer": "Applied Motion Products",
+        "model": "STM23S-3EE",
+    }  # type: Dict[str, Optional[str]]
+    _settings = {
+        "port": 7776,
+        "buffer_size": 1024,
+        "socket": None,
+        "max_connection_attempts": 3,
+    }  # type:  Dict[str, Optional[ClassVar[socket.socket], int]]
+
+    def __init__(self, *, ip: str):
+        self.ip = ip
+        self.connect()
+
+    @property
+    def ip(self):
+        return self._config["ip"]
+
+    @ip.setter
+    def ip(self, value):
+        if _ipv4_pattern.fullmatch(value) is None:
+            raise ValueError(f"Supplied IP address ({value}) is not a valid IPv4.")
+
+        self._config["ip"] = value
+
+    @property
+    def port(self):
+        return self._settings["port"]
+
+    @property
+    def buffer_size(self):
+        return self._settings["buffer_size"]
+
+    @property
+    def socket(self):
+        return self._settings["socket"]
+
+    @socket.setter
+    def socket(self, value):
+        if not isinstance(value, socket.socket):
+            raise TypeError(f"Expected type {socket.socket}, got type {type(value)}.")
+
+        self._settings["socket"] = value
+
+    def connect(self):
+        _allowed_attempts = self._settings["max_connection_attempts"]
+        for _count in range(_allowed_attempts):
+            try:
+                print(f"Connecting to {self.ip}:{self.port} ...")
+
+                s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                s.settimeout(1)  # 1 second timeout
+                s.connect((self.ip, self.port))
+
+                self.socket = s
+
+                print("...SUCCESS!!!")
+                return
+            except (
+                TimeoutError,
+                InterruptedError,
+                ConnectionRefusedError,
+                socket.timeout,
+            ) as err:
+                msg = f"...attempt {_count+1} of {_allowed_attempts} failed"
+                if _count+1 < _allowed_attempts:
+                    print(f"{msg}, RETRYING")
+                else:
+                    print(msg)
+                    raise err
 
 
 class MotorControl:
@@ -26,8 +105,8 @@ class MotorControl:
         else:
             self.msipa_cache_fn = msipa_cache_fn
 
-        # if we get an ip address argument, set that as the suggest server IP address,
-        # otherwise look in cache file
+        # if we get an ip address argument, set that as the suggested server
+        # IP address, otherwise look in cache file
         if server_ip_addr is not None:
             self.server_ip_addr = server_ip_addr
         else:
