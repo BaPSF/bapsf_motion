@@ -12,7 +12,7 @@ import math
 import numpy as np
 import time
 
-from motor import MotorControl
+from bapsf_motion.controllers.motor import MotorControl
 from scipy.optimize import fsolve
 
 
