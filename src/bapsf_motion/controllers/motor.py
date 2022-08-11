@@ -94,13 +94,13 @@ class Motor:
                 InterruptedError,
                 ConnectionRefusedError,
                 socket.timeout,
-            ) as err:
+            ) as error_:
                 msg = f"...attempt {_count+1} of {_allowed_attempts} failed"
                 if _count+1 < _allowed_attempts:
                     print(f"{msg}, RETRYING")
                 else:
                     print(msg)
-                    raise err
+                    raise error_
 
     def send_command(self, command, *args):
         msg = self._commands[command]["send"]
