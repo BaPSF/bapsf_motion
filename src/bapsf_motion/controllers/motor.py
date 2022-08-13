@@ -4,15 +4,17 @@ Motion motor.  It can be used in drive.py for multidimensional movement.
 """
 __all__ = ["MotorControl"]
 
+import asyncio
 import re
 import socket
 import time
-from typing import Any, ClassVar, Dict, Optional
+from typing import Any, ClassVar, Dict, List, Optional
 
 _ipv4_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
 
 class Motor:
+    _loop = None
     _config = {
         "ip": None,
         "manufacturer": "Applied Motion Products",
@@ -23,6 +25,7 @@ class Motor:
         "buffer_size": 1024,
         "socket": None,
         "max_connection_attempts": 3,
+        "tasks": None,
     }  # type:  Dict[str, Optional[ClassVar[socket.socket], int]]
     _status = {
         "alarm": None,
@@ -39,11 +42,17 @@ class Motor:
     }  # type: Dict[str, Any]
     _commands = {
         "request_status": {"send": "RS", "recv": None},
+        "enable": {"send": "ME", "recv": None},
+        "disable": {"send": "MD", "recv": None},
     }
 
-    def __init__(self, *, ip: str):
+    def __init__(self, *, ip: str, loop = None):
         self.ip = ip
         self.connect()
+
+        if loop is None:
+            loop = asyncio.get_event_loop()
+        self._loop = loop
 
     @property
     def ip(self):
@@ -74,6 +83,13 @@ class Motor:
             raise TypeError(f"Expected type {socket.socket}, got type {type(value)}.")
 
         self._settings["socket"] = value
+
+    @property
+    def tasks(self) -> List[asyncio.Task]:
+        if self._settings["tasks"] is None:
+            self._settings["tasks"] = []
+
+        return self._settings["tasks"]
 
     def connect(self):
         _allowed_attempts = self._settings["max_connection_attempts"]
@@ -118,8 +134,35 @@ class Motor:
             self.socket.send(cmd_str)
 
         data = self.socket.recv(1024)
+        print(
+            f"Sent command: {command} --  Received: {data.decode('ASCII')}",
+        )
         return data[2:-1].decode("ASCII")
 
+    def update_status(self):
+        _status = self.send_command("request_status")
+
+    def enable(self):
+        self.send_command("enable")
+
+    def disable(self):
+        self.send_command("disable")
+
+    async def _heartbeat(self):
+        while True:
+            self.update_status()
+            await asyncio.sleep(10)
+
+    def start(self):
+        task = asyncio.create_task(self._heartbeat())
+        self.tasks.append(task)
+        # asyncio.ensure_future(self._heartbeat())
+        # self._loop.run_forever()
+
+    def stop(self):
+        for task in list(self.tasks):
+            task.cancel()
+            self.tasks.remove(task)
 
 
 class MotorControl:
