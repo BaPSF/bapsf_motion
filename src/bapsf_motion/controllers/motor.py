@@ -41,7 +41,10 @@ class Motor:
     }  # type: Dict[str, Any]
     _status = {**_default_status}
     _commands = {
-        "request_status": {"send": "RS", "recv": None},
+        "request_status": {
+            "send": "RS",
+            "recv": re.compile("RS=(?P<return>[ADEFHJMPRSTW]+)"),
+        },
         "enable": {"send": "ME", "recv": None},
         "disable": {"send": "MD", "recv": None},
     }
