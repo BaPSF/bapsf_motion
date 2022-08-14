@@ -143,7 +143,38 @@ class Motor:
         return data[2:-1].decode("ASCII")
 
     def update_status(self):
-        _status = self.send_command("request_status")
+        cmd = "request_status"
+        _rtn = self.send_command(cmd)
+        match = self._commands[cmd]["recv"].fullmatch(_rtn)
+
+        if match is None:
+            raise RuntimeError
+
+        _status = {**self._default_status}
+
+        for letter in match["return"]:
+            if letter == "A":
+                _status["alarm"] = True
+            elif letter in ("D", "R"):
+                _status["enabled"] = True if letter == "R" else False
+            elif letter == "E":
+                _status["fault"] = True
+            elif letter == "F":
+                _status["moving"] = True
+            elif letter == "H":
+                _status["homing"] = True
+            elif letter == "J":
+                _status["jogging"] = True
+            elif letter == "M":
+                _status["motion_in_progress"] = True
+            elif letter == "P":
+                _status["in_position"] = True
+            elif letter == "S":
+                _status["stopping"] = True
+            elif letter in ("T", "W"):
+                _status["waiting"] = True
+
+        self._status = _status
 
     def enable(self):
         self.send_command("enable")
