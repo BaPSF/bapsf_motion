@@ -137,9 +137,9 @@ class Motor:
             self.socket.send(cmd_str)
 
         data = self.socket.recv(1024)
-        print(
-            f"Sent command: {command} --  Received: {data.decode('ASCII')}",
-        )
+        # print(
+        #     f"Sent command: {command} --  Received: {data.decode('ASCII')}",
+        # )
         return data[2:-1].decode("ASCII")
 
     def update_status(self):
@@ -185,7 +185,7 @@ class Motor:
     async def _heartbeat(self):
         while True:
             self.update_status()
-            await asyncio.sleep(10)
+            await asyncio.sleep(0.5)
 
     def start(self):
         task = asyncio.create_task(self._heartbeat())
