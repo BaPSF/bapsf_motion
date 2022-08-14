@@ -27,7 +27,7 @@ class Motor:
         "max_connection_attempts": 3,
         "tasks": None,
     }  # type:  Dict[str, Optional[ClassVar[socket.socket], int]]
-    _status = {
+    _default_status = {
         "alarm": None,
         "enabled": None,
         "fault": None,
@@ -35,11 +35,11 @@ class Motor:
         "homing": None,
         "jogging": None,
         "motion_in_progress": None,
-        "position": None,
+        "in_position": None,
         "stopping": None,
-        "wait_time": None,
-        "wait_input": None,
+        "waiting": None,
     }  # type: Dict[str, Any]
+    _status = {**_default_status}
     _commands = {
         "request_status": {"send": "RS", "recv": None},
         "enable": {"send": "ME", "recv": None},
