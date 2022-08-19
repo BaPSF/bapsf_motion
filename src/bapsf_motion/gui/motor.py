@@ -11,10 +11,49 @@ from PySide6.QtWidgets import (
     QSlider,
     QTextEdit,
     QFrame,
+    QLineEdit,
+    QPushButton,
 )
 from typing import Any, Dict
 
 from __feature__ import snake_case  # noqa
+
+
+class StopButton(QPushButton):
+    default_style = """
+    background-color: rgb(255,90,90);
+    border-radius: 6px;
+    border: 2px solid black;
+    """
+    pressed_style = """
+    background-color: rgb(90,255,90)
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        # self.set_style_sheet(self.default_style)
+        # self.set_checkable(True)
+
+        self.set_style_sheet("""
+        StopButton {
+          background-color: rgb(255,130,130);
+          border-radius: 6px;
+          border: 1px solid black;
+        }
+        
+        StopButton:hover {
+          border: 3px solid black;
+          background-color: rgb(255,70,70);
+        }
+        """)
+
+        # self.pressed.connect(self.toggle_style)
+        # self.released.connect(self.toggle_style)
+
+    def toggle_style(self):
+        style = self.pressed_style if self.is_checked() else self.default_style
+        self.set_style_sheet(style)
 
 
 class MotorGUI(QMainWindow):
