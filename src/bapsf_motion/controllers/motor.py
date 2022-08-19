@@ -5,15 +5,20 @@ Motion motor.  It can be used in drive.py for multidimensional movement.
 __all__ = ["MotorControl"]
 
 import asyncio
+import logging
 import re
 import socket
 import time
+
 from typing import Any, ClassVar, Dict, List, Optional
 
+logger = logging.getLogger(__name__)
 _ipv4_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
 
 class Motor:
+    logger = None
+    name = ""
     _loop = None
     _config = {
         "ip": None,
@@ -49,9 +54,15 @@ class Motor:
         "disable": {"send": "MD", "recv": None},
     }
 
-    def __init__(self, *, ip: str, loop = None):
+    def __init__(self, *, ip: str, loop=None, name: str = None):
         self.ip = ip
         self.connect()
+
+        if name is None:
+            self.logger = logger
+        else:
+            self.logger = logging.getLogger(f"{logger.name}.{name}")
+            self.name = name
 
         if loop is None:
             loop = asyncio.get_event_loop()
