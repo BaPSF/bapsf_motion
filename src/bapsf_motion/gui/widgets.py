@@ -20,15 +20,18 @@ class LED(QPushButton):
 
         self.set_fixed_height(24)
 
+    def update_style_sheet(self):
         self.set_style_sheet(self.css)
 
     def set_fixed_width(self, w: int) -> None:
         super().set_fixed_width(w)
         super().set_fixed_height(round(w / self._aspect_ratio))
+        self.update_style_sheet()
 
     def set_fixed_height(self, h: int) -> None:
         super().set_fixed_height(h)
         super().set_fixed_width(round(self._aspect_ratio * h))
+        self.update_style_sheet()
 
     def set_fixed_size(self, arg__1: QSize) -> None:
         raise NotImplementedError(
@@ -65,10 +68,11 @@ class LED(QPushButton):
             background-color: QRadialGradient(
                 cx:0.5,
                 cy:0.5,
-                radius:1.1,
+                radius:0.8,
                 fx:0.4,
                 fy:0.4,
                 stop:0 #{self._on_color},
+                stop:0.25 #{self._on_color},
                 stop:1 rgb(0,0,0)); 
         }}
         """
