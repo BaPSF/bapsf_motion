@@ -12,7 +12,7 @@ import time
 
 from typing import Any, ClassVar, Dict, List, Optional
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 _ipv4_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
 
@@ -54,15 +54,15 @@ class Motor:
         "disable": {"send": "MD", "recv": None},
     }
 
-    def __init__(self, *, ip: str, loop=None, name: str = None):
+    def __init__(self, *, ip: str, loop=None, name: str = None, logger=None):
+        log_name = _logger.name if logger is None else logger.name
+        if name is not None:
+            log_name += f".{name}"
+            self.name = name
+        self.logger = logging.getLogger(log_name)
+
         self.ip = ip
         self.connect()
-
-        if name is None:
-            self.logger = logger
-        else:
-            self.logger = logging.getLogger(f"{logger.name}.{name}")
-            self.name = name
 
         if loop is None:
             loop = asyncio.get_event_loop()
@@ -109,15 +109,15 @@ class Motor:
         _allowed_attempts = self._settings["max_connection_attempts"]
         for _count in range(_allowed_attempts):
             try:
-                print(f"Connecting to {self.ip}:{self.port} ...")
+                msg = f"Connecting to {self.ip}:{self.port} ..."
+                self.logger.debug(msg)
 
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.settimeout(1)  # 1 second timeout
                 s.connect((self.ip, self.port))
 
-                self.socket = s
-
-                print("...SUCCESS!!!")
+                msg = "...SUCCESS!!!"
+                self.logger.debug(msg)
                 return
             except (
                 TimeoutError,
@@ -127,9 +127,9 @@ class Motor:
             ) as error_:
                 msg = f"...attempt {_count+1} of {_allowed_attempts} failed"
                 if _count+1 < _allowed_attempts:
-                    print(f"{msg}, RETRYING")
+                    self.logger.warning(msg)
                 else:
-                    print(msg)
+                    self.logger.error(msg)
                     raise error_
 
     def send_command(self, command, *args):
@@ -208,6 +208,11 @@ class Motor:
         for task in list(self.tasks):
             task.cancel()
             self.tasks.remove(task)
+
+        try:
+            self.socket.close()
+        except AttributeError:
+            pass
 
 
 class MotorControl:
