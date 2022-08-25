@@ -20,7 +20,8 @@ from __feature__ import snake_case  # noqa
 
 from typing import Any, Dict
 
-from bapsf_motion.gui.widgets import LED, StopButton, QLogHandler
+from bapsf_motion.controllers.motor import Motor
+from bapsf_motion.gui.widgets import LED, StopButton, QLogHandler, IPv4Validator
 
 
 class MotorGUI(QMainWindow):
@@ -41,6 +42,9 @@ class MotorGUI(QMainWindow):
 
     def __init__(self):
         super().__init__()
+
+        logging.basicConfig(level=logging.NOTSET)
+        self.logger = logging.getLogger("MotorGUI")
 
         self.set_window_title("Motor GUI")
         self.resize(1600, 900)
@@ -74,7 +78,7 @@ class MotorGUI(QMainWindow):
         self.set_central_widget(widget)
 
         # this needs to be done after the GUI is set up
-        self._setup_logger()
+        self._configure_logger()
 
     @property
     def log_layout(self):
@@ -182,10 +186,12 @@ class MotorGUI(QMainWindow):
         font.set_family("Courier New")
         ip_widget.set_font(font)
         ip_widget.set_input_mask("009.009.009.009;_")
+        ip_widget.set_validator(IPv4Validator(logger=self.logger))
         ip_widget.set_maximum_width(200)
         ip_widget.set_size_policy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-        ip_widget.textChanged.connect(self.deactivate_motor)
+        ip_widget.textEdited.connect(self.deactivate_motor)
         ip_widget.editingFinished.connect(self.process_new_ip)
+        # ip_widget.inputRejected.connect(self.process_new_ip)
         self._control_widgets["ip"] = ip_widget
         row2_layout.add_spacing(4)
         row2_layout.add_widget(ip_widget, alignment=Qt.AlignLeft)
@@ -215,10 +221,7 @@ class MotorGUI(QMainWindow):
     def log_verbosity(self, value):
         self._log_verbosity = value
 
-    def _setup_logger(self):
-        logging.basicConfig(level=logging.NOTSET)
-        self.logger = logging.getLogger("MotorGUI")
-
+    def _configure_logger(self):
         _format = logging.Formatter(
             "[{name}] - {levelname}: {message}", style="{"
         )
@@ -236,16 +239,30 @@ class MotorGUI(QMainWindow):
         ...
 
     def process_new_ip(self):
-        ...
+        name = "WALL-E"
+        ip = self._control_widgets["ip"].text()
+        self.logger.debug(f"New IP enter: '{ip}'")
+        self.logger.debug(f"Establishing new motor {name}")
+
+        try:
+            self.motor = Motor(ip=ip, name=name, logger=self.logger)
+            self._indicators["valid_ip"].set_checked(True)
+        except Exception as err:
+            self.logger.error(
+                f"Motor {name} failed to connect. {type(err).__name__}: {err}"
+            )
+            self.motor = None
 
     def deactivate_motor(self, new_ip):
+        if self.motor is None:
+            return
+
         self._indicators["valid_ip"].set_checked(False)
         msg = f"New IP address being entered, '{new_ip}'"
         self.logger.debug(msg)
 
-        if self.motor is not None:
-            # TODO: stop the motor and shut it down
-            pass
+        self.motor.stop()
+        self.motor = None
 
 
 if __name__ == "__main__":
