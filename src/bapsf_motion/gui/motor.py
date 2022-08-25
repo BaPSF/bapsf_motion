@@ -1,7 +1,7 @@
+import logging
 from PySide6.QtGui import QColor
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
-    QApplication,
     QMainWindow,
     QHBoxLayout,
     QVBoxLayout,
@@ -13,47 +13,14 @@ from PySide6.QtWidgets import (
     QFrame,
     QLineEdit,
     QPushButton,
+    QPlainTextEdit,
 )
-from typing import Any, Dict
 
 from __feature__ import snake_case  # noqa
 
+from typing import Any, Dict
 
-class StopButton(QPushButton):
-    default_style = """
-    background-color: rgb(255,90,90);
-    border-radius: 6px;
-    border: 2px solid black;
-    """
-    pressed_style = """
-    background-color: rgb(90,255,90)
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        # self.set_style_sheet(self.default_style)
-        # self.set_checkable(True)
-
-        self.set_style_sheet("""
-        StopButton {
-          background-color: rgb(255,130,130);
-          border-radius: 6px;
-          border: 1px solid black;
-        }
-        
-        StopButton:hover {
-          border: 3px solid black;
-          background-color: rgb(255,70,70);
-        }
-        """)
-
-        # self.pressed.connect(self.toggle_style)
-        # self.released.connect(self.toggle_style)
-
-    def toggle_style(self):
-        style = self.pressed_style if self.is_checked() else self.default_style
-        self.set_style_sheet(style)
+from bapsf_motion.gui.widgets import LED, StopButton, QLogHandler
 
 
 class MotorGUI(QMainWindow):
@@ -66,6 +33,11 @@ class MotorGUI(QMainWindow):
         "ip": None,
         "stop": None,
     }  # type: Dict[str, Any]
+    _indicators = {
+        "valid_ip": None,
+    }  # type: Dict[str, Any]
+    motor = None
+    logger = None
 
     def __init__(self):
         super().__init__()
@@ -91,15 +63,18 @@ class MotorGUI(QMainWindow):
 
         log_widget = QWidget()
         log_widget.set_layout(self.log_layout)
-        log_widget.set_minimum_width(300)
-        log_widget.set_maximum_width(700)
-        log_widget.size_hint().set_width(500)
+        log_widget.set_minimum_width(400)
+        log_widget.set_maximum_width(800)
+        log_widget.size_hint().set_width(600)
         log_widget.set_size_policy(QSizePolicy.Preferred, QSizePolicy.Ignored)
-        layout.add_widget(log_widget, stretch=500)
+        layout.add_widget(log_widget, stretch=600)
 
         widget = QWidget()
         widget.set_layout(layout)
         self.set_central_widget(widget)
+
+        # this needs to be done after the GUI is set up
+        self._setup_logger()
 
     @property
     def log_layout(self):
@@ -149,8 +124,15 @@ class MotorGUI(QMainWindow):
         layout.add_layout(row2_layout)
 
         # third row: text box
-        txt_box = QTextEdit()
-        layout.add_widget(txt_box)
+        log_box = QTextEdit()
+        font = log_box.font()
+        font.set_point_size(10)
+        font.set_family("Courier New")
+        log_box.set_font(font)
+        # log_box = QPlainTextEdit()
+        log_box.set_read_only(True)
+        self._log_widgets["log_box"] = log_box
+        layout.add_widget(log_box)
 
         return layout
 
@@ -190,17 +172,30 @@ class MotorGUI(QMainWindow):
 
         label = QLabel("IP Address:")
         font = label.font()
-        font.set_point_size(12)
+        font.set_point_size(14)
         label.set_font(font)
         row2_layout.add_widget(label, alignment=Qt.AlignTop)
 
-
         ip_widget = QLineEdit()
-        ip_widget.set_input_mask("000.000.000.000")
-        ip_widget.set_maximum_width(100)
+        font = ip_widget.font()
+        font.set_point_size(14)
+        font.set_family("Courier New")
+        ip_widget.set_font(font)
+        ip_widget.set_input_mask("009.009.009.009;_")
+        ip_widget.set_maximum_width(200)
         ip_widget.set_size_policy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        ip_widget.textChanged.connect(self.deactivate_motor)
+        ip_widget.editingFinished.connect(self.process_new_ip)
+        self._control_widgets["ip"] = ip_widget
         row2_layout.add_spacing(4)
         row2_layout.add_widget(ip_widget, alignment=Qt.AlignLeft)
+
+        led = LED()
+        led.set_fixed_height(18)
+        led.set_checked(True)
+        self._indicators["valid_ip"] = led
+        row2_layout.add_spacing(4)
+        row2_layout.add_widget(led)
 
         row2_layout.add_stretch()
 
@@ -220,6 +215,18 @@ class MotorGUI(QMainWindow):
     def log_verbosity(self, value):
         self._log_verbosity = value
 
+    def _setup_logger(self):
+        logging.basicConfig(level=logging.NOTSET)
+        self.logger = logging.getLogger("MotorGUI")
+
+        _format = logging.Formatter(
+            "[{name}] - {levelname}: {message}", style="{"
+        )
+        _handler = QLogHandler(widget=self._log_widgets["log_box"])
+        _handler.setFormatter(_format)
+
+        self.logger.addHandler(_handler)
+
     def update_log_verbosity(self, value):
         self.log_verbosity = value
         self._log_widgets["verbosity_label"].set_text(f"{value}")
@@ -228,10 +235,22 @@ class MotorGUI(QMainWindow):
         # send command to stop moving
         ...
 
+    def process_new_ip(self):
+        ...
 
+    def deactivate_motor(self, new_ip):
+        self._indicators["valid_ip"].set_checked(False)
+        msg = f"New IP address being entered, '{new_ip}'"
+        self.logger.debug(msg)
+
+        if self.motor is not None:
+            # TODO: stop the motor and shut it down
+            pass
 
 
 if __name__ == "__main__":
+    from PySide6.QtWidgets import QApplication
+
     app = QApplication([])
 
     window = MotorGUI()
