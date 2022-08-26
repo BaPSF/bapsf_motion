@@ -19,6 +19,8 @@ _ipv4_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 class Motor:
     logger = None
     name = ""
+    base_heartrate = 2  # in seconds
+    active_heartrate = 0.5  # in seconds
     _loop = None
     _config = {
         "ip": None,
@@ -201,10 +203,12 @@ class Motor:
         self.send_command("disable")
 
     async def _heartbeat(self):
-
         while True:
+            heartrate = self.active_heartrate if self.is_moving else self.base_heartrate
+
             self.update_status()
-            await asyncio.sleep(0.5)
+
+            await asyncio.sleep(heartrate)
 
     def start(self):
         task = asyncio.create_task(self._heartbeat())
