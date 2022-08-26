@@ -105,6 +105,13 @@ class Motor:
 
         return self._settings["tasks"]
 
+    @property
+    def is_moving(self):
+        is_moving = self._status["moving"]
+        if is_moving is None:
+            return False
+        return is_moving
+
     def connect(self):
         _allowed_attempts = self._settings["max_connection_attempts"]
         for _count in range(_allowed_attempts):
@@ -194,6 +201,7 @@ class Motor:
         self.send_command("disable")
 
     async def _heartbeat(self):
+
         while True:
             self.update_status()
             await asyncio.sleep(0.5)
