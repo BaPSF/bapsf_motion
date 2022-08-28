@@ -42,8 +42,8 @@ class SimpleSignal:
 
 
 class Motor:
-    logger = None
     name = ""
+    logger = None
     base_heartrate = 2  # in seconds
     active_heartrate = 0.5  # in seconds
     _loop = None
@@ -73,6 +73,7 @@ class Motor:
         "waiting": None,
     }  # type: Dict[str, Any]
     _status = {**_default_status}
+    status_changed = SimpleSignal()
     _commands = {
         "request_status": {
             "send": "RS",
@@ -135,10 +136,29 @@ class Motor:
 
     @property
     def is_moving(self):
-        is_moving = self._status["moving"]
+        is_moving = self.status["moving"]
         if is_moving is None:
             return False
         return is_moving
+
+    @property
+    def status(self):
+        return self._status
+
+    @status.setter
+    def status(self, value):
+        old_status = self._status.copy()
+        new_status = {**old_status, **value}
+        changed = {}
+        for key, value in new_status.items():
+            if key not in old_status or (key in old_status and old_status[key] != value):
+                changed[key] = value
+
+        if changed:
+            self.logger.debug(f"Motor status changed, new values are {changed}.")
+            self.status_changed.emit(True)
+
+        self._status = new_status
 
     def setup_logger(self, logger, name):
         log_name = _logger.name if logger is None else logger.name
@@ -259,7 +279,7 @@ class Motor:
             elif letter in ("T", "W"):
                 _status["waiting"] = True
 
-        self._status = _status
+        self.status = _status
 
     def enable(self):
         self.send_command("enable")
