@@ -8,6 +8,7 @@ import asyncio
 import logging
 import re
 import socket
+import threading
 import time
 
 from typing import Any, ClassVar, Dict, List, Optional
@@ -22,6 +23,7 @@ class Motor:
     base_heartrate = 2  # in seconds
     active_heartrate = 0.5  # in seconds
     _loop = None
+    thread = None
     _config = {
         "ip": None,
         "manufacturer": "Applied Motion Products",
@@ -56,19 +58,19 @@ class Motor:
         "disable": {"send": "MD", "recv": None},
     }
 
-    def __init__(self, *, ip: str, loop=None, name: str = None, logger=None):
-        log_name = _logger.name if logger is None else logger.name
-        if name is not None:
-            log_name += f".{name}"
-            self.name = name
-        self.logger = logging.getLogger(log_name)
-
+    def __init__(
+        self,
+        *,
+        ip: str,
+        name: str = None,
+        logger=None,
+        loop=None,
+        auto_start=False,
+    ):
+        self.setup_logger(logger, name)
         self.ip = ip
         self.connect()
-
-        if loop is None:
-            loop = asyncio.get_event_loop()
-        self._loop = loop
+        self.setup_event_loop(loop, auto_start)
 
     @property
     def ip(self):
@@ -114,6 +116,44 @@ class Motor:
             return False
         return is_moving
 
+    def setup_logger(self, logger, name):
+        log_name = _logger.name if logger is None else logger.name
+        if name is not None:
+            log_name += f".{name}"
+            self.name = name
+        self.logger = logging.getLogger(log_name)
+
+    def setup_event_loop(self, loop, auto_start):
+        # 1. loop is given and running
+        #    - store loop
+        #    - add tasks
+        # 2. loop is given and not running
+        #    - store loop
+        #    - add tasks
+        #    - start loop in separate thread if auto_start = True
+        # 3. loop is NOT given
+        #    - create new loop
+        #    - store loop
+        #    - add tasks
+        #    - start loop in separate thread if auto_start = True
+        # get a valid event loop
+        if loop is None:
+            loop = asyncio.new_event_loop()
+        elif not isinstance(loop, asyncio.events.AbstractEventLoop):
+            self.logger.warning(
+                "Given asyncio event is not valid.  Creating a new event loop to use."
+            )
+            loop = asyncio.new_event_loop()
+        self._loop = loop
+
+        # populate loop with tasks
+        task = self._loop.create_task(self._heartbeat())
+        self.tasks.append(task)
+
+        # auto-start event loop
+        if auto_start:
+            self.start()
+
     def connect(self):
         _allowed_attempts = self._settings["max_connection_attempts"]
         for _count in range(_allowed_attempts):
@@ -127,6 +167,7 @@ class Motor:
 
                 msg = "...SUCCESS!!!"
                 self.logger.debug(msg)
+                self.socket = s
                 return
             except (
                 TimeoutError,
@@ -207,14 +248,16 @@ class Motor:
             heartrate = self.active_heartrate if self.is_moving else self.base_heartrate
 
             self.update_status()
+            self.logger.debug("Beat status.")
 
             await asyncio.sleep(heartrate)
 
     def start(self):
-        task = asyncio.create_task(self._heartbeat())
-        self.tasks.append(task)
-        # asyncio.ensure_future(self._heartbeat())
-        # self._loop.run_forever()
+        if self._loop.is_running():
+            return
+
+        self.thread = threading.Thread(target=self._loop.run_forever)
+        self.thread.start()
 
     def stop(self):
         for task in list(self.tasks):
@@ -225,6 +268,8 @@ class Motor:
             self.socket.close()
         except AttributeError:
             pass
+
+        self._loop.call_soon_threadsafe(self._loop.stop)
 
 
 class MotorControl:
