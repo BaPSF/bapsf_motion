@@ -61,6 +61,7 @@ class Motor:
         "tasks": None,
     }  # type:  Dict[str, Optional[ClassVar[socket.socket], int]]
     _default_status = {
+        "connected": False,
         "alarm": None,
         "enabled": None,
         "fault": None,
@@ -212,6 +213,7 @@ class Motor:
                 msg = "...SUCCESS!!!"
                 self.logger.debug(msg)
                 self.socket = s
+                self.status = {"connected": True}
                 return
             except (
                 TimeoutError,
@@ -238,6 +240,7 @@ class Motor:
         try:
             self.socket.send(cmd_str)
         except ConnectionError:
+            self.status = {"connected": False}
             self.connect()
             self.socket.send(cmd_str)
 
