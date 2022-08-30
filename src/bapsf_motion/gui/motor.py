@@ -38,6 +38,12 @@ class MotorGUI(QMainWindow):
     }  # type: Dict[str, Any]
     _indicators = {
         "valid_ip": None,
+        "connected": False,
+        "moving": False,
+        "jogging": False,
+        "alarm": False,
+        "fault": False,
+        "position": None,
     }  # type: Dict[str, Any]
 
     def __init__(self):
