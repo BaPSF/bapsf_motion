@@ -5,6 +5,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
     QVBoxLayout,
+    QGridLayout,
     QWidget,
     QLabel,
     QSizePolicy,
@@ -209,6 +210,7 @@ class MotorGUI(QMainWindow):
         row2_layout.add_spacing(4)
         row2_layout.add_widget(led)
 
+        row2_layout.add_layout(self.indicator_widget)
         row2_layout.add_stretch()
 
         layout.add_layout(row2_layout)
@@ -216,6 +218,25 @@ class MotorGUI(QMainWindow):
         # full bottom with blank space
         layout.add_stretch()
         # layout.add_spacing(self.height())
+
+        return layout
+
+    @property
+    def indicator_widget(self):
+        layout = QGridLayout()
+
+        label = QLabel("Connected")
+        font = label.font()
+        font.set_point_size(16)
+        label.set_font(font)
+        layout.add_widget(label, 0, 0)
+
+        led = LED()
+        led.set_fixed_height(18)
+        led.set_checked(False)
+        self._indicators["connected"] = led
+        # layout.add_spacing(4)
+        layout.add_widget(led, 0, 1)
 
         return layout
 
