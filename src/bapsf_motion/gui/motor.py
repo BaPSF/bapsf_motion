@@ -25,20 +25,20 @@ from bapsf_motion.gui.widgets import LED, StopButton, QLogHandler, IPv4Validator
 
 
 class MotorGUI(QMainWindow):
+    motor = None
     logger = None
     _log = {
         "verbosity": 1,
         "verbosity_label": None,
         "log_box": None,
     }  # type: Dict[str, Any]
-    _control_widgets = {
+    _controls = {
         "ip": None,
         "stop": None,
     }  # type: Dict[str, Any]
     _indicators = {
         "valid_ip": None,
     }  # type: Dict[str, Any]
-    motor = None
 
     def __init__(self):
         super().__init__()
@@ -168,7 +168,7 @@ class MotorGUI(QMainWindow):
         # }
         # """)
         # stop_btn.clicked.connect(self.stop_moving)
-        self._control_widgets["stop"] = stop_btn
+        self._controls["stop"] = stop_btn
         layout.add_widget(stop_btn)
 
         # row 3: Initial Controls/Indicators
@@ -192,7 +192,7 @@ class MotorGUI(QMainWindow):
         ip_widget.textEdited.connect(self.deactivate_motor)
         ip_widget.editingFinished.connect(self.process_new_ip)
         # ip_widget.inputRejected.connect(self.process_new_ip)
-        self._control_widgets["ip"] = ip_widget
+        self._controls["ip"] = ip_widget
         row2_layout.add_spacing(4)
         row2_layout.add_widget(ip_widget, alignment=Qt.AlignLeft)
 
@@ -240,7 +240,7 @@ class MotorGUI(QMainWindow):
 
     def process_new_ip(self):
         name = "WALL-E"
-        ip = self._control_widgets["ip"].text()
+        ip = self._controls["ip"].text()
         self.logger.debug(f"New IP enter: '{ip}'")
         self.logger.debug(f"Establishing new motor {name}")
 
