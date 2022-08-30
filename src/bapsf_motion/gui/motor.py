@@ -25,8 +25,9 @@ from bapsf_motion.gui.widgets import LED, StopButton, QLogHandler, IPv4Validator
 
 
 class MotorGUI(QMainWindow):
-    _log_verbosity = 1
-    _log_widgets = {
+    logger = None
+    _log = {
+        "verbosity": 1,
         "verbosity_label": None,
         "log_box": None,
     }  # type: Dict[str, Any]
@@ -38,7 +39,6 @@ class MotorGUI(QMainWindow):
         "valid_ip": None,
     }  # type: Dict[str, Any]
     motor = None
-    logger = None
 
     def __init__(self):
         super().__init__()
@@ -121,7 +121,7 @@ class MotorGUI(QMainWindow):
         font = label.font()
         font.set_point_size(12)
         label.set_font(font)
-        self._log_widgets["verbosity_label"] = label
+        self._log["verbosity_label"] = label
 
         row2_layout.add_widget(slider)
         row2_layout.add_widget(label)
@@ -135,7 +135,7 @@ class MotorGUI(QMainWindow):
         log_box.set_font(font)
         # log_box = QPlainTextEdit()
         log_box.set_read_only(True)
-        self._log_widgets["log_box"] = log_box
+        self._log["log_box"] = log_box
         layout.add_widget(log_box)
 
         return layout
@@ -215,24 +215,24 @@ class MotorGUI(QMainWindow):
 
     @property
     def log_verbosity(self):
-        return self._log_verbosity
+        return self._log["verbosity"]
 
     @log_verbosity.setter
     def log_verbosity(self, value):
-        self._log_verbosity = value
+        self._log["verbosity"] = value
 
     def _configure_logger(self):
         _format = logging.Formatter(
             "[{name}] - {levelname}: {message}", style="{"
         )
-        _handler = QLogHandler(widget=self._log_widgets["log_box"])
+        _handler = QLogHandler(widget=self._log["log_box"])
         _handler.setFormatter(_format)
 
         self.logger.addHandler(_handler)
 
     def update_log_verbosity(self, value):
         self.log_verbosity = value
-        self._log_widgets["verbosity_label"].set_text(f"{value}")
+        self._log["verbosity_label"].set_text(f"{value}")
 
     def stop_moving(self):
         # send command to stop moving
