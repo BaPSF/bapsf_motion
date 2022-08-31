@@ -368,6 +368,14 @@ class Motor:
 
         self._loop.call_soon_threadsafe(self._loop.stop)
 
+    def stop(self):
+        self.send_command("stop")
+
+    # def get_position(self):
+    #     pos = self.send_command("get_position")
+    #     self.update_status(position=pos)
+    #     return pos
+
 
 class MotorControl:
 
