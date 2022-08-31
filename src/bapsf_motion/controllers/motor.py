@@ -96,6 +96,7 @@ class Motor:
         self.setup_logger(logger, name)
         self.ip = ip
         self.connect()
+        self._send_raw_command("IFD")  # set format of immediate commands to decimal
         self.setup_event_loop(loop, auto_start)
 
     @property
