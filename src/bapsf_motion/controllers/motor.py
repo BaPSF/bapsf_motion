@@ -52,6 +52,8 @@ class Motor:
         "ip": None,
         "manufacturer": "Applied Motion Products",
         "model": "STM23S-3EE",
+        "gearing": None,  # steps/rev
+        "encoder_resolution": None,  # counts/rev
     }  # type: Dict[str, Optional[str]]
     _settings = {
         "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
@@ -113,9 +115,29 @@ class Motor:
         self.setup_logger(logger, name)
         self.ip = ip
         self.connect()
-        self._send_raw_command("IFD")  # set format of immediate commands to decimal
+        self._get_motor_parameters()
+        self._configure_motor()
         self.retrieve_motor_status()
         self.setup_event_loop(loop, auto_start)
+
+    def _configure_motor(self):
+        self._send_raw_command("IFD")  # set format of immediate commands to decimal
+
+    def _get_motor_parameters(self):
+        self._config.update(
+            {
+                "gearing": self.send_command("gearing"),
+                "encoder_resolution": self.send_command("encoder_resolution"),
+            }
+        )
+
+    @property
+    def status(self):
+        return self._status
+
+    # @property
+    # def config(self):
+    #     return self._config
 
     @property
     def ip(self):
@@ -160,10 +182,6 @@ class Motor:
         if is_moving is None:
             return False
         return is_moving
-
-    @property
-    def status(self):
-        return self._status
 
     @property
     def position(self):
