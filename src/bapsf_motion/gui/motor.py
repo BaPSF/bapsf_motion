@@ -1,5 +1,5 @@
 import logging
-from PySide6.QtGui import QColor
+from PySide6.QtGui import QColor, QFont
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -205,7 +205,7 @@ class MotorGUI(QMainWindow):
 
         led = LED()
         led.set_fixed_height(18)
-        led.set_checked(True)
+        led.set_checked(False)
         self._indicators["valid_ip"] = led
         row2_layout.add_spacing(4)
         row2_layout.add_widget(led)
@@ -215,9 +215,8 @@ class MotorGUI(QMainWindow):
 
         layout.add_layout(row2_layout)
 
-        # full bottom with blank space
+        # fill bottom with blank space
         layout.add_stretch()
-        # layout.add_spacing(self.height())
 
         return layout
 
@@ -225,18 +224,31 @@ class MotorGUI(QMainWindow):
     def indicator_widget(self):
         layout = QGridLayout()
 
-        label = QLabel("Connected")
-        font = label.font()
+        font = QFont()
         font.set_point_size(16)
-        label.set_font(font)
-        layout.add_widget(label, 0, 0)
 
+        # add Connected indicator
+        label = QLabel("Connected")
+        label.set_font(font)
         led = LED()
         led.set_fixed_height(18)
         led.set_checked(False)
         self._indicators["connected"] = led
-        # layout.add_spacing(4)
+        layout.add_widget(label, 0, 0)
         layout.add_widget(led, 0, 1)
+
+        # add Enabled indicator
+        label = QLabel("Enabled")
+        label.set_font(font)
+        led = LED()
+        led.set_fixed_height(18)
+        led.set_checked(False)
+        self._indicators["enabled"] = led
+        layout.add_widget(label, 0, 2)
+        layout.add_widget(led, 0, 3)
+
+        widget = QWidget()
+        widget.set_layout()
 
         return layout
 
