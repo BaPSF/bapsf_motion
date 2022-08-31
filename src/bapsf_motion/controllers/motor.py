@@ -104,6 +104,7 @@ class Motor:
         self.ip = ip
         self.connect()
         self._send_raw_command("IFD")  # set format of immediate commands to decimal
+        self.retrieve_motor_status()
         self.setup_event_loop(loop, auto_start)
 
     @property
@@ -169,6 +170,9 @@ class Motor:
 
         self._status = new_status
 
+    def update_status(self, **values):
+        self.status = values
+
     def setup_logger(self, logger, name):
         log_name = _logger.name if logger is None else logger.name
         if name is not None:
@@ -221,7 +225,7 @@ class Motor:
                 msg = "...SUCCESS!!!"
                 self.logger.debug(msg)
                 self.socket = s
-                self.status = {"connected": True}
+                self.update_status(connected=True)
                 return
             except (
                 TimeoutError,
@@ -262,7 +266,7 @@ class Motor:
         try:
             self.socket.send(cmd_str)
         except ConnectionError:
-            self.status = {"connected": False}
+            self.update_status(connected=False)
             self.connect()
             self.socket.send(cmd_str)
 
@@ -296,17 +300,14 @@ class Motor:
 
         return msg
 
-    def update_status(self):
+    def retrieve_motor_status(self):
         cmd = "request_status"
         _rtn = self.send_command(cmd)
-        match = self._commands[cmd]["recv"].fullmatch(_rtn)
 
-        if match is None:
-            raise RuntimeError
+        # _status = {**self._default_status}
+        _status = {}
 
-        _status = {**self._default_status}
-
-        for letter in match["return"]:
+        for letter in _rtn:
             if letter == "A":
                 _status["alarm"] = True
             elif letter in ("D", "R"):
@@ -328,7 +329,10 @@ class Motor:
             elif letter in ("T", "W"):
                 _status["waiting"] = True
 
-        self.status = _status
+        pos = self.send_command("get_position")
+        _status["position"] = pos
+
+        self.update_status(**_status)
 
     def enable(self):
         self.send_command("enable")
@@ -340,7 +344,7 @@ class Motor:
         while True:
             heartrate = self.active_heartrate if self.is_moving else self.base_heartrate
 
-            self.update_status()
+            self.retrieve_motor_status()
             self.logger.debug("Beat status.")
 
             await asyncio.sleep(heartrate)
