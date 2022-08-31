@@ -230,10 +230,12 @@ class Motor:
 
     def send_command(self, command, *args):
         msg = self._commands[command]["send"]
+        return self._send_raw_command(msg)
 
+    def _send_raw_command(self, cmd: str):
         cmd_str = bytearray([0, 7])  # header, equiv b'\x00\x07'
         cmd_str.extend(
-            bytearray(msg, encoding="ASCII")
+            bytearray(cmd, encoding="ASCII")
         )  # command
         cmd_str.append(13)  # carriage return, end of command, equiv b'\r'
 
