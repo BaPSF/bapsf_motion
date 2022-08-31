@@ -338,9 +338,11 @@ class Motor:
 
     def enable(self):
         self.send_command("enable")
+        self.retrieve_motor_status()
 
     def disable(self):
         self.send_command("disable")
+        self.retrieve_motor_status()
 
     async def _heartbeat(self):
         while True:
