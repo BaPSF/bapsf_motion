@@ -54,7 +54,7 @@ class Motor:
         "model": "STM23S-3EE",
     }  # type: Dict[str, Optional[str]]
     _settings = {
-        "port": 7776,
+        "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
         "buffer_size": 1024,
         "socket": None,
         "max_connection_attempts": 3,
@@ -231,11 +231,11 @@ class Motor:
     def send_command(self, command, *args):
         msg = self._commands[command]["send"]
 
-        cmd_str = bytearray([0, 7])  # header
+        cmd_str = bytearray([0, 7])  # header, equiv b'\x00\x07'
         cmd_str.extend(
             bytearray(msg, encoding="ASCII")
         )  # command
-        cmd_str.append(13)  # carriage return, end of command
+        cmd_str.append(13)  # carriage return, end of command, equiv b'\r'
 
         try:
             self.socket.send(cmd_str)
@@ -244,11 +244,35 @@ class Motor:
             self.connect()
             self.socket.send(cmd_str)
 
-        data = self.socket.recv(1024)
-        # print(
-        #     f"Sent command: {command} --  Received: {data.decode('ASCII')}",
-        # )
-        return data[2:-1].decode("ASCII")
+        # data = self.socket.recv(1024)
+        # # print(
+        # #     f"Sent command: {command} --  Received: {data.decode('ASCII')}",
+        # # )
+        # return data[2:-1].decode("ASCII")
+        data = self.recv()
+        return data.decode("ASCII")
+
+    def recv(self):
+        # all messages sent or received over TCP/UDP for Applied Motion Motors
+        # use a byte header b'\x00\x07' and and end-of-message b'\r'
+        # (carriage return)
+        _header = b"\x00\x07"
+        _eom = b"\r"  # end of message
+
+        msg = b""
+        while True:
+            data = self.socket.recv(16)
+
+            if not msg and _header in data:
+                msg = data.split(_header)[1]
+            else:
+                msg += data
+
+            if _eom in msg:
+                msg = msg.split(_eom)[0]
+                break
+
+        return msg
 
     def update_status(self):
         cmd = "request_status"
