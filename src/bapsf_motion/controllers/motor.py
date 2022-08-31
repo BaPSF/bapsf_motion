@@ -89,6 +89,16 @@ class Motor:
             "recv_processor": int,
         },
         "stop": {"send": "SK", "recv": None},
+        "gearing": {
+            "send": "EG",
+            "recv": re.compile(r"EG=(?P<return>[0-9]+)"),
+            "recv_processor": int,
+        },
+        "encoder_resolution": {
+            "send": "ER",
+            "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
+            "recv_processor": int,
+        },
     }
 
     def __init__(
