@@ -231,7 +231,19 @@ class Motor:
 
     def send_command(self, command, *args):
         msg = self._commands[command]["send"]
-        return self._send_raw_command(msg)
+        value_str = self._send_raw_command(msg)
+
+        recv_pattern = self._commands[command]["recv"]
+        if recv_pattern is not None:
+            value_str = recv_pattern.fullmatch(value_str).group("return")
+
+        try:
+            processor = self._commands[command]["recv_processor"]
+            return processor(value_str)
+        except KeyError:
+            # If the "recv_processor" key is not defined, then it is assumed
+            # the string is just to be passed back.
+            return value_str
 
     def _send_raw_command(self, cmd: str):
         cmd_str = bytearray([0, 7])  # header, equiv b'\x00\x07'
