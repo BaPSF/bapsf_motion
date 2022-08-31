@@ -209,7 +209,7 @@ class Motor:
 
         # auto-start event loop
         if auto_start:
-            self.start()
+            self.run()
 
     def connect(self):
         _allowed_attempts = self._settings["max_connection_attempts"]
@@ -349,14 +349,14 @@ class Motor:
 
             await asyncio.sleep(heartrate)
 
-    def start(self):
+    def run(self):
         if self._loop.is_running():
             return
 
         self.thread = threading.Thread(target=self._loop.run_forever)
         self.thread.start()
 
-    def stop(self):
+    def stop_running(self):
         for task in list(self.tasks):
             task.cancel()
             self.tasks.remove(task)
