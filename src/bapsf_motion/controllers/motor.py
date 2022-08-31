@@ -155,6 +155,12 @@ class Motor:
     def status(self):
         return self._status
 
+    @property
+    def position(self):
+        pos = self.send_command("get_position")
+        self.update_status(position=pos)
+        return pos
+
     def update_status(self, **values):
         old_status = self.status.copy()
         new_status = {**old_status, **values}
@@ -366,11 +372,6 @@ class Motor:
 
     def stop(self):
         self.send_command("stop")
-
-    # def get_position(self):
-    #     pos = self.send_command("get_position")
-    #     self.update_status(position=pos)
-    #     return pos
 
 
 class MotorControl:
