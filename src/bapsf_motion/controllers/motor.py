@@ -155,10 +155,9 @@ class Motor:
     def status(self):
         return self._status
 
-    @status.setter
-    def status(self, value):
-        old_status = self._status.copy()
-        new_status = {**old_status, **value}
+    def update_status(self, **values):
+        old_status = self.status.copy()
+        new_status = {**old_status, **values}
         changed = {}
         for key, value in new_status.items():
             if key not in old_status or (key in old_status and old_status[key] != value):
@@ -169,9 +168,6 @@ class Motor:
             self.status_changed.emit(True)
 
         self._status = new_status
-
-    def update_status(self, **values):
-        self.status = values
 
     def setup_logger(self, logger, name):
         log_name = _logger.name if logger is None else logger.name
