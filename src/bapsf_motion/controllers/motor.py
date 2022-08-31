@@ -62,6 +62,7 @@ class Motor:
     }  # type:  Dict[str, Optional[ClassVar[socket.socket], int]]
     _default_status = {
         "connected": False,
+        "position": None,
         "alarm": None,
         "enabled": None,
         "fault": None,
@@ -78,10 +79,16 @@ class Motor:
     _commands = {
         "request_status": {
             "send": "RS",
-            "recv": re.compile("RS=(?P<return>[ADEFHJMPRSTW]+)"),
+            "recv": re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
         },
         "enable": {"send": "ME", "recv": None},
         "disable": {"send": "MD", "recv": None},
+        "get_position": {
+            "send": "IP",
+            "recv": re.compile(r"IP=(?P<return>-?[0-9]+)"),
+            "recv_processor": int,
+        },
+        "stop": {"send": "SK", "recv": None},
     }
 
     def __init__(
