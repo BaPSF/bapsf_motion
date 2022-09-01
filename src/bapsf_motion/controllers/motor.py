@@ -110,6 +110,10 @@ class Motor:
             "send": "AL",
             "recv": re.compile(r"AL=(?P<return>[0-9]{4})"),
         }
+        "alarm_reset": {
+            "senf": "AR",
+            "recv": None,
+        }
     }
     _commands["set_distance"] = _commands["set_position"]
 
