@@ -350,7 +350,18 @@ class Motor:
         _rtn = self.send_command(cmd)
 
         # _status = {**self._default_status}
-        _status = {}
+        _status = {
+            "alarm": False,
+            "enabled": False,
+            "fault": False,
+            "moving": False,
+            "homing": False,
+            "jogging": False,
+            "motion_in_progress": False,
+            "in_position": False,
+            "stopping": False,
+            "waiting": False,
+        }  # null status
 
         for letter in _rtn:
             if letter == "A":
