@@ -79,41 +79,41 @@ class Motor:
     _status = {**_default_status}
     status_changed = SimpleSignal()
     _commands = {
-        "request_status": {
-            "send": "RS",
-            "recv": re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
+        "alarm": {
+            "send": "AL",
+            "recv": re.compile(r"AL=(?P<return>[0-9]{4})"),
         },
-        "enable": {"send": "ME", "recv": None},
+        "alarm_reset": {
+            "senf": "AR",
+            "recv": None,
+        },
         "disable": {"send": "MD", "recv": None},
-        "get_position": {
-            "send": "IP",
-            "recv": re.compile(r"IP=(?P<return>-?[0-9]+)"),
+        "enable": {"send": "ME", "recv": None},
+        "encoder_resolution": {
+            "send": "ER",
+            "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
             "recv_processor": int,
         },
-        "stop": {"send": "SK", "recv": None},
         "gearing": {
             "send": "EG",
             "recv": re.compile(r"EG=(?P<return>[0-9]+)"),
             "recv_processor": int,
         },
-        "encoder_resolution": {
-            "send": "ER",
-            "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
+        "get_position": {
+            "send": "IP",
+            "recv": re.compile(r"IP=(?P<return>-?[0-9]+)"),
             "recv_processor": int,
+        },
+        "request_status": {
+            "send": "RS",
+            "recv": re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
         },
         "set_position": {
             "send": "DI{}",
             "send_processor": int,
             "recv": None,
         },
-        "alarm": {
-            "send": "AL",
-            "recv": re.compile(r"AL=(?P<return>[0-9]{4})"),
-        }
-        "alarm_reset": {
-            "senf": "AR",
-            "recv": None,
-        }
+        "stop": {"send": "SK", "recv": None},
     }
     _commands["set_distance"] = _commands["set_position"]
 
