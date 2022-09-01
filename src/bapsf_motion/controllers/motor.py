@@ -118,15 +118,15 @@ class Motor:
     _commands["set_distance"] = _commands["set_position"]
 
     _alarm_codes = {
-        1: "position limit",
+        1: "position limit [Drive Fault]",
         2: "CCW limit",
         4: "CW limit",
-        8: "over temp",
-        10: "internal voltage",
-        20: "over voltage",
+        8: "over temp  [Drive Fault]",
+        10: "internal voltage [Drive Fault]",
+        20: "over voltage [Drive Fault]",
         40: "under voltage",
-        80: "over current",
-        100: "open motor winding",
+        80: "over current [Drive Fault]",
+        100: "open motor winding [Drive Fault]",
         400: "common error",
         800: "bad flash",
         1000: "no move",
