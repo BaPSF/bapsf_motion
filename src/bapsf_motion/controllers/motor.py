@@ -106,8 +106,28 @@ class Motor:
             "send_processor": int,
             "recv": None,
         },
+        "alarm": {
+            "send": "AL",
+            "recv": re.compile(r"AL=(?P<return>[0-9]{4})"),
+        }
     }
     _commands["set_distance"] = _commands["set_position"]
+
+    _alarm_codes = {
+        1: "position limit",
+        2: "CCW limit",
+        4: "CW limit",
+        8: "over temp",
+        10: "internal voltage",
+        20: "over voltage",
+        40: "under voltage",
+        80: "over current",
+        100: "open motor winding",
+        400: "common error",
+        800: "bad flash",
+        1000: "no move",
+        4000: "blank Q segment",
+    }  # specific to STM motors
 
     # TODO: implement a "move_to" "FP" "feed to position"
     # TODO: implement a "jog_by" "FL" "feed to length"
@@ -409,7 +429,35 @@ class Motor:
         pos = self.send_command("get_position")
         _status["position"] = pos
 
+        if _status["alarm"]:
+            _status["alarm_message"] = self.retrieve_motor_alarm(
+                defer_status_update=True
+            )
+
         self.update_status(**_status)
+
+    def retrieve_motor_alarm(self, defer_status_update=False):
+        rtn = self.send_command("alarm")
+
+        codes = []
+        for i, digit in enumerate(rtn):
+            integer = int(digit)
+            codes.append(integer * 10**(3-i))
+
+        alarm_message = []
+        for code in codes:
+            try:
+                msg = self._alarm_codes[code]
+                alarm_message.append(f"{code:04d} - {msg}")
+            except KeyError:
+                pass
+
+        alarm_message = " :: ".join(alarm_message)
+
+        if not defer_status_update:
+            self.update_status(alarm_message=alarm_message)
+
+        return alarm_message
 
     def enable(self):
         self.send_command("enable")
@@ -424,7 +472,7 @@ class Motor:
             heartrate = self.active_heartrate if self.is_moving else self.base_heartrate
 
             self.retrieve_motor_status()
-            self.logger.debug("Beat status.")
+            # self.logger.debug("Beat status.")
 
             await asyncio.sleep(heartrate)
 
