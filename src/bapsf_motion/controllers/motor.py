@@ -454,7 +454,10 @@ class Motor:
 
         alarm_message = " :: ".join(alarm_message)
 
-        if not defer_status_update:
+        if alarm_message:
+            self.logger.error(f"Motor returned alarm(s): {alarm_message}")
+
+        if not defer_status_update and alarm_message:
             self.update_status(alarm_message=alarm_message)
 
         return alarm_message
