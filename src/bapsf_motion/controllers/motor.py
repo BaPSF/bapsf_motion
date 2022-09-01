@@ -101,7 +101,13 @@ class Motor:
             "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
             "recv_processor": int,
         },
+        "set_position": {
+            "send": "DI{}",
+            "send_processor": int,
+            "recv": None,
+        },
     }
+    _commands["set_distance"] = _commands["set_position"]
 
     # TODO: implement a "move_to" "FP" "feed to position"
     # TODO: implement a "jog_by" "FL" "feed to length"
