@@ -138,7 +138,6 @@ class Motor:
         4000: "blank Q segment",
     }  # specific to STM motors
 
-    # TODO: implement a "move_to" "FP" "feed to position"
     # TODO: implement a "jog_by" "FL" "feed to length"
     # TODO: implement a "soft_stop"
     # TODO: implement a setting of accel, deccel, speed
