@@ -94,6 +94,10 @@ class Motor:
             "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
             "recv_processor": int,
         },
+        "feed_to_position": {
+            "send": "FP",
+            "recv": None,
+        },
         "gearing": {
             "send": "EG",
             "recv": re.compile(r"EG=(?P<return>[0-9]+)"),
@@ -104,6 +108,7 @@ class Motor:
             "recv": re.compile(r"IP=(?P<return>-?[0-9]+)"),
             "recv_processor": int,
         },
+        "move_to": None,
         "request_status": {
             "send": "RS",
             "recv": re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
@@ -114,7 +119,7 @@ class Motor:
             "recv": None,
         },
         "stop": {"send": "SK", "recv": None},
-    }
+    }  # type: Dict[str, Optional[Dict[str, Any]]]
     _commands["set_distance"] = _commands["set_position"]
 
     _alarm_codes = {
@@ -312,7 +317,13 @@ class Motor:
                     raise error_
 
     def send_command(self, command, *args):
-        msg = self._commands[command]["send"]
+        cmd_dict = self._commands[command]
+        if cmd_dict is None:
+            # execute respectively named method
+            meth = getattr(self, command)
+            return meth(*args)
+
+        msg = cmd_dict["send"]
         value = ""
         if len(args):
             value = args[0]
@@ -500,6 +511,24 @@ class Motor:
 
     def stop(self):
         self.send_command("stop")
+
+    def move_to(self, pos):
+        if self.status["alarm"]:
+            self.send_command("alarm_rest")
+            time.sleep(1.2*self.base_heartrate)
+
+            if self.status["alarm"]:
+                self.logger.error("Motor alarm could not be rest.")
+                return
+
+        # Note:  The Applied Motion Command Reference pdf states for
+        #        ethernet enabled motors the position should not be
+        #        given directly with the "feed_to_position" command.
+        #        The position must first be set with "set_position"
+        #        and then fed to position with "feed_to_position".
+        self.enable()
+        self.send_command("set_position", pos)
+        self.send_command("feed_to_position")
 
 
 class MotorControl:
