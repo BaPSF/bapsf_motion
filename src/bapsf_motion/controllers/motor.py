@@ -133,7 +133,6 @@ class Motor:
     # TODO: implement a "jog_by" "FL" "feed to length"
     # TODO: implement a "soft_stop"
     # TODO: implement a setting of accel, deccel, speed
-    # TODO: read alarm codes
     # TODO: rest alarm
     # TODO: read fault codes
     # TODO: rest faults
