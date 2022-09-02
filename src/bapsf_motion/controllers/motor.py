@@ -65,15 +65,7 @@ class Motor:
         "model": "STM23S-3EE",
         "gearing": None,  # steps/rev
         "encoder_resolution": None,  # counts/rev
-    }  # type: Dict[str, Optional[str]]
-
-    _config = {
-        "ip": None,
-        "manufacturer": "Applied Motion Products",
-        "model": "STM23S-3EE",
-        "gearing": None,  # steps/rev
-        "encoder_resolution": None,  # counts/rev
-    }  # type: Dict[str, Optional[str]]
+    }  # type: Dict[str, Any]
 
     _default_status = {
         "connected": False,
@@ -196,7 +188,7 @@ class Motor:
         self._send_raw_command("IFD")  # set format of immediate commands to decimal
 
     def _get_motor_parameters(self):
-        self._config.update(
+        self._motor.update(
             {
                 "gearing": self.send_command("gearing"),
                 "encoder_resolution": self.send_command("encoder_resolution"),
@@ -245,14 +237,14 @@ class Motor:
 
     @property
     def ip(self):
-        return self._config["ip"]
+        return self._motor["ip"]
 
     @ip.setter
     def ip(self, value):
         if _ipv4_pattern.fullmatch(value) is None:
             raise ValueError(f"Supplied IP address ({value}) is not a valid IPv4.")
 
-        self._config["ip"] = value
+        self._motor["ip"] = value
 
     @property
     def port(self):
