@@ -45,7 +45,7 @@ class Motor:
     name = ""
     logger = None
     base_heartrate = 2  # in seconds
-    active_heartrate = 0.5  # in seconds
+    active_heartrate = 0.2  # in seconds
     _loop = None
     thread = None
     _config = {
