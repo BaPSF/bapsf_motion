@@ -147,6 +147,26 @@ class Motor:
         1000: "no move",
         4000: "blank Q segment",
     }
+    _nack_codes = {
+        1: "command timed out",
+        2: "parameter is too long",
+        3: "too few parameters",
+        4: "too many parameters",
+        5: "parameters out of range",
+        6: "command buffer (queue) full",
+        7: "cannot process command",
+        8: "program running",
+        9: "bad password",
+        10: "comm port error",
+        11: "bad character",
+        12: "I/O point already used by curren command mode, and cannot "
+            "be changed (Flex I/O drives only)",
+        13: "I/O point configured for incorrect use "
+            "(i.e., input vs. output) (Flex I/O drives only)",
+        14: "I/O point cannot be used for rquested function - see HW "
+            "manual for possible I/O function assignments. "
+            "(Flex I/O drives only)",
+    }
 
     # TODO: have all commands sent to the event loops as tasks
     # TODO: determine why heartbeat is not beating during a move
@@ -363,13 +383,18 @@ class Motor:
                     raise error_
 
     def send_command(self, command, *args):
-        cmd_dict = self._commands[command]
-        if cmd_dict is None:
+        if self._commands[command] is None:
             # execute respectively named method
             meth = getattr(self, command)
             return meth(*args)
 
-        msg = cmd_dict["send"]
+        cmd_str = self._process_command(command, *args)
+        recv_str = self._send_raw_command(cmd_str)
+        return self._process_command_return(command, recv_str)
+
+    def _process_command(self, command: str, *args):
+        cmd_dict = self._commands[command]
+        cmd_str = cmd_dict["send"]
         value = ""
         if len(args):
             value = args[0]
@@ -381,23 +406,40 @@ class Motor:
             # assumed no processing needs to happen on the value to be
             # sent.
             pass
-        msg = msg.format(value)
 
-        # self.logger.debug(f"Sending command '{msg}'")
-        recv_str = self._send_raw_command(msg)
-        # self.logger.debug(f"Received message {recv_str}.")
+        return cmd_str.format(value)
+
+    def _process_command_return(self, command: str, rtn_str: str):
+
+        if "%" in rtn_str:
+            # Motor acknowledge and executed command.
+            return rtn_str
+        elif "*" in rtn_str:
+            # Motor acknowledged command and buffered it into the queue
+            return rtn_str
+        elif "?" in rtn_str:
+            # Motor negatively acknowledge command, error in command
+            err_code = re.compile(
+                r"\d?\?(?P<code>\d{1,2})"
+            ).fullmatch(rtn_str).group("code")
+            err_code = int(err_code)
+            err_msg = f"{err_code} - {self._nack_codes[err_code]}"
+            self.logger.error(
+                f"Motor returned Nack from command {command} with error: {err_msg}."
+            )
+            return rtn_str
 
         recv_pattern = self._commands[command]["recv"]
         if recv_pattern is not None:
-            recv_str = recv_pattern.fullmatch(recv_str).group("return")
+            rtn_str = recv_pattern.fullmatch(rtn_str).group("return")
 
         try:
             processor = self._commands[command]["recv_processor"]
-            return processor(recv_str)
+            return processor(rtn_str)
         except KeyError:
             # If the "recv_processor" key is not defined, then it is
             # assumed the string is just to be passed back.
-            return recv_str
+            return rtn_str
 
     def _send_raw_command(self, cmd: str):
         self._send(cmd)
