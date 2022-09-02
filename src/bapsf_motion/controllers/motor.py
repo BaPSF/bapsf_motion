@@ -138,16 +138,24 @@ class Motor:
         4000: "blank Q segment",
     }  # specific to STM motors
 
+    # TODO: have all commands sent to the event loops as tasks
     # TODO: determine why heartbeat is not beating during a move
+    #       - above statement is not true, but the heartbeat seem slower than the
+    #         specified HR
     # TODO: implement a "jog_by" "FL" "feed to length"
     # TODO: implement a "soft_stop"
-    # TODO: implement a setting of accel, deccel, speed
     # TODO: integrate hard limits
     # TODO: integrate soft limits
     # TODO: move off limit command
     # TODO: integrate homing
     # TODO: integrate zeroing
     # TODO: get motor firmware version, model numer, and sub-model using "MV"
+    # TODO: setting/getting of velocity
+    # TODO: setting/getting of acceleration
+    # TODO: setting/getting of deceleration
+    # TODO: upgrade commands so setting and getting commands run
+    #       through the same general command (e.g. set_speed and
+    #       get_speed are just aliases for the speed command)
 
     def __init__(
         self,
