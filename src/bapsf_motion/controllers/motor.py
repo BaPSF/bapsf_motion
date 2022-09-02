@@ -14,7 +14,6 @@ import time
 from collections import namedtuple
 from typing import Any, ClassVar, Dict, List, Optional
 
-_logger = logging.getLogger(__name__)
 _ipv4_pattern = re.compile("^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
 
@@ -43,7 +42,8 @@ class SimpleSignal:
 
 
 class Motor:
-    #: parameters that define the setup of the Motor class
+    # : parameters that define the setup of the Motor class (actual motor settings
+    # should be defined in _motor)
     _setup = {
         "name": "",
         "logger": None,
@@ -55,12 +55,8 @@ class Motor:
         "heartrate": namedtuple("HR", ["base", "active"])(
             base=2, active=0.2
         ),  # in seconds
-    }
-
-    logger = None
-    heartrate = namedtuple("HR", ["base", "active"])(base=2, active=0.2)  # in seconds
-    _loop = None
-    thread = None
+        "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
+    }    # type: Dict[str, Any]
 
     #: these are setting that determine the motor parameters
     _motor = {
@@ -78,12 +74,6 @@ class Motor:
         "gearing": None,  # steps/rev
         "encoder_resolution": None,  # counts/rev
     }  # type: Dict[str, Optional[str]]
-    _settings = {
-        "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
-        "socket": None,
-        "max_connection_attempts": 3,
-        "tasks": None,
-    }  # type:  Dict[str, Optional[ClassVar[socket.socket], int]]
 
     _default_status = {
         "connected": False,
@@ -222,6 +212,34 @@ class Motor:
         self._setup["name"] = value
 
     @property
+    def logger(self):
+        return self._setup["logger"]
+
+    @logger.setter
+    def logger(self, value):
+        self._setup["logger"] = value
+
+    @property
+    def _loop(self):
+        return self._setup["loop"]
+
+    @_loop.setter
+    def _loop(self, value):
+        self._setup["loop"] = value
+
+    @property
+    def _thread(self):
+        return self._setup["thread"]
+
+    @_thread.setter
+    def _thread(self, value):
+        self._setup["thread"] = value
+
+    @property
+    def heartrate(self):
+        return self._setup["heartrate"]
+
+    @property
     def status(self):
         return self._status
 
@@ -238,25 +256,25 @@ class Motor:
 
     @property
     def port(self):
-        return self._settings["port"]
+        return self._setup["port"]
 
     @property
     def socket(self) -> socket.socket:
-        return self._settings["socket"]
+        return self._setup["socket"]
 
     @socket.setter
     def socket(self, value):
         if not isinstance(value, socket.socket):
             raise TypeError(f"Expected type {socket.socket}, got type {type(value)}.")
 
-        self._settings["socket"] = value
+        self._setup["socket"] = value
 
     @property
     def tasks(self) -> List[asyncio.Task]:
-        if self._settings["tasks"] is None:
-            self._settings["tasks"] = []
+        if self._setup["tasks"] is None:
+            self._setup["tasks"] = []
 
-        return self._settings["tasks"]
+        return self._setup["tasks"]
 
     @property
     def is_moving(self):
@@ -286,7 +304,7 @@ class Motor:
         self._status = new_status
 
     def setup_logger(self, logger, name):
-        log_name = _logger.name if logger is None else logger.name
+        log_name = __name__ if logger is None else logger.name
         if name is not None:
             log_name += f".{name}"
             self.name = name
@@ -324,7 +342,7 @@ class Motor:
             self.run()
 
     def connect(self):
-        _allowed_attempts = self._settings["max_connection_attempts"]
+        _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
             try:
                 msg = f"Connecting to {self.ip}:{self.port} ..."
@@ -538,8 +556,8 @@ class Motor:
         if self._loop.is_running():
             return
 
-        self.thread = threading.Thread(target=self._loop.run_forever)
-        self.thread.start()
+        self._thread = threading.Thread(target=self._loop.run_forever)
+        self._thread.start()
 
     def stop_running(self):
         for task in list(self.tasks):
