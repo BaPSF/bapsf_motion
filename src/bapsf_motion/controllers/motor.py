@@ -11,6 +11,7 @@ import socket
 import threading
 import time
 
+from collections import namedtuple
 from typing import Any, ClassVar, Dict, List, Optional
 
 _logger = logging.getLogger(__name__)
@@ -44,8 +45,7 @@ class SimpleSignal:
 class Motor:
     name = ""
     logger = None
-    base_heartrate = 2  # in seconds
-    active_heartrate = 0.2  # in seconds
+    heartrate = namedtuple("HR", ["base", "active"])(base=2, active=0.2)  # in seconds
     _loop = None
     thread = None
     _config = {
@@ -490,12 +490,20 @@ class Motor:
         self.retrieve_motor_status()
 
     async def _heartbeat(self):
+        old_HR = self.heartrate.base
+        beats = 0
         while True:
-            heartrate = self.active_heartrate if self.is_moving else self.base_heartrate
+            heartrate = self.heartrate.active if self.is_moving else self.heartrate.base
+
+            if heartrate != old_HR:
+                self.logger.debug(f"HR changed {heartrate} - old HR beated {beats} times.")
+                beats = 0
 
             self.retrieve_motor_status()
             # self.logger.debug("Beat status.")
 
+            beats += 1
+            old_HR = heartrate
             await asyncio.sleep(heartrate)
 
     def run(self):
@@ -523,7 +531,7 @@ class Motor:
     def move_to(self, pos):
         if self.status["alarm"]:
             self.send_command("alarm_rest")
-            time.sleep(1.2*self.base_heartrate)
+            time.sleep(1.2 * self.heartrate.active)
 
             if self.status["alarm"]:
                 self.logger.error("Motor alarm could not be rest.")
