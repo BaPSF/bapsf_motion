@@ -400,12 +400,18 @@ class Motor:
             return recv_str
 
     def _send_raw_command(self, cmd: str):
-        cmd_str = bytearray([0, 7])  # header, equiv b'\x00\x07'
-        cmd_str.extend(
-            bytearray(cmd, encoding="ASCII")
-        )  # command
-        cmd_str.append(13)  # carriage return, end of command, equiv b'\r'
+        self._send(cmd)
+        data = self._recv()
+        return data.decode("ASCII")
 
+    def _send(self, cmd: str):
+        # all messages sent or received over TCP/UDP for Applied Motion Motors
+        # use a byte header b'\x00\x07' and and end-of-message b'\r'
+        # (carriage return)
+        _header = b"\x00\x07"
+        _eom = b"\r"  # end of message
+
+        cmd_str = _header + bytes(cmd.encode("ASCII")) + _eom
         try:
             self.socket.send(cmd_str)
         except ConnectionError:
@@ -413,15 +419,7 @@ class Motor:
             self.connect()
             self.socket.send(cmd_str)
 
-        # data = self.socket.recv(1024)
-        # # print(
-        # #     f"Sent command: {command} --  Received: {data.decode('ASCII')}",
-        # # )
-        # return data[2:-1].decode("ASCII")
-        data = self.recv()
-        return data.decode("ASCII")
-
-    def recv(self):
+    def _recv(self):
         # all messages sent or received over TCP/UDP for Applied Motion Motors
         # use a byte header b'\x00\x07' and and end-of-message b'\r'
         # (carriage return)
