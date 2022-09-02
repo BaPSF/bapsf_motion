@@ -67,7 +67,8 @@ class Motor:
         "encoder_resolution": None,  # counts/rev
     }  # type: Dict[str, Any]
 
-    _default_status = {
+    #: these are parameters that define the current state of the motor
+    _status = {
         "connected": False,
         "position": None,
         "alarm": None,
@@ -82,8 +83,7 @@ class Motor:
         "waiting": None,
     }  # type: Dict[str, Any]
 
-    #: these are parameters that define the current state of the motor
-    _status = {**_default_status}
+    #: simple signal to tell handlers that _status changed
     status_changed = SimpleSignal()
 
     #: available commands that can be sent to the motor
@@ -447,7 +447,6 @@ class Motor:
         cmd = "request_status"
         _rtn = self.send_command(cmd)
 
-        # _status = {**self._default_status}
         _status = {
             "alarm": False,
             "enabled": False,
