@@ -43,11 +43,34 @@ class SimpleSignal:
 
 
 class Motor:
-    name = ""
+    #: parameters that define the setup of the Motor class
+    _setup = {
+        "name": "",
+        "logger": None,
+        "loop": None,
+        "thread": None,
+        "socket": None,
+        "tasks": None,
+        "max_connection_attempts": 3,
+        "heartrate": namedtuple("HR", ["base", "active"])(
+            base=2, active=0.2
+        ),  # in seconds
+    }
+
     logger = None
     heartrate = namedtuple("HR", ["base", "active"])(base=2, active=0.2)  # in seconds
     _loop = None
     thread = None
+
+    #: these are setting that determine the motor parameters
+    _motor = {
+        "ip": None,
+        "manufacturer": "Applied Motion Products",
+        "model": "STM23S-3EE",
+        "gearing": None,  # steps/rev
+        "encoder_resolution": None,  # counts/rev
+    }  # type: Dict[str, Optional[str]]
+
     _config = {
         "ip": None,
         "manufacturer": "Applied Motion Products",
@@ -57,11 +80,11 @@ class Motor:
     }  # type: Dict[str, Optional[str]]
     _settings = {
         "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
-        "buffer_size": 1024,
         "socket": None,
         "max_connection_attempts": 3,
         "tasks": None,
     }  # type:  Dict[str, Optional[ClassVar[socket.socket], int]]
+
     _default_status = {
         "connected": False,
         "position": None,
@@ -76,8 +99,12 @@ class Motor:
         "stopping": None,
         "waiting": None,
     }  # type: Dict[str, Any]
+
+    #: these are parameters that define the current state of the motor
     _status = {**_default_status}
     status_changed = SimpleSignal()
+
+    #: available commands that can be sent to the motor
     _commands = {
         "alarm": {
             "send": "AL",
@@ -122,6 +149,7 @@ class Motor:
     }  # type: Dict[str, Optional[Dict[str, Any]]]
     _commands["set_distance"] = _commands["set_position"]
 
+    #: mapping of motor alarm codes to their descriptive message (specific to STM motors)
     _alarm_codes = {
         1: "position limit [Drive Fault]",
         2: "CCW limit",
@@ -136,7 +164,7 @@ class Motor:
         800: "bad flash",
         1000: "no move",
         4000: "blank Q segment",
-    }  # specific to STM motors
+    }
 
     # TODO: have all commands sent to the event loops as tasks
     # TODO: determine why heartbeat is not beating during a move
@@ -186,12 +214,16 @@ class Motor:
         )
 
     @property
+    def name(self):
+        return self._setup["name"]
+
+    @name.setter
+    def name(self, value):
+        self._setup["name"] = value
+
+    @property
     def status(self):
         return self._status
-
-    # @property
-    # def config(self):
-    #     return self._config
 
     @property
     def ip(self):
@@ -207,10 +239,6 @@ class Motor:
     @property
     def port(self):
         return self._settings["port"]
-
-    @property
-    def buffer_size(self):
-        return self._settings["buffer_size"]
 
     @property
     def socket(self) -> socket.socket:
