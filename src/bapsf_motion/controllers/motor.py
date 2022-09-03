@@ -118,13 +118,20 @@ class Motor:
             "recv_processor": int,
         },
         "move_to": None,
+        "protocol": {
+            "send": "PR",
+            "send_processor": lambda value: f"{int(value)}",
+            "recv": re.compile(r"PR=(?P<return>[0-9]{1,3})"),
+            "recv_processor": int,
+            "two_way": True,
+        },
         "request_status": {
             "send": "RS",
             "recv": re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
         },
         "set_position": {
-            "send": "DI{}",
-            "send_processor": int,
+            "send": "DI",
+            "send_processor": lambda value: f"{int(value)}",
             "recv": None,
         },
         "stop": {"send": "SK", "recv": None},
@@ -389,25 +396,38 @@ class Motor:
             return meth(*args)
 
         cmd_str = self._process_command(command, *args)
-        recv_str = self._send_raw_command(cmd_str)
+        recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
         return self._process_command_return(command, recv_str)
 
     def _process_command(self, command: str, *args):
         cmd_dict = self._commands[command]
         cmd_str = cmd_dict["send"]
-        value = ""
-        if len(args):
-            value = args[0]
+
         try:
             processor = self._commands[command]["send_processor"]
-            value = processor(value)
         except KeyError:
             # If the "send_processor" key is not defined, then it is
-            # assumed no processing needs to happen on the value to be
-            # sent.
-            pass
+            # assumed no values need to be sent with the command.
+            if len(args):
+                self.logger.error(
+                    f"Command '{command}' requires 0 arguments to send, "
+                    f"got {len(args)} arguments."
+                )
+            return cmd_str
 
-        return cmd_str.format(value)
+        two_way = cmd_dict.get("two_way", False)
+        if not len(args) and two_way:
+            # command is being used as a getter instead of a setter
+            return cmd_str
+        elif not len(args):
+            # command is acting as a setter without arguments
+            self.logger.error(
+                f"Command '{command}' is a setting command, but no "
+                f"arguments were given."
+            )
+            return "?3"  # Nack code for too few parameters
+
+        return cmd_str + processor(args[0])
 
     def _process_command_return(self, command: str, rtn_str: str):
 
