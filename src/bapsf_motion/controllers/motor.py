@@ -154,6 +154,8 @@ class Motor:
         1000: "no move",
         4000: "blank Q segment",
     }
+
+    #: mapping of motor Ack/Nack codes and their descriptive messages
     _nack_codes = {
         1: "command timed out",
         2: "parameter is too long",
@@ -170,7 +172,7 @@ class Motor:
             "be changed (Flex I/O drives only)",
         13: "I/O point configured for incorrect use "
             "(i.e., input vs. output) (Flex I/O drives only)",
-        14: "I/O point cannot be used for rquested function - see HW "
+        14: "I/O point cannot be used for requested function - see HW "
             "manual for possible I/O function assignments. "
             "(Flex I/O drives only)",
     }
@@ -193,6 +195,9 @@ class Motor:
     # TODO: upgrade commands so setting and getting commands run
     #       through the same general command (e.g. set_speed and
     #       get_speed are just aliases for the speed command)
+    # TODO: Add signals for:
+    #       - motion started
+    #       - motion finished
 
     def __init__(
         self,
