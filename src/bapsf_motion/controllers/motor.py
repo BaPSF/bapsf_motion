@@ -573,13 +573,18 @@ class Motor:
 
         if _status["alarm"]:
             _status["alarm_message"] = self.retrieve_motor_alarm(
-                defer_status_update=True
+                defer_status_update=True,
+                direct_send=True,
             )
 
         self.update_status(**_status)
 
-    def retrieve_motor_alarm(self, defer_status_update=False):
-        rtn = self.send_command("alarm")
+    def retrieve_motor_alarm(self, defer_status_update=False, direct_send=False):
+        # this is done so self._heartbeat can directly send commands since
+        # the heartbeat is already running in the event loop
+        send_command = self._send_command if direct_send else self.send_command
+
+        rtn = send_command("alarm")
 
         codes = []
         for i, digit in enumerate(rtn):
