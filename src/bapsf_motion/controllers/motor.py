@@ -237,7 +237,7 @@ class Motor:
         self._setup["name"] = value
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         return self._setup["logger"]
 
     @logger.setter
@@ -245,7 +245,7 @@ class Motor:
         self._setup["logger"] = value
 
     @property
-    def _loop(self):
+    def _loop(self) -> asyncio.events.AbstractEventLoop:
         return self._setup["loop"]
 
     @_loop.setter
