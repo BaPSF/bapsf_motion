@@ -212,10 +212,17 @@ class Motor:
         self.setup_logger(logger, name)
         self.ip = ip
         self.connect()
+
+        # loop needs to be setup before any commands are sent to the motor
+        self.setup_event_loop(loop, False)
+
         self._get_motor_parameters()
         self._configure_motor()
-        self.retrieve_motor_status()
-        self.setup_event_loop(loop, auto_start)
+        self.send_command("retrieve_motor_status")
+        # self.retrieve_motor_status()
+
+        if auto_start:
+            self.run()
 
     def _configure_motor(self):
         self._send_raw_command("IFD")  # set format of immediate commands to decimal
@@ -362,9 +369,9 @@ class Motor:
         task = self._loop.create_task(self._heartbeat())
         self.tasks.append(task)
 
-        # auto-start event loop
-        if auto_start:
-            self.run()
+        # # auto-start event loop
+        # if auto_start:
+        #     self.run()
 
     def connect(self):
         _allowed_attempts = self._setup["max_connection_attempts"]
