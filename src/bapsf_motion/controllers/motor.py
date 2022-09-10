@@ -129,6 +129,7 @@ class Motor:
             "send": "RS",
             "recv": re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
         },
+        "retrieve_motor_status": None,
         "set_position": {
             "send": "DI",
             "send_processor": lambda value: f"{int(value)}",
@@ -585,11 +586,11 @@ class Motor:
 
     def enable(self):
         self.send_command("enable")
-        self.retrieve_motor_status()
+        self.send_command("retrieve_motor_status")
 
     def disable(self):
         self.send_command("disable")
-        self.retrieve_motor_status()
+        self.send_command("retrieve_motor_status")
 
     async def _heartbeat(self):
         old_HR = self.heartrate.base
@@ -601,7 +602,8 @@ class Motor:
                 self.logger.debug(f"HR changed {heartrate} - old HR beated {beats} times.")
                 beats = 0
 
-            self.retrieve_motor_status()
+            # self.retrieve_motor_status()
+            self.send_command("retrieve_motor_status")
             # self.logger.debug("Beat status.")
 
             beats += 1
