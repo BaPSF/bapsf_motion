@@ -129,6 +129,7 @@ class Motor:
             "send": "RS",
             "recv": re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
         },
+        "retrieve_motor_alarm": None,
         "retrieve_motor_status": None,
         "set_position": {
             "send": "DI",
