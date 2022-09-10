@@ -179,7 +179,6 @@ class Motor:
             "(Flex I/O drives only)",
     }
 
-    # TODO: have all commands sent to the event loops as tasks
     # TODO: determine why heartbeat is not beating during a move
     #       - above statement is not true, but the heartbeat seem slower than the
     #         specified HR
@@ -200,6 +199,8 @@ class Motor:
     # TODO: Add signals for:
     #       - motion started
     #       - motion finished
+    # TODO: update _heartbeat so the beat happens on the specified HR
+    #       interval instead of execution time + HR interval
 
     def __init__(
         self,
