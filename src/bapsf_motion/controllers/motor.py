@@ -402,15 +402,31 @@ class Motor:
                     self.logger.error(msg)
                     raise error_
 
+    def _send_command(self, command, *args):
+        cmd_str = self._process_command(command, *args)
+        recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
+        return self._process_command_return(command, recv_str)
+
+    async def _send_command_async(self, command, *args):
+        return self._send_command(command, *args)
+
     def send_command(self, command, *args):
         if self._commands[command] is None:
             # execute respectively named method
             meth = getattr(self, command)
             return meth(*args)
 
-        cmd_str = self._process_command(command, *args)
-        recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
-        return self._process_command_return(command, recv_str)
+        # cmd_str = self._process_command(command, *args)
+        # recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
+        # return self._process_command_return(command, recv_str)
+
+        if self._loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(
+                self._send_command_async(command, *args),
+                self._loop
+            )
+            return future.result(5)
+        return self._send_command(command, *args)
 
     def _process_command(self, command: str, *args):
         cmd_dict = self._commands[command]
