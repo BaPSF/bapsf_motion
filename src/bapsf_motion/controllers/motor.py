@@ -416,10 +416,6 @@ class Motor:
             meth = getattr(self, command)
             return meth(*args)
 
-        # cmd_str = self._process_command(command, *args)
-        # recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
-        # return self._process_command_return(command, recv_str)
-
         if self._loop.is_running():
             future = asyncio.run_coroutine_threadsafe(
                 self._send_command_async(command, *args),
