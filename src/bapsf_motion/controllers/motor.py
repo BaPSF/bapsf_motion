@@ -532,10 +532,12 @@ class Motor:
 
         return msg
 
-    def retrieve_motor_status(self):
-        cmd = "request_status"
-        _rtn = self.send_command(cmd)
+    def retrieve_motor_status(self, direct_send=False):
+        # this is done so self._heartbeat can directly send commands since
+        # the heartbeat is already running in the event loop
+        send_command = self._send_command if direct_send else self.send_command
 
+        _rtn = send_command("request_status")
         _status = {
             "alarm": False,
             "enabled": False,
@@ -548,7 +550,6 @@ class Motor:
             "stopping": False,
             "waiting": False,
         }  # null status
-
         for letter in _rtn:
             if letter == "A":
                 _status["alarm"] = True
@@ -571,7 +572,7 @@ class Motor:
             elif letter in ("T", "W"):
                 _status["waiting"] = True
 
-        pos = self.send_command("get_position")
+        pos = send_command("get_position")
         _status["position"] = pos
 
         if _status["alarm"]:
@@ -622,11 +623,12 @@ class Motor:
             heartrate = self.heartrate.active if self.is_moving else self.heartrate.base
 
             if heartrate != old_HR:
-                self.logger.debug(f"HR changed {heartrate} - old HR beated {beats} times.")
+                self.logger.info(
+                    f"HR interval changed to {heartrate} sec - old HR beat {beats} times."
+                )
                 beats = 0
 
-            # self.retrieve_motor_status()
-            self.send_command("retrieve_motor_status")
+            self.retrieve_motor_status(direct_send=True)
             # self.logger.debug("Beat status.")
 
             beats += 1
