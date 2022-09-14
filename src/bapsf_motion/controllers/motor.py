@@ -67,8 +67,8 @@ class Motor:
         "encoder_resolution": None,  # counts/rev
         "DEFAULTS": {
             "speed": 12.5,
-            "accel": None,
-            "decel": None,
+            "accel": 25,
+            "decel": 25,
         },
         "speed": None,
         "accel": None,
@@ -96,6 +96,13 @@ class Motor:
 
     #: available commands that can be sent to the motor
     _commands = {
+        "acceleration": {
+            "send": "AC",
+            "send_processor": lambda value: f"{float(value):.3f}",
+            "recv": re.compile(r"AC=(?P<return>[0-9]+\.?[0-9]*)"),
+            "recv_processor": float,
+            "two_way": True,
+        },
         "alarm": {
             "send": "AL",
             "recv": re.compile(r"AL=(?P<return>[0-9]{4})"),
@@ -103,6 +110,13 @@ class Motor:
         "alarm_reset": {
             "senf": "AR",
             "recv": None,
+        },
+        "deceleration": {
+            "send": "DE",
+            "send_processor": lambda value: f"{float(value):.3f}",
+            "recv": re.compile(r"DE=(?P<return>[0-9]+\.?[0-9]*)"),
+            "recv_processor": float,
+            "two_way": True,
         },
         "disable": {"send": "MD", "recv": None},
         "enable": {"send": "ME", "recv": None},
@@ -195,8 +209,10 @@ class Motor:
     }
 
     # TODO: determine why heartbeat is not beating during a move
-    #       - above statement is not true, but the heartbeat seem slower than the
-    #         specified HR
+    #       - above statement is not true, but the heartbeat seems
+    #         slower than the specified HR
+    # TODO: update _heartbeat so the beat happens on the specified HR
+    #       interval instead of execution time + HR interval
     # TODO: implement a "jog_by" "FL" "feed to length"
     # TODO: implement a "soft_stop"
     # TODO: integrate hard limits
@@ -205,17 +221,12 @@ class Motor:
     # TODO: integrate homing
     # TODO: integrate zeroing
     # TODO: get motor firmware version, model numer, and sub-model using "MV"
-    # TODO: setting/getting of velocity
-    # TODO: setting/getting of acceleration
-    # TODO: setting/getting of deceleration
     # TODO: upgrade commands so setting and getting commands run
     #       through the same general command (e.g. set_speed and
     #       get_speed are just aliases for the speed command)
     # TODO: Add signals for:
     #       - motion started
     #       - motion finished
-    # TODO: update _heartbeat so the beat happens on the specified HR
-    #       interval instead of execution time + HR interval
 
     def __init__(
         self,
