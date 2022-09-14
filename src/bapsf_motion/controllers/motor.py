@@ -125,7 +125,7 @@ class Motor:
             "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
             "recv_processor": int,
         },
-        "feed_to_position": {  # TODO: rename to "feed"
+        "feed": {
             "send": "FP",
             "recv": None,
         },
@@ -697,12 +697,12 @@ class Motor:
 
         # Note:  The Applied Motion Command Reference pdf states for
         #        ethernet enabled motors the position should not be
-        #        given directly with the "feed_to_position" command.
-        #        The position must first be set with "set_position"
-        #        and then fed to position with "feed_to_position".
+        #        given directly with the "feed" command.  The position
+        #        must first be set with "set_position" and then fed to
+        #        position with "feed".
         self.enable()
         self.send_command("set_position", pos)
-        self.send_command("feed_to_position")
+        self.send_command("feed")
 
 
 class MotorControl:
