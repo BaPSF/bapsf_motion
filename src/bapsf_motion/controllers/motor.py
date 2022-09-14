@@ -103,7 +103,7 @@ class Motor:
             "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
             "recv_processor": int,
         },
-        "feed_to_position": {
+        "feed_to_position": {  # TODO: rename to "feed"
             "send": "FP",
             "recv": None,
         },
