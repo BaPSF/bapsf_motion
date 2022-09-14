@@ -160,14 +160,15 @@ class Motor:
             "recv_processor": float,
             "two_way": True,
         },
-        "set_position": {
+        "stop": {"send": "SK", "recv": None},
+        "target_distance": {
             "send": "DI",
             "send_processor": lambda value: f"{int(value)}",
-            "recv": None,
+            "recv": re.compile(r"DI=(?P<return>[0-9]+)"),
+            "recv_processor": int,
+            "two_way": True,
         },
-        "stop": {"send": "SK", "recv": None},
     }  # type: Dict[str, Optional[Dict[str, Any]]]
-    _commands["set_distance"] = _commands["set_position"]
 
     #: mapping of motor alarm codes to their descriptive message (specific to STM motors)
     _alarm_codes = {
@@ -700,10 +701,10 @@ class Motor:
         # Note:  The Applied Motion Command Reference pdf states for
         #        ethernet enabled motors the position should not be
         #        given directly with the "feed" command.  The position
-        #        must first be set with "set_position" and then fed to
+        #        must first be set with "target_distance" and then fed to
         #        position with "feed".
         self.enable()
-        self.send_command("set_position", pos)
+        self.send_command("target_distance", pos)
         self.send_command("feed")
 
 
