@@ -214,6 +214,8 @@ class Motor:
     # TODO: update _heartbeat so the beat happens on the specified HR
     #       interval instead of execution time + HR interval
     # TODO: implement a "jog_by" "FL" "feed to length"
+    # TODO: implement commands for setting/getting jog speed, accel,
+    #       and decel
     # TODO: implement a "soft_stop"
     # TODO: integrate hard limits
     # TODO: integrate soft limits
