@@ -65,6 +65,14 @@ class Motor:
         "model": "STM23S-3EE",
         "gearing": None,  # steps/rev
         "encoder_resolution": None,  # counts/rev
+        "DEFAULTS": {
+            "speed": 12.5,
+            "accel": None,
+            "decel": None,
+        },
+        "speed": None,
+        "accel": None,
+        "decel": None,
     }  # type: Dict[str, Any]
 
     #: these are parameters that define the current state of the motor
@@ -131,6 +139,13 @@ class Motor:
         },
         "retrieve_motor_alarm": None,
         "retrieve_motor_status": None,
+        "speed": {
+            "send": "VE",
+            "send_processor": lambda value: f"{float(value):.4f}",
+            "recv": re.compile(r"VE=(?P<return>[0-9]+\.?[0-9]*)"),
+            "recv_processor": float,
+            "two_way": True,
+        },
         "set_position": {
             "send": "DI",
             "send_processor": lambda value: f"{int(value)}",
