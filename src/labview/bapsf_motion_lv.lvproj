@@ -25,7 +25,7 @@
 		<Item Name="requests" Type="Folder" URL="../requests">
 			<Property Name="NI.DISK" Type="Bool">true</Property>
 		</Item>
-		<Item Name="test" Type="Folder" URL="../test">
+		<Item Name="utils" Type="Folder" URL="../utils">
 			<Property Name="NI.DISK" Type="Bool">true</Property>
 		</Item>
 		<Item Name="bapsf_motion_lv.vi" Type="VI" URL="../bapsf_motion_lv.vi"/>
