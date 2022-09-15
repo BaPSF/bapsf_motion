@@ -706,6 +706,7 @@ class Motor:
         self.enable()
         self.send_command("target_distance", pos)
         self.send_command("feed")
+        self.send_command("retrieve_motor_status")
 
 
 class MotorControl:
