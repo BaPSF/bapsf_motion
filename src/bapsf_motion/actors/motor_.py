@@ -11,31 +11,7 @@ import time
 from collections import namedtuple
 from typing import Any, Dict, List, Optional
 
-_ipv4_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-
-
-class SimpleSignal:
-    _handlers = None
-
-    @property
-    def handlers(self):
-        if self._handlers is None:
-            self._handlers = []
-        return self._handlers
-
-    def connect(self, func):
-        if func not in self.handlers:
-            self.handlers.append(func)
-
-    def disconnect(self, func):
-        try:
-            self.handlers.remove(func)
-        except ValueError:
-            pass
-
-    def emit(self, payload):
-        for handler in self.handlers:
-            handler(payload)
+from bapsf_motion.utils import ipv4_pattern, SimpleSignal
 
 
 class Motor:
@@ -349,7 +325,7 @@ class Motor:
 
     @ip.setter
     def ip(self, value):
-        if _ipv4_pattern.fullmatch(value) is None:
+        if ipv4_pattern.fullmatch(value) is None:
             raise ValueError(f"Supplied IP address ({value}) is not a valid IPv4.")
 
         self._motor["ip"] = value
