@@ -93,6 +93,8 @@ class Motor:
 
     #: simple signal to tell handlers that _status changed
     status_changed = SimpleSignal()
+    movement_started = SimpleSignal()
+    movement_finished = SimpleSignal()
 
     #: available commands that can be sent to the motor
     _commands = {
@@ -607,6 +609,11 @@ class Motor:
                 defer_status_update=True,
                 direct_send=True,
             )
+
+        if _status["moving"] and not self._status["moving"]:
+            self.movement_started.emit(True)
+        elif not _status["moving"] and self._status["moving"]:
+            self.movement_finished.emit(True)
 
         self.update_status(**_status)
 
