@@ -301,6 +301,9 @@ class Motor:
             {
                 "gearing": self.send_command("gearing"),
                 "encoder_resolution": self.send_command("encoder_resolution"),
+                "speed": self.send_command("speed"),
+                "accel": self.send_command("acceleration"),
+                "decel": self.send_command("deceleration"),
             }
         )
 
