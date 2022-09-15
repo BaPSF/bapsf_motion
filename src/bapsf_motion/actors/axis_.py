@@ -13,7 +13,7 @@ class Axis:
     _units = None
     units_per_rev = None
 
-    def __int__(
+    def __init__(
         self,
         *,
         ip: str,
