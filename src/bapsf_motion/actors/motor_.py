@@ -320,6 +320,10 @@ class Motor:
         return self._status
 
     @property
+    def steps_per_rev(self):
+        return self._motor["gearing"]
+
+    @property
     def ip(self):
         return self._motor["ip"]
 

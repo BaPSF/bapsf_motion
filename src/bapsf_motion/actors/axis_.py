@@ -3,6 +3,8 @@ __all__ = ["Axis"]
 import astropy.units as u
 import logging
 
+from typing import Dict, Union
+
 from bapsf_motion.actors.motor_ import Motor
 
 
@@ -78,5 +80,42 @@ class Axis:
 
         self._units = new_units
 
+    @property
+    def steps_per_rev(self):
+        return self.motor.steps_per_rev
+
+    @property
+    def position(self):
+        pos = self.motor.position
+        return self.convert_steps_to_units(pos)
+
+    def conversions(self, command) -> Union[Dict[str, callable], None]:
+        if command in ("acceleration", "deceleration", "speed"):
+            return {
+                "outbound": lambda x: x / self.units_per_rev,
+                "inbound": lambda x: round(x * self.units_per_rev, 2),
+            }
+        elif command in ("move_to", "target_position"):
+            return {
+                "outbound": self.convert_unit_to_steps,
+                "inbound": self.convert_steps_to_units,
+            }
+
     def send_command(self, command, *args):
-        self.motor.send_command(command, *args)
+        conversion = self.conversions(command)
+        if conversion is not None and len(args):
+            args = list(args)
+            args[0] = conversion["outbound"](args[0])
+
+        rtn = self.motor.send_command(command, *args)
+
+        if command is not None and rtn is not None:
+            return conversion["inbound"](rtn)
+
+        return rtn
+
+    def convert_unit_to_steps(self, value):
+        return value * self.steps_per_rev / self.units_per_rev
+
+    def convert_steps_to_units(self, value):
+        return round(value * self.units_per_rev / self.steps_per_rev, 2)
