@@ -73,6 +73,7 @@ class Motor:
         "speed": None,
         "accel": None,
         "decel": None,
+        "protocol_settings": None,
     }  # type: Dict[str, Any]
 
     #: these are parameters that define the current state of the motor
@@ -252,13 +253,48 @@ class Motor:
         self._get_motor_parameters()
         self._configure_motor()
         self.send_command("retrieve_motor_status")
-        # self.retrieve_motor_status()
 
         if auto_start:
             self.run()
 
     def _configure_motor(self):
         self._send_raw_command("IFD")  # set format of immediate commands to decimal
+
+        # ensure motor always sends Ack/Nack
+        self._read_and_set_protocol()
+
+    def _read_and_set_protocol(self):
+        rtn = self.send_command("protocol")
+        _bits = f"{rtn:09b}"
+
+        if _bits[-3] == "0":
+            _bits = list(_bits)
+            _bits[-3] = "1"  # sets always ack/nack
+            _bits = "".join(_bits)
+            _bits = int(_bits, 2)
+            self.send_command("protocol", _bits)
+
+            rtn = self.send_command("protocol")
+            _bits = f"{rtn:09b}"
+
+        self._motor["protocol_settings"] = []
+        _bit_descriptions = [
+            "Default ('Standard SCL')",
+            "Always use Address Character",
+            "Always return Ack/Nack",
+            "Checksum",
+            "(reserved)",
+            "3-digit numeric register addressing",
+            "Checksum Type (step-servo and SV200 only)",
+            "Little/Big Endian in Modbus Mode",
+            "Full Duplex in RS-422",
+        ]
+        for ii, b in enumerate(list(_bits)):
+            if b == "0":
+                continue
+
+            bit_num = 8 - ii
+            self._motor["protocol_settings"].append(_bit_descriptions[bit_num])
 
     def _get_motor_parameters(self):
         self._motor.update(
