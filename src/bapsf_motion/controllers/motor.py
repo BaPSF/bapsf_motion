@@ -230,9 +230,8 @@ class Motor:
     # TODO: upgrade commands so setting and getting commands run
     #       through the same general command (e.g. set_speed and
     #       get_speed are just aliases for the speed command)
-    # TODO: Add signals for:
-    #       - motion started
-    #       - motion finished
+    # TODO: Do I need to store feed target, spead, accel, and decel?
+    #       Same for the jog equivalent.
 
     def __init__(
         self,
