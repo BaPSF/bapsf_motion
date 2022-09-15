@@ -3,7 +3,7 @@ import time
 from typing import Union
 
 try:
-    from bapsf_motion.controllers.motor import Motor
+    from bapsf_motion.actors import Motor
 except ModuleNotFoundError:
     import sys
 
@@ -14,7 +14,7 @@ except ModuleNotFoundError:
 
     sys.path.append(str(_BAPSF_MOTION))
 
-    from bapsf_motion.controllers.motor import Motor
+    from bapsf_motion.actors import Motor
 
 
 MOTOR_NAME = "WALL-E"
