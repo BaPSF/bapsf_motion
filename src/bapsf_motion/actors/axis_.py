@@ -78,3 +78,5 @@ class Axis:
 
         self._units = new_units
 
+    def send_command(self, command, *args):
+        self.motor.send_command(command, *args)
