@@ -690,7 +690,7 @@ class Motor:
         self._thread = threading.Thread(target=self._loop.run_forever)
         self._thread.start()
 
-    def stop_running(self):
+    def stop_running(self, delay_loop_stop=False):
         for task in list(self.tasks):
             task.cancel()
             self.tasks.remove(task)
@@ -699,6 +699,9 @@ class Motor:
             self.socket.close()
         except AttributeError:
             pass
+
+        if delay_loop_stop:
+            return
 
         self._loop.call_soon_threadsafe(self._loop.stop)
 

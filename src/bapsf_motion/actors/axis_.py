@@ -44,8 +44,8 @@ class Axis:
     def run(self):
         self.motor.run()
 
-    def stop_running(self):
-        self.motor.stop_running()
+    def stop_running(self, delay_loop_stop=False):
+        self.motor.stop_running(delay_loop_stop=delay_loop_stop)
 
     def setup_logger(self, logger, name):
         log_name = __name__ if logger is None else logger.name
