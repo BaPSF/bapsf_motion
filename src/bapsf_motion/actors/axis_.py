@@ -9,11 +9,6 @@ from bapsf_motion.actors.motor_ import Motor
 
 
 class Axis:
-    motor = None
-    _logger = None
-    _name = ""
-    _units = None
-    units_per_rev = None
 
     def __init__(
         self,
@@ -24,8 +19,9 @@ class Axis:
         name: str = None,
         logger=None,
         loop=None,
-        auto_run=False
+        auto_run=False,
     ):
+        self._init_instance_variables()
         self.setup_logger(logger, "Axis")
         self.motor = Motor(
             ip=ip,
@@ -40,6 +36,13 @@ class Axis:
 
         if auto_run:
             self.run()
+
+    def _init_instance_variables(self):
+        self.motor = None
+        self._logger = None
+        self._name = ""
+        self._units = None
+        self.units_per_rev = None
 
     def run(self):
         self.motor.run()
