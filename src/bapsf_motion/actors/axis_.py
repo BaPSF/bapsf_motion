@@ -58,6 +58,10 @@ class Axis:
         self._logger = logging.getLogger(log_name)
 
     @property
+    def is_moving(self):
+        return self.motor.is_moving
+
+    @property
     def logger(self):
         return self._logger
 
