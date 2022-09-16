@@ -15,61 +15,6 @@ from bapsf_motion.utils import ipv4_pattern, SimpleSignal
 
 
 class Motor:
-    # : parameters that define the setup of the Motor class (actual motor settings
-    # should be defined in _motor)
-    _setup = {
-        "name": "",
-        "logger": None,
-        "loop": None,
-        "thread": None,
-        "socket": None,
-        "tasks": None,
-        "max_connection_attempts": 3,
-        "heartrate": namedtuple("HR", ["base", "active"])(
-            base=2, active=0.2
-        ),  # in seconds
-        "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
-    }    # type: Dict[str, Any]
-
-    #: these are setting that determine the motor parameters
-    _motor = {
-        "ip": None,
-        "manufacturer": "Applied Motion Products",
-        "model": "STM23S-3EE",
-        "gearing": None,  # steps/rev
-        "encoder_resolution": None,  # counts/rev
-        "DEFAULTS": {
-            "speed": 12.5,
-            "accel": 25,
-            "decel": 25,
-        },
-        "speed": None,
-        "accel": None,
-        "decel": None,
-        "protocol_settings": None,
-    }  # type: Dict[str, Any]
-
-    #: these are parameters that define the current state of the motor
-    _status = {
-        "connected": False,
-        "position": None,
-        "alarm": None,
-        "enabled": None,
-        "fault": None,
-        "moving": None,
-        "homing": None,
-        "jogging": None,
-        "motion_in_progress": None,
-        "in_position": None,
-        "stopping": None,
-        "waiting": None,
-    }  # type: Dict[str, Any]
-
-    #: simple signal to tell handlers that _status changed
-    status_changed = SimpleSignal()
-    movement_started = SimpleSignal()
-    movement_finished = SimpleSignal()
-
     #: available commands that can be sent to the motor
     _commands = {
         "acceleration": {
@@ -215,6 +160,7 @@ class Motor:
         loop=None,
         auto_start=False,
     ):
+        self._init_instance_variables()
         self.setup_logger(logger, name)
         self.ip = ip
         self.connect()
@@ -228,6 +174,62 @@ class Motor:
 
         if auto_start:
             self.run()
+
+    def _init_instance_variables(self):
+        # : parameters that define the setup of the Motor class (actual motor settings
+        # should be defined in _motor)
+        self._setup = {
+            "name": "",
+            "logger": None,
+            "loop": None,
+            "thread": None,
+            "socket": None,
+            "tasks": None,
+            "max_connection_attempts": 3,
+            "heartrate": namedtuple("HR", ["base", "active"])(
+                base=2, active=0.2
+            ),  # in seconds
+            "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
+        }  # type: Dict[str, Any]
+
+        #: these are setting that determine the motor parameters
+        self._motor = {
+            "ip": None,
+            "manufacturer": "Applied Motion Products",
+            "model": "STM23S-3EE",
+            "gearing": None,  # steps/rev
+            "encoder_resolution": None,  # counts/rev
+            "DEFAULTS": {
+                "speed": 12.5,
+                "accel": 25,
+                "decel": 25,
+            },
+            "speed": None,
+            "accel": None,
+            "decel": None,
+            "protocol_settings": None,
+        }  # type: Dict[str, Any]
+
+        #: these are parameters that define the current state of the motor
+        self._status = {
+            "connected": False,
+            "position": None,
+            "alarm": None,
+            "enabled": None,
+            "fault": None,
+            "moving": None,
+            "homing": None,
+            "jogging": None,
+            "motion_in_progress": None,
+            "in_position": None,
+            "stopping": None,
+            "waiting": None,
+        }  # type: Dict[str, Any]
+
+        #: simple signal to tell handlers that _status changed
+        self.status_changed = SimpleSignal()
+        self.movement_started = SimpleSignal()
+        self.movement_finished = SimpleSignal()
 
     def _configure_motor(self):
         self._send_raw_command("IFD")  # set format of immediate commands to decimal
