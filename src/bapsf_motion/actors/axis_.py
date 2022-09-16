@@ -117,6 +117,14 @@ class Axis:
 
         return rtn
 
+    def move_to(self, *args):
+        return self.send_command("move_to", *args)
+
+    def stop(self):
+        # not sending STOP command through send_command() since using
+        # motor.stop() should result in faster execution
+        return self.motor.stop()
+
     def convert_unit_to_steps(self, value):
         return value * self.steps_per_rev / self.units_per_rev
 
