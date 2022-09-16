@@ -98,7 +98,7 @@ class Drive:
 
     @property
     def is_moving(self):
-        ...
+        return any(ax.is_moving for ax in self.axes)
 
     @property
     def axes(self):
@@ -114,7 +114,11 @@ class Drive:
 
     @property
     def position(self):
-        ...
+        pos = []
+        for ax in self.axes:
+            pos.append(ax.position)
+
+        return tuple(pos)
 
     def run(self):
         if self._loop.is_running():
