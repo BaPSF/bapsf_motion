@@ -25,15 +25,10 @@ class Drive:
 
         axis_objs = []
         for axis in axes:
-            print(f"~! - {[ax.motor.ip for ax in axis_objs]}")
             ax = self._spawn_axis(axis)
-
-            print(f"~~! - {[ax.motor.ip for ax in axis_objs]}")
             axis_objs.append(ax)
-            print(f"! - {[ax.motor.ip for ax in axis_objs]}")
-        print(f"!! - {[ax.motor.ip for ax in axis_objs]}")
+
         self._axes = tuple(axis_objs)
-        print(f"!!! - {[ax.motor.ip for ax in self._axes]}")
 
         if auto_run:
             self.run()
@@ -90,7 +85,6 @@ class Drive:
         return settings
 
     def _spawn_axis(self, settings):
-        print(settings)
         ax = Axis(
             **{
                 **settings,
@@ -99,7 +93,6 @@ class Drive:
                 "auto_run": False,
             },
         )
-        print(ax.motor.ip)
 
         return ax
 
