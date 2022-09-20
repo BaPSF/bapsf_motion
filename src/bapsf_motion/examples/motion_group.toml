@@ -1,0 +1,22 @@
+[mgroup.0]
+name = "XY-drive"
+port_number = 32
+port_orientation = "E"
+axis.0.ip = "192.168.0.70"
+axis.0.units = "cm"
+axis.0.units_per_rev = 0.508
+axis.0.name = "X"
+axis.1.ip = "192.168.0.70"
+axis.1.units = "cm"
+axis.1.units_per_rev = 0.508
+axis.1.name = "Y"
+transform.type = "lapd-xy-basic"
+fransform.pivot_to_center = 57.7
+transform.pivot_to_clamp = 125.0
+transform.zero_to_home.axis.0 = 10
+transform.zero_to_home.axis.1 = 10
+ml.0.type = "grid"
+ml.0.n = [20, 20]
+ml.0.center = [0, 0]
+ml.0.size = [10, 10]
+
