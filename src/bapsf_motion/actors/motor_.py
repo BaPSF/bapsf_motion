@@ -446,6 +446,10 @@ class Motor:
                     self.logger.error(msg)
                     raise error_
 
+        if self._loop is not None:
+            self._get_motor_parameters()
+            self._configure_motor()
+
     def _send_command(self, command, *args):
         cmd_str = self._process_command(command, *args)
         recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
