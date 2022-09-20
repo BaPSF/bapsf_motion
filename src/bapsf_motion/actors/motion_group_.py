@@ -3,7 +3,11 @@ __all__ = ["MotionGroup"]
 import tomli
 
 from collections import UserDict
+from pathlib import Path
 from typing import Any, Dict, Optional
+
+
+_EXAMPLES = (Path(__file__).parent / ".." / "examples").resolve().glob("*.toml")
 
 
 class MotionGroupConfig(UserDict):
@@ -46,6 +50,19 @@ class MotionGroupConfig(UserDict):
                 "a configuration."
             )
         elif filename is not None:
+            filename = Path(filename).resolve()
+
+            if not filename.exists():
+                for efile in _EXAMPLES:
+                    if filename.name == efile.name:
+                        filename = efile
+                        break
+
+            if not filename.exists():
+                raise ValueError(
+                    "Specified Motion Group configuration file does not exist."
+                )
+
             with open(filename, "rb") as f:
                 config = tomli.load(f)
 
