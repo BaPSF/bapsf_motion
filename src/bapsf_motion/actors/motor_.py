@@ -575,13 +575,14 @@ class Motor:
         if recv_pattern is not None:
             rtn_str = recv_pattern.fullmatch(rtn_str).group("return")
 
-        try:
-            processor = self._commands[command]["recv_processor"]
-            return processor(rtn_str)
-        except KeyError:
-            # If the "recv_processor" key is not defined, then it is
-            # assumed the string is just to be passed back.
-            return rtn_str
+        processor = self._commands[command]["recv_processor"]
+        rtn = processor(rtn_str)
+
+        units = self._commands[command]["units"]
+        if units is not None:
+            return rtn * units
+
+        return rtn
 
     def _send_raw_command(self, cmd: str):
         self._send(cmd)
