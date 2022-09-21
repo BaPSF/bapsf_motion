@@ -2,10 +2,10 @@
 name = "XY-drive"
 port_number = 32
 port_orientation = "E"
-axis.ip = ["192.168.0.70", "192.168.0.80"]
-axis.units = ["cm", "cm"]
-axis.name = ["X", "Y"]
-axis.units_per_rev = [0.508, 0.508]
+axes.ip = ["192.168.0.70", "192.168.0.80"]
+axes.units = ["cm", "cm"]
+axes.name = ["X", "Y"]
+axes.units_per_rev = [0.508, 0.508]
 transform.type = "lapd-xy-basic"
 transform.droop_correction = "None"
 transform.pivot_to_center = 57.7
