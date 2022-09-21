@@ -132,7 +132,7 @@ class Axis:
             }
         elif command in ("move_to", "target_position"):
             return {
-                "outbound": self.convert_unit_to_steps,
+                "outbound": self.convert_units_to_steps,
                 "inbound": self.convert_steps_to_units,
             }
 
@@ -157,7 +157,7 @@ class Axis:
         # motor.stop() should result in faster execution
         return self.motor.stop()
 
-    def convert_unit_to_steps(self, value):
+    def convert_units_to_steps(self, value):
         return value * self.steps_per_rev / self.units_per_rev
 
     def convert_steps_to_units(self, value):
