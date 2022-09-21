@@ -29,7 +29,7 @@ class CommandEntry(UserDict):
         command: str,
         *,
         send: str,
-        send_processor: Optional[Callable] = do_nothing,
+        send_processor: Optional[Callable] = None,
         recv: Optional[re.Pattern] = None,
         recv_processor: Optional[Callable] = do_nothing,
         two_way: bool = False,
@@ -62,85 +62,83 @@ class Motor:
             two_way=True,
             units=u.rev / u.s / u.s,
         ),
-        # "acceleration": {
-        #     "send": "AC",
-        #     "send_processor": lambda value: f"{float(value):.3f}",
-        #     "recv": re.compile(r"AC=(?P<return>[0-9]+\.?[0-9]*)"),
-        #     "recv_processor": float,
-        #     "two_way": True,
-        #     "units": u.rev / u.s / u.s,
-        # },
-        "alarm": {
-            "send": "AL",
-            "recv": re.compile(r"AL=(?P<return>[0-9]{4})"),
-        },
-        "alarm_reset": {
-            "senf": "AR",
-            "recv": None,
-        },
-        "deceleration": {
-            "send": "DE",
-            "send_processor": lambda value: f"{float(value):.3f}",
-            "recv": re.compile(r"DE=(?P<return>[0-9]+\.?[0-9]*)"),
-            "recv_processor": float,
-            "two_way": True,
-            "units": u.rev / u.s / u.s,
-        },
-        "disable": {"send": "MD", "recv": None},
-        "enable": {"send": "ME", "recv": None},
-        "encoder_resolution": {
-            "send": "ER",
-            "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
-            "recv_processor": int,
-            "units": u.counts / u.rev,
-        },
-        "feed": {
-            "send": "FP",
-            "recv": None,
-        },
-        "gearing": {
-            "send": "EG",
-            "recv": re.compile(r"EG=(?P<return>[0-9]+)"),
-            "recv_processor": int,
-            "units": u.steps / u.rev,
-        },
-        "get_position": {
-            "send": "IP",
-            "recv": re.compile(r"IP=(?P<return>-?[0-9]+)"),
-            "recv_processor": int,
-            "units": u.steps,
-        },
+        "alarm": CommandEntry(
+            "alarm",
+            send="AL",
+            recv=re.compile(r"AL=(?P<return>[0-9]{4})"),
+        ),
+        "alarm_reset": CommandEntry(
+            "alarm_reset",
+            send="AR"
+        ),
+        "deceleration": CommandEntry(
+            "deceleration",
+            send="DE",
+            send_processor=lambda value: f"{float(value):.3f}",
+            recv=re.compile(r"DE=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s / u.s,
+        ),
+        "disable": CommandEntry("disable", send="MD"),
+        "enable": CommandEntry("enable", send="ME"),
+        "encoder_resolution": CommandEntry(
+            "encoder_resolution",
+            send="ER",
+            recv=re.compile(r"ER=(?P<return>[0-9]+)"),
+            recv_processor=int,
+            units=u.counts / u.rev,
+        ),
+        "feed": CommandEntry("feed", send="FP"),
+        "gearing": CommandEntry(
+            "gearing",
+            send="EG",
+            recv=re.compile(r"EG=(?P<return>[0-9]+)"),
+            recv_processor=int,
+            units=u.steps / u.rev,
+        ),
+        "get_position": CommandEntry(
+            "get_position",
+            send="IP",
+            recv=re.compile(r"IP=(?P<return>-?[0-9]+)"),
+            recv_processor=int,
+            units=u.steps,
+        ),
         "move_to": None,
-        "protocol": {
-            "send": "PR",
-            "send_processor": lambda value: f"{int(value)}",
-            "recv": re.compile(r"PR=(?P<return>[0-9]{1,3})"),
-            "recv_processor": int,
-            "two_way": True,
-        },
-        "request_status": {
-            "send": "RS",
-            "recv": re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
-        },
+        "protocol": CommandEntry(
+            "protocol",
+            send="PR",
+            send_processor=lambda value: f"{int(value)}",
+            recv=re.compile(r"PR=(?P<return>[0-9]{1,3})"),
+            recv_processor=int,
+            two_way=True,
+        ),
+        "request_status": CommandEntry(
+            "request_status",
+            send="RS",
+            recv=re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
+        ),
         "retrieve_motor_alarm": None,
         "retrieve_motor_status": None,
-        "speed": {
-            "send": "VE",
-            "send_processor": lambda value: f"{float(value):.4f}",
-            "recv": re.compile(r"VE=(?P<return>[0-9]+\.?[0-9]*)"),
-            "recv_processor": float,
-            "two_way": True,
-            "units": u.rev / u.s,
-        },
-        "stop": {"send": "SK", "recv": None},
-        "target_distance": {
-            "send": "DI",
-            "send_processor": lambda value: f"{int(value)}",
-            "recv": re.compile(r"DI=(?P<return>[0-9]+)"),
-            "recv_processor": int,
-            "two_way": True,
-            "units": u.steps,
-        },
+        "speed": CommandEntry(
+            "speed",
+            send="VE",
+            send_processor=lambda value: f"{float(value):.4f}",
+            recv=re.compile(r"VE=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s,
+        ),
+        "stop": CommandEntry("stop", send="SK"),
+        "target_distance": CommandEntry(
+            "target_distance",
+            send="DI",
+            send_processor=lambda value: f"{int(value)}",
+            recv=re.compile(r"DI=(?P<return>[0-9]+)"),
+            recv_processor=int,
+            two_way=True,
+            units=u.steps,
+        ),
     }  # type: Dict[str, Optional[Dict[str, Any]]]
 
     #: mapping of motor alarm codes to their descriptive message (specific to STM motors)
@@ -528,11 +526,10 @@ class Motor:
         cmd_dict = self._commands[command]
         cmd_str = cmd_dict["send"]
 
-        try:
-            processor = self._commands[command]["send_processor"]
-        except KeyError:
-            # If the "send_processor" key is not defined, then it is
-            # assumed no values need to be sent with the command.
+        processor = self._commands[command]["send_processor"]
+        if processor is None:
+            # If "send_processor" is None, then it is assumed no values
+            # need to be sent with the command.
             if len(args):
                 self.logger.error(
                     f"Command '{command}' requires 0 arguments to send, "
