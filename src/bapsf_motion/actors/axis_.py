@@ -118,6 +118,10 @@ class Axis:
 
     @property
     def units_per_rev(self):
+        """
+        The number of units (:attr:`units`) translated per full
+        revolution of the motor (:attr:`motor`).
+        """
         return self._units_per_rev
 
     def conversions(self, command) -> Union[Dict[str, callable], None]:
