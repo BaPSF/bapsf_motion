@@ -9,6 +9,7 @@ from bapsf_motion.actors.motor_ import Motor
 
 
 class Axis:
+    # TODO: better handle naming of the Axis and child Motor
 
     def __init__(
         self,
