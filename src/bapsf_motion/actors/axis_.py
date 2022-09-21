@@ -21,7 +21,7 @@ class Axis:
         loop=None,
         auto_run=False,
     ):
-        self._init_instance_variables()
+        self._init_instance_attrs()
         self.setup_logger(logger, "Axis")
         self.motor = Motor(
             ip=ip,
@@ -37,48 +37,63 @@ class Axis:
         if auto_run:
             self.run()
 
-    def _init_instance_variables(self):
+    def _init_instance_attrs(self):
+        """Initialize the class instance attributes."""
         self.motor = None
         self._logger = None
         self._name = ""
         self._units = None
         self.units_per_rev = None
 
-    def run(self):
-        self.motor.run()
-
-    def stop_running(self, delay_loop_stop=False):
-        self.motor.stop_running(delay_loop_stop=delay_loop_stop)
-
     def setup_logger(self, logger, name):
+        """Setup logger to track events."""
         log_name = __name__ if logger is None else logger.name
         if name is not None:
             log_name += f".{name}"
             self.name = name
         self._logger = logging.getLogger(log_name)
 
+    def run(self):
+        """Start the `asyncio` event loop."""
+        self.motor.run()
+
+    def stop_running(self, delay_loop_stop=False):
+        """Stop the `asyncio` event loop."""
+        self.motor.stop_running(delay_loop_stop=delay_loop_stop)
+
     @property
-    def is_moving(self):
+    def is_moving(self) -> bool:
+        """
+        `True` or `False` indicating if the axis is currently moving.
+        """
         return self.motor.is_moving
 
     @property
     def logger(self):
+        """Event logger for the class"""
         return self._logger
 
     @property
     def name(self):
+        """Given name for the `Axis` instance."""
         return self._name
 
     @name.setter
     def name(self, value):
+        """Set the given name for the `Axis` instance."""
         self._name = value
 
     @property
     def units(self) -> u.Unit:
+        """
+        The unit of measure for the `Axis` physical parameters like
+        position, speed, etc.
+        """
         return self._units
 
     @units.setter
     def units(self, new_units: u.Unit):
+        """Set the units of measure."""
         if self.units.physical_type != new_units.physical_type:
             raise ValueError
 
@@ -89,10 +104,15 @@ class Axis:
 
     @property
     def steps_per_rev(self):
+        """Number of motor steps for a full revolution."""
         return self.motor.steps_per_rev
 
     @property
     def position(self):
+        """
+        Current axis position in units defined by the :attr:`units`
+        attribute.
+        """
         pos = self.motor.position
         return self.convert_steps_to_units(pos)
 
