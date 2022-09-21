@@ -84,6 +84,20 @@ class Axis:
         self._name = value
 
     @property
+    def position(self):
+        """
+        Current axis position in units defined by the :attr:`units`
+        attribute.
+        """
+        pos = self.motor.position
+        return self.convert_steps_to_units(pos)
+
+    @property
+    def steps_per_rev(self):
+        """Number of motor steps for a full revolution."""
+        return self.motor.steps_per_rev
+
+    @property
     def units(self) -> u.Unit:
         """
         The unit of measure for the `Axis` physical parameters like
@@ -101,20 +115,6 @@ class Axis:
         self.units_per_rev = conversion * self.units_per_rev
 
         self._units = new_units
-
-    @property
-    def steps_per_rev(self):
-        """Number of motor steps for a full revolution."""
-        return self.motor.steps_per_rev
-
-    @property
-    def position(self):
-        """
-        Current axis position in units defined by the :attr:`units`
-        attribute.
-        """
-        pos = self.motor.position
-        return self.convert_steps_to_units(pos)
 
     def conversions(self, command) -> Union[Dict[str, callable], None]:
         if command in ("acceleration", "deceleration", "speed"):
