@@ -1,11 +1,13 @@
 __all__ = ["MotionGroup"]
 
+import logging
 import tomli
 
 from collections import UserDict
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Iterable, Optional
 
+from bapsf_motion.actors.drive_ import Drive
 
 _EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.toml"))
 
@@ -105,18 +107,52 @@ class MotionGroupConfig(UserDict):
 
 
 class MotionGroup:
-    def __init__(self, *, filename: str = None, config=None):
-        if filename is None and config is None:
-            raise TypeError(
-                "MotionGroup() missing 1 required keyword argument: use "
-                "'filename' or 'config' to specify a configuration."
-            )
-        elif filename is not None and config is not None:
-            raise TypeError(
-                "MotionGroup() takes 1 keyword argument but 2 were "
-                "given: use keyword 'filename' OR 'config' to specify "
-                "a configuration."
-            )
+    def __init__(
+        self,
+        *,
+        filename: Optional[str] = None,
+        config: Optional[Dict[str, Any]] = None,
+        logger=None,
+        loop=None,
+        auto_run=False,
+    ):
+        self.setup_logger(logger, "MGroup")
+        self._config = MotionGroupConfig(filename=filename, config=config)
+        self._drive = Drive(
+            axes=self.config.drive_settings,
+            logger=self.logger,
+            loop=loop,
+            auto_run=False,
+        )
 
-        self.config = None
-        self.drive = None
+        if auto_run:
+            self.run()
+
+    def setup_logger(self, logger, name):
+        log_name = __name__ if logger is None else logger.name
+        if name is not None:
+            log_name += f".{name}"
+            self._name = name
+        self._logger = logging.getLogger(log_name)
+
+    def run(self):
+        if self.drive is not None:
+            self.drive.run()
+
+    def stop_running(self, delay_loop_stop=False):
+        if self.drive is None:
+            return
+
+        self.drive.stop_running(delay_loop_stop=delay_loop_stop)
+
+    @property
+    def config(self):
+        return self._config
+
+    @property
+    def drive(self):
+        return self._drive
+
+    @property
+    def logger(self):
+        return self._logger
