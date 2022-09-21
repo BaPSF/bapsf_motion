@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional
 
 
-_EXAMPLES = (Path(__file__).parent / ".." / "examples").resolve().glob("*.toml")
+_EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.toml"))
 
 
 class MotionGroupConfig(UserDict):
