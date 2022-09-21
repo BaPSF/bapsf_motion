@@ -60,7 +60,8 @@ class MotionGroupConfig(UserDict):
 
             if not filename.exists():
                 raise ValueError(
-                    "Specified Motion Group configuration file does not exist."
+                    f"Specified Motion Group configuration file does "
+                    f"not exist, {filename}."
                 )
 
             with open(filename, "rb") as f:
@@ -90,6 +91,17 @@ class MotionGroupConfig(UserDict):
 
     def _validate_transform(self):
         ...
+
+    @property
+    def drive_settings(self) -> Iterable[Dict[str, Any]]:
+        axes = self["axes"]
+        naxes = len(axes["ip"])
+        settings = [{}, {}]
+        for ii in range(naxes):
+            for key, val in axes.items():
+                settings[ii][key] = val[ii]
+
+        return settings
 
 
 class MotionGroup:
