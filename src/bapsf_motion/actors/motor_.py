@@ -1,6 +1,7 @@
 
-__all__ = ["Motor"]
+__all__ = ["CommandEntry", "Motor"]
 
+import astropy.units as u
 import asyncio
 import logging
 import re
@@ -8,22 +9,67 @@ import socket
 import threading
 import time
 
-from collections import namedtuple
-from typing import Any, Dict, List, Optional
+from collections import namedtuple, UserDict
+from typing import Any, Callable, Dict, List, Optional, Union
 
 from bapsf_motion.utils import ipv4_pattern, SimpleSignal
+
+counts = u.def_unit("counts", namespace=u.__dict__)
+steps = u.def_unit("steps", namespace=u.__dict__)
+rev = u.def_unit("rev", namespace=u.__dict__)
+
+
+def do_nothing(x):
+    return x
+
+
+class CommandEntry(UserDict):
+    def __init__(
+        self,
+        command: str,
+        *,
+        send: str,
+        send_processor: Optional[Callable] = do_nothing,
+        recv: Optional[re.Pattern] = None,
+        recv_processor: Optional[Callable] = do_nothing,
+        two_way: bool = False,
+        units: Union[str, u.Unit, None] = None,
+    ):
+        self._command = command
+        super().__init__(
+            send=send,
+            send_processor=send_processor,
+            recv=recv,
+            recv_processor=recv_processor,
+            two_way=two_way,
+            units=units,
+        )
+
+    @property
+    def command(self):
+        return self._command
 
 
 class Motor:
     #: available commands that can be sent to the motor
     _commands = {
-        "acceleration": {
-            "send": "AC",
-            "send_processor": lambda value: f"{float(value):.3f}",
-            "recv": re.compile(r"AC=(?P<return>[0-9]+\.?[0-9]*)"),
-            "recv_processor": float,
-            "two_way": True,
-        },
+        "acceleration": CommandEntry(
+            "a«acceleration",
+            send="AC",
+            send_processor=lambda value: f"{float(value):.3f}",
+            recv=re.compile(r"AC=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s / u.s,
+        ),
+        # "acceleration": {
+        #     "send": "AC",
+        #     "send_processor": lambda value: f"{float(value):.3f}",
+        #     "recv": re.compile(r"AC=(?P<return>[0-9]+\.?[0-9]*)"),
+        #     "recv_processor": float,
+        #     "two_way": True,
+        #     "units": u.rev / u.s / u.s,
+        # },
         "alarm": {
             "send": "AL",
             "recv": re.compile(r"AL=(?P<return>[0-9]{4})"),
@@ -38,6 +84,7 @@ class Motor:
             "recv": re.compile(r"DE=(?P<return>[0-9]+\.?[0-9]*)"),
             "recv_processor": float,
             "two_way": True,
+            "units": u.rev / u.s / u.s,
         },
         "disable": {"send": "MD", "recv": None},
         "enable": {"send": "ME", "recv": None},
@@ -45,6 +92,7 @@ class Motor:
             "send": "ER",
             "recv": re.compile(r"ER=(?P<return>[0-9]+)"),
             "recv_processor": int,
+            "units": u.counts / u.rev,
         },
         "feed": {
             "send": "FP",
@@ -54,11 +102,13 @@ class Motor:
             "send": "EG",
             "recv": re.compile(r"EG=(?P<return>[0-9]+)"),
             "recv_processor": int,
+            "units": u.steps / u.rev,
         },
         "get_position": {
             "send": "IP",
             "recv": re.compile(r"IP=(?P<return>-?[0-9]+)"),
             "recv_processor": int,
+            "units": u.steps,
         },
         "move_to": None,
         "protocol": {
@@ -80,6 +130,7 @@ class Motor:
             "recv": re.compile(r"VE=(?P<return>[0-9]+\.?[0-9]*)"),
             "recv_processor": float,
             "two_way": True,
+            "units": u.rev / u.s,
         },
         "stop": {"send": "SK", "recv": None},
         "target_distance": {
@@ -88,6 +139,7 @@ class Motor:
             "recv": re.compile(r"DI=(?P<return>[0-9]+)"),
             "recv_processor": int,
             "two_way": True,
+            "units": u.steps,
         },
     }  # type: Dict[str, Optional[Dict[str, Any]]]
 
