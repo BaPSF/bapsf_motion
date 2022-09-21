@@ -32,7 +32,7 @@ class Axis:
         )
 
         self._units = u.Unit(units)
-        self.units_per_rev = units_per_rev
+        self._units_per_rev = units_per_rev
 
         if auto_run:
             self.run()
@@ -43,7 +43,7 @@ class Axis:
         self._logger = None
         self._name = ""
         self._units = None
-        self.units_per_rev = None
+        self._units_per_rev = None
 
     def setup_logger(self, logger, name):
         """Setup logger to track events."""
@@ -112,9 +112,13 @@ class Axis:
             raise ValueError
 
         conversion = self.units.to(new_units)
-        self.units_per_rev = conversion * self.units_per_rev
+        self._units_per_rev = conversion * self.units_per_rev
 
         self._units = new_units
+
+    @property
+    def units_per_rev(self):
+        return self._units_per_rev
 
     def conversions(self, command) -> Union[Dict[str, callable], None]:
         if command in ("acceleration", "deceleration", "speed"):
