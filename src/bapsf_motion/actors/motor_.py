@@ -1,5 +1,5 @@
 
-__all__ = ["CommandEntry", "Motor"]
+__all__ = ["do_nothing", "CommandEntry", "Motor"]
 
 import asyncio
 import logging
