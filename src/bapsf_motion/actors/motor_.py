@@ -30,16 +30,31 @@ class CommandEntry(UserDict):
         recv_processor: Optional[Callable] = do_nothing,
         two_way: bool = False,
         units: Union[str, u.Unit, None] = None,
+        method_command: Optional[bool] = False,
     ):
         self._command = command
-        super().__init__(
-            send=send,
-            send_processor=send_processor,
-            recv=recv,
-            recv_processor=recv_processor,
-            two_way=two_way,
-            units=units,
-        )
+
+        _dict = {
+            "two_way": False,
+            "method_command": method_command,
+        }
+        if not method_command:
+            _dict = {
+                "send": send,
+                "send_processor": send_processor,
+                "recv": recv,
+                "recv_processor": recv_processor,
+                "two_way": two_way,
+                "units": units,
+                "method_command": method_command,
+            }
+        else:
+            _dict = {
+                "two_way": False,
+                "units": units,
+                "method_command": method_command,
+            }
+        super().__init__(**_dict)
 
     @property
     def command(self):
@@ -100,7 +115,12 @@ class Motor:
             recv_processor=int,
             units=u.steps,
         ),
-        "move_to": None,
+        "move_to": CommandEntry(
+            "move_to",
+            send="",
+            units=u.steps,
+            method_command=True,
+        ),
         "protocol": CommandEntry(
             "protocol",
             send="PR",
@@ -114,8 +134,16 @@ class Motor:
             send="RS",
             recv=re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
         ),
-        "retrieve_motor_alarm": None,
-        "retrieve_motor_status": None,
+        "retrieve_motor_alarm": CommandEntry(
+            "retrieve_motor_alarm",
+            send="",
+            method_command=True,
+        ),
+        "retrieve_motor_status": CommandEntry(
+            "retrieve_motor_status",
+            send="",
+            method_command=True,
+        ),
         "speed": CommandEntry(
             "speed",
             send="VE",
@@ -505,7 +533,7 @@ class Motor:
         return self._send_command(command, *args)
 
     def send_command(self, command, *args):
-        if self._commands[command] is None:
+        if self._commands[command]["method_command"]:
             # execute respectively named method
             meth = getattr(self, command)
             return meth(*args)
