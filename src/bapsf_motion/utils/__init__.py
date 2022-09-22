@@ -1,7 +1,13 @@
-__all__ = ["ipv4_pattern", "SimpleSignal"]
+__all__ = ["ipv4_pattern", "units", "SimpleSignal"]
 import re
 
+from astropy import units
+
 ipv4_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
+
+counts = units.def_unit("counts", namespace=units.__dict__)
+steps = units.def_unit("steps", namespace=units.__dict__)
+rev = units.def_unit("rev", namespace=units.__dict__)
 
 
 class SimpleSignal:

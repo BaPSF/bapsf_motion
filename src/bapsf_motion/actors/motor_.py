@@ -1,7 +1,6 @@
 
 __all__ = ["CommandEntry", "Motor"]
 
-import astropy.units as u
 import asyncio
 import logging
 import re
@@ -13,10 +12,7 @@ from collections import namedtuple, UserDict
 from typing import Any, Callable, Dict, List, Optional, Union
 
 from bapsf_motion.utils import ipv4_pattern, SimpleSignal
-
-counts = u.def_unit("counts", namespace=u.__dict__)
-steps = u.def_unit("steps", namespace=u.__dict__)
-rev = u.def_unit("rev", namespace=u.__dict__)
+from bapsf_motion.utils import units as u
 
 
 def do_nothing(x):
