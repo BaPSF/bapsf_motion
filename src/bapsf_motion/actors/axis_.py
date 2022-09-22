@@ -1,11 +1,9 @@
 __all__ = ["Axis"]
 
-import astropy.units as u
 import logging
 
-from typing import Dict, Union
-
 from bapsf_motion.actors.motor_ import Motor
+from bapsf_motion.utils import units as u
 
 
 class Axis:
@@ -33,7 +31,7 @@ class Axis:
         )
 
         self._units = u.Unit(units)
-        self._units_per_rev = units_per_rev
+        self._units_per_rev = units_per_rev * self._units / u.rev
 
         if auto_run:
             self.run()
@@ -91,7 +89,7 @@ class Axis:
         attribute.
         """
         pos = self.motor.position
-        return self.convert_steps_to_units(pos)
+        return pos.to(self.units, equivalencies=self.equivalencies)
 
     @property
     def steps_per_rev(self):
@@ -112,9 +110,7 @@ class Axis:
         if self.units.physical_type != new_units.physical_type:
             raise ValueError
 
-        conversion = self.units.to(new_units)
-        self._units_per_rev = conversion * self.units_per_rev
-
+        self._units_per_rev = self.units_per_rev.to(new_units / u.rev)
         self._units = new_units
 
     @property
@@ -125,28 +121,79 @@ class Axis:
         """
         return self._units_per_rev
 
-    def conversions(self, command) -> Union[Dict[str, callable], None]:
-        if command in ("acceleration", "deceleration", "speed"):
-            return {
-                "outbound": lambda x: x / self.units_per_rev,
-                "inbound": lambda x: round(x * self.units_per_rev, 2),
-            }
-        elif command in ("move_to", "target_position"):
-            return {
-                "outbound": self.convert_units_to_steps,
-                "inbound": self.convert_steps_to_units,
-            }
+    @property
+    def equivalencies(self):
+        steps_per_rev = self.steps_per_rev.value
+        units_per_rev = self.units_per_rev.value
+
+        equivs = [
+            (
+                u.rev,
+                u.steps,
+                lambda x: x * steps_per_rev,
+                lambda x: x / steps_per_rev,
+            ),
+            (
+                u.rev,
+                self.units,
+                lambda x: x * units_per_rev,
+                lambda x: x / units_per_rev,
+            ),
+            (
+                u.steps,
+                self.units,
+                lambda x: x * units_per_rev / steps_per_rev,
+                lambda x: x * steps_per_rev / units_per_rev,
+            ),
+        ]
+        for equiv in equivs.copy():
+            equivs.extend(
+                [
+                    (equiv[0] / u.s, equiv[1] / u.s, equiv[2], equiv[3]),
+                    (equiv[0] / u.s / u.s, equiv[1] / u.s / u.s, equiv[2], equiv[3]),
+                ]
+            )
+
+        return equivs
+
+    @property
+    def conversion_pairs(self):
+        return [
+            (u.steps, self.units),
+            (u.steps / u.s, self.units / u.s),
+            (u.steps / u.s / u.s, self.units / u.s / u.s),
+            (u.rev / u.s, self.units / u.s),
+            (u.rev / u.s / u.s, self.units / u.s / u.s),
+        ]
 
     def send_command(self, command, *args):
-        conversion = self.conversions(command)
-        if conversion is not None and len(args):
-            args = list(args)
-            args[0] = conversion["outbound"](args[0])
+        cmd_entry = self.motor._commands[command]
+        motor_unit = cmd_entry["units"]  # type: u.Unit
+
+        if motor_unit is not None and len(args):
+            axis_unit = None
+            for motor_u, axis_u in self.conversion_pairs:
+                if motor_unit == motor_u:
+                    axis_unit = axis_u
+                    break
+
+            if axis_unit is not None:
+                args = list(args)
+                args[0] = args[0] * axis_unit.to(
+                    motor_unit, eqivalencies=self.equivalencies
+                )
 
         rtn = self.motor.send_command(command, *args)
 
-        if command is not None and rtn is not None:
-            return conversion["inbound"](rtn)
+        if hasattr(rtn, "unit"):
+            axis_unit = None
+            for motor_u, axis_u in self.conversion_pairs:
+                if rtn.unit == motor_u:
+                    axis_unit = axis_u
+                    break
+
+            if axis_unit is not None:
+                rtn = rtn.to(axis_unit, equivalencies=self.equivalencies)
 
         return rtn
 
@@ -157,9 +204,3 @@ class Axis:
         # not sending STOP command through send_command() since using
         # motor.stop() should result in faster execution
         return self.motor.stop()
-
-    def convert_units_to_steps(self, value):
-        return value * self.steps_per_rev / self.units_per_rev
-
-    def convert_steps_to_units(self, value):
-        return round(value * self.units_per_rev / self.steps_per_rev, 2)
