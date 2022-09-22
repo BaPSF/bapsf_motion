@@ -180,7 +180,7 @@ class Axis:
             if axis_unit is not None:
                 args = list(args)
                 args[0] = args[0] * axis_unit.to(
-                    motor_unit, eqivalencies=self.equivalencies
+                    motor_unit, equivalencies=self.equivalencies
                 )
 
         rtn = self.motor.send_command(command, *args)
