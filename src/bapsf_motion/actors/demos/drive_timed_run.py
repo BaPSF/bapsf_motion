@@ -62,6 +62,7 @@ def run(drive: Drive, duration, pause, positions):
 
 
 if __name__ == "__main__":
+    DURATION = 60 * 60
     ax_settings = {
         "ip": "192.168.6.104",
         "units": "cm",
@@ -72,7 +73,7 @@ if __name__ == "__main__":
 
     pos = np.linspace(-3, 5, num=17)
     try:
-        run(dr, duration=20, pause=0.5, positions=pos)
+        run(dr, duration=DURATION, pause=0.2, positions=pos)
     except Exception as ex:
         print(f"!!! Error occurred in motion. {ex}")
     finally:
