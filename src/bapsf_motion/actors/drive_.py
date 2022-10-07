@@ -114,11 +114,13 @@ class Drive:
 
     @property
     def position(self):
+        # TODO: thiS needs to return drive units instead of axis units
+        # TODO: handle case where someone could have config different units for each axis
         pos = []
         for ax in self.axes:
-            pos.append(ax.position)
+            pos.append(ax.position.value)
 
-        return tuple(pos)
+        return pos * self.axes[0].units
 
     def run(self):
         if self._loop.is_running():
