@@ -62,7 +62,7 @@ def run(drive: Drive, duration, pause, positions):
 
 
 if __name__ == "__main__":
-    DURATION = 60 * 60
+    DURATION = 60 * 60  # in seconds
     ax_settings = {
         "ip": "192.168.6.104",
         "units": "cm",
