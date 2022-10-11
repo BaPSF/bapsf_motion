@@ -1,0 +1,38 @@
+__all__ = ["CircularExclusion"]
+
+import numpy as np
+import xarray as xr
+
+from bapsf_motion.motion_list.exclusions.base import BaseExclusion
+
+
+class CircularExclusion(BaseExclusion):
+    def __init__(self, ds: xr.Dataset, radius, center=None, exclude="outside"):
+        self.radius = radius
+        self.center = (0.0, 0.0) if center is None else center
+        self.exclude_region = exclude
+
+        # assign all, and only, instance variables above the super
+        # - definition of instance variables is mandatory, otherwise
+        #   self._generate_mask will not operate correctly
+        super().__init__(ds)
+
+    @property
+    def coord0(self):
+        dims = self._ds.mask.dims
+        return self._ds.coords[dims[0]]
+
+    @property
+    def coord1(self):
+        dims = self._ds.mask.dims
+        return self._ds.coords[dims[1]]
+
+    def is_excluded(self, point):
+        # True if the point is excluded, False if the point is included
+        ...
+
+    def _generate_mask(self):
+        condition = (self.coord0 - self.center[0]) ** 2 + (
+                self.coord1 - self.center[1]) ** 2 > self.radius ** 2
+        mask = xr.where(condition, False, True)
+        return mask if self.exclude_region == "outside" else np.logical_not(mask)
