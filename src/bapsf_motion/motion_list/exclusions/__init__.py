@@ -5,6 +5,7 @@ from bapsf_motion.motion_list.exclusions.circular import CircularExclusion
 
 # TODO: types of exclusions
 #       - Divider (greater/less than a dividing line)
+#       - Cone
 #       - Port (an LaPD port)
 #       - LaPD (a full LaPD setup)
 #       - Shadow (specialty to shadow from a given point)
