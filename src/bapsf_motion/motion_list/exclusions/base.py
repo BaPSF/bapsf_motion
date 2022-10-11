@@ -9,12 +9,16 @@ from bapsf_motion.motion_list.item import MLItem
 
 
 class BaseExclusion(ABC, MLItem):
-    def __init__(self, ds: xr.Dataset):
+    def __init__(self, ds: xr.Dataset, **kwargs):
+        self.inputs = kwargs
+
         super().__init__(
             ds=ds,
             base_name="mask_ex",
             name_pattern=re.compile(r"mask_ex(?P<number>[0-9]+)"),
         )
+
+        self._validate_inputs()
 
         # store this mask to the Dataset
         self._ds[self.name] = self._generate_exclusion()
@@ -28,6 +32,10 @@ class BaseExclusion(ABC, MLItem):
 
     @abstractmethod
     def _generate_exclusion(self):
+        ...
+
+    @abstractmethod
+    def _validate_inputs(self):
         ...
 
     def is_excluded(self, point):
