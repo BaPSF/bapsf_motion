@@ -17,10 +17,6 @@ class CircularExclusion(BaseExclusion):
         #   self._generate_mask will not operate correctly
         super().__init__(ds)
 
-    def is_excluded(self, point):
-        # True if the point is excluded, False if the point is included
-        ...
-
     def _generate_exclusion(self):
         coord_dims = self.mspace_dims
         coords = (

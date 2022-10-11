@@ -30,9 +30,16 @@ class BaseExclusion(ABC, MLItem):
     def _generate_exclusion(self):
         ...
 
-    @abstractmethod
     def is_excluded(self, point):
-        ...
+        # True if the point is excluded, False if the point is included
+        if len(point) != self.mspace_ndims:
+            raise ValueError
+
+        select = {}
+        for ii, dim_name in enumerate(self.mspace_dims):
+            select[dim_name] = point[ii]
+
+        return not bool(self.exclusion.sel(method="nearest", **select).data)
 
     def regenerate_exclusion(self):
         self._ds[self.name] = self._generate_exclusion()
