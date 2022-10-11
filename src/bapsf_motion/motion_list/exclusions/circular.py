@@ -31,7 +31,7 @@ class CircularExclusion(BaseExclusion):
         # True if the point is excluded, False if the point is included
         ...
 
-    def _generate_mask(self):
+    def _generate_exclusion(self):
         condition = (self.coord0 - self.center[0]) ** 2 + (
                 self.coord1 - self.center[1]) ** 2 > self.radius ** 2
         mask = xr.where(condition, False, True)

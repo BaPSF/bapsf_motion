@@ -5,44 +5,40 @@ import xarray as xr
 
 from abc import ABC, abstractmethod
 
+from bapsf_motion.motion_list.item import MLItem
 
-class BaseExclusion(ABC):
-    base_name = "mask_ex"
-    name_pattern = re.compile(r"mask_ex(?P<number>[0-9]+)")
 
+class BaseExclusion(ABC, MLItem):
     def __init__(self, ds: xr.Dataset):
-        self._ds = ds
-        self.name = self._determine_name()
-
-        # store this mask to the Dataset
-        self._ds[self.name] = self._generate_mask()
-
-        # update the global mask
-        self._ds["mask"] = np.logical_and(
-            self._ds["mask"],
-            self._ds[self.name],
+        super().__init__(
+            ds=ds,
+            base_name="mask_ex",
+            name_pattern=re.compile(r"mask_ex(?P<number>[0-9]+)"),
         )
 
-    def _determine_name(self):
-        if hasattr(self, "name"):
-            return self.name
+        # store this mask to the Dataset
+        self._ds[self.name] = self._generate_exclusion()
 
-        names = set(self._ds.data_vars.keys())
-        n_existing_masks = 0
-        for name in names:
-            if self.name_pattern.fullmatch(name) is not None:
-                n_existing_masks += 1
-
-        return f"{self.base_name}{n_existing_masks + 1:d}"
+        # update the global mask
+        self.update_global_mask()
 
     @property
-    def mask(self):
-        return self._ds[self.name]
+    def exclusion(self):
+        return self.item
 
     @abstractmethod
-    def _generate_mask(self):
+    def _generate_exclusion(self):
         ...
 
     @abstractmethod
     def is_excluded(self, point):
         ...
+
+    def regenerate_exclusion(self):
+        self._ds[self.name] = self._generate_exclusion()
+
+    def update_global_mask(self):
+        self._ds[self.mask_name] = np.logical_and(
+            self.mask,
+            self.exclusion,
+        )
