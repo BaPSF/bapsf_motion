@@ -8,3 +8,4 @@ qtwidgets
 scipy
 tomli
 tomli_w
+xarray
