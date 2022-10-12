@@ -11,6 +11,7 @@ import time
 from collections import namedtuple, UserDict
 from typing import Any, Callable, Dict, List, Optional, Union
 
+from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.utils import ipv4_pattern, SimpleSignal
 from bapsf_motion.utils import units as u
 
@@ -61,7 +62,7 @@ class CommandEntry(UserDict):
         return self._command
 
 
-class Motor:
+class Motor(BaseActor):
     #: available commands that can be sent to the motor
     _commands = {
         "acceleration": CommandEntry(
@@ -235,7 +236,9 @@ class Motor:
         auto_start=False,
     ):
         self._init_instance_variables()
-        self.setup_logger(logger, name)
+
+        super().__init__(name=name, logger=logger)
+
         self.ip = ip
         self.connect()
 
@@ -458,13 +461,6 @@ class Motor:
             self.status_changed.emit(True)
 
         self._status = new_status
-
-    def setup_logger(self, logger, name):
-        log_name = __name__ if logger is None else logger.name
-        if name is not None:
-            log_name += f".{name}"
-            self.name = name
-        self.logger = logging.getLogger(log_name)
 
     def setup_event_loop(self, loop):
         # 1. loop is given and running
