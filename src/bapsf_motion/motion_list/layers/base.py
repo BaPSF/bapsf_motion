@@ -4,75 +4,37 @@ import re
 import xarray as xr
 
 from abc import ABC, abstractmethod
+from typing import List
+
+from bapsf_motion.motion_list.item import MLItem
 
 
-class BaseLayer(ABC):
-    base_name = "point_layer"
-    name_pattern = re.compile(r"point_layer(?P<number>[0-9]+)")
-
-    def __init__(self, ds: xr.Dataset, **kwargs):
+class BaseLayer(ABC, MLItem):
+    def __init__(self, ds: xr.Dataset, *, skip_ds_add=False, **kwargs):
         self.inputs = kwargs
+        self.skip_ds_add = skip_ds_add
+        self.composed_layers = []  # type: List[BaseLayer]
 
-        self._ds = self._validate_ds(ds)
-        self.name = self._determine_name()
-        self._validate_inputs()
-
-        # assign all, and only, instance variables above the super
-        # - definition of instance variables is mandatory, otherwise
-        #   self._generate_points will not operate correctly
-        points = self._generate_point_matrix()
-        dims = [f"{self.name}_d{ii}" for ii in range(points.ndim - 1)]
-        dims.append("space")
-        self._ds[self.name] = xr.DataArray(
-            data=points,
-            dims=dims,
+        super().__init__(
+            ds=ds,
+            base_name="point_layer",
+            name_pattern=re.compile(r"point_layer(?P<number>[0-9]+)"),
         )
 
-    def _determine_name(self):
-        if hasattr(self, "name"):
-            return self.name
+        self._validate_inputs()
 
-        names = set(self._ds.data_vars.keys())
-        n_existing_layers = 0
-        for name in names:
-            if self.name_pattern.fullmatch(name) is not None:
-                n_existing_layers += 1
+        if self.skip_ds_add:
+            return
 
-        return f"{self.base_name}{n_existing_layers + 1:d}"
-
-    @staticmethod
-    def _validate_ds(ds: xr.Dataset):
-        # TODO: make this into a function that can be used by exclusions and layers
-        if not isinstance(ds, xr.Dataset):
-            raise TypeError(
-                f"Expected type xarray.Dataset for argument "
-                f"'ds', got type {type(ds)}."
-            )
-
-        if "mask" not in ds.data_vars:
-            raise ValueError(
-                f"The xarray.DataArray 'mask' representing the "
-                "boolean mask of the motion space has not been "
-                "defined."
-            )
-
-        return ds
+        # store points in the Dataset
+        self.regenerate_point_matrix()
 
     @property
     def points(self):
-        return self._ds[self.name]
-
-    @property
-    def mspace_coords(self):
-        return self._ds.mask.coords
-
-    @property
-    def mspace_dims(self):
-        return self._ds.mask.dims
-
-    @property
-    def mspace_ndims(self):
-        return len(self.mspace_dims)
+        try:
+            return self.item
+        except KeyError:
+            return self._generate_point_matrix_da()
 
     @abstractmethod
     def _generate_point_matrix(self):
@@ -81,3 +43,22 @@ class BaseLayer(ABC):
     @abstractmethod
     def _validate_inputs(self):
         ...
+
+    def _generate_point_matrix_da(self):
+        # _generate_point_matrix() does not return a DataArray, then
+        # convert it to one.
+        points = self._generate_point_matrix()
+
+        if isinstance(points, xr.DataArray):
+            return points
+
+        if self.name in self._ds.data_vars:
+            dims = self._ds[self.name].dims
+        else:
+            dims = [f"{self.name}_d{ii}" for ii in range(points.ndim - 1)]
+            dims.append("space")
+
+        return xr.DataArray(data=points, dims=dims)
+
+    def regenerate_point_matrix(self):
+        self._ds[self.name] = self._generate_point_matrix_da()
