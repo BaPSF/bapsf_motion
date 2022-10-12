@@ -14,7 +14,7 @@ class BaseActor:
         self.logger = logging.getLogger(log_name)
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._name
 
     @name.setter
@@ -22,7 +22,7 @@ class BaseActor:
         self._name = value
 
     @property
-    def logger(self):
+    def logger(self) -> logging.Logger:
         return self._logger
 
     @logger.setter
