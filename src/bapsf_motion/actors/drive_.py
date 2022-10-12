@@ -1,13 +1,13 @@
 import asyncio
-import logging
 import threading
 
 from typing import Any, Dict, Tuple
 
+from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.axis_ import Axis
 
 
-class Drive:
+class Drive(BaseActor):
 
     def __init__(
         self,
@@ -18,8 +18,9 @@ class Drive:
         loop=None,
         auto_run=False,
     ):
+        super().__init__(logger=logger, name=name)
+
         self._init_instance_variables()
-        self.setup_logger(logger, name)
         self.setup_event_loop(loop)
         axes = self._validate_axes(axes)
 
@@ -35,9 +36,7 @@ class Drive:
 
     def _init_instance_variables(self):
         self._axes = None
-        self._logger = None
         self._loop = None
-        self._name = None
         self._thread = None
 
     def _validate_axes(self, settings: Tuple[Dict[str, Any]]) -> Tuple[Dict[str, Any]]:
@@ -52,7 +51,7 @@ class Drive:
             conditioned_settings.append(axis)
             all_ips.append(axis["ip"])
 
-        # TODO: update this so https://, not using httips (or http), or a port
+        # TODO: update this so https://, not using https (or http), or a port
         #       does result in False unique entries
         if len(set(all_ips)) != len(all_ips):
             raise ValueError(
@@ -105,14 +104,6 @@ class Drive:
         return self._axes
 
     @property
-    def logger(self) -> logging.Logger:
-        return self._logger
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
     def position(self):
         # TODO: thiS needs to return drive units instead of axis units
         # TODO: handle case where someone could have config different units for each axis
@@ -158,13 +149,6 @@ class Drive:
             )
             loop = asyncio.new_event_loop()
         self._loop = loop
-
-    def setup_logger(self, logger, name):
-        log_name = __name__ if logger is None else logger.name
-        if name is not None:
-            log_name += f".{name}"
-            self._name = name
-        self._logger = logging.getLogger(log_name)
 
     def send_command(self, command, *args, axis=None):
         ...
