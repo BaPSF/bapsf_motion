@@ -7,9 +7,10 @@ from bapsf_motion.motion_list.exclusions.base import BaseExclusion
 
 
 class CircularExclusion(BaseExclusion):
-    def __init__(self, ds: xr.Dataset, radius, center=None, exclude="outside"):
+    def __init__(self, ds: xr.Dataset, *, skip_ds_add=False, radius, center=None, exclude="outside"):
         super().__init__(
             ds,
+            skip_ds_add=skip_ds_add,
             radius=radius,
             center=center,
             exclude_region=exclude,

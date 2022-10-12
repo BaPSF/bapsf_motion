@@ -16,11 +16,13 @@ class DividerExclusion(BaseExclusion):
         self,
         ds: xr.Dataset,
         *,
+        skip_ds_add=False,
         mb: Tuple[float, float],
         exclude: str = "-e0",
     ):
         super().__init__(
             ds,
+            skip_ds_add=skip_ds_add,
             mb=mb,
             exclude_region=exclude,
         )
