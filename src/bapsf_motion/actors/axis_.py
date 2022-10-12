@@ -1,12 +1,11 @@
 __all__ = ["Axis"]
 
-import logging
-
+from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.motor_ import Motor
 from bapsf_motion.utils import units as u
 
 
-class Axis:
+class Axis(BaseActor):
     # TODO: better handle naming of the Axis and child Motor
 
     def __init__(
@@ -20,8 +19,9 @@ class Axis:
         loop=None,
         auto_run=False,
     ):
+        super().__init__(logger=logger, name="Axis")
+
         self._init_instance_attrs()
-        self.setup_logger(logger, "Axis")
         self.motor = Motor(
             ip=ip,
             name=name,
@@ -39,18 +39,8 @@ class Axis:
     def _init_instance_attrs(self):
         """Initialize the class instance attributes."""
         self.motor = None
-        self._logger = None
-        self._name = ""
         self._units = None
         self._units_per_rev = None
-
-    def setup_logger(self, logger, name):
-        """Setup logger to track events."""
-        log_name = __name__ if logger is None else logger.name
-        if name is not None:
-            log_name += f".{name}"
-            self.name = name
-        self._logger = logging.getLogger(log_name)
 
     def run(self):
         """Start the `asyncio` event loop."""
@@ -66,21 +56,6 @@ class Axis:
         `True` or `False` indicating if the axis is currently moving.
         """
         return self.motor.is_moving
-
-    @property
-    def logger(self):
-        """Event logger for the class"""
-        return self._logger
-
-    @property
-    def name(self):
-        """Given name for the `Axis` instance."""
-        return self._name
-
-    @name.setter
-    def name(self, value):
-        """Set the given name for the `Axis` instance."""
-        self._name = value
 
     @property
     def position(self):
