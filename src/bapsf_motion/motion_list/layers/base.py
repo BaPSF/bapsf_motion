@@ -42,6 +42,7 @@ class BaseLayer(ABC):
 
     @staticmethod
     def _validate_ds(ds: xr.Dataset):
+        # TODO: make this into a function that can be used by exclusions and layers
         if not isinstance(ds, xr.Dataset):
             raise TypeError(
                 f"Expected type xarray.Dataset for argument "
