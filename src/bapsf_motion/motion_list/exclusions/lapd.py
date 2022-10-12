@@ -103,11 +103,11 @@ class LaPDExclusion(BaseExclusion):
         exclusion = None
         for ex in self.composed_exclusions:
             if exclusion is None:
-                exclusion = ex._generate_exclusion()
+                exclusion = ex.exclusion
             else:
                 exclusion = np.logical_and(
                     exclusion,
-                    ex._generate_exclusion(),
+                    ex.exclusion,
                 )
         return exclusion
 

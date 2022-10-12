@@ -24,6 +24,9 @@ class BaseExclusion(ABC, MLItem):
 
         self._validate_inputs()
 
+        if self.skip_ds_add:
+            return
+
         # store this mask to the Dataset
         self.regenerate_exclusion()
 
@@ -35,7 +38,7 @@ class BaseExclusion(ABC, MLItem):
         try:
             return self.item
         except KeyError:
-            return
+            return self._generate_exclusion()
 
     @abstractmethod
     def _generate_exclusion(self):
@@ -57,9 +60,22 @@ class BaseExclusion(ABC, MLItem):
         return not bool(self.exclusion.sel(method="nearest", **select).data)
 
     def regenerate_exclusion(self):
+        if self.skip_ds_add:
+            raise RuntimeError(
+                f"For exclusion {self.name} skip_ds_add={self.skip_ds_add} and thus "
+                f"the exclusion can not be regenerated and updated in the Dataset.  "
+                f"To get the exclusion matrix usine the 'ex.exclusion' property."
+            )
+
         self._ds[self.name] = self._generate_exclusion()
 
     def update_global_mask(self):
+        if self.skip_ds_add:
+            raise RuntimeError(
+                f"For exclusion {self.name} skip_ds_add={self.skip_ds_add} and thus "
+                f"the exclusion can not be merged into the global maks."
+            )
+
         self._ds[self.mask_name] = np.logical_and(
             self.mask,
             self.exclusion,
