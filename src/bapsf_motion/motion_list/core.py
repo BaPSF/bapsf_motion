@@ -1,8 +1,12 @@
 __all__ = ["MotionList"]
 
 import numpy as np
+import re
 import xarray as xr
 
+from typing import List
+
+from bapsf_motion.motion_list.item import MLItem
 from bapsf_motion.motion_list.exclusions import (
     exclusion_factory,
     BaseExclusion,
@@ -13,19 +17,43 @@ from bapsf_motion.motion_list.layers import BaseLayer, GridLayer
 #        a motion list is finished but other motion lists are still running
 
 
-class MotionList:
+class MotionList(MLItem):
     base_names = {
         "layer": BaseLayer.base_name,
         "exclusion": BaseExclusion.base_name,
     }
 
+    # TODO: add method for clearing/removing all exclusions
+    # TODO: add method for clearing/removing all layers
+
     def __init__(self, base_region, layers=None, exclusions=None, use_lapd=True):
         self._base = base_region
 
+        super().__init__(
+            self._build_initial_ds(),
+            base_name="motion_list",
+            name_pattern=re.compile(r"motion_list")
+        )
+
+        self.layers = []  # type: List[BaseLayer]
+        if layers is not None:
+            # add each defined layer
+            for layer in layers:
+                self.add_layer(**layer)
+
+        self.exclusions = []  # type: List[BaseExclusion]
+        if exclusions is not None:
+            # add each defined exclusion
+            for exclusion in exclusions:
+                self.add_exclusion(**exclusion)
+
+        self.generate()
+
+    def _build_initial_ds(self):
         shape = []
         coords = {}
         space_coord = []
-        for coord in base_region:
+        for coord in self._base:
             label = coord["label"]
             limits = coord["range"]
             size = coord["num"]
@@ -35,25 +63,13 @@ class MotionList:
             shape.append(size)
         shape = tuple(shape)
 
-        self._ds = xr.Dataset(
+        ds = xr.Dataset(
             {"mask": (tuple(coords.keys()), np.ones(shape, dtype=bool))},
             coords=coords,
         )
-        self._ds.coords["space"] = space_coord
+        ds.coords["space"] = space_coord
 
-        self.layers = []
-        if layers is not None:
-            # add each defined layer
-            for layer in layers:
-                self.add_layer(**layer)
-
-        self.exclusions = []
-        if exclusions is not None:
-            # add each defined exclusion
-            for exclusion in exclusions:
-                self.add_exclusion(**exclusion)
-
-        self.generate()
+        return ds
 
     def add_layer(self, **settings):
         layer = GridLayer(self._ds, **settings)
@@ -129,15 +145,13 @@ class MotionList:
         self._ds.drop_dims("index")
 
     def rebuild_mask(self):
-        ...
+        self.mask[...] = True
+
+        for ex in self.exclusions:
+            ex.update_global_mask()
 
     def plot_mask(self):
         ...
-
-    @property
-    def mask(self) -> xr.DataArray:
-        # return the excludion mask, False for excluded, True for okay
-        return self._ds["mask"]
 
     @property
     def motion_list(self):
@@ -145,19 +159,8 @@ class MotionList:
         try:
             ml = self._ds["motion_list"]
         except KeyError:
+            self.rebuild_mask()
             self.generate()
             ml = self._ds["motion_list"]
 
         return ml
-
-    @property
-    def mspace_coords(self):
-        return self.mask.coords
-
-    @property
-    def mspace_dims(self):
-        return self.mask.dims
-
-    @property
-    def mspace_ndims(self):
-        return len(self.mspace_dims)
