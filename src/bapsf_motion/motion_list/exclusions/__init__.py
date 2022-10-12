@@ -1,4 +1,5 @@
 __all__ = [
+    "exclusion_factory",
     "BaseExclusion",
     "CircularExclusion",
     "DividerExclusion",
@@ -20,3 +21,14 @@ from bapsf_motion.motion_list.exclusions.lapd import LaPDExclusion
 #       - Cylindrical
 #       - Sphere
 #       - Polygon
+
+_EXCLUSION_DICT = {
+    "circle": CircularExclusion,
+    "divider": DividerExclusion,
+    "lapd": LaPDExclusion,
+}
+
+
+def exclusion_factory(ds, *, ex_type, **settings):
+    ex = _EXCLUSION_DICT[ex_type]
+    return ex(ds, **settings)

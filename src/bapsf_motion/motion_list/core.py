@@ -3,7 +3,10 @@ __all__ = ["MotionList"]
 import numpy as np
 import xarray as xr
 
-from bapsf_motion.motion_list.exclusions import BaseExclusion, CircularExclusion
+from bapsf_motion.motion_list.exclusions import (
+    exclusion_factory,
+    BaseExclusion,
+)
 from bapsf_motion.motion_list.layers import BaseLayer, GridLayer
 
 
@@ -63,7 +66,8 @@ class MotionList:
         self.clear_motion_list()
 
     def add_exclusion(self, **settings):
-        exclusion = CircularExclusion(self._ds, **settings)
+        ex_type = settings.pop("type")
+        exclusion = exclusion_factory(self._ds, ex_type=ex_type, **settings)
         self.exclusions.append(exclusion)
 
         self._ds["mask"] = np.logical_and(self._ds["mask"], exclusion.mask)
