@@ -9,6 +9,9 @@ from bapsf_motion.motion_list.exclusions import (
 )
 from bapsf_motion.motion_list.layers import BaseLayer, GridLayer
 
+# TODO:  create a sit point, this is a point where the probe will sit when
+#        a motion list is finished but other motion lists are still running
+
 
 class MotionList:
     base_names = {
