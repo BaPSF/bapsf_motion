@@ -2,6 +2,9 @@ __all__ = ["BaseActor"]
 
 import logging
 
+# TODO: create an EventActor for an actor that utilizes asyncio event loops
+#       - EventActor should inherit from BaseActor and ABC
+
 
 class BaseActor:
     def __init__(self, *, name: str = None, logger=None):
