@@ -11,7 +11,10 @@ from bapsf_motion.motion_list.exclusions import (
     exclusion_factory,
     BaseExclusion,
 )
-from bapsf_motion.motion_list.layers import BaseLayer, GridLayer
+from bapsf_motion.motion_list.layers import (
+    layers_factory,
+    BaseLayer,
+)
 
 # TODO:  create a sit point, this is a point where the probe will sit when
 #        a motion list is finished but other motion lists are still running
@@ -72,7 +75,8 @@ class MotionList(MLItem):
         return ds
 
     def add_layer(self, **settings):
-        layer = GridLayer(self._ds, **settings)
+        ly_type = settings.pop("type")
+        layer = layers_factory(self._ds, ly_type=ly_type, **settings)
         self.layers.append(layer)
 
     def remove_layer(self, name):
