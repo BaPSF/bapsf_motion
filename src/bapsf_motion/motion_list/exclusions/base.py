@@ -1,16 +1,20 @@
 __all__ = ["BaseExclusion"]
+
 import numpy as np
 import re
 import xarray as xr
 
 from abc import ABC, abstractmethod
+from typing import List
 
 from bapsf_motion.motion_list.item import MLItem
 
 
 class BaseExclusion(ABC, MLItem):
-    def __init__(self, ds: xr.Dataset, **kwargs):
+    def __init__(self, ds: xr.Dataset, *, skip_ds_add=False, **kwargs):
         self.inputs = kwargs
+        self.skip_ds_add = skip_ds_add
+        self.composed_exclusions = []  # type: List[BaseExclusion]
 
         super().__init__(
             ds=ds,
@@ -21,14 +25,17 @@ class BaseExclusion(ABC, MLItem):
         self._validate_inputs()
 
         # store this mask to the Dataset
-        self._ds[self.name] = self._generate_exclusion()
+        self.regenerate_exclusion()
 
         # update the global mask
         self.update_global_mask()
 
     @property
     def exclusion(self):
-        return self.item
+        try:
+            return self.item
+        except KeyError:
+            return
 
     @abstractmethod
     def _generate_exclusion(self):
