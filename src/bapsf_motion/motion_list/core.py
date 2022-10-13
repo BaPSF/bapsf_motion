@@ -29,8 +29,8 @@ class MotionList(MLItem):
     # TODO: add method for clearing/removing all exclusions
     # TODO: add method for clearing/removing all layers
 
-    def __init__(self, base_region, layers=None, exclusions=None, use_lapd=True):
-        self._base = base_region
+    def __init__(self, space, layers=None, exclusions=None, use_lapd=True):
+        self._space = space
 
         super().__init__(
             self._build_initial_ds(),
@@ -56,7 +56,7 @@ class MotionList(MLItem):
         shape = []
         coords = {}
         space_coord = []
-        for coord in self._base:
+        for coord in self._space:
             label = coord["label"]
             limits = coord["range"]
             size = coord["num"]
