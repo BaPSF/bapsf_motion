@@ -1,0 +1,24 @@
+[mgroup.0]
+name = "1D-drive"
+
+[mgroup.0.axes]
+ip = ["192.168.6.104"]
+units = ["cm"]
+name = ["x"]
+units_per_rev = [0.254]
+
+[mgroup.0.transform]
+type = "lapd-xy-basic"
+droop_correction = "None"
+pivot_to_center = 57.7
+pivot_to_clamp = 125.0
+zero_to_home = [10, 10]
+
+[mgroup.0.motion_list]
+space.label = ["x"]
+space.range = [[-5, 5]]
+space.num = [41]
+layers.0.type = "grid"
+layers.0.limits = [[-3, 3]]
+layers.0.steps = [13]
+
