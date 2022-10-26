@@ -3,13 +3,16 @@ __all__ = ["GridLayer"]
 import numpy as np
 
 from bapsf_motion.motion_list.layers.base import BaseLayer
+from bapsf_motion.motion_list.layers.helpers import register_layer
 
 
+@register_layer
 class GridLayer(BaseLayer):
     """
     Class for defining a regularly spaced grid along each of the
     specified axes.
     """
+    _layer_type = "grid"
 
     def __init__(self, ds, limits, steps):
         # assign all, and only, instance variables above the super

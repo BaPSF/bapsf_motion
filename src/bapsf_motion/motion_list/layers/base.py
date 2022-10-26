@@ -10,6 +10,8 @@ from bapsf_motion.motion_list.item import MLItem
 
 
 class BaseLayer(ABC, MLItem):
+    _layer_type = NotImplemented  # type: str
+
     def __init__(self, ds: xr.Dataset, *, skip_ds_add=False, **kwargs):
         self.inputs = kwargs
         self.skip_ds_add = skip_ds_add
@@ -28,6 +30,10 @@ class BaseLayer(ABC, MLItem):
 
         # store points in the Dataset
         self.regenerate_point_matrix()
+
+    @property
+    def layer_type(self):
+        return self._layer_type
 
     @property
     def points(self):
