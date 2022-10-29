@@ -37,6 +37,6 @@ def register_layer(layer_cls: Type[base.BaseLayer]):
     return layer_cls
 
 
-def layers_factory(ds, *, ly_type, **settings):
+def layer_factory(ds, *, ly_type, **settings):
     ex = _LAYER_REGISTRY[ly_type]
     return ex(ds, **settings)

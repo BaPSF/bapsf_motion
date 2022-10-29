@@ -1,5 +1,5 @@
 __all__ = [
-    "layers_factory",
+    "layer_factory",
     "register_layer",
     "BaseLayer",
     "GridLayer",
@@ -7,7 +7,7 @@ __all__ = [
 
 from bapsf_motion.motion_list.layers.base import BaseLayer
 from bapsf_motion.motion_list.layers.regular_grid import GridLayer
-from bapsf_motion.motion_list.layers.helpers import register_layer, layers_factory
+from bapsf_motion.motion_list.layers.helpers import register_layer, layer_factory
 
 # TODO: types of layers
 #       - Sphere (regular grid & bloom)

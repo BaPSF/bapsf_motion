@@ -12,7 +12,7 @@ from bapsf_motion.motion_list.exclusions import (
     BaseExclusion,
 )
 from bapsf_motion.motion_list.layers import (
-    layers_factory,
+    layer_factory,
     BaseLayer,
 )
 
@@ -76,7 +76,7 @@ class MotionList(MLItem):
 
     def add_layer(self, **settings):
         ly_type = settings.pop("type")
-        layer = layers_factory(self._ds, ly_type=ly_type, **settings)
+        layer = layer_factory(self._ds, ly_type=ly_type, **settings)
         self.layers.append(layer)
 
     def remove_layer(self, name):
