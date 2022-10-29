@@ -7,9 +7,12 @@ import xarray as xr
 from typing import Tuple
 
 from bapsf_motion.motion_list.exclusions.base import BaseExclusion
+from bapsf_motion.motion_list.exclusions.helpers import register_exclusion
 
 
+@register_exclusion
 class DividerExclusion(BaseExclusion):
+    _exclusion_type = "divider"
     region_pattern = re.compile(r"(?P<sign>[+|-])e(?P<axis>[0|1])")
 
     def __init__(

@@ -11,6 +11,8 @@ from bapsf_motion.motion_list.item import MLItem
 
 
 class BaseExclusion(ABC, MLItem):
+    _exclusion_type = NotImplemented  # type: str
+
     def __init__(self, ds: xr.Dataset, *, skip_ds_add=False, **kwargs):
         self.inputs = kwargs
         self.skip_ds_add = skip_ds_add
@@ -32,6 +34,10 @@ class BaseExclusion(ABC, MLItem):
 
         # update the global mask
         self.update_global_mask()
+
+    @property
+    def exclusion_type(self):
+        return self._exclusion_type
 
     @property
     def exclusion(self):

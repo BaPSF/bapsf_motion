@@ -4,9 +4,13 @@ import numpy as np
 import xarray as xr
 
 from bapsf_motion.motion_list.exclusions.base import BaseExclusion
+from bapsf_motion.motion_list.exclusions.helpers import register_exclusion
 
 
+@register_exclusion
 class CircularExclusion(BaseExclusion):
+    _exclusion_type = "circle"
+
     def __init__(
         self,
         ds: xr.Dataset,

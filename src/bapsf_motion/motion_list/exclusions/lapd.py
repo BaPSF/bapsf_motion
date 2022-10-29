@@ -6,9 +6,12 @@ import xarray as xr
 from bapsf_motion.motion_list.exclusions.base import BaseExclusion
 from bapsf_motion.motion_list.exclusions.circular import CircularExclusion
 from bapsf_motion.motion_list.exclusions.divider import DividerExclusion
+from bapsf_motion.motion_list.exclusions.helpers import register_exclusion
 
 
+@register_exclusion
 class LaPDExclusion(BaseExclusion):
+    _exclusion_type = "lapd"
     _port_location_to_angle = {
         "e": 0,
         "east": 0,
