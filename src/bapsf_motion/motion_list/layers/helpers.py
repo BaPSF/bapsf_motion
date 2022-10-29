@@ -1,4 +1,4 @@
-__all__ = []
+__all__ = ["layer_factory", "register_layer"]
 
 import inspect
 
