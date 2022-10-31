@@ -37,6 +37,6 @@ def register_exclusion(exclusion_cls: Type[base.BaseExclusion]):
     return exclusion_cls
 
 
-def exclusion_factory(ds, *, exclusion_type, **settings):
-    ex = _EXCLUSION_REGISTRY[exclusion_type]
+def exclusion_factory(ds, *, ex_type, **settings):
+    ex = _EXCLUSION_REGISTRY[ex_type]
     return ex(ds, **settings)
