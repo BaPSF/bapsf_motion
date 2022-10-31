@@ -14,6 +14,7 @@ class BaseExclusion(ABC, MLItem):
     _exclusion_type = NotImplemented  # type: str
 
     def __init__(self, ds: xr.Dataset, *, skip_ds_add=False, **kwargs):
+        self._config_keys = {"type"}.union(set(kwargs.keys()))
         self.inputs = kwargs
         self.skip_ds_add = skip_ds_add
         self.composed_exclusions = []  # type: List[BaseExclusion]
@@ -34,6 +35,16 @@ class BaseExclusion(ABC, MLItem):
 
         # update the global mask
         self.update_global_mask()
+
+    @property
+    def config(self):
+        config = {}
+        for key in self._config_keys:
+            if key == "type":
+                config[key] = self.exclusion_type
+            else:
+                config[key] = self.inputs[key]
+        return config
 
     @property
     def exclusion_type(self):

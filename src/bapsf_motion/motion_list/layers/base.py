@@ -13,6 +13,7 @@ class BaseLayer(ABC, MLItem):
     _layer_type = NotImplemented  # type: str
 
     def __init__(self, ds: xr.Dataset, *, skip_ds_add=False, **kwargs):
+        self._config_keys = {"type"}.union(set(kwargs.keys()))
         self.inputs = kwargs
         self.skip_ds_add = skip_ds_add
         self.composed_layers = []  # type: List[BaseLayer]
@@ -41,6 +42,16 @@ class BaseLayer(ABC, MLItem):
             return self.item
         except KeyError:
             return self._generate_point_matrix_da()
+
+    @property
+    def config(self):
+        config = {}
+        for key in self._config_keys:
+            if key == "type":
+                config[key] = self.layer_type
+            else:
+                config[key] = self.inputs[key]
+        return config
 
     @abstractmethod
     def _generate_point_matrix(self):
