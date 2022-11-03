@@ -8,6 +8,24 @@ from bapsf_motion.actors.axis_ import Axis
 
 
 class Drive(BaseActor):
+    """
+        Examples
+        --------
+
+        >>> from bapsf_motion.actors import Drive
+        >>> import logging
+        >>> import sys
+        >>> logging.basicConfig(stream=sys.stdout, level=logging.NOTSET)
+        >>> dr = Drive(
+        ...     axes=[
+        ...         {"ip": "192.168.6.104", "units": "cm", "units_per_rev": 0.1*2.54},
+        ...         {"ip": "192.168.6.103", "units": "cm", "units_per_rev": 0.1*2.54},
+        ...     ]
+        ...     name="WALL-E",
+        ...     auto_run=True,
+        ... )
+
+        """
 
     def __init__(
         self,
