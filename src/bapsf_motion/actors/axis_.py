@@ -6,6 +6,23 @@ from bapsf_motion.utils import units as u
 
 
 class Axis(BaseActor):
+    """
+    Examples
+    --------
+
+    >>> from bapsf_motion.actors import Axis
+    >>> import logging
+    >>> import sys
+    >>> logging.basicConfig(stream=sys.stdout, level=logging.NOTSET)
+    >>> ax = Axis(
+    ...     ip="192.168.6.104",
+    ...     units="cm",
+    ...     units_per_rev=0.1*2.54,
+    ...     name="WALL-E",
+    ...     auto_run=True,
+    ... )
+
+    """
     # TODO: better handle naming of the Axis and child Motor
 
     def __init__(
