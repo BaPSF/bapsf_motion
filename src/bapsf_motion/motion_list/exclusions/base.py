@@ -43,7 +43,10 @@ class BaseExclusion(ABC, MLItem):
             if key == "type":
                 config[key] = self.exclusion_type
             else:
-                config[key] = self.inputs[key]
+                val = self.inputs[key]
+                if isinstance(val, np.ndarray):
+                    val = val.tolist()
+                config[key] = val if not isinstance(val, np.generic) else val.item()
         return config
 
     @property
