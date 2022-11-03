@@ -28,9 +28,11 @@ class MotionList(MLItem):
 
     # TODO: add method for clearing/removing all exclusions
     # TODO: add method for clearing/removing all layers
+    # TODO: add functionality for space modification after instantiation
 
-    def __init__(self, space, layers=None, exclusions=None, use_lapd=True):
-        self._space = space
+    def __init__(self, space, layers=None, exclusions=None):
+        # self._space = space
+        self._space = self._validate_space(space)
 
         super().__init__(
             self._build_initial_ds(),
@@ -51,6 +53,70 @@ class MotionList(MLItem):
                 self.add_exclusion(**exclusion)
 
         self.generate()
+
+    @property
+    def config(self):
+        _config = {"space": {}}
+
+        # pack the space config
+        for sitem in self._space:
+            for key, val in sitem.items():
+                if key not in _config["space"]:
+                    _config["space"][key] = [val]
+                else:
+                    _config["space"][key].append(val)
+
+        # pack the exclusion config
+        if len(self.exclusions):
+            _config["exclusion"] = {}
+        for ii, ex in enumerate(self.exclusions):
+            _config["exclusion"][f"{ii}"] = ex.config
+
+        # pack the layer config
+        if len(self.layers):
+            _config["layer"] = {}
+        for ii, ly in enumerate(self.layers):
+            _config["layer"][f"{ii}"] = ly.config
+
+        return _config
+
+    @staticmethod
+    def _validate_space(space):
+        # TODO: !!! allow `space` to be defined as a list of
+        #       !!! dictionaries of a dictionary of lists
+        # TODO: incorporate key "resolution" to be able to define step
+        #       size instead of "num"
+        # TODO: incorporate key "unit" to define units of the axis
+        # TODO: does this validation need to be robust enough to
+        #       exhaustively cover values for each key-value pair
+        #       (e.g. labels given need to be unique)
+
+        if space == "lapd_xy":
+            space = (
+                {"label": "x", "range": [-55.0, 55.0], "num": 221},
+                {"label": "y", "range": [-55.0, 55.0], "num": 221},
+            )
+        elif space == "lapd_xz":
+            # TODO: write error string
+            raise NotImplementedError
+        elif space == "lapd_xyz":
+            # TODO: write error string
+            raise NotImplementedError
+
+        if not isinstance(space, (list, tuple)):
+            # TODO: write error string
+            raise TypeError
+
+        for item in space:
+            if not isinstance(item, dict):
+                # TODO: write error string
+                raise ValueError
+            elif set(item.keys()) != {"label", "range", "num"}:
+                # TODO: write error string
+                raise ValueError
+
+        # by this point `space` should be a list of dictionaries
+        return space
 
     def _build_initial_ds(self):
         shape = []
