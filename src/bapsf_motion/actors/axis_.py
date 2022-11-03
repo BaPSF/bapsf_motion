@@ -31,17 +31,17 @@ class Axis(BaseActor):
         ip: str,
         units: str,
         units_per_rev: float,
-        name: str = None,
+        name: str = "Axis",
         logger=None,
         loop=None,
         auto_run=False,
     ):
-        super().__init__(logger=logger, name="Axis")
+        super().__init__(logger=logger, name=name)
 
         self._init_instance_attrs()
         self.motor = Motor(
             ip=ip,
-            name=name,
+            name="motor",
             logger=self.logger,
             loop=loop,
             auto_start=False,
@@ -66,6 +66,16 @@ class Axis(BaseActor):
     def stop_running(self, delay_loop_stop=False):
         """Stop the `asyncio` event loop."""
         self.motor.stop_running(delay_loop_stop=delay_loop_stop)
+
+    @property
+    def config(self):
+        _config = {
+            "name": self.name,
+            "ip": self.motor.ip,
+            "units": str(self.units),
+            "units_per_rev": self.units_per_rev.value.item()
+        }
+        return _config
 
     @property
     def is_moving(self) -> bool:
@@ -106,7 +116,7 @@ class Axis(BaseActor):
         self._units = new_units
 
     @property
-    def units_per_rev(self):
+    def units_per_rev(self) -> u.Quantity:
         """
         The number of units (:attr:`units`) translated per full
         revolution of the motor (:attr:`motor`).
