@@ -185,7 +185,28 @@ class Drive(BaseActor):
         self._loop = loop
 
     def send_command(self, command, *args, axis=None):
-        ...
+        if axis is None:
+            send_to = self.axes
+        elif axis in range(len(self.axes)):
+            send_to = [self.axes[int(axis)]]
+        else:
+            raise ValueError(
+                f"Value for keyword 'axis' is unrecognized.  Got {axis} and"
+                f" expected None or in in range({len(self.axes)})."
+            )
+
+        if len(send_to) == 1:
+            rtn = send_to[0].send_command(command, *args)
+            return rtn
+
+        rtn = []
+        for ii, ax in enumerate(send_to):
+            ax_args = (args[ii],) if len(args) else args
+            _rtn = ax.send_command(command, *ax_args)
+            rtn.append(_rtn)
+
+        return rtn
+
 
     def move_to(self, *args):
         ...
