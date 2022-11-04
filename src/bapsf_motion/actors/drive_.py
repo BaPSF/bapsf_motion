@@ -207,9 +207,36 @@ class Drive(BaseActor):
 
         return rtn
 
+    def move_to(self, pos, axis=None):
+        # TODO: should I sent these commands through
+        #       Drive.send_command() instead?
 
-    def move_to(self, *args):
-        ...
+        if axis is None and len(pos) != len(self.axes):
+            raise ValueError(
+                f"Keyword `pos` must be a tuple of equal length to the "
+                f"number drive axes, got {len(pos)} and expected "
+                f"{len(self.axes)}."
+            )
+        elif axis is not None and axis not in range(len(self.axes)):
+            raise ValueError(
+                f"Keyword `axis` is supposed to be an int in "
+                f"range({len(self.axes)}), got {axis}."
+            )
+        elif axis is not None and not isinstance(pos, (list, tuple)):
+            pos = [pos]
+        elif axis is not None and len(pos) != 1:
+            raise ValueError(
+                f"When keyword `axis` is used the specified position "
+                f"`pos` must be of length one, got lengths {len(pos)}."
+            )
+
+        move_ax = self.axes if axis is None else [self.axes[axis]]
+        rtn = []
+        for p, ax in zip(pos, move_ax):
+            _rtn = ax.move_to(p)
+            rtn.append(_rtn)
+
+        return rtn
 
     def stop(self):
         ...
