@@ -31,3 +31,14 @@ class BaseActor:
     @logger.setter
     def logger(self, value):
         self._logger = value
+
+
+# TODO: Create an EventActor
+#       - must setup the asyncio event loop
+#       - must handle running th loop in a separate thread
+#       - How should I incorporate the heartbeat?
+#       - Must have the option to auto_run the event loop
+#       - must inherit from BaseActor
+#       - will likely need abstract methods _actor_setup_pre_loop() and
+#         _actor_setup_post_loop() for setup actions befroe and after
+#         the loop creation, respectively.
