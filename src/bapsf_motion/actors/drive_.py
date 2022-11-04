@@ -239,4 +239,12 @@ class Drive(BaseActor):
         return rtn
 
     def stop(self):
-        ...
+        # TODO: should I really be construct a return here?
+        # TODO: is there a quicker/more efficient way of stopping the motors?
+
+        rtn = []
+        for ax in self.axes:
+            _rtn = ax.stop()
+            rtn.append(_rtn)
+
+        return rtn
