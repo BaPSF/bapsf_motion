@@ -1,7 +1,7 @@
 import asyncio
 import threading
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, List, Tuple
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.axis_ import Axis
@@ -134,8 +134,8 @@ class Drive(BaseActor):
         return any(ax.is_moving for ax in self.axes)
 
     @property
-    def axes(self):
-        return self._axes
+    def axes(self) -> List[Axis]:
+        return list(self._axes)
 
     @property
     def position(self):
