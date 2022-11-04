@@ -20,7 +20,7 @@ class Drive(BaseActor):
         ...     axes=[
         ...         {"ip": "192.168.6.104", "units": "cm", "units_per_rev": 0.1*2.54},
         ...         {"ip": "192.168.6.103", "units": "cm", "units_per_rev": 0.1*2.54},
-        ...     ]
+        ...     ],
         ...     name="WALL-E",
         ...     auto_run=True,
         ... )
@@ -112,6 +112,22 @@ class Drive(BaseActor):
         )
 
         return ax
+
+    @property
+    def config(self):
+        _config = {
+            "name": self.name,
+            "axes": {},
+        }
+
+        for ax in self.axes:
+            for key, val in ax.config.items():
+                if key not in _config["axes"]:
+                    _config["axes"][key] = [val]
+                else:
+                    _config["axes"][key].append(val)
+
+        return _config
 
     @property
     def is_moving(self):
