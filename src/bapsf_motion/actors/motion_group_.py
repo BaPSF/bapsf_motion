@@ -415,7 +415,11 @@ class MotionGroup(BaseActor):
 
     @property
     def config(self):
-        return self._config
+        return {
+            "name": self.name,
+            "drive": self.drive.config,
+            "motion_list": self.ml.config,
+        }
 
     @property
     def drive(self):
