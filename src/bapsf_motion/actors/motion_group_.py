@@ -1,6 +1,8 @@
 __all__ = ["MotionGroup"]
 
 import logging
+
+import numpy as np
 import tomli
 
 from collections import UserDict
@@ -239,6 +241,7 @@ class MotionGroup(BaseActor):
 
         # self._initialize_transform()
         self._ml = self._setup_motion_list(config["motion_list"])
+        self._ml_index = None
         self._drive = self._spawn_drive(config["drive"], loop)
 
         if auto_run:
@@ -424,3 +427,46 @@ class MotionGroup(BaseActor):
     @property
     def drive(self):
         return self._drive
+
+    @property
+    def ml(self):
+        return self._ml
+
+    @property
+    def ml_index(self):
+        return self._ml_index
+
+    @ml_index.setter
+    def ml_index(self, index):
+        if index is None:
+            self._ml_index = None
+        elif not isinstance(index, (int, np.integer)):
+            raise ValueError(
+                f"Expected type int for 'index', got {type(index)}"
+            )
+        elif not np.asscalar(np.isin(index, self.ml.motion_list.index)):
+            raise ValueError(
+                f"Given index {index} is out of range, "
+                f"[0, {self.ml.motion_list.index.size}]."
+            )
+
+        self._ml_index = index
+
+    def stop(self):
+        self.drive.stop()
+
+    def move_to(self, pos, axis=None):
+        return self.drive.move_to(pos=pos, axis=axis)
+
+    def move_ml(self, index):
+        if index == "next":
+            index = 0 if self.ml_index is None else self.ml_index + 1
+        elif index == "first":
+            index = 0
+        elif index == "last":
+            index = self.ml.motion_list.index[-1].item()
+
+        self.ml_index = index
+        pos = self.ml.motion_list.sel(index=index).to_numpy().tolist()
+
+        return self.move_to(pos=pos)
