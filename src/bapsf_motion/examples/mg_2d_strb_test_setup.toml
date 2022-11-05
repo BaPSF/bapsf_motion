@@ -3,12 +3,19 @@ name = "test-mg"
 
 [mgroup.0.drive]
 name = "XY-drive"
+axes.ip = ["192.168.0.70", "192.168.0.80"]
+axes.units = ["cm", "cm"]
+axes.name = ["x", "y"]
+axes.units_per_rev = [0.508, 0.508]
 
-[mgroup.0.drive.axes]
-ip = ["192.168.0.70", "192.168.0.80"]
-units = ["cm", "cm"]
-name = ["x", "y"]
-units_per_rev = [0.508, 0.508]
+[mgroup.0.motion_list]
+space = "lapd_xy"
+exclusions.0.type = "lapd"
+exclusions.0.port_location = "E"
+exclusions.0.cone_full_angle = 60
+layers.0.type = "grid"
+layers.0.limits = [[-10, 10], [-10, 10]]
+layers.0.steps = [11, 11]
 
 [mgroup.0.transform]
 type = "lapd-xy-basic"
@@ -16,12 +23,3 @@ droop_correction = "None"
 pivot_to_center = 57.7
 pivot_to_clamp = 125.0
 zero_to_home = [10, 10]
-
-[mgroup.0.motion_list]
-space.label = ["x"]
-space.range = [[-5, 5]]
-space.num = [41]
-layers.0.type = "grid"
-layers.0.limits = [[-3, 3]]
-layers.0.steps = [13]
-
