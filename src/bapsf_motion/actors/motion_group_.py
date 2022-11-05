@@ -9,6 +9,7 @@ from typing import Any, Dict, Iterable, Optional
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.drive_ import Drive
+from bapsf_motion.motion_list import MotionList
 
 _EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.toml"))
 
@@ -235,15 +236,10 @@ class MotionGroup(BaseActor):
         super().__init__(logger=logger, name=config["name"])
 
         # self._config = MotionGroupConfig(filename=filename, config=config)
-        # self._initialize_motion_list()
+
         # self._initialize_transform()
+        self._ml = self._setup_motion_list(config["motion_list"])
         self._drive = self._spawn_drive(config["drive"], loop)
-        # self._drive = Drive(
-        #     axes=self.config.drive_settings,
-        #     logger=self.logger,
-        #     loop=loop,
-        #     auto_run=False,
-        # )
 
         if auto_run:
             self.run()
@@ -295,7 +291,7 @@ class MotionGroup(BaseActor):
 
         # validate root level config
         # _required_metadata = {"name", "drive", "motion_list", "transform"}
-        _required_metadata = {"name", "drive"}
+        _required_metadata = {"name", "drive", "motion_list"}
         if len(config) == 1:
             key, val = tuple(config.items())[0]
             if key.isnumeric():
@@ -384,9 +380,23 @@ class MotionGroup(BaseActor):
         )
         return dr
 
-    def _initialize_motion_list(self):
+    def _setup_motion_list(self, config):
         # initialize the motion list object
-        ...
+
+        # re-pack exclusions
+        exclusions = []
+        for val in config["exclusions"].values():
+            exclusions.append(val)
+        config["exclusions"] = exclusions
+
+        # re-pack layers
+        layers = []
+        for val in config["layers"].values():
+            layers.append(val)
+        config["layers"] = layers
+
+        _ml = MotionList(**config)
+        return _ml
 
     def _initialize_transform(self):
         # initialize the transform object, this is used to convert between
