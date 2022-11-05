@@ -230,20 +230,159 @@ class MotionGroup(BaseActor):
         loop=None,
         auto_run=False,
     ):
-        super().__init__(logger=logger, name="MGroup")
+        config = self._process_config(filename=filename, config=config)
 
-        self._config = MotionGroupConfig(filename=filename, config=config)
-        self._initialize_motion_list()
-        self._initialize_transform()
-        self._drive = Drive(
-            axes=self.config.drive_settings,
-            logger=self.logger,
-            loop=loop,
-            auto_run=False,
-        )
+        super().__init__(logger=logger, name=config["name"])
+
+        # self._config = MotionGroupConfig(filename=filename, config=config)
+        # self._initialize_motion_list()
+        # self._initialize_transform()
+        self._drive = self._spawn_drive(config["drive"], loop)
+        # self._drive = Drive(
+        #     axes=self.config.drive_settings,
+        #     logger=self.logger,
+        #     loop=loop,
+        #     auto_run=False,
+        # )
 
         if auto_run:
             self.run()
+
+    @staticmethod
+    def _process_config(
+        *,
+        filename: Optional[str] = None,
+        config: Optional[Dict[str, Any]] = None,
+    ):
+        # ensure filename XOR config kwargs are specified
+        if filename is None and config is None:
+            raise TypeError(
+                "MotionGroup() missing 1 required keyword argument: use "
+                "'filename' or 'config' to specify a configuration."
+            )
+        elif filename is not None and config is not None:
+            raise TypeError(
+                "MotionGroup() takes 1 keyword argument but 2 were "
+                "given: use keyword 'filename' OR 'config' to specify "
+                "a configuration."
+            )
+        elif filename is not None:
+            filename = Path(filename).resolve()
+
+            if not filename.exists():
+                for efile in _EXAMPLES:
+                    if filename.name == efile.name:
+                        filename = efile
+                        break
+
+            if not filename.exists():
+                raise ValueError(
+                    f"Specified Motion Group configuration file does "
+                    f"not exist, {filename}."
+                )
+
+            with open(filename, "rb") as f:
+                config = tomli.load(f)
+
+        # trim so we're at the motion group root config
+        if "mgroup" in config and len(config) != 1:
+            raise ValueError(
+                "Supplied configuration unrecognized, suspected "
+                "multiple Motion Groups defined."
+            )
+        elif "mgroup" in config:
+            config = config["mgroup"]
+
+        # validate root level config
+        # _required_metadata = {"name", "drive", "motion_list", "transform"}
+        _required_metadata = {"name", "drive"}
+        if len(config) == 1:
+            key, val = tuple(config.items())[0]
+            if key.isnumeric():
+                config = val
+            else:
+                raise ValueError(
+                    "Supplied configuration is unrecognized, only one "
+                    "key-value pair defined."
+                )
+
+        missing_configs = _required_metadata - set(config.keys())
+        if missing_configs:
+            raise ValueError(
+                f"Supplied configuration is missing required keys {missing_configs}."
+            )
+
+        config["name"] = str(config["name"])
+
+        return config
+
+    def _spawn_drive(self, config, loop) -> Drive:
+        """
+        The Drive configuration should look like:
+
+        .. code-block:
+
+            config = {
+                "name": "probe_drive_name",
+                "axes": {
+                    "ip": ["192.168.0.70", "192.168.0.80"],
+                    "name": ["x", "y"],
+                    "units": ["cm", "cm"],
+                    "units_per_rev": [0.254, 0.254],
+                },
+            }
+
+        or
+
+        .. code-block:
+
+            config = {
+                "name": "probe_drive_name",
+                "axes": [
+                    {
+                        "ip": "192.168.0.70",
+                        "name": "x",
+                        "units": "cm",
+                        "units_per_rev": 0.256,
+                    },
+                    {
+                        "ip": "192.168.0.80",
+                        "name": "y",
+                        "units": "cm",
+                        "units_per_rev": 0.256,
+                    },
+                ],
+            }
+
+        Both version are acceptable, but the latter is what gets passed
+        to Drive and the former comes from the TOML files.
+        """
+        if "axes" not in config:
+            raise ValueError(
+                "The Drive configuration for the motion group does"
+                f" NOT specify any axes.  Got {config}."
+            )
+        elif isinstance(config["axes"], dict):
+            axes = config["axes"]
+            new_axes = []
+            keys = list(axes.keys())
+            size = len(axes[keys[0]])
+            for ii in range(size):
+                ax = {}
+                for key in keys:
+                    ax[key] = axes[key][ii]
+
+                new_axes.append(ax)
+
+            config["axes"] = new_axes
+
+        dr = Drive(
+            logger=self.logger,
+            loop=loop,
+            auto_run=False,
+            **config,
+        )
+        return dr
 
     def _initialize_motion_list(self):
         # initialize the motion list object
