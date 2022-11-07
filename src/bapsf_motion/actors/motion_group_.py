@@ -205,7 +205,6 @@ class MotionGroupConfig(UserDict):
 
         # TODO: pickup validation work here ...
 
-
         return config
 
     def _validate_transform(self, config):
