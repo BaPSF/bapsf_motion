@@ -61,6 +61,7 @@ class Drive(BaseActor):
 
         conditioned_settings = []
         all_ips = []
+        all_anames = []
         for ii, axis in enumerate(settings):
             axis = self._validate_axis(axis)
             if "name" not in axis:
@@ -68,12 +69,20 @@ class Drive(BaseActor):
 
             conditioned_settings.append(axis)
             all_ips.append(axis["ip"])
+            all_anames.append(axis["name"])
 
         # TODO: update this so https://, not using https (or http), or a port
         #       does result in False unique entries
         if len(set(all_ips)) != len(all_ips):
             raise ValueError(
-                f"All specified axes must have unique IPs, duplicate IPs found."
+                f"All specified axes must have unique IPs, duplicate "
+                f"IPs found."
+            )
+
+        if len(set(all_anames)) != len(all_anames):
+            raise ValueError(
+                f"All specified axes must have unique names, duplicate "
+                f"axis names found."
             )
 
         return tuple(conditioned_settings)
