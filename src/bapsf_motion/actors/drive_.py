@@ -265,3 +265,7 @@ class Drive(BaseActor):
             rtn.append(_rtn)
 
         return rtn
+
+    def sel(self, aname):
+        index = self.anames.index(aname)
+        return self.axes[index]
