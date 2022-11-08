@@ -147,6 +147,14 @@ class Drive(BaseActor):
         return list(self._axes)
 
     @property
+    def naxes(self):
+        return len(self.axes)
+
+    @property
+    def anames(self):
+        return (ax.name for ax in self.axes)
+
+    @property
     def position(self):
         # TODO: thiS needs to return drive units instead of axis units
         # TODO: handle case where someone could have config different units for each axis
