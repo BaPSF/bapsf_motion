@@ -37,6 +37,6 @@ def register_transform(transform_cls: Type[base.BaseTransform]):
     return transform_cls
 
 
-def transform_factory(ds, *, tr_type, **settings):
+def transform_factory(drive, *, tr_type, **settings):
     tr = _TRANSFORM_REGISTRY[tr_type]
-    return tr(ds, **settings)
+    return tr(drive, **settings)
