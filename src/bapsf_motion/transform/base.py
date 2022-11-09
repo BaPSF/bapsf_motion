@@ -3,7 +3,7 @@ __all__ = ["BaseTransform"]
 import numpy as np
 
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Any, Dict, List, Optional
 
 from bapsf_motion.actors import Drive
 from bapsf_motion.motion_list import MotionList
@@ -22,18 +22,18 @@ class BaseTransform(ABC):
 
     def __init__(
         self,
-        ml: MotionList,
+        drive: Drive,
         *,
-        drive: Drive = None,
+        ml: MotionList = None,
         **kwargs,
     ):
-        self._config_keys = {"type"}.union(set(kwargs.keys()))
-        self._drive = drive
-        self._ml = ml
-        self.inputs = kwargs
-        self.dependencies = []  # type: List[BaseTransform]
+        self._drive = self._validate_drive(drive)
+        self._ml = self._validate_motion_list(ml)
 
-        self._validate_inputs()
+        self.inputs = self._validate_inputs(kwargs)
+        self._config_keys = {"type"}.union(set(self.inputs.keys()))
+
+        self.dependencies = []  # type: List[BaseTransform]
 
     @property
     def transform_type(self):
@@ -60,8 +60,43 @@ class BaseTransform(ABC):
     def ml(self):
         return self._ml
 
+    @staticmethod
+    def _validate_drive(drive: Drive) -> Drive:
+        if not isinstance(drive, Drive):
+            raise TypeError(
+                f"Argument 'drive' expected type "
+                f"{Drive.__module__}.{Drive.__qualname__} and got type "
+                f"{type(drive)}."
+            )
+
+        return drive
+
+    def _validate_motion_list(self, ml: Optional[MotionList]) -> Optional[MotionList]:
+        if ml is None:
+            return
+        elif not isinstance(ml, MotionList):
+            raise TypeError(
+                f"Argument 'ml' expected type "
+                f"{MotionList.__module__}.{MotionList.__qualname__}, and "
+                f"got type {type(ml)}."
+            )
+        elif self.drive.naxes != ml.mspace_ndims:
+            raise ValueError(
+                f"The given 'drive' object and motion list 'ml' object "
+                f" do not have matching dimensions, got "
+                f"{self.drive.naxes} and {ml.mspace_ndims} respectively."
+            )
+        elif set(self.drive.anames) != set(ml.mspace_coords.dims):
+            raise ValueError(
+                f"The give 'drive' axis names and motion spaces axis "
+                f"names do not match, got {set(self.drive.anames)} and "
+                f"{set(ml.mspace_coords.dims)} respectively."
+            )
+
+        return ml
+
     @abstractmethod
-    def _validate_inputs(self):
+    def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         ...
 
     @abstractmethod
