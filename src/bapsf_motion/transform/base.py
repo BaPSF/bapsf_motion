@@ -7,11 +7,13 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 from bapsf_motion.actors import Drive
 from bapsf_motion.motion_list import MotionList
-from bapsf_motion.transform.helpers import transform_factory
 
 
 class BaseTransform(ABC):
     _transform_type = NotImplemented  # type: str
+
+    # TODO: add method illustrate_transform() to plot and show how the
+    #       space in transformed
 
     def __init__(
         self,
@@ -19,7 +21,7 @@ class BaseTransform(ABC):
         **kwargs,
     ):
         if not isinstance(axes, (list, tuple)):
-            axes  = [axes]
+            axes = [axes]
 
         if not all(isinstance(ax, (int, str)) for ax in axes):
             raise ValueError(
@@ -43,7 +45,7 @@ class BaseTransform(ABC):
             # matrix needs to be square with each dimension being one size
             # larger than the number axes the matrix transforms...the last
             # dimensions allows for shift translations
-            raise ValueError
+            raise ValueError(f"matrix.shape = {matrix.shape}")
 
     @property
     def axes(self):
@@ -70,8 +72,7 @@ class BaseTransform(ABC):
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         ...
 
-    @abstractmethod
-    def matrix(self, point):
+    def matrix(self, points, to_coords="drive") -> np.ndarray:
         # to_coord should have two options "drive" and "motion_space"
         # - to_coord="drive" means to convert from motion space coordinates
         #   to drive coordinates
@@ -79,6 +80,25 @@ class BaseTransform(ABC):
         #   to_coord="drive"
         #
         # TODO: would to_coord be better as a to_drive that has a boolean value
+        if not isinstance(points, np.ndarray):
+            points = np.array(points)
+
+        if to_coords == "drive":
+            return self._matrix_to_drive(points)
+        elif to_coords in ("mspace", "motion_space", "motion space"):
+            return self._matrix_to_motion_space(points)
+        else:
+            raise ValueError(
+                f"Keyword 'to_coords' can only have values 'drive' or "
+                f"'motion_space', but got '{to_coords}'."
+            )
+
+    @abstractmethod
+    def _matrix_to_drive(self, points):
+        ...
+
+    @abstractmethod
+    def _matrix_to_motion_space(self, points):
         ...
 
 
@@ -188,6 +208,9 @@ class TransformRule:
     def __init__(self, drive, axes, method, **kwargs):
         self._drive = drive
         self._axes = axes
+
+        from bapsf_motion.transform.helpers import transform_factory
+
         tr = transform_factory(drive, tr_type=method, **kwargs)
 
 
