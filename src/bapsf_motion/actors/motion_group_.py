@@ -236,12 +236,14 @@ class MotionGroup(BaseActor):
 
         super().__init__(logger=logger, name=config["name"])
 
-        # self._config = MotionGroupConfig(filename=filename, config=config)
+        self._drive = self._spawn_drive(config["drive"], loop)
 
-        # self._initialize_transform()
         self._ml = self._setup_motion_list(config["motion_list"])
         self._ml_index = None
-        self._drive = self._spawn_drive(config["drive"], loop)
+
+        # self._setup_transform()
+
+        # self._validate_setup()
 
         if auto_run:
             self.run()
@@ -293,7 +295,11 @@ class MotionGroup(BaseActor):
 
         # validate root level config
         # _required_metadata = {"name", "drive", "motion_list", "transform"}
-        _required_metadata = {"name", "drive", "motion_list"}
+        # _required_metadata = {"name", "drive", "motion_list"}
+        # TODO: "motion_list" should be optional under certain situations,
+        #       but not others...e.g. ml is required during a run but
+        #       not one off operation
+
         if len(config) == 1:
             key, val = tuple(config.items())[0]
             if key.isnumeric():
@@ -304,6 +310,7 @@ class MotionGroup(BaseActor):
                     "key-value pair defined."
                 )
 
+        _required_metadata = {"name", "drive"}
         missing_configs = _required_metadata - set(config.keys())
         if missing_configs:
             raise ValueError(
@@ -311,6 +318,9 @@ class MotionGroup(BaseActor):
             )
 
         config["name"] = str(config["name"])
+
+        if "motion_list" not in config:
+            config["motion_list"] = None
 
         return config
 
@@ -385,6 +395,9 @@ class MotionGroup(BaseActor):
     def _setup_motion_list(self, config):
         # initialize the motion list object
 
+        if config is None:
+            return
+
         # re-pack exclusions
         exclusions = []
         for val in config["exclusions"].values():
@@ -400,7 +413,7 @@ class MotionGroup(BaseActor):
         _ml = MotionList(**config)
         return _ml
 
-    def _initialize_transform(self):
+    def _setup_transform(self):
         # initialize the transform object, this is used to convert between
         # LaPD coordinates and drive coordinates
         ...
@@ -469,3 +482,15 @@ class MotionGroup(BaseActor):
         pos = self.ml.motion_list.sel(index=index).to_numpy().tolist()
 
         return self.move_to(pos=pos)
+
+    def replace_motion_list(self, config):
+        self._ml = self._setup_motion_list(config)
+        self.ml_index = None
+
+    def _validate_setup(self):
+        # Needs to enforce that the drive, motion list, and transform
+        # are all valid with respect to each other.  The following
+        # should be validated.
+        # 1. All elements have the same axis dimensionality
+        # 2. All share the same naming for the axes
+        ...
