@@ -12,6 +12,7 @@ from typing import Any, Dict, Iterable, Optional
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_list import MotionList
+from bapsf_motion import transform
 
 _EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.toml"))
 
@@ -241,7 +242,7 @@ class MotionGroup(BaseActor):
         self._ml = self._setup_motion_list(config["motion_list"])
         self._ml_index = None
 
-        # self._setup_transform()
+        self._transform = self._setup_transform(config["transform"])
 
         # self._validate_setup()
 
@@ -321,6 +322,9 @@ class MotionGroup(BaseActor):
 
         if "motion_list" not in config:
             config["motion_list"] = None
+
+        if "transform" not in config:
+            config["transform"] = None
 
         return config
 
@@ -413,10 +417,30 @@ class MotionGroup(BaseActor):
         _ml = MotionList(**config)
         return _ml
 
-    def _setup_transform(self):
+    def _setup_transform(self, config: Dict[str, Any]):
         # initialize the transform object, this is used to convert between
         # LaPD coordinates and drive coordinates
-        ...
+        if config is None:
+            raise ValueError(
+                "Currently, the only valid transform is 'lapd_xy'."
+            )
+        elif "type" not in config:
+            raise ValueError(
+                "Transform configuration my missing key/value pair "
+                "'type'.  The key/value pair must be defined as "
+                "'type = 'lapd_xy''."
+            )
+        elif config["type"] != "lapd_xy":
+            raise ValueError(
+                "Currently only transform type 'lapd_xy' is accepted, "
+                f"got type {config['type']}."
+            )
+
+        config.pop("type")
+
+        return transform.LaPDXYTransform(**config)
+
+
 
     def run(self):
         if self.drive is not None:
@@ -434,6 +458,7 @@ class MotionGroup(BaseActor):
             "name": self.name,
             "drive": self.drive.config,
             "motion_list": self.ml.config,
+            "transform": self.transform.config,
         }
 
     @property
@@ -464,11 +489,25 @@ class MotionGroup(BaseActor):
 
         self._ml_index = index
 
+    @property
+    def transform(self) -> "transform.LaPDXYTransform":
+        return self._transform
+
+    @property
+    def position(self):
+        dr_pos = self.drive.position
+        pos = self.transform.convert(
+            dr_pos.value.tolist(),
+            to_coords="motion_space",
+        )
+        return pos * dr_pos.unit
+
     def stop(self):
         self.drive.stop()
 
     def move_to(self, pos, axis=None):
-        return self.drive.move_to(pos=pos, axis=axis)
+        dr_pos = self.transform.convert(pos, to_coords="drive")
+        return self.drive.move_to(pos=dr_pos, axis=axis)
 
     def move_ml(self, index):
         if index == "next":
