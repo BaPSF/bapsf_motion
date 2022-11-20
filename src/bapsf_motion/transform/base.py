@@ -154,7 +154,7 @@ class Base2Transform(ABC):
     #     return self._ml
 
     @staticmethod
-    def _validate_drive(drive: Drive) -> Drive:
+    def _validate_drive(drive: "Drive") -> "Drive":
         if not isinstance(drive, Drive):
             raise TypeError(
                 f"Argument 'drive' expected type "
