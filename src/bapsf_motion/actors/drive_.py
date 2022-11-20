@@ -1,3 +1,4 @@
+import astropy.units as u
 import asyncio
 import threading
 
@@ -155,7 +156,7 @@ class Drive(BaseActor):
         return (ax.name for ax in self.axes)
 
     @property
-    def position(self):
+    def position(self) -> u.Quantity:
         # TODO: thiS needs to return drive units instead of axis units
         # TODO: handle case where someone could have config different units for each axis
         pos = []
