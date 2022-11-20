@@ -18,8 +18,7 @@ layers.0.limits = [[-10, 10], [-10, 10]]
 layers.0.steps = [11, 11]
 
 [mgroup.0.transform]
-type = "lapd-xy-basic"
-droop_correction = "None"
+type = "lapd_xy"
+axes = [0, 1]
 pivot_to_center = 57.7
-pivot_to_clamp = 125.0
-zero_to_home = [10, 10]
+pivot_to_drive = 134.0
