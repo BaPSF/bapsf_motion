@@ -12,7 +12,7 @@ def move_to(mgroup: MotionGroup, index):
     while mgroup.drive.is_moving:
         time.sleep(0.1)
 
-        if time.time() - to_moving > 5:
+        if time.time() - to_moving > 20:
             mgroup.stop()
 
             raise RuntimeError(
@@ -86,6 +86,12 @@ if __name__ == "__main__":
                 },
             },
         },
+        "transform": {
+            "type": "lapd_xy",
+            "axes": [0, 1],
+            "pivot_to_center": 57.7,
+            "pivot_to_drive": 134.0,
+        }
     }
     mg = MotionGroup(config=config, auto_run=True)
 
