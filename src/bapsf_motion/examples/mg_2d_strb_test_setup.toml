@@ -20,5 +20,5 @@ layers.0.steps = [11, 11]
 [mgroup.0.transform]
 type = "lapd_xy"
 axes = [0, 1]
-pivot_to_center = 57.288
-pivot_to_drive = 134.0
+pivot_to_center = 62.70625  # cm
+pivot_to_drive = 133.19125  # cm
