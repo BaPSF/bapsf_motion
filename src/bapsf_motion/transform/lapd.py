@@ -57,7 +57,7 @@ class LaPDXYTransform(BaseTransform):
             polarity = inputs[key]
             if polarity is None:
                 polarity = (
-                    np.array([-1, 1]) if key == "drive_polarity" else np.array([1, 1])
+                    np.array([-1, 1]) if key == "mspace_polarity" else np.array([1, 1])
                 )
             elif not isinstance(polarity, np.ndarray):
                 polarity = np.array(polarity)
