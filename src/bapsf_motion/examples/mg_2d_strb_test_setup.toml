@@ -20,5 +20,18 @@ layers.0.steps = [11, 11]
 [mgroup.0.transform]
 type = "lapd_xy"
 axes = [0, 1]
-pivot_to_center = 62.70625  # cm
-pivot_to_drive = 133.19125  # cm
+#pivot_to_center = 62.70625  # cm
+pivot_to_center = 62.944375  # cm
+#pivot_to_drive = 133.19125  # cm
+pivot_to_drive = 133.50875  # cm
+#probe_axis_offset = 10.00125  # cm
+#probe_axis_offset = 9.5631  # cm
+probe_axis_offset = 20.16125  # cm
+
+[mgroup.0.probe]
+name = "my_probe"
+units = "in"
+shaft_od = 0.375
+shaft_id = 0.33
+shaft_density = 2.7  # kg/cm3
+tip_weight = 0
