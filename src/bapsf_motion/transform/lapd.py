@@ -19,6 +19,7 @@ class LaPDXYTransform(BaseTransform):
         *,
         pivot_to_center,
         pivot_to_drive,
+        probe_axis_offset,
         drive_polarity=None,
         mspace_polarity=None,
     ):
@@ -26,6 +27,7 @@ class LaPDXYTransform(BaseTransform):
             axes,
             pivot_to_center=pivot_to_center,
             pivot_to_drive=pivot_to_drive,
+            probe_axis_offset=probe_axis_offset,
             drive_polarity=drive_polarity,
             mspace_polarity=mspace_polarity,
         )
@@ -38,7 +40,7 @@ class LaPDXYTransform(BaseTransform):
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
 
-        for key in {"pivot_to_center", "pivot_to_drive"}:
+        for key in {"pivot_to_center", "pivot_to_drive", "probe_axis_offset"}:
             val = inputs[key]
             if not isinstance(val, (float, np.floating, int, np.integer)):
                 raise TypeError(
@@ -46,9 +48,11 @@ class LaPDXYTransform(BaseTransform):
                     f"got type {type(val)}."
                 )
             elif val < 0.0:
+                # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
+                #       "probe_axis_offset"
                 val = np.abs(val)
                 warn(
-                    f"Keyword '{val}' is NOt supposed to be negative, "
+                    f"Keyword '{val}' is NOT supposed to be negative, "
                     f"assuming the absolute value {val}."
                 )
             inputs[key] = val
@@ -102,11 +106,29 @@ class LaPDXYTransform(BaseTransform):
         # the following transformation matrices depend on the adjusted
         # coordinate space
         points = self.drive_polarity * points  # type: np.ndarray
+        points[..., 1] = points[..., 1] - self.probe_axis_offset
 
-        theta = np.arctan(points[..., 1] / self.pivot_to_drive)
+        gamma = np.arctan(points[..., 1] / self.pivot_to_drive)
+        beta = np.arcsin(
+            self.probe_axis_offset / np.sqrt(
+                self.pivot_to_drive**2 + points[..., 1]**2
+            )
+        )
+        theta = gamma + beta
         alpha = np.pi - theta
 
+        # theta = np.arctan(points[..., 1] / self.pivot_to_drive)
+        # alpha = np.pi - theta
+
         npoints = 1 if points.ndim == 1 else points.shape[0]
+
+        # handle the probe axis to drive axis parallel offset
+        T0 = np.zeros((npoints, 3, 3)).squeeze()
+        T0[..., 0, 0] = 1.0
+        # T0[..., 0, 2] = -self.probe_axis_offset * np.tan(theta)
+        T0[..., 1, 1] = 1.0
+        T0[..., 1, 2] = self.probe_axis_offset * ((1 / np.cos(theta)) - 1)
+        T0[..., 2, 2] = 1.0
 
         # transform drive axes to drive side pivot coords
         T1 = np.zeros((npoints, 3, 3)).squeeze()
@@ -134,13 +156,26 @@ class LaPDXYTransform(BaseTransform):
         T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
         T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
 
+        # return np.matmul(
+        #     T_mpolarity,
+        #     np.matmul(
+        #         T3,
+        #         np.matmul(
+        #             T2,
+        #             np.matmul(T1, T_dpolarity),
+        #         ),
+        #     ),
+        # )
         return np.matmul(
             T_mpolarity,
             np.matmul(
                 T3,
                 np.matmul(
                     T2,
-                    np.matmul(T1, T_dpolarity),
+                    np.matmul(
+                        T1,
+                        np.matmul(T0, T_dpolarity),
+                    ),
                 ),
             ),
         )
@@ -181,16 +216,37 @@ class LaPDXYTransform(BaseTransform):
         T3[..., 1, 2] = -self.pivot_to_drive * np.tan(alpha)
         T3[..., 2, 2] = 1.0
 
+        # handle the probe axis to drive axis parallel offset
+        T4 = np.zeros((npoints, 3, 3)).squeeze()
+        T4[..., 0, 0] = 1.0
+        # T4[..., 0, 2] = self.probe_axis_offset * np.tan(-alpha)
+        T4[..., 1, 1] = 1.0
+        T4[..., 1, 2] = -self.probe_axis_offset * ((1 / np.cos(-alpha)) - 1)
+        T4[..., 2, 2] = 1.0
+
         T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
         T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
 
+        # return np.matmul(
+        #     T_dpolarity,
+        #     np.matmul(
+        #         T3,
+        #         np.matmul(
+        #             T2,
+        #             np.matmul(T1, T_mpolarity),
+        #         ),
+        #     ),
+        # )
         return np.matmul(
             T_dpolarity,
             np.matmul(
-                T3,
+                T4,
                 np.matmul(
-                    T2,
-                    np.matmul(T1, T_mpolarity),
+                    T3,
+                    np.matmul(
+                        T2,
+                        np.matmul(T1, T_mpolarity),
+                    ),
                 ),
             ),
         )
@@ -226,3 +282,7 @@ class LaPDXYTransform(BaseTransform):
     @property
     def mspace_polarity(self) -> np.ndarray:
         return self.inputs["mspace_polarity"]
+
+    @property
+    def probe_axis_offset(self):
+        return self.inputs["probe_axis_offset"]
