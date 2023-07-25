@@ -1,4 +1,6 @@
-__all__ = ["BaseActor"]
+__all__ = []
+__actors__ = ["BaseActor"]
+__all__ += __actors__
 
 import logging
 
@@ -7,7 +9,33 @@ import logging
 
 
 class BaseActor:
-    def __init__(self, *, name: str = None, logger=None):
+    """
+    Base class for any Actor class.
+
+    Parameters
+    ----------
+    name : str, optional
+        A unique :attr:`name` for the Actor instance.
+    logger : `~logging.Logger`, optional
+        The instance of `~logging.Logger` that the Actor should record
+        events and status updates.
+
+    Examples
+    --------
+
+    >>> ba = BaseActor(name="BoIt")
+    >>> ba.name
+    'DoIt'
+    >>> ba.logger
+    <Logger Actor.DoIt (WARNING)>
+    >>> ba.logger.warning("This is a warning")
+    This is a warning
+
+    """
+
+    def __init__(
+        self, *, name: str = None, logger: logging.Logger = None,
+    ):
         # setup logger to track events
         log_name = "Actor" if logger is None else logger.name
         if name is not None:
@@ -18,6 +46,14 @@ class BaseActor:
 
     @property
     def name(self) -> str:
+        """
+        (`str`) A unique name given for the instance of the actor.  This
+        name is used as an identifier in the actor logger (see
+        :attr:`logger`).
+
+        If the user does not specify a name, then the Actor should
+        auto-generate a name.
+        """
         return self._name
 
     @name.setter
@@ -26,6 +62,7 @@ class BaseActor:
 
     @property
     def logger(self) -> logging.Logger:
+        """The `~logger.Logger` instance being used for the actor."""
         return self._logger
 
     @logger.setter
@@ -40,5 +77,5 @@ class BaseActor:
 #       - Must have the option to auto_run the event loop
 #       - must inherit from BaseActor
 #       - will likely need abstract methods _actor_setup_pre_loop() and
-#         _actor_setup_post_loop() for setup actions befroe and after
+#         _actor_setup_post_loop() for setup actions before and after
 #         the loop creation, respectively.
