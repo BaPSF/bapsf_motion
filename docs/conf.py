@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath(".."))
 sys.path.insert(0, os.path.abspath("../src"))
 
-from plasmapy import __version__ as release  # noqa
+from bapsf_motion import __version__ as release  # noqa
 
 # -- General configuration ------------------------------------------------
 autosummary_generate = True
@@ -382,7 +382,7 @@ html_static_path = ["_static"]
 # A list of prefixes that are ignored for sorting the Python module
 # index (e.g., if this is set to ['foo.'], then foo.bar is shown under
 # B, not F).
-modindex_common_prefix = ["plasmapy."]
+modindex_common_prefix = ["bapsf_motion."]
 
 # -- Options for HTMLHelp output ------------------------------------------
 
