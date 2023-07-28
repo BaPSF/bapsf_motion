@@ -25,6 +25,7 @@ BaPSF Motion Documentation
    :caption: Package features
 
    Actors <api_static/bapsf_motion.actors>
+   Utilities <api_static/bapsf_motion.utils>
 
 .. toctree::
    :maxdepth: 1

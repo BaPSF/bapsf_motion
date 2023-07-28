@@ -1,8 +1,16 @@
-__all__ = ["ipv4_pattern", "units", "SimpleSignal"]
+__all__ = [
+    "counts",
+    "steps",
+    "rev",
+    "ipv4_pattern",
+    "units",
+    "SimpleSignal",
+]
 import re
 
 from astropy import units
 
+#: Regular expression pattern for parsing IPv4 addresses
 ipv4_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
 counts = units.def_unit("counts", namespace=units.__dict__)
