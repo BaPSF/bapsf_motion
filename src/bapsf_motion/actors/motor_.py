@@ -165,7 +165,7 @@ class Motor(BaseActor):
     #: available commands that can be sent to the motor
     _commands = {
         "acceleration": CommandEntry(
-            "a«acceleration",
+            "acceleration",
             send="AC",
             send_processor=lambda value: f"{float(value):.3f}",
             recv=re.compile(r"AC=(?P<return>[0-9]+\.?[0-9]*)"),
