@@ -26,14 +26,104 @@ def do_nothing(x):
 
 
 class CommandEntry(UserDict):
+    r"""
+    A `dict` containing all the necessary information to define a
+    command that is sent to an ethernet based stepper motor.
+
+    Parameters
+    ----------
+
+    command: str
+        Name of the command.  If the command entry is also a method
+        command, then this must be the name of the class method to
+        be called.
+
+    send: str
+        The base `str` command that is sent to the motor.
+
+    send_processor: :term:`callable`, optional
+        A callable object that processes the command argument before
+        the full command is sent to the motor.  The callable must
+        return a string that is concatenated with the ``send`` command
+        to form the full command.  If `None`, then the command is
+        assumed to have no argument. (DEFAULT: `None`)
+
+    recv: re.Pattern, optional
+        A `re` compiled pattern to expression match any received string
+        from the sent command.  If `None`, then no expression matching
+        is performed on the returned string.  If a pattern is defined,
+        then the pattern must define a return group
+        (i.e. ``'(?P<return>...)'``).  This return group is assumed to
+        be the returned argument and will be further processed by the
+        ``recv_processor``. (DEFAULT: `None`)
+
+    recv_processor: :term:`callable`, optional
+        A callable object that will process the returned argument from
+        the sent command.  The returned command is always in the form
+        of a string, so the processor must take a string and process
+        that it into any desirable type.  If `None`, then no processing
+        is performed. (DEFAULT:
+        `~bapsf_motion.actors.motor_.do_nothing`)
+
+    two_way: bool, optional
+        The command both sends and receives arguments from the motor.
+        (DEFAULT: `False`)
+
+    units: :term:`unit-like`, optional
+        An object that represents the units of the sent and/or returned
+        arguments.  These units will converted into `astropy.units` and
+        will become the default units for any argument sent or received
+        by this defined command.  (DEFAULT: `None`)
+
+    method_command: bool
+        If `True`, then the defined command is a method command.  A
+        method command is an advanced motor command (e.g. ``move_to``)
+        that requires multiple base commands to be performed in a
+        particular sequence.  Thus, the ``command`` argument defines
+        the name of a class method that will be executed for this
+        command. (DEFAULT: `False`)
+
+    Examples
+    --------
+    An example of a typical motor command entry...
+
+    .. code-block:: python
+
+        ce = CommandEntry(
+            "speed",
+            send="VE",
+            send_processor=lambda value: f"{float(value):.4f}",
+            recv=re.compile(r"VE=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s,
+        )
+
+    An example of a method based motor command entry.  A method based
+    command is reserved for more advanced commands that typically
+    require multiple base commands to be sent in a particular sequence.
+
+    .. code-block:: python
+
+        ce = CommandEntry(
+            "move_to",
+            send="",
+            units=u.steps,
+            method_command=True,
+        )
+    """
+
+    # TODO: elaborate on examples in the docstring to describe exactly
+    #       how the defined command would work
+
     def __init__(
         self,
         command: str,
         *,
         send: str,
-        send_processor: Optional[Callable] = None,
+        send_processor: Optional[Callable[[Any], str]] = None,
         recv: Optional[re.Pattern] = None,
-        recv_processor: Optional[Callable] = do_nothing,
+        recv_processor: Optional[Callable[[str], Any]] = do_nothing,
         two_way: bool = False,
         units: Union[str, u.Unit, None] = None,
         method_command: Optional[bool] = False,
@@ -63,7 +153,11 @@ class CommandEntry(UserDict):
         super().__init__(**_dict)
 
     @property
-    def command(self):
+    def command(self) -> str:
+        """
+        Name of the command.  If the command entry is also a method
+        command, then this is the name of the class method to be called.
+        """
         return self._command
 
 
