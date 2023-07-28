@@ -1,5 +1,9 @@
-
+"""
+Module for functionality focused around the
+`~bapsf_motion.actors.motor_.Motor` actor class.
+"""
 __all__ = ["do_nothing", "CommandEntry", "Motor"]
+__actors__ = ["Motor"]
 
 import asyncio
 import logging
@@ -17,6 +21,7 @@ from bapsf_motion.utils import units as u
 
 
 def do_nothing(x):
+    """Return argument ``x`` unchanged."""
     return x
 
 

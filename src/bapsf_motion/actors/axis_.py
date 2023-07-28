@@ -1,4 +1,9 @@
+"""
+Module for functionality focused around the
+`~bapsf_motion.actors.axis_.Axis` actor class.
+"""
 __all__ = ["Axis"]
+__actors__ = ["Axis"]
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.motor_ import Motor

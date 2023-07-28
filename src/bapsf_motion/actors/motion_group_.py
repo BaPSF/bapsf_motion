@@ -1,4 +1,9 @@
-__all__ = ["MotionGroup"]
+"""
+Module for functionality focused around the
+`~bapsf_motion.actors.motion_group_.MotionGroup` actor class.
+"""
+__all__ = ["MotionGroup", "MotionGroupConfig"]
+__actors__ = ["MotionGroup"]
 
 import logging
 

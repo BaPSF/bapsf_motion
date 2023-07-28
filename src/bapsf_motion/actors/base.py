@@ -1,6 +1,9 @@
-__all__ = []
+"""
+Module for functionality focused around the [Abstract] base actors.
+"""
+
+__all__ = ["BaseActor"]
 __actors__ = ["BaseActor"]
-__all__ += __actors__
 
 import logging
 

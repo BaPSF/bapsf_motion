@@ -1,3 +1,10 @@
+"""
+Module for functionality focused around the
+`~bapsf_motion.actors.drive_.Drive` actor class.
+"""
+__all__ = ["Drive"]
+__actors__ = ["Drive"]
+
 import astropy.units as u
 import asyncio
 import threading
