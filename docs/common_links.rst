@@ -26,14 +26,14 @@
    used just before a period.
 
 .. |bibliography| replace:: :ref:`bibliography`\
-.. |coding guide| replace:: :ref:`coding guide`\
-.. |contributor guide| replace:: :ref:`contributor guide`\
-.. |documentation guide| replace:: :ref:`documentation guide`\
+.. .. |coding guide| replace:: :ref:`coding guide`\
+.. .. |contributor guide| replace:: :ref:`contributor guide`\
+.. .. |documentation guide| replace:: :ref:`documentation guide`\
 .. |glossary| replace:: :ref:`glossary`\
 .. |minpython| replace:: 3.8
-.. |plasma-calculator| replace:: :ref:`plasmapy-calculator`\
-.. |release guide| replace:: :ref:`release guide`\
-.. |testing guide| replace:: :ref:`testing guide`\
+.. .. |plasma-calculator| replace:: :ref:`plasmapy-calculator`\
+.. .. |release guide| replace:: :ref:`release guide`\
+.. .. |testing guide| replace:: :ref:`testing guide`\
 
 .. --------
 .. Websites
