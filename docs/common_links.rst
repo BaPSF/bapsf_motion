@@ -1,6 +1,12 @@
 .. These are ReST substitutions and links that can be used throughout the docs
    (and docstrings) because they are added to ``docs/conf.py::rst_epilog``.
 
+.. --------------------
+.. asyncio replacements
+.. --------------------
+
+.. _`event loop`: https://docs.python.org/3/library/asyncio-eventloop.html
+
 .. ------------------
 .. NumPy replacements
 .. ------------------

@@ -179,13 +179,12 @@ class Motor(BaseActor):
         events and status updates to.  If `None`, then a logger will
         automatically be generated. (DEFUALT: `None`)
     loop: `asyncio.AbstractEventLoop`, optional
-        Instance of an `asyncio` `event loop
-        <https://docs.python.org/3/library/asyncio-eventloop.html>`_.
-        Communication with the motor will happen primaritly through
-        the evenet loop.  If `None`, then an event loop will be
-        auto-generated.  (DEFAULT: `None`)
+        Instance of an `asyncio` `event loop`_. Communication with the
+        motor will happen primaritly through the evenet loop.  If
+        `None`, then an `event loop`_ will be auto-generated.
+        (DEFAULT: `None`)
     auto_start: bool, optional
-        If `True`, then the event loop will be placed in a separate
+        If `True`, then the `event loop`_ will be placed in a separate
         thread and started.  This is all done via the :meth:`run`
         method. (DEFAULT: `False`)
 
@@ -207,6 +206,7 @@ class Motor(BaseActor):
     >>> m1.stop_running()
 
     Using `Motor` with ``auto_start=False``.
+
     >>> import logging
     >>> logging.basicConfig(level=logging.NOTSET)
     >>> lgr = logging.getLogger()
@@ -572,7 +572,7 @@ class Motor(BaseActor):
 
     @property
     def _loop(self) -> asyncio.events.AbstractEventLoop:
-        """`asyncio` event loop being used for motor communication."""
+        """`asyncio` `event loop`_ being used for motor communication."""
         return self._setup["loop"]
 
     @_loop.setter
@@ -581,7 +581,7 @@ class Motor(BaseActor):
 
     @property
     def _thread(self) -> threading.Thread:
-        """The `~threading.Thread` the event loop is running in."""
+        """The `~threading.Thread` the `event loop`_ is running in."""
         return self._setup["thread"]
 
     @_thread.setter
@@ -640,25 +640,36 @@ class Motor(BaseActor):
 
     @property
     def tasks(self) -> List[asyncio.Task]:
+        """
+        List of `asyncio.Task`\ s this actor has in the `event loop`_.
+        """
         if self._setup["tasks"] is None:
             self._setup["tasks"] = []
 
         return self._setup["tasks"]
 
     @property
-    def is_moving(self):
+    def is_moving(self) -> bool:
+        """`True` if the motor is actively moving, `False` otherwise."""
         is_moving = self.status["moving"]
         if is_moving is None:
             return False
         return is_moving
 
     @property
-    def position(self):
+    def position(self) -> u.steps:
+        """
+        Current position of the motor, in motor units
+        `~bapsf_motion.utils.steps`.
+        """
         pos = self.send_command("get_position")
         self._update_status(position=pos)
         return pos
 
     def _update_status(self, **values):
+        """
+        Update ``self._status` dictionary with the given arguments ``**values``.
+        """
         old_status = self.status.copy()
         new_status = {**old_status, **values}
         changed = {}
@@ -672,7 +683,19 @@ class Motor(BaseActor):
 
         self._status = new_status
 
-    def setup_event_loop(self, loop):
+    def setup_event_loop(self, loop: Optional[asyncio.AbstractEventLoop]):
+        """
+        Set up the `asyncio` `event loop`_.  If the given loop is not an
+        instance of `~asyncio.AbstractEventLoop`, then a new loop will
+        be created.  The `event loop`_ is, then populated with the
+        relevant actor tasks (e.g. ``self._heartbeat()``).
+
+        Parameters
+        ----------
+        loop: `asyncio.AbstractEventLoop`
+            `asyncio` `event loop`_ for the actor's tasks
+
+        """
         # 1. loop is given and running
         #    - store loop
         #    - add tasks
@@ -686,7 +709,7 @@ class Motor(BaseActor):
         # get a valid event loop
         if loop is None:
             loop = asyncio.new_event_loop()
-        elif not isinstance(loop, asyncio.events.AbstractEventLoop):
+        elif not isinstance(loop, asyncio.AbstractEventLoop):
             self.logger.warning(
                 "Given asyncio event is not valid.  Creating a new event loop to use."
             )
@@ -698,6 +721,7 @@ class Motor(BaseActor):
         self.tasks.append(task)
 
     def connect(self):
+        """Open the ethernet connection to the motor."""
         _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
             try:
