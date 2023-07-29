@@ -616,6 +616,8 @@ class Motor(BaseActor):
 
     @ip.setter
     def ip(self, value):
+        # TODO: update ipv4_pattern so the port number can be passed with the
+        #       ip argument
         if ipv4_pattern.fullmatch(value) is None:
             raise ValueError(f"Supplied IP address ({value}) is not a valid IPv4.")
 
@@ -721,7 +723,11 @@ class Motor(BaseActor):
         self.tasks.append(task)
 
     def connect(self):
-        """Open the ethernet connection to the motor."""
+        """
+        Open the ethernet connection to the motor.  The number of
+        reconnection attempts before an exception is ratised is defined
+        by ``self._setup["max_connection_attempts"]``.
+        """
         _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
             try:
