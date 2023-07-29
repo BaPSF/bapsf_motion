@@ -766,14 +766,33 @@ class Motor(BaseActor):
             self._configure_motor()
 
     def _send_command(self, command, *args):
+        """
+        A low level method for sending commands to the motor, and
+        receiving the response.
+        """
         cmd_str = self._process_command(command, *args)
         recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
         return self._process_command_return(command, recv_str)
 
-    async def _send_command_async(self, command, *args):
+    async def _send_command_async(self, command: str, *args):
+        """A coroutine_ version of :meth:`_send_command`."""
         return self._send_command(command, *args)
 
-    def send_command(self, command, *args):
+    def send_command(self, command: str, *args):
+        """
+        Send ``command`` to the motor, and receive its response.  If the
+        `event loop`_ is running, then the command will be sent as
+        a threadsafe coroutine_ in the loop.  Otherwise, the command
+        will be sent directly to the motor.
+
+        Parameters
+        ----------
+        command: str
+            The desired command to be sent to the motor.
+        *args:
+            Any arguments to the ``command`` that will be sent with the
+            motor command.
+        """
         if self._commands[command]["method_command"]:
             # execute respectively named method
             meth = getattr(self, command)
