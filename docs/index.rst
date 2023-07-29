@@ -26,6 +26,7 @@ BaPSF Motion Documentation
 
    Actors <api_static/bapsf_motion.actors>
    Motion List <api_static/bapsf_motion.motion_list>
+   Transform <api_static/bapsf_motion.transform>
    Utilities <api_static/bapsf_motion.utils>
 
 .. .. toctree::
