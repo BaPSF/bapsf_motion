@@ -13,7 +13,7 @@ import threading
 import time
 
 from collections import namedtuple, UserDict
-from typing import Any, Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, NamedTuple, Optional, Union
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.utils import ipv4_pattern, SimpleSignal
@@ -162,6 +162,64 @@ class CommandEntry(UserDict):
 
 
 class Motor(BaseActor):
+    """
+    An actor class for directly communicating to an ethernet based
+    stepper motor.  This actor is only aware of the motor, and is
+    ignorant of how it is positioned within a probe drive.
+
+    Parameters
+    ----------
+    ip: `str`
+        IPv4 address for the motor
+    name: `str`, optional
+        Name the motor.  If `None`, then the name will be automatically
+        generated. (DEFAULT: `None`)
+    logger: `~logging.Logger`, optional
+        An instance of `~logging.Logger` that the Actor will record
+        events and status updates to.  If `None`, then a logger will
+        automatically be generated. (DEFUALT: `None`)
+    loop: `asyncio.AbstractEventLoop`, optional
+        Instance of an `asyncio` `event loop
+        <https://docs.python.org/3/library/asyncio-eventloop.html>`_.
+        Communication with the motor will happen primaritly through
+        the evenet loop.  If `None`, then an event loop will be
+        auto-generated.  (DEFAULT: `None`)
+    auto_start: bool, optional
+        If `True`, then the event loop will be placed in a separate
+        thread and started.  This is all done via the :meth:`run`
+        method. (DEFAULT: `False`)
+
+    Examples
+    --------
+
+    Using `Motor` with ``auto_start=True``.
+
+    >>> import logging
+    >>> logging.basicConfig(level=logging.NOTSET)
+    >>> lgr = logging.getLogger()
+    >>> m1 = Motor(
+    ...     ip="192.168.0.70",
+    ...     name="m1",
+    ...     logger=lgr,
+    ...     auto_start=True,
+    ... )
+    >>> # now stop the actor, which stops the event loop
+    >>> m1.stop_running()
+
+    Using `Motor` with ``auto_start=False``.
+    >>> import logging
+    >>> logging.basicConfig(level=logging.NOTSET)
+    >>> lgr = logging.getLogger()
+    >>> m1 = Motor(
+    ...     ip="192.168.0.70",
+    ...     name="m1",
+    ...     logger=lgr,
+    ... )
+    >>> # start the actor, with starts the event loop
+    >>> m1.run()
+    >>> # now stop the actor, which stops the event loop
+    >>> m1.stop_running()
+    """
     #: available commands that can be sent to the motor
     _commands = {
         "acceleration": CommandEntry(
@@ -324,15 +382,19 @@ class Motor(BaseActor):
     #       get_speed are just aliases for the speed command)
     # TODO: Do I need to store feed target, spead, accel, and decel?
     #       Same for the jog equivalent.
+    # TODO: reconcile the implementation of properties name and logger
+    #       between the Motor class and the BaseActor class...BaseActor
+    #       defines these as instance variable but Motor defines them
+    #       in the self._setup...we shouldn't be redoing implementations
 
     def __init__(
         self,
         *,
         ip: str,
         name: str = None,
-        logger=None,
-        loop=None,
-        auto_start=False,
+        logger: logging.Logger = None,
+        loop: asyncio.AbstractEventLoop = None,
+        auto_start: bool = False,
     ):
         self._init_instance_variables()
 
@@ -352,6 +414,10 @@ class Motor(BaseActor):
             self.run()
 
     def _init_instance_variables(self):
+        """
+        Initialized object instance variables, which define operating
+        parameters for the actor.
+        """
         # : parameters that define the setup of the Motor class (actual motor settings
         # should be defined in _motor)
         self._setup = {
@@ -363,7 +429,7 @@ class Motor(BaseActor):
             "tasks": None,
             "max_connection_attempts": 3,
             "heartrate": namedtuple("HR", ["base", "active"])(
-                base=2, active=0.2
+                base=2.0, active=0.2
             ),  # in seconds
             "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
         }  # type: Dict[str, Any]
@@ -408,16 +474,44 @@ class Motor(BaseActor):
         self.movement_finished = SimpleSignal()
 
     def _configure_motor(self):
+        """
+        Configure motor behavior for suitable operation with the actor.
+
+        This configuration should be performed during object
+        instantiation and upon re-connecting.
+        """
         self._send_raw_command("IFD")  # set format of immediate commands to decimal
 
         # ensure motor always sends Ack/Nack
         self._read_and_set_protocol()
 
     def _read_and_set_protocol(self):
+        """
+        Read and set the motor protocol settings.  For proper
+        behavior between the motor and actor, the motor should be set
+        to always return an Ack/Nack acknowledgement for every sent
+        command.
+
+        The 'protocol' command returns an integer that can be converted
+        into a 9-bit binary word.  Each bit in that word represent
+        a unique protocol setting.
+
+        bit 0 = Default ('Standard SCL')
+        bit 1 = Always use Address Character
+        bit 2 = Always return Ack/Nack
+        bit 3 = Checksum
+        bit 4 = (reserved)
+        bit 5 = 3-digit numeric register addressing
+        bit 6 = Checksum Type (step-servo and SV200 only)
+        bit 7 = Little/Big Endian in Modbus Mode
+        bit 8 =Full Duplex in RS-422
+        """
         rtn = self.send_command("protocol")
         _bits = f"{rtn:09b}"
 
         if _bits[-3] == "0":
+            # motor does not always respond with ack/nack, change
+            # protocol so it does
             _bits = list(_bits)
             _bits[-3] = "1"  # sets always ack/nack
             _bits = "".join(_bits)
@@ -447,6 +541,7 @@ class Motor(BaseActor):
             self._motor["protocol_settings"].append(_bit_descriptions[bit_num])
 
     def _get_motor_parameters(self):
+        """Get current motor parameters."""
         self._motor.update(
             {
                 "gearing": self.send_command("gearing"),
@@ -459,6 +554,7 @@ class Motor(BaseActor):
 
     @property
     def name(self):
+        """Given motor name."""
         return self._setup["name"]
 
     @name.setter
@@ -467,6 +563,7 @@ class Motor(BaseActor):
 
     @property
     def logger(self) -> logging.Logger:
+        """The `~logger.Logger` being used for the actor."""
         return self._setup["logger"]
 
     @logger.setter
@@ -475,6 +572,7 @@ class Motor(BaseActor):
 
     @property
     def _loop(self) -> asyncio.events.AbstractEventLoop:
+        """`asyncio` event loop being used for motor communication."""
         return self._setup["loop"]
 
     @_loop.setter
@@ -482,7 +580,8 @@ class Motor(BaseActor):
         self._setup["loop"] = value
 
     @property
-    def _thread(self):
+    def _thread(self) -> threading.Thread:
+        """The `~threading.Thread` the event loop is running in."""
         return self._setup["thread"]
 
     @_thread.setter
@@ -490,19 +589,29 @@ class Motor(BaseActor):
         self._setup["thread"] = value
 
     @property
-    def heartrate(self):
+    def heartrate(self) -> NamedTuple:
+        """
+        Heartrate of the motor monitor, or the time (in sec) between
+        motor checks.  There are two different heartrates:
+        (1) ``heartrate.base`` for when the motor is not moving, and
+        (2) ``heartrate.active`` for when the motor is moving.
+        """
         return self._setup["heartrate"]
 
     @property
-    def status(self):
+    def status(self) -> Dict[str, Any]:
+        """Current status of the motor."""
+        # TODO: dictionary keys and explanations to the docstring
         return self._status
 
     @property
-    def steps_per_rev(self):
+    def steps_per_rev(self) -> u.steps/u.rev:
+        """The number of steps the motor does per revolution."""
         return self._motor["gearing"]
 
     @property
-    def ip(self):
+    def ip(self) -> str:
+        """IPv4 address for the motor"""
         return self._motor["ip"]
 
     @ip.setter
@@ -513,11 +622,13 @@ class Motor(BaseActor):
         self._motor["ip"] = value
 
     @property
-    def port(self):
+    def port(self) -> int:
+        """Port used for motor communication."""
         return self._setup["port"]
 
     @property
     def socket(self) -> socket.socket:
+        """Instance of the socket used for motor communication."""
         return self._setup["socket"]
 
     @socket.setter
