@@ -655,10 +655,10 @@ class Motor(BaseActor):
     @property
     def position(self):
         pos = self.send_command("get_position")
-        self.update_status(position=pos)
+        self._update_status(position=pos)
         return pos
 
-    def update_status(self, **values):
+    def _update_status(self, **values):
         old_status = self.status.copy()
         new_status = {**old_status, **values}
         changed = {}
@@ -711,7 +711,7 @@ class Motor(BaseActor):
                 msg = "...SUCCESS!!!"
                 self.logger.debug(msg)
                 self.socket = s
-                self.update_status(connected=True)
+                self._update_status(connected=True)
                 return
             except (
                 TimeoutError,
@@ -830,7 +830,7 @@ class Motor(BaseActor):
         try:
             self.socket.send(cmd_str)
         except ConnectionError:
-            self.update_status(connected=False)
+            self._update_status(connected=False)
             self.connect()
             self.socket.send(cmd_str)
 
@@ -910,7 +910,7 @@ class Motor(BaseActor):
         elif not _status["moving"] and self._status["moving"]:
             self.movement_finished.emit(True)
 
-        self.update_status(**_status)
+        self._update_status(**_status)
 
     def retrieve_motor_alarm(self, defer_status_update=False, direct_send=False):
         # this is done so self._heartbeat can directly send commands since
@@ -938,7 +938,7 @@ class Motor(BaseActor):
             self.logger.error(f"Motor returned alarm(s): {alarm_message}")
 
         if not defer_status_update and alarm_message:
-            self.update_status(alarm_message=alarm_message)
+            self._update_status(alarm_message=alarm_message)
 
         return alarm_message
 
