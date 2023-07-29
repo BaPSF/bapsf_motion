@@ -748,6 +748,11 @@ class Motor(BaseActor):
                     self.logger.warning(msg)
                 else:
                     self.logger.error(msg)
+                    # TODO: make this a custom exception (e.g. MotorConnectionError)
+                    #       so other bapsfdaq_motion functionality can respond
+                    #       appropriately...the exception should liekly inherit
+                    #       from TimeoutError, InterruptedError, ConnectionRefusedError,
+                    #       and socket.timeout
                     raise error_
 
         if self._loop is not None:
