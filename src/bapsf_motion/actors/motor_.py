@@ -13,7 +13,7 @@ import threading
 import time
 
 from collections import namedtuple, UserDict
-from typing import Any, Callable, Dict, List, NamedTuple, Optional, Union
+from typing import Any, AnyStr, Callable, Dict, List, NamedTuple, Optional, Union
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.utils import ipv4_pattern, SimpleSignal
@@ -927,11 +927,39 @@ class Motor(BaseActor):
         return rtn
 
     def _send_raw_command(self, cmd: str):
+        """
+        Low-level functionality so a command string ``cmd` can be sent
+        directly to the motor.  This is intended for testing purposes
+        and should NOT be used for any high-level functionality.  This
+        allows for sending commands that are ned defined in
+        ``self._commands``.
+
+        Parameters
+        ----------
+        cmd: str
+            A desired command string that is sent to the motor.
+
+        Returns
+        -------
+        str
+            The "unmodified" return string from the motor.
+
+        """
         self._send(cmd)
         data = self._recv()
         return data.decode("ASCII")
 
     def _send(self, cmd: str):
+        """
+        Low-level functionality to send a command string ``cmd`` to
+        the motor.  Proper headers and end-of-message (eom) blocks are
+        added to the command string.
+
+        Parameters
+        ----------
+        cmd: str
+            The command str to be sent to the motor.
+        """
         # all messages sent or received over TCP/UDP for Applied Motion Motors
         # use a byte header b'\x00\x07' and end-of-message b'\r'
         # (carriage return)
@@ -946,7 +974,18 @@ class Motor(BaseActor):
             self.connect()
             self.socket.send(cmd_str)
 
-    def _recv(self):
+    def _recv(self) -> AnyStr:
+        """
+        Receives messages/strings from the motor.  Proper headers and
+        end-of-message blocks are removed from the received string, and
+        then returned.
+
+        Returns
+        -------
+        byte string
+            Trimmed byte string from the motor response.
+
+        """
         # all messages sent or received over TCP/UDP for Applied Motion Motors
         # use a byte header b'\x00\x07' and end-of-message b'\r'
         # (carriage return)
