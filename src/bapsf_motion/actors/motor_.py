@@ -165,7 +165,8 @@ class Motor(BaseActor):
     """
     An actor class for directly communicating to an ethernet based
     stepper motor.  This actor is only aware of the motor, and is
-    ignorant of how it is positioned within a probe drive.
+    ignorant of how it is situated within a probe drive.  Thus, all
+    units are in motor units, i.e. steps, counts, rev, and sec.
 
     Parameters
     ----------
@@ -1008,6 +1009,20 @@ class Motor(BaseActor):
         return msg
 
     def retrieve_motor_status(self, direct_send=False):
+        """
+        Retrieve motor status and update ``self._status``.
+
+        Parameters
+        ----------
+        direct_send: bool
+            If `True`, then the motor commands will bypass any active
+            `event loop`_ and be directly sent to the motor.  If
+            `False`, then all motor commands will be routed through the
+            :meth:`send_command` method. (DEFAULT: `False`)
+
+        """
+        # TODO: How to document all the statuses that get updated with this method?
+        #
         # this is done so self._heartbeat can directly send commands since
         # the heartbeat is already running in the event loop
         send_command = self._send_command if direct_send else self.send_command
@@ -1063,7 +1078,27 @@ class Motor(BaseActor):
 
         self._update_status(**_status)
 
-    def retrieve_motor_alarm(self, defer_status_update=False, direct_send=False):
+    def retrieve_motor_alarm(self, defer_status_update=False, direct_send=False) -> str:
+        """
+        Retrieve [if any] motor alarm codes.
+
+        Parameters
+        ----------
+        defer_status_update: bool
+            If `True`, then do NOT update ``self._status``.
+            (DEFAULT: `False`)
+
+        direct_send: bool
+            If `True`, then the motor commands will bypass any active
+            `event loop`_ and be directly sent to the motor.  If
+            `False`, then all motor commands will be routed through the
+            :meth:`send_command` method. (DEFAULT: `False`)
+
+        Returns
+        -------
+        str
+            Alarm message.
+        """
         # this is done so self._heartbeat can directly send commands since
         # the heartbeat is already running in the event loop
         send_command = self._send_command if direct_send else self.send_command
@@ -1094,14 +1129,26 @@ class Motor(BaseActor):
         return alarm_message
 
     def enable(self):
+        """Enable motor (i.e. restore drive current to motor)."""
         self.send_command("enable")
         self.send_command("retrieve_motor_status")
 
     def disable(self):
+        """Disable motor (i.e. reduce motor current to zero)."""
         self.send_command("disable")
         self.send_command("retrieve_motor_status")
 
     async def _heartbeat(self):
+        """
+        :ref:`Coroutine <coroutine>` for the heartbeat monitor of the
+        motor.  The heartbeat will update the motor statuss via
+        :meth:`retrieve_motor_status` at an interval given by
+        :attr:`heartrate`.
+
+        See Also
+        --------
+        retrieve_motor_status
+        """
         old_HR = self.heartrate.base
         beats = 0
         while True:
@@ -1121,6 +1168,12 @@ class Motor(BaseActor):
             await asyncio.sleep(heartrate)
 
     def run(self):
+        """
+        Activate the `asyncio` `event loop`_.   If the event loop is
+        running, then nothing happens.  Otherwise, the event loop is
+        placed in a separate thread and set to
+        `~asyncio.loop.run_forever`.
+        """
         if self._loop.is_running():
             return
 
@@ -1128,6 +1181,21 @@ class Motor(BaseActor):
         self._thread.start()
 
     def stop_running(self, delay_loop_stop=False):
+        """
+        Stop the actor's `event loop`_\ .  All actor tasks will be
+        cancelled, the connection to the motor will be shutdown, and
+        the event loop will be stopped.
+
+        Parameters
+        ----------
+        delay_loop_stop: bool
+            If `True`, then do NOT stop the `event loop`_\ .  In this
+            case it is assumed the calling functionality is managing
+            additional tasks in the event loop, and it is up to that
+            functionality to stop the loop.  (DEFAULT: `False`)
+
+        """
+        # TODO: add additional motor shutdown tasks (i.e. stop and disable)
         for task in list(self.tasks):
             task.cancel()
             self.tasks.remove(task)
@@ -1143,9 +1211,18 @@ class Motor(BaseActor):
         self._loop.call_soon_threadsafe(self._loop.stop)
 
     def stop(self):
+        """Stop motor movement."""
         self.send_command("stop")
 
-    def move_to(self, pos):
+    def move_to(self, pos: int):
+        """
+        Move the motor to a specified location.
+
+        Parameters
+        ----------
+        pos: int
+            Position (in steps) for the motor to move to.
+        """
         if self.status["alarm"]:
             self.send_command("alarm_rest")
             time.sleep(1.2 * self.heartrate.active)
