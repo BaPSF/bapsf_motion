@@ -25,6 +25,15 @@
 .. |TimeDelta| replace:: :class:`~astropy.time.TimeDelta`
 .. |Unit| replace:: :class:`~astropy.units.UnitBase`
 
+
+.. ------
+.. Actors
+.. ------
+
+.. |Motor| replace:: :class:`~bapsf_motion.actors.motor_.Motor`
+.. |Axis| replace:: :class:`~bapsf_motion.actors.axis_.Axis`
+.. |Drive| replace:: :class:`~bapsf_motion.actors.drive_.Drive`
+
 .. ----------------------
 .. PlasmaPy documentation
 .. ----------------------
