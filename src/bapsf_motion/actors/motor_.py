@@ -184,7 +184,7 @@ class Motor(BaseActor):
         motor will happen primaritly through the evenet loop.  If
         `None`, then an `event loop`_ will be auto-generated.
         (DEFAULT: `None`)
-    auto_start: bool, optional
+    auto_run: bool, optional
         If `True`, then the `event loop`_ will be placed in a separate
         thread and started.  This is all done via the :meth:`run`
         method. (DEFAULT: `False`)
@@ -201,7 +201,7 @@ class Motor(BaseActor):
     ...     ip="192.168.0.70",
     ...     name="m1",
     ...     logger=lgr,
-    ...     auto_start=True,
+    ...     auto_run=True,
     ... )
     >>> # now stop the actor, which stops the event loop
     >>> m1.stop_running()
@@ -398,7 +398,7 @@ class Motor(BaseActor):
         name: str = None,
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
-        auto_start: bool = False,
+        auto_run: bool = False,
     ):
         self._init_instance_variables()
 
@@ -414,7 +414,7 @@ class Motor(BaseActor):
         self._configure_motor()
         self.send_command("retrieve_motor_status")
 
-        if auto_start:
+        if auto_run:
             self.run()
 
     def _init_instance_variables(self):

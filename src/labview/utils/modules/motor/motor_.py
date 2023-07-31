@@ -29,7 +29,7 @@ def _get_motor_object() -> Motor:
 
 
 def initialize(ip):
-    mot = Motor(ip=ip, name=MOTOR_NAME, auto_start=True)
+    mot = Motor(ip=ip, name=MOTOR_NAME, auto_run=True)
     globals()["_motor"] = mot
 
 

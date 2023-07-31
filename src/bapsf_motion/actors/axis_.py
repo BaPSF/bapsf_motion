@@ -49,7 +49,7 @@ class Axis(BaseActor):
             name="motor",
             logger=self.logger,
             loop=loop,
-            auto_start=False,
+            auto_run=False,
         )
 
         self._units = u.Unit(units)
