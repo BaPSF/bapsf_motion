@@ -386,6 +386,9 @@ class Motor(BaseActor):
     #       between the Motor class and the BaseActor class...BaseActor
     #       defines these as instance variable but Motor defines them
     #       in the self._setup...we shouldn't be redoing implementations
+    # TODO: create a method that lists all available commands
+    # TODO: create a method the shows a commands definition
+    #       (i.e. self._commands[command])
 
     def __init__(
         self,
