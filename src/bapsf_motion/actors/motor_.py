@@ -806,7 +806,34 @@ class Motor(BaseActor):
             return future.result(5)
         return self._send_command(command, *args)
 
-    def _process_command(self, command: str, *args):
+    def _process_command(self, command: str, *args) -> str:
+        """
+        Process the command ``command`` and any input arguments
+        ``*args`` to and return the full command string.  The
+        argument processor is defined in the class attribute
+        ``self._commands[command]["send_processor"]`` and the base
+        command string is defined at
+        ``self._commands[command]["send"]``.
+
+        Parameters
+        ----------
+        command: str
+            Command to be processed and sent to the motor
+        args
+            Argument for the base command.
+
+        Returns
+        -------
+        str
+            The full command string to be sent to the motor.
+
+        Examples
+        --------
+
+        >>> self._process_command("speed", 5.5)
+        "VE 5.5000"
+
+        """
         cmd_dict = self._commands[command]
         cmd_str = cmd_dict["send"]
 
@@ -835,7 +862,35 @@ class Motor(BaseActor):
 
         return cmd_str + processor(args[0])
 
-    def _process_command_return(self, command: str, rtn_str: str):
+    def _process_command_return(self, command: str, rtn_str: str) -> Any:
+        """
+        Process the returned string from the sent motor command.  The
+        regular expression pattern for matching the returned string
+        is defined in the class attribute
+        ``self._commands[command]["recv"]`` and the argument processor
+        is defined at ``self._commands[command]["recv_processor"]``.
+
+        Parameters
+        ----------
+        command: str
+            The command that was sent to the motor.
+        rtn_str: str
+            The string that was returned by the motor.
+
+        Returns
+        -------
+        Any
+            Returns the argument from the motor's response string.  The
+            argument type is dependent on the receive processor
+            ``self._commands[command]["recv_processor"]``.
+
+        Examples
+        --------
+
+        >>> self._process_command_return("speed", "VE 5.500")
+        5.5
+
+        """
 
         if "%" in rtn_str:
             # Motor acknowledge and executed command.
