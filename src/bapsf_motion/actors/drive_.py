@@ -7,6 +7,7 @@ __actors__ = ["Drive"]
 
 import astropy.units as u
 import asyncio
+import logging
 import threading
 
 from typing import Any, Dict, List, Tuple
@@ -17,32 +18,62 @@ from bapsf_motion.actors.axis_ import Axis
 
 class Drive(BaseActor):
     """
-        Examples
-        --------
+    The `Drive` actor is the next level actor above the |Axis| actor.
+    This actor is ignorant of how the probe drive is implemented in
+    the physical space, but it is fully aware of the axes that make up
+    the probe drive.  The axes are ordered, but the actor has no clue
+    how these axes are oriented in the physical space.  This actor
+    operates in phsical units of the axes.
 
-        >>> from bapsf_motion.actors import Drive
-        >>> import logging
-        >>> import sys
-        >>> logging.basicConfig(stream=sys.stdout, level=logging.NOTSET)
-        >>> dr = Drive(
-        ...     axes=[
-        ...         {"ip": "192.168.6.104", "units": "cm", "units_per_rev": 0.1*2.54},
-        ...         {"ip": "192.168.6.103", "units": "cm", "units_per_rev": 0.1*2.54},
-        ...     ],
-        ...     name="WALL-E",
-        ...     auto_run=True,
-        ... )
+    Parameters
+    ----------
+    axes: List[Dict[str, Any]]
 
-        """
+    name: str, optional
+        Name the drive.  If `None`, then a name will be auto-generated.
+
+    logger: `~logging.Logger`, optional
+        An instance of `~logging.Logger` that the Actor will record
+        events and status updates to.  If `None`, then a logger will
+        automatically be generated. (DEFUALT: `None`)
+
+    loop: `asyncio.AbstractEventLoop`, optional
+        Instance of an `asyncio` `event loop`_. Communication with all
+        the axes will happen primaritly through the evenet loop.  If
+        `None`, then an `event loop`_ will be auto-generated.
+        (DEFAULT: `None`)
+
+    auto_run: bool, optional
+        If `True`, then the `event loop`_ will be placed in a separate
+        thread and started.  This is all done via the :meth:`run`
+        method. (DEFAULT: `False`)
+
+    Examples
+    --------
+
+    >>> from bapsf_motion.actors import Drive
+    >>> import logging
+    >>> import sys
+    >>> logging.basicConfig(stream=sys.stdout, level=logging.NOTSET)
+    >>> dr = Drive(
+    ...     axes=[
+    ...         {"ip": "192.168.6.104", "units": "cm", "units_per_rev": 0.1*2.54},
+    ...         {"ip": "192.168.6.103", "units": "cm", "units_per_rev": 0.1*2.54},
+    ...     ],
+    ...     name="WALL-E",
+    ...     auto_run=True,
+    ... )
+
+    """
 
     def __init__(
         self,
         *,
-        axes,
+        axes: List[Dict[str, Any]],
         name: str = None,
-        logger=None,
-        loop=None,
-        auto_run=False,
+        logger: logging.Logger = None,
+        loop: asyncio.AbstractEventLoop = None,
+        auto_run: bool = False,
     ):
         super().__init__(logger=logger, name=name)
 
@@ -65,8 +96,7 @@ class Drive(BaseActor):
         self._loop = None
         self._thread = None
 
-    def _validate_axes(self, settings: Tuple[Dict[str, Any]]) -> Tuple[Dict[str, Any]]:
-
+    def _validate_axes(self, settings: List[Dict[str, Any]]) -> Tuple[Dict[str, Any]]:
         conditioned_settings = []
         all_ips = []
         all_anames = []
