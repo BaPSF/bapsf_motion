@@ -18,10 +18,11 @@ from bapsf_motion.utils import units as u
 class Axis(BaseActor):
     """
     The `Axis` actor is the next level actor above the |Motor| actor.
-    This actor is ignorant of how it is siturated in a probe drive, but
-    is fully aware of the entire physical axis it defines.  This actor
-    operates in physical units and will handle all the necessary unit
-    converstion to communicate with the |Motor| actor.
+    This actor is ignorant of how it is situated in a probe drive, but
+    is fully aware of the entire physical axis that defines it and the
+    motor that moves the axis.  This actor operates in physical units
+    and will handle all the necessary unit converstion to communicate
+    with the |Motor| actor.
 
     Parameters
     ----------
