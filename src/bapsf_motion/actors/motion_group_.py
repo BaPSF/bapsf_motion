@@ -5,8 +5,8 @@ Module for functionality focused around the
 __all__ = ["MotionGroup", "MotionGroupConfig"]
 __actors__ = ["MotionGroup"]
 
+import asyncio
 import logging
-
 import numpy as np
 
 from collections import UserDict
@@ -23,6 +23,23 @@ _EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.t
 
 
 class MotionGroupConfig(UserDict):
+    """
+    A dictionary containing the full configuration for a motion group.
+
+    Parameters
+    ----------
+    filename: str, optional
+        Full path to a TOML file that defines a motion group
+        configuration.  This argument supersedes ``config``, but if not
+        supplied then the ``config`` argument must be defined.
+        (DEFAULT: `None`)
+
+    config: Dict[str, Any], optional
+        A dictionary defining the motion group configuration.  If
+        ``filename`` is defined, then this argument is ignored.
+        (DEFAULT: `None`)
+    """
+    #: required keys for the motion group configuration dictionary
     _required_metadata = {
         "mgroup": {
             "name",
@@ -48,6 +65,9 @@ class MotionGroupConfig(UserDict):
         filename: Optional[str] = None,
         config: Optional[Dict[str, Any]] = None,
     ):
+        # TODO: can this be updated so the config argument can modify
+        #       the config defined in filename if both arguments are
+        #       supplied
         # ensure filename XOR config kwargs are specified
         if filename is None and config is None:
             raise TypeError(
@@ -91,6 +111,7 @@ class MotionGroupConfig(UserDict):
         super().__init__(config)
 
     def _validate_config(self, config):
+        """Validate the motion group configuration."""
         if len(config) == 1:
             key, val = tuple(config.items())[0]
             if key.isnumeric():
@@ -126,6 +147,7 @@ class MotionGroupConfig(UserDict):
         return config
 
     def _validate_axes(self, config):
+        """Validate the axis configuration for all axes."""
         valid_config = []
         req_meta = self._required_metadata["axes"]
 
@@ -181,6 +203,7 @@ class MotionGroupConfig(UserDict):
         return valid_config
 
     def _validate_motion_list(self, config):
+        """Validate motion list configuration."""
 
         if set(config.keys()) != self._required_metadata["motion_list"]:
             raise ValueError(
@@ -214,6 +237,7 @@ class MotionGroupConfig(UserDict):
         return config
 
     def _validate_transform(self, config):
+        """Validate transform configuration."""
         return config
 
     @property
