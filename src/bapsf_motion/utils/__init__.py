@@ -5,10 +5,14 @@ __all__ = [
     "ipv4_pattern",
     "units",
     "SimpleSignal",
+    "toml",
 ]
 import re
 
 from astropy import units
+
+from bapsf_motion.utils import toml
+
 
 #: Regular expression pattern for parsing IPv4 addresses
 ipv4_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
