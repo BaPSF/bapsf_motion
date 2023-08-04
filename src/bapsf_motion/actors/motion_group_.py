@@ -8,7 +8,6 @@ __actors__ = ["MotionGroup"]
 import logging
 
 import numpy as np
-import tomli
 
 from collections import UserDict
 from pathlib import Path
@@ -18,6 +17,7 @@ from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_list import MotionList
 from bapsf_motion import transform
+from bapsf_motion.utils import toml
 
 _EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.toml"))
 
@@ -76,7 +76,7 @@ class MotionGroupConfig(UserDict):
                 )
 
             with open(filename, "rb") as f:
-                config = tomli.load(f)
+                config = toml.load(f)
 
         if "mgroup" in config and len(config) != 1:
             raise ValueError(
@@ -288,7 +288,7 @@ class MotionGroup(BaseActor):
                 )
 
             with open(filename, "rb") as f:
-                config = tomli.load(f)
+                config = toml.load(f)
 
         # trim so we're at the motion group root config
         if "mgroup" in config and len(config) != 1:
