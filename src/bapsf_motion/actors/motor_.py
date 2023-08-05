@@ -492,6 +492,12 @@ class Motor(BaseActor):
         #   that do not return a reply
         self._read_and_set_protocol()
 
+        # enable limit switches if present...end-of-travel limit occurs when an
+        # input is closed (energized)
+        # TODO: Replace with normal send_command when "define_limits" command
+        #       is added to _commands dict
+        self._send_raw_command("DL1")
+
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
 
