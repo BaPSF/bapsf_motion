@@ -410,8 +410,10 @@ class Motor(BaseActor):
         # loop needs to be setup before any commands are sent to the motor
         self.setup_event_loop(loop)
 
-        self._get_motor_parameters()
+        # configure motor before any other method sends motor commands
         self._configure_motor()
+
+        self._get_motor_parameters()
         self.send_command("retrieve_motor_status")
 
         if auto_run:
@@ -484,10 +486,20 @@ class Motor(BaseActor):
         This configuration should be performed during object
         instantiation and upon re-connecting.
         """
-        self._send_raw_command("IFD")  # set format of immediate commands to decimal
-
         # ensure motor always sends Ack/Nack
+        # - Needs to be set before any commands are sent, otherwise
+        #   receiving will timeout and throw an Exception on commands
+        #   that do not return a reply
         self._read_and_set_protocol()
+
+        # enable limit switches if present...end-of-travel limit occurs when an
+        # input is closed (energized)
+        # TODO: Replace with normal send_command when "define_limits" command
+        #       is added to _commands dict
+        self._send_raw_command("DL1")
+
+        # set format of immediate commands to decimal
+        self._send_raw_command("IFD")
 
     def _read_and_set_protocol(self):
         """
@@ -520,7 +532,12 @@ class Motor(BaseActor):
             _bits[-3] = "1"  # sets always ack/nack
             _bits = "".join(_bits)
             _bits = int(_bits, 2)
-            self.send_command("protocol", _bits)
+            try:
+                self.send_command("protocol", _bits)
+            except TimeoutError:
+                # if Ack/Nack was not set to begin with, then this command will
+                # not receive an Ack/Nack and a TimeoutError will occur
+                pass
 
             rtn = self.send_command("protocol")
             _bits = f"{rtn:09b}"
@@ -1224,10 +1241,11 @@ class Motor(BaseActor):
             Position (in steps) for the motor to move to.
         """
         if self.status["alarm"]:
-            self.send_command("alarm_rest")
-            time.sleep(1.2 * self.heartrate.active)
+            self.send_command("alarm_reset")
+            alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
+            # time.sleep(0.5 * self.heartrate.base)
 
-            if self.status["alarm"]:
+            if alarm_msg:
                 self.logger.error("Motor alarm could not be rest.")
                 return
 
