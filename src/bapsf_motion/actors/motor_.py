@@ -477,6 +477,10 @@ class Motor(BaseActor):
             "in_position": None,
             "stopping": None,
             "waiting": None,
+            "limit": {
+                "CW": False,
+                "CCW": False,
+            },
         }  # type: Dict[str, Any]
 
         #: simple signal to tell handlers that _status changed
@@ -1087,11 +1091,11 @@ class Motor(BaseActor):
         pos = send_command("get_position")
         _status["position"] = pos
 
-        if _status["alarm"]:
-            _status["alarm_message"] = self.retrieve_motor_alarm(
-                defer_status_update=True,
-                direct_send=True,
-            )
+        alarm_status = self.retrieve_motor_alarm(
+            defer_status_update=True,
+            direct_send=True,
+        )
+        _status.update(alarm_status)
 
         if _status["moving"] and not self._status["moving"]:
             self.movement_started.emit(True)
@@ -1100,7 +1104,9 @@ class Motor(BaseActor):
 
         self._update_status(**_status)
 
-    def retrieve_motor_alarm(self, defer_status_update=False, direct_send=False) -> str:
+    def retrieve_motor_alarm(
+            self, defer_status_update=False, direct_send=False
+    ) -> Dict[str, Any]:
         """
         Retrieve [if any] motor alarm codes.
 
@@ -1118,8 +1124,8 @@ class Motor(BaseActor):
 
         Returns
         -------
-        str
-            Alarm message.
+        Dict[str, Any]
+            Alarm status.
         """
         # this is done so self._heartbeat can directly send commands since
         # the heartbeat is already running in the event loop
@@ -1142,13 +1148,21 @@ class Motor(BaseActor):
 
         alarm_message = " :: ".join(alarm_message)
 
-        if alarm_message:
+        if rtn != "0000":
             self.logger.error(f"Motor returned alarm(s): {alarm_message}")
 
-        if not defer_status_update and alarm_message:
-            self._update_status(alarm_message=alarm_message)
+        alarm_status = {
+            "alarm_message": alarm_message,
+            "limits": {
+                "CCW": True if 2 in codes else False,
+                "CW": True if 4 in codes else False,
+            },
+        }
 
-        return alarm_message
+        if not defer_status_update:
+            self._update_status(**alarm_status)
+
+        return alarm_status
 
     def enable(self):
         """Enable motor (i.e. restore drive current to motor)."""
