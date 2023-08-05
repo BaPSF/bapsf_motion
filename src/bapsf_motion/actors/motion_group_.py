@@ -258,9 +258,9 @@ class MotionGroup(BaseActor):
         *,
         filename: Optional[str] = None,
         config: Optional[Dict[str, Any]] = None,
-        logger=None,
-        loop=None,
-        auto_run=False,
+        logger: logging.Logger = None,
+        loop: asyncio.AbstractEventLoop = None,
+        auto_run: bool = False,
     ):
         config = self._process_config(filename=filename, config=config)
 
