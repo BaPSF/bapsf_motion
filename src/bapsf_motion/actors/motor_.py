@@ -823,6 +823,9 @@ class Motor(BaseActor):
             Any arguments to the ``command`` that will be sent with the
             motor command.
         """
+        # TODO: Is there an way to ensure if send_command() is called from a function
+        #       inside the event that a future is not then created...maybe by
+        #       comparing threading.current_thread() to self._thread
         if self._commands[command]["method_command"]:
             # execute respectively named method
             meth = getattr(self, command)
