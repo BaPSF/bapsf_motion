@@ -1265,7 +1265,7 @@ class Motor(BaseActor):
             # time.sleep(0.5 * self.heartrate.base)
 
             if alarm_msg:
-                self.logger.error("Motor alarm could not be rest.")
+                self.logger.error("Motor alarm could not be reset.")
                 return
 
         # Note:  The Applied Motion Command Reference pdf states for
