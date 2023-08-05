@@ -1241,10 +1241,11 @@ class Motor(BaseActor):
             Position (in steps) for the motor to move to.
         """
         if self.status["alarm"]:
-            self.send_command("alarm_rest")
-            time.sleep(1.2 * self.heartrate.active)
+            self.send_command("alarm_reset")
+            alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
+            # time.sleep(0.5 * self.heartrate.base)
 
-            if self.status["alarm"]:
+            if alarm_msg:
                 self.logger.error("Motor alarm could not be rest.")
                 return
 
