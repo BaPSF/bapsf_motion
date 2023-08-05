@@ -486,10 +486,14 @@ class Motor(BaseActor):
         This configuration should be performed during object
         instantiation and upon re-connecting.
         """
-        self._send_raw_command("IFD")  # set format of immediate commands to decimal
-
         # ensure motor always sends Ack/Nack
+        # - Needs to be set before any commands are sent, otherwise
+        #   receiving will timeout and throw an Exception on commands
+        #   that do not return a reply
         self._read_and_set_protocol()
+
+        # set format of immediate commands to decimal
+        self._send_raw_command("IFD")
 
     def _read_and_set_protocol(self):
         """
