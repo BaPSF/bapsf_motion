@@ -274,6 +274,11 @@ class Motor(BaseActor):
             recv_processor=int,
             units=u.steps,
         ),
+        "move_off_limit": CommandEntry(
+            "move_off_limit",
+            send="",
+            method_command=True,
+        ),
         "move_to": CommandEntry(
             "move_to",
             send="",
