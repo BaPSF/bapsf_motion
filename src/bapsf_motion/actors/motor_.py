@@ -410,8 +410,10 @@ class Motor(BaseActor):
         # loop needs to be setup before any commands are sent to the motor
         self.setup_event_loop(loop)
 
-        self._get_motor_parameters()
+        # configure motor before any other method sends motor commands
         self._configure_motor()
+
+        self._get_motor_parameters()
         self.send_command("retrieve_motor_status")
 
         if auto_run:
