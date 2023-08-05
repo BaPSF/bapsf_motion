@@ -526,7 +526,12 @@ class Motor(BaseActor):
             _bits[-3] = "1"  # sets always ack/nack
             _bits = "".join(_bits)
             _bits = int(_bits, 2)
-            self.send_command("protocol", _bits)
+            try:
+                self.send_command("protocol", _bits)
+            except TimeoutError:
+                # if Ack/Nack was not set to begin with, then this command will
+                # not receive an Ack/Nack and a TimeoutError will occur
+                pass
 
             rtn = self.send_command("protocol")
             _bits = f"{rtn:09b}"
