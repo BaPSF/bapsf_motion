@@ -1,3 +1,7 @@
+"""
+Module containing the definition of
+:class:`~bapsf_motion.motion_list.item.MLItem`.
+"""
 __all__ = ["MLItem"]
 import xarray as xr
 

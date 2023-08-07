@@ -1,3 +1,6 @@
+"""
+Module containing the definition of |MotionList|.
+"""
 __all__ = ["MotionList"]
 
 import numpy as np
