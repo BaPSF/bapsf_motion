@@ -114,6 +114,7 @@ intersphinx_mapping = {
         None,
     ),
     "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/", None),
 }
 
 hoverxref_intersphinx = [
