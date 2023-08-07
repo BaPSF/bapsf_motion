@@ -45,10 +45,10 @@ BaPSF Motion Documentation
    :caption: All the Rest
 
    bibliography
+   glossary
    BaPSF Website <https://plasma.physics.ucla.edu/>
 
 .. whatsnew/index
 .. about/credits
-.. glossary
 .. Vision Statement <about/vision_statement>
 
