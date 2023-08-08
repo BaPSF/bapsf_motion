@@ -34,6 +34,12 @@ class MLItem:
         ``r'player(?P<number>[0-9]+)'``.
 
     """
+
+    # TODO:  Can we define a __del__() to properly hand the removal of
+    #        the motion list item from the motion list dataset...
+    #        unfortunately this requires more than just the items
+    #        removal, but also an update of the mask
+
     __mask_name = "mask"
 
     def __init__(self, ds: xr.Dataset, base_name: str, name_pattern: re.Pattern):
