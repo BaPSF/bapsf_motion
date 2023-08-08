@@ -19,6 +19,12 @@ Glossary
       :math:`M` represents the number of position the probe must move to and
       :math:`N` must me equal to the number of axes of the probe drive.
 
+   motion list item
+      Terminology referring to the `xarray.DataArray` or the class/
+      instance object that manages that `~xarray.DataArray` in the
+      :term:`motion list` `xarray.Dataset`.  Also see |MotionList| and
+      `~bapsf_motion.motion_list.item.MLItem`.
+
    motion space
       The :math:`N`-D space the probe drive moves in.
 
