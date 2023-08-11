@@ -371,7 +371,7 @@ html_theme = "plasmapy_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_logo = "./_static/with-text-light-190px.png"
+html_logo = "./_static/BaPSF_Logo_White_RGB_150px.png"
 html_theme_options = {
     "logo_only": False,
     #
