@@ -12,6 +12,10 @@ Glossary
    drive
       See :term:`probe drive`
 
+   exclusion layer
+   exclusion layers
+      See :term:`motion exclusion`
+
    motion exclusion
    motion exclusions
       An exclusion "layer" defined within the `~xarray.Dataset` of the
@@ -42,6 +46,10 @@ Glossary
 
    motion space
       The :math:`N`-D space the probe drive moves in.
+
+   point layer
+   point layers
+      See :term:`motion layer`
 
    probe
       The plasma diagnostic, target, etc. the will be moved by the
