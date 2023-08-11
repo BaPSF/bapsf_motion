@@ -1,4 +1,10 @@
-# daq-mod-probedrives
+# bapsfdaq_motion
+
+[![Documentation Status](https://readthedocs.org/projects/bapsfdaq-motion/badge/?version=latest)](https://bapsfdaq-motion.readthedocs.io/en/latest/?badge=latest)
+
+``bapsfdaq_motion`` is a module developed for the BaPSF facility to
+integrate with its DAQ system and control motion devices, such as 
+probe drives.
 
 ## GUI Development
 
