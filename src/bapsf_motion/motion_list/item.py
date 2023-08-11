@@ -19,7 +19,7 @@ class MLItem:
     Parameters
     ----------
     ds: `~xarray.Dataset`
-        The `xarray` `~xarray.Dataset` the motion list confiugration
+        The `xarray` `~xarray.Dataset` the motion list configuration
         is constructed in.
 
     base_name: str
