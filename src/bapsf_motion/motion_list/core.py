@@ -357,8 +357,9 @@ class MotionList(MLItem):
         for ii, dim_name in enumerate(self.mask.dims):
             select[dim_name] = points[..., ii]
 
+        # TODO: Does this properly exclude points that are outside the
+        #       motion space?
         mask = np.diag(self.mask.sel(method="nearest", **select))
-
         self._ds["motion_list"] = xr.DataArray(
             data=points[mask, ...],
             dims=("index", "space")
