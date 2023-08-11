@@ -177,7 +177,11 @@ class MotionList(MLItem):
     def is_excluded(self, point):
         # True if the point is excluded, False if the point is included
         if len(point) != self.mspace_ndims:
-            raise ValueError
+            raise ValueError(
+                f"The length of `point` ({len(point)}) is not equal to "
+                f"the dimensionality of the motion space"
+                f"({self.mspace_ndims})."
+            )
 
         select = {}
         for ii, dim_name in enumerate(self.mspace_dims):
