@@ -1,3 +1,7 @@
+"""
+Module for helper functions associated with :term:`motion layer`
+functionality.
+"""
 __all__ = ["layer_factory", "register_layer"]
 
 import inspect
