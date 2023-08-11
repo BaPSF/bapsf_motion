@@ -135,7 +135,7 @@ autodoc_typehints_format = "short"
 
 # Configure sphinx-issues
 
-issues_github_path = "BaPSF/daq-mod-probedrives"
+issues_github_path = "BaPSF/bapsfdaq_motion"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -150,7 +150,7 @@ source_suffix = ".rst"
 root_doc = "index"
 
 # General information about the project.
-project = "daq-mod-probedrives"
+project = "bapsfdaq_motion"
 author = "BaPSF Community"
 copyright = f"2022–{datetime.utcnow().year}, {author}"
 
