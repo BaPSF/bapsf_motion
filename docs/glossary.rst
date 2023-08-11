@@ -12,6 +12,21 @@ Glossary
    drive
       See :term:`probe drive`
 
+   motion exclusion
+   motion exclusions
+      An exclusion "layer" defined within the `~xarray.Dataset` of the
+      |MotionList|.  These layers are constructed by subclasses
+      of `~bapsf_motion.motion_list.exclusions.base.BaseExclusion` and
+      define regions in the :term:`motion space` where a probe is not
+      allowed to be moved to.
+
+   motion layer
+   motion layers
+      A "point" layer defined within the `~xarray.Dataset` of the
+      |MotionList|.  These layers are constructed by subclasses
+      of `~bapsf_motion.motion_list.layers.base.BaseLayer` and defined
+      the desired points a probe should move to.
+
    motion list
    motion lists
       A motion list is a 2-D, :math:`M \times N` array containing the list of
