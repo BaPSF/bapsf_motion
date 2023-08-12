@@ -29,6 +29,10 @@ class BaseLayer(ABC, MLItem):
     kwargs:
         Keyword arguments that are specific to the subclass.
     """
+
+    # TODO: Can we define a __del__ that properly removes a layer and
+    #       its dependencies from the motion list dataset?
+
     _layer_type = NotImplemented  # type: str
 
     def __init__(
