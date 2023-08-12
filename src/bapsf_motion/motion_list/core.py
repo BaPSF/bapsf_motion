@@ -197,7 +197,7 @@ class MotionList(MLItem):
         the first axis and -30 to 30 along the second axis.  In this
         case the steps size along both axes is 3.  A ``"grid"`` layer
         is defined/constructed by the
-        `~bapsf_motion.motoin_list.layers.regular_grid.GridLayer` class.
+        `~bapsf_motion.motion_list.layers.regular_grid.GridLayer` class.
 
         .. code-block:: python
 
@@ -299,7 +299,7 @@ class MotionList(MLItem):
         Returns
         -------
         bool
-            `True` is the point resides in an exluded region of the
+            `True` is the point resides in an excluded region of the
             :term:`motion space`, otherwise `False`.
         """
         # True if the point is excluded, False if the point is included
