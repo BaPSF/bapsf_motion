@@ -23,7 +23,7 @@ class BaseLayer(ABC, MLItem):
 
     skip_ds_add: bool
         If `True`, then skip generating the `~xarray.DataArray`
-        corresponding to the motion points and adding ti to the
+        corresponding to the motion points and skip adding it to the
         `~xarray.Dataset`. (DEFAULT: `False`)
 
     kwargs:
