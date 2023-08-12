@@ -1,3 +1,6 @@
+"""
+Module that defines the `GridLayer` class.
+"""
 __all__ = ["GridLayer"]
 
 import numpy as np
