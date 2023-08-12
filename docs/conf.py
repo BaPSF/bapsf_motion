@@ -379,6 +379,7 @@ html_theme_options = {
     #   https://sphinx-rtd-theme.readthedocs.io/en/stable/configuring.html#theme-options
     "includehidden": False,
 }
+html_favicon = "./_static/BaPSF_Logo_Color_yellow_background_RGB_32px.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
