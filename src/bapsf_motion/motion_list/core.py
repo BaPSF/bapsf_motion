@@ -299,7 +299,7 @@ class MotionList(MLItem):
         Returns
         -------
         bool
-            `True` is the point resides in an excluded region of the
+            `True` if the point resides in an excluded region of the
             :term:`motion space`, otherwise `False`.
         """
         # True if the point is excluded, False if the point is included
