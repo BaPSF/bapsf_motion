@@ -1,3 +1,7 @@
+"""
+Module that contains all the functionality focused around
+:term:`motion exclusions`.
+"""
 __all__ = [
     "exclusion_factory",
     "register_exclusion",

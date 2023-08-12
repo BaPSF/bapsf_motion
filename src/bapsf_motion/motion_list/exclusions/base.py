@@ -1,3 +1,4 @@
+"""Module that defines the `BaseExclusion` abstract class."""
 __all__ = ["BaseExclusion"]
 
 import numpy as np
