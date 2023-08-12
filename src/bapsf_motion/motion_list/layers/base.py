@@ -37,7 +37,12 @@ class BaseLayer(ABC, MLItem):
         self._config_keys = {"type"}.union(set(kwargs.keys()))
         self._inputs = kwargs
         self.skip_ds_add = skip_ds_add
+
         self.composed_layers = []  # type: List[BaseLayer]
+        """
+        List of dependent :term:`motion layers` used to make this
+        more complex :term:`motion layer`.
+        """
 
         super().__init__(
             ds=ds,
