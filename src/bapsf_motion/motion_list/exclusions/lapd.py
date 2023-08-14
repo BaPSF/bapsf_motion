@@ -6,6 +6,9 @@ __all__ = ["LaPDXYExclusion"]
 import numpy as np
 import xarray as xr
 
+from numbers import Real
+from typing import Union
+
 from bapsf_motion.motion_list.exclusions.base import BaseExclusion
 from bapsf_motion.motion_list.exclusions.circular import CircularExclusion
 from bapsf_motion.motion_list.exclusions.divider import DividerExclusion
@@ -32,7 +35,7 @@ class LaPDXYExclusion(BaseExclusion):
 
     pivot_radius: `~numbers.Real`
         Distance from the ball valve pivot point to the :term:`LaPD`
-        center axis.  (DEFAULT: ``-58.771``)
+        center axis.  (DEFAULT: ``58.771``)
 
     port_location: Union[str, Real]
         A variable indicating which port the probe is located at.  A
@@ -62,11 +65,34 @@ class LaPDXYExclusion(BaseExclusion):
 
     .. code-block:: python
 
+        el = LaPDXYExclusion(ds)
+
+    Now, as down with the factory function
+
+    .. code-block:: python
+
+        el = exclusion_factor(
+            ds,
+            ex_layer = "lapd-XY",
+        )
+
+    Now, as a TOML configuration
+
+    .. code-block:: toml
+
+        [...exclusions.0]
+        type = "lapd-XY"
+
+    Now, lets deploy a probe on a West port using a ball valve with
+    a narrower cone and a more restrictive chamber diameters.
+
+    .. code-block:: python
+
         el = LaPDXYExclusion(
             ds,
-            radius = 20,
-            center = [-1, 2],
-            exclude = "outside",
+            diameter = 60,
+            port_location = "W",
+            cone_full_angle = " 60,
         )
 
     Now, as down with the factory function
@@ -75,11 +101,11 @@ class LaPDXYExclusion(BaseExclusion):
 
         el = exclusion_factor(
             ds,
-            ex_layer = "circle",
+            ex_layer = "lapd-XY",
             **{
-                "radius": 20,
-                "center": [-1, 2],
-                "exclude": "outside",
+                "diameter": 60,
+                "port_location": "W",
+                "cone_full_angle": 60,
             },
         )
 
@@ -88,10 +114,10 @@ class LaPDXYExclusion(BaseExclusion):
     .. code-block:: toml
 
         [...exclusions.0]
-        radius = 20
-        center = [-1, 20]
-        exclude = "outside"
-
+        type = "lapd-XY"
+        diameter = 60,
+        port_location = "W"
+        cone_full_angle = 60
     """
     _exclusion_type = "lapd-XY"
     _port_location_to_angle = {
@@ -110,11 +136,11 @@ class LaPDXYExclusion(BaseExclusion):
         self,
         ds: xr.Dataset,
         *,
-        diameter=100,
-        pivot_radius=-58.771,
-        port_location="E",
-        cone_full_angle=80,
-        include_cone=True,
+        diameter: Real = 100,
+        pivot_radius: Real = 58.771,
+        port_location: Union[str, Real] = "E",
+        cone_full_angle: Real = 80,
+        include_cone: bool = True,
     ):
         super().__init__(
             ds,
@@ -126,26 +152,43 @@ class LaPDXYExclusion(BaseExclusion):
         )
 
     @property
-    def diameter(self):
+    def diameter(self) -> Real:
+        """Diameter of the :term:`LaPD` chamber."""
         return self.inputs["diameter"]
 
     @property
-    def pivot_radius(self):
+    def pivot_radius(self) -> Real:
+        """
+        Distance from the ball valve pivot to the chamber center axis.
+        """
         return self.inputs["pivot_radius"]
 
     @property
-    def port_location(self):
+    def port_location(self) -> Real:
+        """
+        Angle [in degrees] corresponding to the port location the probe
+        is deployed on.  An angle of 0 corresponds to the East port
+        and 90 corresponds to the Top port.
+        """
         return self.inputs["port_location"]
 
     @property
-    def cone_full_angle(self):
+    def cone_full_angle(self) -> Real:
+        """
+        Full angle of range allowed by the ball valve.
+        """
         return self.inputs["cone_full_angle"]
 
     @property
-    def include_cone(self):
+    def include_cone(self) -> bool:
+        """
+        `True` if the ball valve angle is added to the exclusion,
+        `False` otherwise.
+        """
         return self.inputs["include_cone"]
 
     def _validate_inputs(self):
+        """Validate input arguments."""
         # TODO: fill-out ValueError messages
         self.inputs["diameter"] = np.abs(self.diameter)
 
@@ -185,6 +228,7 @@ class LaPDXYExclusion(BaseExclusion):
             )
 
     def _combine_exclusions(self):
+        """Combine all sub-exclusions into one exclusion array."""
         exclusion = None
         for ex in self.composed_exclusions:
             if exclusion is None:
@@ -197,6 +241,10 @@ class LaPDXYExclusion(BaseExclusion):
         return exclusion
 
     def _generate_exclusion(self):
+        """
+        Generate and return the boolean mask corresponding to the
+        exclusion configuration.
+        """
         self.composed_exclusions.append(
             CircularExclusion(
                 self._ds,
