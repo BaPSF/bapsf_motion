@@ -9,12 +9,26 @@ Glossary
 .. glossary::
    :sorted:
 
+   BaPSF
+   Basic Plasma Science Facility
+      The Basic Plasma Science Facility is a US national collaborative
+      research facility for fundamental plasma physics, supported by
+      the US Department of Energy and the National Science Foundation.
+      (\ https://plasma.physics.ucla.edu/\ )
+
    drive
       See :term:`probe drive`
 
    exclusion layer
    exclusion layers
       See :term:`motion exclusion`
+
+   LaPD
+   LAPD
+   Large Plasma Device
+      The `Large Plasma Device
+      <https://plasma.physics.ucla.edu/large-plasma-device.html>`_ is
+      the primary devices deployed at :term:`BaPSF`.
 
    motion exclusion
    motion exclusions
