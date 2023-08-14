@@ -1286,8 +1286,9 @@ class Motor(BaseActor):
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
             # time.sleep(0.5 * self.heartrate.base)
 
-            if alarm_msg:
-                self.logger.error("Motor alarm could not be reset.")
+            if alarm_msg["alarm_message"]:
+                self.logger.error(
+                    f"Motor alarm could not be reset. -- {alarm_msg}")
                 return
 
         # Note:  The Applied Motion Command Reference pdf states for
