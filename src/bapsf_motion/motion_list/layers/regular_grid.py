@@ -19,7 +19,7 @@ class GridLayer(BaseLayer):
     specified axes.  The generated points are inclusive of the
     specified ``limits``.
 
-    **type:** ``'grid'``
+    **layer type:** ``'grid'``
 
     Parameters
     ----------
