@@ -8,7 +8,7 @@ __all__ = [
     "BaseExclusion",
     "CircularExclusion",
     "DividerExclusion",
-    "LaPDExclusion",
+    "LaPDXYExclusion",
 ]
 
 from bapsf_motion.motion_list.exclusions.base import BaseExclusion
@@ -18,7 +18,7 @@ from bapsf_motion.motion_list.exclusions.helpers import (
     exclusion_factory,
     register_exclusion,
 )
-from bapsf_motion.motion_list.exclusions.lapd import LaPDExclusion
+from bapsf_motion.motion_list.exclusions.lapd import LaPDXYExclusion
 
 # TODO: types of exclusions
 #       - Divider (greater/less than a dividing line)
