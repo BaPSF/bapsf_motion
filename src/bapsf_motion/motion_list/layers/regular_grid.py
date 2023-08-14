@@ -19,6 +19,8 @@ class GridLayer(BaseLayer):
     specified axes.  The generated points are inclusive of the
     specified ``limits``.
 
+    **type:** ``'grid'``
+
     Parameters
     ----------
     ds: `~xarray.DataSet`
@@ -56,7 +58,7 @@ class GridLayer(BaseLayer):
 
         gl = layer_factory(
             ds,
-            ly_type="grid",
+            ly_type = "grid",
             **{
                 "limits": [[-10, 10], [0, 20]],
                 "steps": [21, 21],
