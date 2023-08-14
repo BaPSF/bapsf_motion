@@ -8,9 +8,11 @@ BaPSF Motion Documentation
 
 `bapsf_motion` is a python package for controlling BaPSF probe drives.
 
-.. .. toctree::
+.. toctree::
    :caption: First Steps
    :maxdepth: 1
+
+   toml/index
 
 .. Installing <install>
 .. getting_started
