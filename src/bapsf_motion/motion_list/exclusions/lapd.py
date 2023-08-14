@@ -1,4 +1,7 @@
-__all__ = ["LaPDExclusion"]
+"""
+Module that defines the `LaPDXYExclusion` class.
+"""
+__all__ = ["LaPDXYExclusion"]
 
 import numpy as np
 import xarray as xr
@@ -10,8 +13,87 @@ from bapsf_motion.motion_list.exclusions.helpers import register_exclusion
 
 
 @register_exclusion
-class LaPDExclusion(BaseExclusion):
-    _exclusion_type = "lapd"
+class LaPDXYExclusion(BaseExclusion):
+    r"""
+    Class for defining the :term`LaPD` :term:`exclusion layer` in a XY
+    :term:`motion space`.  This class setups up the typical XY
+    exclusion layer for a probe installed on a LaPD ball valve.
+
+    **exclusion type:** ``'lapd-XY'``
+
+    Parameters
+    ----------
+    ds: `~xarray.DataSet`
+        The `xarray` `~xarray.Dataset` the motion list configuration
+        is constructed in.
+
+    diameter: `~numbers.Real`
+        Diameter of the :term:`LaPD` chamber.  (DEFAULT: `100`)
+
+    pivot_radius: `~numbers.Real`
+        Distance from the ball valve pivot point to the :term:`LaPD`
+        center axis.  (DEFAULT: ``-58.771``)
+
+    port_location: Union[str, Real]
+        A variable indicating which port the probe is located at.  A
+        value can be a string of
+        :math:`\in` :math:`\{`\ e, east, t, top, w, west, b, bot,
+        bottom\ :math:`\}` (case insensitive) or an angle
+        :math:`\in [0,360)`.  An East port would correspond to an
+        angle of `0` and a Top port corresponds to an angle of `90`.
+        An angle port can be indicated by using the corresponding
+        angle, e.g. `45`. (DEFAULT: ``'E'``)
+
+    cone_full_angle:  `~numbers.Real`
+        The full angle of range provided by the ball valve.
+        (DEFAULT: ``80``)
+
+    include_cone: bool
+        If `True`, then include the exclusion crated by the ball valve
+        limits.  Otherwise, `False` will only include the chamber wall
+        exclusion. (DEFAULT: `True`)
+
+    Examples
+    --------
+
+    Assume we have a 2D motion space and want to create the default
+    exclusion for a probe deployed on the East port.  This would look
+    like:
+
+    .. code-block:: python
+
+        el = LaPDXYExclusion(
+            ds,
+            radius = 20,
+            center = [-1, 2],
+            exclude = "outside",
+        )
+
+    Now, as down with the factory function
+
+    .. code-block:: python
+
+        el = exclusion_factor(
+            ds,
+            ex_layer = "circle",
+            **{
+                "radius": 20,
+                "center": [-1, 2],
+                "exclude": "outside",
+            },
+        )
+
+    Now, as a TOML configuration
+
+    .. code-block:: toml
+
+        [...exclusions.0]
+        radius = 20
+        center = [-1, 20]
+        exclude = "outside"
+
+    """
+    _exclusion_type = "lapd-XY"
     _port_location_to_angle = {
         "e": 0,
         "east": 0,
