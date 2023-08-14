@@ -1,3 +1,7 @@
+"""
+Module containing functionality for creating and reading
+:term:`motion lists`.
+"""
 __all__ = ["MotionList", "MLItem"]
 
 from bapsf_motion.motion_list import exclusions, layers
