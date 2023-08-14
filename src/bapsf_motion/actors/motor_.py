@@ -497,7 +497,7 @@ class Motor(BaseActor):
         """
         # ensure motor always sends Ack/Nack
         # - Needs to be set before any commands are sent, otherwise
-        #   receiving will timeout and throw an Exception on commands
+        #   receiving will time out and throw an Exception on commands
         #   that do not return a reply
         self._read_and_set_protocol()
 
@@ -536,7 +536,7 @@ class Motor(BaseActor):
 
         if _bits[-3] == "0":
             # motor does not always respond with ack/nack, change
-            # protocol so it does
+            # protocol, so it does
             _bits = list(_bits)
             _bits[-3] = "1"  # sets always ack/nack
             _bits = "".join(_bits)
@@ -617,6 +617,10 @@ class Motor(BaseActor):
     @_thread.setter
     def _thread(self, value):
         self._setup["thread"] = value
+
+    @property
+    def _thread_id(self):
+        return self._loop._thread_id if self._thread is None else self._thread.ident
 
     @property
     def heartrate(self) -> NamedTuple:
@@ -755,7 +759,7 @@ class Motor(BaseActor):
     def connect(self):
         """
         Open the ethernet connection to the motor.  The number of
-        reconnection attempts before an exception is ratised is defined
+        reconnection attempts before an exception is raised is defined
         by ``self._setup["max_connection_attempts"]``.
         """
         _allowed_attempts = self._setup["max_connection_attempts"]
@@ -786,7 +790,7 @@ class Motor(BaseActor):
                     self.logger.error(msg)
                     # TODO: make this a custom exception (e.g. MotorConnectionError)
                     #       so other bapsfdaq_motion functionality can respond
-                    #       appropriately...the exception should liekly inherit
+                    #       appropriately...the exception should likely inherit
                     #       from TimeoutError, InterruptedError, ConnectionRefusedError,
                     #       and socket.timeout
                     raise error_
@@ -831,13 +835,28 @@ class Motor(BaseActor):
             meth = getattr(self, command)
             return meth(*args)
 
-        if self._loop.is_running():
-            future = asyncio.run_coroutine_threadsafe(
-                self._send_command_async(command, *args),
-                self._loop
-            )
-            return future.result(5)
-        return self._send_command(command, *args)
+        elif not self._loop.is_running():
+            # event loop not running, just send commands directly
+            return self._send_command(command, *args)
+
+        elif threading.current_thread().ident == self._thread_id:
+            # we are in the same thread as the running event loop, just
+            # send the command directly
+            #
+            # ~~Note: this still does not send the command via the event
+            #       loop~~
+            # return self._send_command(command, *args)
+            tk = self._loop.create_task(self._send_command_async(command, *args))
+            self._loop.run_until_complete(tk)
+            return tk.result()
+
+        # the event loop is running and the command is being sent from
+        # outside the event loop thread
+        future = asyncio.run_coroutine_threadsafe(
+            self._send_command_async(command, *args),
+            self._loop
+        )
+        return future.result(5)
 
     def _process_command(self, command: str, *args) -> str:
         """
@@ -1180,7 +1199,7 @@ class Motor(BaseActor):
     async def _heartbeat(self):
         """
         :ref:`Coroutine <coroutine>` for the heartbeat monitor of the
-        motor.  The heartbeat will update the motor statuss via
+        motor.  The heartbeat will update the motor status via
         :meth:`retrieve_motor_status` at an interval given by
         :attr:`heartrate`.
 

@@ -6,3 +6,4 @@
 .. currentmodule:: bapsf_motion.motion_list
 
 .. automodapi:: bapsf_motion.motion_list
+    :noindex:

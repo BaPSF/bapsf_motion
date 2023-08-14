@@ -1,58 +1,125 @@
+"""
+Module containing the definition of
+:class:`~bapsf_motion.motion_list.item.MLItem`.
+"""
 __all__ = ["MLItem"]
+
+import re
 import xarray as xr
+
+from typing import Hashable, Tuple
 
 
 class MLItem:
+    r"""
+    A base class for any :term:`motion list` class that will interact
+    with the `xarray` `~xarray.Dataset` containing the
+    :term:`motion list` configuration.
+
+    Parameters
+    ----------
+    ds: `~xarray.Dataset`
+        The `xarray` `~xarray.Dataset` the motion list configuration
+        is constructed in.
+
+    base_name: str
+        A string representing the base name for the motion list item
+        in the `~xarray.Dataset` ``ds``.
+
+    name_pattern: str, `re.Pattern`
+        A raw string ``r''`` or `re.Pattern` representing the naming
+        pattern for associated motion list items in the
+        `~xarray.Dataset`.  For example, if the ``base_name`` is
+        ``'player'``, then an appropriate pattern would look like
+        ``r'player(?P<number>[0-9]+)'``.
+
+    """
+
+    # TODO:  Can we define a __del__() to properly hand the removal of
+    #        the motion list item from the motion list dataset...
+    #        unfortunately this requires more than just the items
+    #        removal, but also an update of the mask
+
     __mask_name = "mask"
 
-    def __init__(self, ds: xr.Dataset, base_name, name_pattern):
+    def __init__(self, ds: xr.Dataset, base_name: str, name_pattern: re.Pattern):
         self._ds = self._validate_ds(ds)
 
         self._base_name = base_name
+
+        if not isinstance(name_pattern, re.Pattern):
+            name_pattern = re.Pattern(name_pattern)
         self._name_pattern = name_pattern
+
         self._name = self._determine_name()
 
     @property
-    def base_name(self):
+    def base_name(self) -> str:
+        """Base name for associated items in the `~xarray.Dataset`."""
         return self._base_name
 
     @property
-    def name_pattern(self):
+    def name_pattern(self) -> re.Pattern:
+        """
+        The naming pattern for motion list items in the
+        `~xarray.Dataset`.
+        """
         return self._name_pattern
 
     @property
-    def name(self):
-        try:
-            return self._name
-        except AttributeError:
-            return
+    def name(self) -> str:
+        """Name of the motion list item in the `~xarray.Dataset`."""
+        return self._name
 
     @property
     def item(self):
+        """
+        The representative motion list item in the `~xarray.Dataset`.
+        """
         return self._ds[self.name]
 
     @property
-    def mask(self):
+    def mask(self) -> xr.DataArray:
+        """
+        A :math:`N`-D `~xarray.DataArray` representing a boolean mask
+        of the :term:`motion space`.  The mask is `True` where a
+        :term:`probe drive` is allowed to move, and `False` otherwise.
+        """
         return self._ds[self.mask_name]
 
     @property
     def mask_name(self):
+        """Name of the :attr:`mask` item it the `~xarray.Dataset`."""
         return self.__mask_name
 
     @property
     def mspace_coords(self):
+        """
+        Dictionary-like container of :term:`motion space` coordinates.
+        Keys are given by :attr:`mspace_dims`.  Quick access to
+        `~xarray.DataArray.coords` of :attr:`mask`.
+        """
         return self.mask.coords
 
     @property
-    def mspace_dims(self):
+    def mspace_dims(self) -> Tuple[Hashable, ...]:
+        """
+        Tuple of :term:`motion space` dimension names.  Quick access to
+        `~xarray.DataArray.dims` of :attr:`mask`.
+        """
         return self.mask.dims
 
     @property
-    def mspace_ndims(self):
+    def mspace_ndims(self) -> int:
+        """
+        Dimensionality of the :term:`motion space`.  Synonymous with
+        the number of axes of the :term:`probe drive`.
+        """
         return len(self.mspace_dims)
 
     @staticmethod
     def _validate_ds(ds: xr.Dataset):
+        """Validate the given `~xarray.Dataset`."""
         # TODO: make this into a function that can be used by exclusions and layers
         if not isinstance(ds, xr.Dataset):
             raise TypeError(
@@ -70,8 +137,20 @@ class MLItem:
         return ds
 
     def _determine_name(self):
-        if self.name is not None:
+        """
+        Determine the name for the motion list item that will be used
+        in the `~xarray.Dataset`.  This is generally the name of the
+        `xarray.DataArray`.
+
+        This method will examine the `~xarray.Dataset` of items matching
+        :attr:`name_pattern` and generate a unique :attr:`name` for
+        the motion list item.
+        """
+        try:
             return self.name
+        except AttributeError:
+            # self._name has not been defined yet
+            pass
 
         names = set(self._ds.data_vars.keys())
         n_existing = 0
