@@ -4,11 +4,8 @@ Module that defines the `CircularExclusion` class.
 __all__ = ["CircularExclusion"]
 
 import numbers
-
 import numpy as np
 import xarray as xr
-
-from numbers import Real
 
 from bapsf_motion.motion_list.exclusions.base import BaseExclusion
 from bapsf_motion.motion_list.exclusions.helpers import register_exclusion
