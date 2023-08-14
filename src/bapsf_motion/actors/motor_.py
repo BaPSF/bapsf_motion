@@ -823,13 +823,28 @@ class Motor(BaseActor):
             meth = getattr(self, command)
             return meth(*args)
 
-        if self._loop.is_running():
-            future = asyncio.run_coroutine_threadsafe(
-                self._send_command_async(command, *args),
-                self._loop
-            )
-            return future.result(5)
-        return self._send_command(command, *args)
+        elif not self._loop.is_running():
+            # event loop not running, just send commands directly
+            return self._send_command(command, *args)
+
+        elif threading.current_thread().ident == self._thread_id:
+            # we are in the same thread as the running event loop, just
+            # send the command directly
+            #
+            # ~~Note: this still does not send the command via the event
+            #       loop~~
+            # return self._send_command(command, *args)
+            tk = self._loop.create_task(self._send_command_async(command, *args))
+            self._loop.run_until_complete(tk)
+            return tk.result()
+
+        # the event loop is running and the command is being sent from
+        # outside the event loop thread
+        future = asyncio.run_coroutine_threadsafe(
+            self._send_command_async(command, *args),
+            self._loop
+        )
+        return future.result(5)
 
     def _process_command(self, command: str, *args) -> str:
         """
