@@ -488,7 +488,7 @@ class Motor(BaseActor):
         """
         # ensure motor always sends Ack/Nack
         # - Needs to be set before any commands are sent, otherwise
-        #   receiving will timeout and throw an Exception on commands
+        #   receiving will time out and throw an Exception on commands
         #   that do not return a reply
         self._read_and_set_protocol()
 
@@ -527,7 +527,7 @@ class Motor(BaseActor):
 
         if _bits[-3] == "0":
             # motor does not always respond with ack/nack, change
-            # protocol so it does
+            # protocol, so it does
             _bits = list(_bits)
             _bits[-3] = "1"  # sets always ack/nack
             _bits = "".join(_bits)
@@ -746,7 +746,7 @@ class Motor(BaseActor):
     def connect(self):
         """
         Open the ethernet connection to the motor.  The number of
-        reconnection attempts before an exception is ratised is defined
+        reconnection attempts before an exception is raised is defined
         by ``self._setup["max_connection_attempts"]``.
         """
         _allowed_attempts = self._setup["max_connection_attempts"]
@@ -777,7 +777,7 @@ class Motor(BaseActor):
                     self.logger.error(msg)
                     # TODO: make this a custom exception (e.g. MotorConnectionError)
                     #       so other bapsfdaq_motion functionality can respond
-                    #       appropriately...the exception should liekly inherit
+                    #       appropriately...the exception should likely inherit
                     #       from TimeoutError, InterruptedError, ConnectionRefusedError,
                     #       and socket.timeout
                     raise error_
@@ -1158,7 +1158,7 @@ class Motor(BaseActor):
     async def _heartbeat(self):
         """
         :ref:`Coroutine <coroutine>` for the heartbeat monitor of the
-        motor.  The heartbeat will update the motor statuss via
+        motor.  The heartbeat will update the motor status via
         :meth:`retrieve_motor_status` at an interval given by
         :attr:`heartrate`.
 
