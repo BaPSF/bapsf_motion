@@ -1355,3 +1355,21 @@ class Motor(BaseActor):
         await asyncio.sleep(2 * self.heartrate.active)
 
         # self.logger.warning("done")
+
+    @staticmethod
+    async def _sleep_async(delay):
+        await asyncio.sleep(delay)
+
+    def sleep(self, delay):
+        if not self._loop.is_running():
+            time.sleep(delay)
+        elif threading.current_thread().ident == self._thread_id:
+            tk = self._loop.create_task(self._sleep_async(delay))
+            self._loop.run_until_complete(tk)
+
+        future = asyncio.run_coroutine_threadsafe(
+            self._sleep_async(delay),
+            self._loop
+        )
+        future.result(5)
+
