@@ -610,6 +610,10 @@ class Motor(BaseActor):
         self._setup["thread"] = value
 
     @property
+    def _thread_id(self):
+        return self._loop._thread_id if self._thread is None else self._thread.ident
+
+    @property
     def heartrate(self) -> NamedTuple:
         """
         Heartrate of the motor monitor, or the time (in sec) between
