@@ -78,6 +78,7 @@ class CircularExclusion(BaseExclusion):
     .. code-block:: toml
 
         [...exclusions.0]
+        type = "circle"
         radius = 20
         center = [-1, 20]
         exclude = "outside"

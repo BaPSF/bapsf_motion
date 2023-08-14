@@ -78,6 +78,7 @@ class DividerExclusion(BaseExclusion):
     .. code-block:: toml
 
         [...exclusions.0]
+        type = "divider"
         mb = ["inf", 0]
         exclude = "-e0"
 
