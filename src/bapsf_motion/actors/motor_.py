@@ -1356,62 +1356,6 @@ class Motor(BaseActor):
             self.logger.debug(f"Limit status is {self.status['limits']}.")
             counts += 1
 
-    def _move_off_limit(self):
-
-        # are we on a limit
-        if not any(self.status["limits"].values()):
-            self.logger.debug(f"Motor is NOT on a limit, doing nothing.")
-            return
-        elif all(self.status["limits"].values()):
-            self.logger.error(
-                "Both CW and CCW limits activated, can not do anything."
-            )
-            return
-
-        off_direction = -1 if self.status["limits"]["CW"] else 1
-
-        counts = 1
-        while any(self.status["limits"].values()):
-
-            off_direction = -1 if self.status["limits"]["CW"] else 1
-
-            future = asyncio.run_coroutine_threadsafe(
-                self._move_off_limit_async(off_direction),
-                self._loop,
-            )
-            future.result(5)
-
-            if counts > 10:
-                self.logger.error("Was not able to move of limit.")
-                break
-
-            self.logger.debug(f"Limit status is {self.status['limits']}.")
-            counts += 1
-
-    async def _move_off_limit_async(self, off_direction):
-        pos = self._send_command("get_position").value
-
-        move_to_pos = pos + off_direction * 0.5 * self.steps_per_rev.value
-
-        # disable limits
-        self.logger.warning("disable limits")
-        self._send_raw_command("DL3")
-        self._send_command("alarm_reset")
-        await asyncio.sleep(2 * self.heartrate.active)
-
-        # self.logger.warning("move_to")
-        # # self.move_to(move_to_pos)
-        self._send_command("enable")
-        self._send_command("target_distance", move_to_pos)
-        self._send_command("feed")
-
-        # enable limits
-        self.logger.warning("enable limits")
-        self._send_raw_command("DL1")
-        await asyncio.sleep(2 * self.heartrate.active)
-
-        # self.logger.warning("done")
-
     @staticmethod
     async def _sleep_async(delay):
         await asyncio.sleep(delay)
