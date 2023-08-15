@@ -241,6 +241,14 @@ class Motor(BaseActor):
             "alarm_reset",
             send="AR"
         ),
+        "current": CommandEntry(
+            "change_current",
+            send="CC",
+            send_processor=lambda value: f"{float(value):.1f}",
+            recv=re.compile(r"CC=(?P<return>[0-9]\.?[0-9]?)"),
+            recv_processor=float,
+            two_way=True,
+        ),
         "deceleration": CommandEntry(
             "deceleration",
             send="DE",
@@ -281,6 +289,14 @@ class Motor(BaseActor):
             recv=re.compile(r"IP=(?P<return>-?[0-9]+)"),
             recv_processor=int,
             units=u.steps,
+        ),
+        "idle_current": CommandEntry(
+            "change_idle_current",
+            send="CI",
+            send_processor=lambda value: f"{float(value):.1f}",
+            recv=re.compile(r"CI=(?P<return>[0-9]\.?[0-9]?)"),
+            recv_processor=float,
+            two_way=True,
         ),
         "move_off_limit": CommandEntry(
             "move_off_limit",
