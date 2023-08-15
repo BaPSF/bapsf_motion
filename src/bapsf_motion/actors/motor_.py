@@ -250,6 +250,14 @@ class Motor(BaseActor):
             two_way=True,
             units=u.rev / u.s / u.s,
         ),
+        "define_limits": CommandEntry(
+            "define_limits",
+            send="DL",
+            send_processor=lambda value: f"{int(value)}",
+            recv=re.compile(r"DL=(?P<return>[0-9])"),
+            recv_processor=int,
+            two_way=True,
+        ),
         "disable": CommandEntry("disable", send="MD"),
         "enable": CommandEntry("enable", send="ME"),
         "encoder_resolution": CommandEntry(
