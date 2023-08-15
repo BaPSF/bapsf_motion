@@ -480,6 +480,10 @@ class Motor(BaseActor):
                 "speed": 12.5,
                 "accel": 25,
                 "decel": 25,
+                "idle_current": 0.3,  # 30% of current
+                "current": 4.0,  # 4.0 amps
+                "max_idle_current": .9,  # 90% fo current
+                "max_current": 5.0  # 5 amps
             },
             "speed": None,
             "accel": None,
