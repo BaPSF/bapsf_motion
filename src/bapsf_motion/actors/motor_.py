@@ -1306,6 +1306,9 @@ class Motor(BaseActor):
         self.send_command("retrieve_motor_status")
 
     def move_off_limit(self):
+        """
+        Try to move the motor off of a CW or CCW limit switch.
+        """
 
         # TODO: There could still be a more efficient and safe way to do
         #       this...should contemplate
