@@ -391,6 +391,12 @@ class Motor(BaseActor):
             two_way=True,
             units=u.steps,
         ),
+        "zero": CommandEntry(
+            "zero",
+            send="",
+            method_command=True,
+            units=u.steps,
+        ),
     }  # type: Dict[str, Optional[Dict[str, Any]]]
 
     #: mapping of motor alarm codes to their descriptive message (specific to STM motors)
@@ -1512,3 +1518,6 @@ class Motor(BaseActor):
 
         self.send_command("current", curr)
         self.send_command("idle_current", ic)
+
+    def zero(self):
+        self.set_position(0)
