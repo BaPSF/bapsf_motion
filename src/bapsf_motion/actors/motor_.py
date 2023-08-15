@@ -1358,9 +1358,21 @@ class Motor(BaseActor):
 
     @staticmethod
     async def _sleep_async(delay):
+        """Asyncio coroutine so :meth:`sleep` can do an async sleep."""
         await asyncio.sleep(delay)
 
     def sleep(self, delay):
+        """
+        Sleep for X seconds defined by ``delay``.  The routine is smart
+        enough to know if the event loop is running or not.  If the
+        event loop is not running the sleep will be issued via
+        `time.sleep`, otherwise it will leverage `asyncio.sleep`.
+
+        Parameters
+        ----------
+        delay: ~numbers.Real
+            Number of seconds to sleep.
+        """
         if not self._loop.is_running():
             time.sleep(delay)
         elif threading.current_thread().ident == self._thread_id:
