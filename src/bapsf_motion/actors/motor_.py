@@ -619,7 +619,11 @@ class Motor(BaseActor):
         self._setup["thread"] = value
 
     @property
-    def _thread_id(self):
+    def _thread_id(self) -> Union[int, None]:
+        """Unique ID for the thread the loop is running in."""
+        if self._loop is None and self._thread is None:
+            return None
+
         return self._loop._thread_id if self._thread is None else self._thread.ident
 
     @property
@@ -827,9 +831,6 @@ class Motor(BaseActor):
             Any arguments to the ``command`` that will be sent with the
             motor command.
         """
-        # TODO: Is there an way to ensure if send_command() is called from a function
-        #       inside the event that a future is not then created...maybe by
-        #       comparing threading.current_thread() to self._thread
         if self._commands[command]["method_command"]:
             # execute respectively named method
             meth = getattr(self, command)
@@ -842,10 +843,6 @@ class Motor(BaseActor):
         elif threading.current_thread().ident == self._thread_id:
             # we are in the same thread as the running event loop, just
             # send the command directly
-            #
-            # ~~Note: this still does not send the command via the event
-            #       loop~~
-            # return self._send_command(command, *args)
             tk = self._loop.create_task(self._send_command_async(command, *args))
             self._loop.run_until_complete(tk)
             return tk.result()
