@@ -34,6 +34,14 @@
 .. |Axis| replace:: :class:`~bapsf_motion.actors.axis_.Axis`
 .. |Drive| replace:: :class:`~bapsf_motion.actors.drive_.Drive`
 
+
+.. ------------------------
+.. PKG Common Functionality
+.. ------------------------
+
+.. |MotionList| replace:: :class:`~bapsf_motion.motion_list.core.MotionList`
+
+
 .. ----------------------
 .. PlasmaPy documentation
 .. ----------------------

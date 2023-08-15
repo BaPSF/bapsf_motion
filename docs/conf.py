@@ -114,6 +114,7 @@ intersphinx_mapping = {
         None,
     ),
     "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
+    "xarray": ("https://docs.xarray.dev/en/stable/", None),
 }
 
 hoverxref_intersphinx = [
@@ -135,7 +136,7 @@ autodoc_typehints_format = "short"
 
 # Configure sphinx-issues
 
-issues_github_path = "BaPSF/daq-mod-probedrives"
+issues_github_path = "BaPSF/bapsfdaq_motion"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -150,7 +151,7 @@ source_suffix = ".rst"
 root_doc = "index"
 
 # General information about the project.
-project = "daq-mod-probedrives"
+project = "bapsfdaq_motion"
 author = "BaPSF Community"
 copyright = f"2022–{datetime.utcnow().year}, {author}"
 
@@ -371,7 +372,7 @@ html_theme = "plasmapy_theme"
 # further.  For a list of options available for each theme, see the
 # documentation.
 #
-# html_logo = "./_static/with-text-light-190px.png"
+html_logo = "./_static/BaPSF_Logo_White_RGB_150px.png"
 html_theme_options = {
     "logo_only": False,
     #
@@ -379,6 +380,7 @@ html_theme_options = {
     #   https://sphinx-rtd-theme.readthedocs.io/en/stable/configuring.html#theme-options
     "includehidden": False,
 }
+html_favicon = "./_static/BaPSF_Logo_Color_yellow_background_RGB_32px.ico"
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

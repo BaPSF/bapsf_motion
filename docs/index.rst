@@ -8,9 +8,11 @@ BaPSF Motion Documentation
 
 `bapsf_motion` is a python package for controlling BaPSF probe drives.
 
-.. .. toctree::
+.. toctree::
    :caption: First Steps
    :maxdepth: 1
+
+   toml/index
 
 .. Installing <install>
 .. getting_started
@@ -25,7 +27,7 @@ BaPSF Motion Documentation
    :caption: Package features
 
    Actors <api_static/bapsf_motion.actors>
-   Motion List <api_static/bapsf_motion.motion_list>
+   Motion List <motion_list/index>
    Transform <api_static/bapsf_motion.transform>
    Utilities <api_static/bapsf_motion.utils>
 
@@ -45,10 +47,10 @@ BaPSF Motion Documentation
    :caption: All the Rest
 
    bibliography
+   glossary
    BaPSF Website <https://plasma.physics.ucla.edu/>
 
 .. whatsnew/index
 .. about/credits
-.. glossary
 .. Vision Statement <about/vision_statement>
 

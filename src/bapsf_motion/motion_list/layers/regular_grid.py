@@ -1,6 +1,12 @@
+"""
+Module that defines the `GridLayer` class.
+"""
 __all__ = ["GridLayer"]
 
 import numpy as np
+import xarray as xr
+
+from typing import List
 
 from bapsf_motion.motion_list.layers.base import BaseLayer
 from bapsf_motion.motion_list.layers.helpers import register_layer
@@ -10,15 +16,83 @@ from bapsf_motion.motion_list.layers.helpers import register_layer
 class GridLayer(BaseLayer):
     """
     Class for defining a regularly spaced grid along each of the
-    specified axes.
+    specified axes.  The generated points are inclusive of the
+    specified ``limits``.
+
+    **layer type:** ``'grid'``
+
+    Parameters
+    ----------
+    ds: `~xarray.DataSet`
+        The `xarray` `~xarray.Dataset` the motion list configuration
+        is constructed in.
+
+    limits: :term:`array_like`
+        A list of min and max pairs for each dimension of the
+        :term:`motion space` indicating the min and max span of the
+        layer.
+
+    steps: List[int]
+        A list of equal length to ``limits`` indicating how many points
+        should be used along each dimension of the :term:`motion space`.
+
+    Examples
+    --------
+
+    Assume we have a 2D motion space and want to define a grid of
+    points spaced at an interval of 2 ranging from -10 to 10 along
+    the first axis and 0 to 20 along the second axis.  This would look
+    like:
+
+    .. code-block:: python
+
+        gl = GridLayer(
+            ds,
+            limits=[[-10, 10], [0, 20]],
+            steps=[21, 21],
+        )
+
+    Now, as done with the factory function
+
+    .. code-block:: python
+
+        gl = layer_factory(
+            ds,
+            ly_type = "grid",
+            **{
+                "limits": [[-10, 10], [0, 20]],
+                "steps": [21, 21],
+            },
+        )
+
+    Now, as a TOML configuration
+
+    .. code-block:: toml
+
+        [...layers.0]
+        type = "grid"
+        limits = [[-10, 10], [0, 20]]
+        steps = [21, 21]
+
     """
+    # TODO: Can the different code types in teh docstring be done with
+    #       tabs?
     _layer_type = "grid"
 
-    def __init__(self, ds, limits, steps):
+    def __init__(
+            self,
+            ds: xr.Dataset,
+            limits: List[List[float]],
+            steps: List[int],
+    ):
         # assign all, and only, instance variables above the super
         super().__init__(ds, limits=limits, steps=steps)
 
     def _generate_point_matrix(self):
+        """
+        Generate and return a matrix of points associated with the
+        :term:`motion layer`.
+        """
         axs = []
         steps = []
         for lims, num in zip(self.limits, self.steps):
@@ -40,6 +114,10 @@ class GridLayer(BaseLayer):
         return layer
 
     def _validate_inputs(self):
+        """
+        Validate the input arguments passed during instantiation.
+        These inputs are stored in :attr:`inputs`.
+        """
         limits = self.limits
         steps = self.steps
         mspace_ndims = self.mspace_ndims
@@ -72,7 +150,7 @@ class GridLayer(BaseLayer):
             # only one limit has been defined, assume this is used for
             # all mspace dimensions
             if limits.ndim == 2:
-                limits == limits[0, ...]
+                limits = limits[0, ...]
 
             limits = np.repeate(limits[np.newaxis, ...], mspace_ndims, axis=0)
 
@@ -94,15 +172,25 @@ class GridLayer(BaseLayer):
         self.steps = steps
 
     @property
-    def limits(self):
+    def limits(self) -> List[List[float]]:
+        """
+        A list of min and max pairs representing the range along
+        each :term:`motion space` dimensions that the point layer
+        resides in.
+        """
         return self.inputs["limits"]
 
     @limits.setter
     def limits(self, value):
+        # TODO: Add some validation for `value`
         self.inputs["limits"] = value
 
     @property
-    def steps(self):
+    def steps(self) -> List[int]:
+        """
+        The number of points used along each dimension of the motion
+        space.
+        """
         return self.inputs["steps"]
 
     @steps.setter
