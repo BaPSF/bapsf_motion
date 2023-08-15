@@ -7,6 +7,7 @@ __actors__ = ["Motor"]
 
 import asyncio
 import logging
+import numpy as np
 import re
 import socket
 import threading
@@ -322,6 +323,11 @@ class Motor(BaseActor):
             send="RS",
             recv=re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
         ),
+        "reset_currents": CommandEntry(
+            "reset_currents",
+            send="",
+            method_command=True,
+        ),
         "retrieve_motor_alarm": CommandEntry(
             "retrieve_motor_alarm",
             send="",
@@ -329,6 +335,16 @@ class Motor(BaseActor):
         ),
         "retrieve_motor_status": CommandEntry(
             "retrieve_motor_status",
+            send="",
+            method_command=True,
+        ),
+        "set_current": CommandEntry(
+            "set_current",
+            send="",
+            method_command=True,
+        ),
+        "set_idle_current": CommandEntry(
+            "set_idle_current",
             send="",
             method_command=True,
         ),
@@ -1402,4 +1418,54 @@ class Motor(BaseActor):
             self._loop
         )
         future.result(5)
+
+    def set_current(self, percent):
+        if not isinstance(percent, (int, float)):
+            self.logger.error(
+                f"Setting motor current, expected a value of 0 - 1 "
+                f"but got type {type(percent)}."
+            )
+            return
+        elif not (0 <= percent <= 1):
+            self.logger.error(
+                f"Setting motor current, expected a value of 0 - 1 "
+                f"but got {percent}."
+            )
+            return
+
+        new_cur = percent * self._motor["DEFAULTS"]["max_current"]
+
+        ic = self.send_command("idle_current")
+        new_ic = np.min(
+            [self._motor["DEFAULTS"]["max_idle_current"] * new_cur, ic],
+        )
+
+        self.send_command("current", new_cur)
+        self.send_command("idle_current", new_ic)
+
+    def set_idle_current(self, percent):
+        max_idle = self._motor["DEFAULTS"]["max_idle_current"]
+        if not isinstance(percent, (int, float)):
+            self.logger.error(
+                f"Setting motor idle current, expected a value of 0 - {max_idle} "
+                f"but got type {type(percent)}."
+            )
+            return
+        elif not (0 <= percent <= max_idle):
+            self.logger.warning(
+                f"Setting motor idle current, expected a value of 0 - {max_idle} "
+                f"but got {percent}.  Using {max_idle}."
+            )
+            percent = max_idle
+
+        curr = self.send_command("current")
+        new_ic = percent * curr
+        self.send_command("idle_current", new_ic)
+
+    def reset_currents(self):
+        curr = self._motor["DEFAULTS"]["current"]
+        new_ic = self._motor["DEFAULTS"]["idle_current"] * curr
+
+        self.send_command("current", curr)
+        self.send_command("idle_current", new_ic)
 
