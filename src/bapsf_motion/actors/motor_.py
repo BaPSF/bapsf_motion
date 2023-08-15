@@ -294,7 +294,7 @@ class Motor(BaseActor):
             units=u.steps / u.rev,
         ),
         "get_position": CommandEntry(
-            "get_position",
+            "immediate_position",
             send="IP",
             recv=re.compile(r"IP=(?P<return>-?[0-9]+)"),
             recv_processor=int,
