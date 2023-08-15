@@ -1500,6 +1500,7 @@ class Motor(BaseActor):
         self.send_command("idle_current", new_ic)
 
     def set_position(self, pos):
+        # TODO: command is not properly working up the command chain to Axis and Drive
         if not isinstance(pos, int):
             self.logger.error(
                 f"Setting motor position, expect int between"
