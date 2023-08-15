@@ -513,7 +513,7 @@ class Motor(BaseActor):
         # input is closed (energized)
         # TODO: Replace with normal send_command when "define_limits" command
         #       is added to _commands dict
-        self._send_raw_command("DL1")
+        self.send_command("define_limits", 1)
 
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
@@ -1328,16 +1328,17 @@ class Motor(BaseActor):
             pos = self._send_command("get_position").value
             move_to_pos = pos + off_direction * 0.5 * self.steps_per_rev.value
 
-            self.logger.warning("disable limits")
-            self._send_raw_command("DL3")
+            # disable limit alarm so the motor can be moved
+            self.logger.warning("Moving off limits - disable limits")
+            self.send_command("define_limits", 3)
             self.send_command("alarm_reset")
             # self.sleep(2 * self.heartrate.active)
 
             self.move_to(move_to_pos)
 
-            self.logger.warning("enable limits")
-            self._send_raw_command("DL1")
-            self.sleep(2 * self.heartrate.active)
+            self.logger.warning("Moving off limits - enable limits")
+            self.send_command("define_limits", 1)
+            self.sleep(4 * self.heartrate.active)
 
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
             on_limits = any(alarm_msg["limits"].values())
