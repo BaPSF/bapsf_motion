@@ -269,6 +269,15 @@ class Motor(BaseActor):
         ),
         "disable": CommandEntry("disable", send="MD"),
         "enable": CommandEntry("enable", send="ME"),
+        "encoder_position":  CommandEntry(
+            "encoder_position",
+            send="EP",
+            send_processor=lambda value: f"{int(value)}",
+            recv=re.compile(r"EP=(?P<return>[0-9]+)"),
+            recv_processor=int,
+            two_way=True,
+            units=u.counts,
+        ),
         "encoder_resolution": CommandEntry(
             "encoder_resolution",
             send="ER",
@@ -347,6 +356,21 @@ class Motor(BaseActor):
             "set_idle_current",
             send="",
             method_command=True,
+        ),
+        "set_position": CommandEntry(
+            "set_position",
+            send="",
+            method_command=True,
+            units=u.steps,
+        ),
+        "set_position_SP": CommandEntry(
+            "set_position_SP",
+            send="SP",
+            send_processor=lambda value: f"{int(value)}",
+            recv=re.compile(r"SP=(?P<return>[0-9]+)"),
+            recv_processor=int,
+            two_way=True,
+            units=u.steps,
         ),
         "speed": CommandEntry(
             "speed",
@@ -1469,3 +1493,22 @@ class Motor(BaseActor):
         self.send_command("current", curr)
         self.send_command("idle_current", new_ic)
 
+    def set_position(self, pos):
+        if not isinstance(pos, int):
+            self.logger.error(
+                f"Setting motor position, expect int between"
+                f" +/- 2,147,483,647 but got type {type(pos)}."
+            )
+            return
+
+        # set high torque
+        ic = self.send_command("idle_current")
+        curr = self.send_command("current")
+        self.set_current(1)
+        self.set_idle_current(self._motor["DEFAULTS"]["max_idle_current"])
+
+        self.send_command("encoder_position", pos)
+        self.send_command("set_position_SP", pos)
+
+        self.send_command("current", curr)
+        self.send_command("idle_current", ic)
