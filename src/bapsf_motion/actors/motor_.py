@@ -1289,7 +1289,6 @@ class Motor(BaseActor):
         if self.status["alarm"]:
             self.send_command("alarm_reset")
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
-            # time.sleep(0.5 * self.heartrate.base)
 
             if alarm_msg["alarm_message"]:
                 self.logger.error(
@@ -1308,7 +1307,10 @@ class Motor(BaseActor):
 
     def move_off_limit(self):
 
-        # are we on a limit
+        # TODO: There could still be a more efficient and safe way to do
+        #       this...should contemplate
+
+        # are we on a limit?
         if not any(self.status["limits"].values()):
             self.logger.debug(f"Motor is NOT on a limit, doing nothing.")
             return
@@ -1324,15 +1326,13 @@ class Motor(BaseActor):
         on_limits = any(self.status["limits"].values())
         while on_limits:
 
-            # off_direction = -1 if self.status["limits"]["CW"] else 1
-            pos = self._send_command("get_position").value
+            pos = self.send_command("get_position").value
             move_to_pos = pos + off_direction * 0.5 * self.steps_per_rev.value
 
             # disable limit alarm so the motor can be moved
             self.logger.warning("Moving off limits - disable limits")
             self.send_command("define_limits", 3)
             self.send_command("alarm_reset")
-            # self.sleep(2 * self.heartrate.active)
 
             self.move_to(move_to_pos)
 
@@ -1343,17 +1343,12 @@ class Motor(BaseActor):
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
             on_limits = any(alarm_msg["limits"].values())
 
-            # future = asyncio.run_coroutine_threadsafe(
-            #     self._move_off_limit_async(off_direction),
-            #     self._loop,
-            # )
-            # future.result(5)
-
             if counts > 10:
-                self.logger.error("Was not able to move of limit.")
+                self.logger.error(
+                    "Moving off limits - Was not able to move of limit."
+                )
                 break
 
-            self.logger.debug(f"Limit status is {self.status['limits']}.")
             counts += 1
 
     @staticmethod
