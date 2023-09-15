@@ -1524,6 +1524,9 @@ class Motor(BaseActor):
         self.send_command("idle_current", new_ic)
 
     def reset_currents(self):
+        """
+        Reset running and idle currents to their default values.
+        """
         curr = self._motor["DEFAULTS"]["current"]
         new_ic = self._motor["DEFAULTS"]["idle_current"] * curr
 
@@ -1531,7 +1534,14 @@ class Motor(BaseActor):
         self.send_command("idle_current", new_ic)
 
     def set_position(self, pos):
+        """
+        Set current motor's absolute position to a value specified by
+        ``pos``.
 
+        pos: `int`
+            An integer in the range of +/- 2,147,483,647 to set the
+            motor's absolute position.
+        """
         if not isinstance(pos, int):
             self.logger.error(
                 f"Setting motor position, expect int between"
@@ -1552,4 +1562,5 @@ class Motor(BaseActor):
         self.send_command("idle_current", ic)
 
     def zero(self):
+        """Define current motor position as zero."""
         self.set_position(0)
