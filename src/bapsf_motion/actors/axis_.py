@@ -203,7 +203,7 @@ class Axis(BaseActor):
             (
                 u.rev,
                 u.steps,
-                lambda x: x * steps_per_rev,
+                lambda x: int(x * steps_per_rev),
                 lambda x: x / steps_per_rev,
             ),
             (
@@ -216,7 +216,7 @@ class Axis(BaseActor):
                 u.steps,
                 self.units,
                 lambda x: x * units_per_rev / steps_per_rev,
-                lambda x: x * steps_per_rev / units_per_rev,
+                lambda x: int(x * steps_per_rev / units_per_rev),
             ),
         ]
         for equiv in equivs.copy():
@@ -275,6 +275,13 @@ class Axis(BaseActor):
                 args[0] = args[0] * axis_unit.to(
                     motor_unit, equivalencies=self.equivalencies
                 )
+
+                # TODO: There should be a cleaner way of enforcing this
+                #       int conversion...maybe add it to the Motor class,
+                #       but I [Erik] currently feel the conversion should
+                #       happen outside the Motor class
+                if motor_unit is u.steps:
+                    args[0] = int(args[0])
 
         rtn = self.motor.send_command(command, *args)
 
