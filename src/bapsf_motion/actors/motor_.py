@@ -528,7 +528,7 @@ class Motor(BaseActor):
                 "decel": 25,
                 "idle_current": 0.3,  # 30% of current
                 "current": 4.0,  # 4.0 amps
-                "max_idle_current": .9,  # 90% fo current
+                "max_idle_current": .9,  # 90% of current
                 "max_current": 5.0  # 5 amps
             },
             "speed": None,
@@ -1450,6 +1450,24 @@ class Motor(BaseActor):
         future.result(5)
 
     def set_current(self, percent):
+        r"""
+        Set the peak current setting ("peak of sine") of the stepper
+        drive, also known as the running current.  The value given
+        is a fraction of 0-1 of the peak allowable current defined
+        in  ``_motor["DEFAULTS"]["max_current"]``.
+
+        Setting the running current can affect the idle current, since
+        the max idle current is 90% of the running current.
+
+        Parameters
+        ----------
+        percent: `float`
+            A value of 0 - 1 specifying a fraction of the max running
+            current to set the running current to.  For example,
+            ``0.5`` will set the running current to 50% of the max
+            allowable running current
+            (``_motor["DEFAULTS"]["max_current"]``).
+        """
         if not isinstance(percent, (int, float)):
             self.logger.error(
                 f"Setting motor current, expected a value of 0 - 1 "
@@ -1474,6 +1492,19 @@ class Motor(BaseActor):
         self.send_command("idle_current", new_ic)
 
     def set_idle_current(self, percent):
+        r"""
+        Set the motor's idle current.  The idle current is the current
+        supplied to the stepper motors when the motor is not moving.
+        The value given is a fraction 0 - 0.9 of the running current.
+
+        Parameters
+        ----------
+        percent: `float`
+            A value of 0 - 0.9 specifying a fraction of the running
+            current to set the idle current to.  For example,
+            ``0.5`` will set the idle current to 50% of the running
+            current.
+        """
         max_idle = self._motor["DEFAULTS"]["max_idle_current"]
         if not isinstance(percent, (int, float)):
             self.logger.error(
