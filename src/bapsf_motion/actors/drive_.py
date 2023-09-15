@@ -39,11 +39,11 @@ class Drive(BaseActor):
     logger: `~logging.Logger`, optional
         An instance of `~logging.Logger` that the Actor will record
         events and status updates to.  If `None`, then a logger will
-        automatically be generated. (DEFUALT: `None`)
+        automatically be generated. (DEFAULT: `None`)
 
     loop: `asyncio.AbstractEventLoop`, optional
         Instance of an `asyncio` `event loop`_. Communication with all
-        the axes will happen primaritly through the evenet loop.  If
+        the axes will happen primarily through the event loop.  If
         `None`, then an `event loop`_ will be auto-generated.
         (DEFAULT: `None`)
 
