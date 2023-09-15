@@ -7,6 +7,7 @@ __actors__ = ["Motor"]
 
 import asyncio
 import logging
+import numpy as np
 import re
 import socket
 import threading
@@ -241,6 +242,14 @@ class Motor(BaseActor):
             "alarm_reset",
             send="AR"
         ),
+        "current": CommandEntry(
+            "change_current",
+            send="CC",
+            send_processor=lambda value: f"{float(value):.1f}",
+            recv=re.compile(r"CC=(?P<return>[0-9]\.?[0-9]?)"),
+            recv_processor=float,
+            two_way=True,
+        ),
         "deceleration": CommandEntry(
             "deceleration",
             send="DE",
@@ -250,8 +259,25 @@ class Motor(BaseActor):
             two_way=True,
             units=u.rev / u.s / u.s,
         ),
+        "define_limits": CommandEntry(
+            "define_limits",
+            send="DL",
+            send_processor=lambda value: f"{int(value)}",
+            recv=re.compile(r"DL=(?P<return>[0-9])"),
+            recv_processor=int,
+            two_way=True,
+        ),
         "disable": CommandEntry("disable", send="MD"),
         "enable": CommandEntry("enable", send="ME"),
+        "encoder_position":  CommandEntry(
+            "encoder_position",
+            send="EP",
+            send_processor=lambda value: f"{int(value)}",
+            recv=re.compile(r"EP=(?P<return>[0-9]+)"),
+            recv_processor=int,
+            two_way=True,
+            units=u.counts,
+        ),
         "encoder_resolution": CommandEntry(
             "encoder_resolution",
             send="ER",
@@ -268,11 +294,24 @@ class Motor(BaseActor):
             units=u.steps / u.rev,
         ),
         "get_position": CommandEntry(
-            "get_position",
+            "immediate_position",
             send="IP",
             recv=re.compile(r"IP=(?P<return>-?[0-9]+)"),
             recv_processor=int,
             units=u.steps,
+        ),
+        "idle_current": CommandEntry(
+            "change_idle_current",
+            send="CI",
+            send_processor=lambda value: f"{float(value):.1f}",
+            recv=re.compile(r"CI=(?P<return>[0-9]\.?[0-9]?)"),
+            recv_processor=float,
+            two_way=True,
+        ),
+        "move_off_limit": CommandEntry(
+            "move_off_limit",
+            send="",
+            method_command=True,
         ),
         "move_to": CommandEntry(
             "move_to",
@@ -293,6 +332,11 @@ class Motor(BaseActor):
             send="RS",
             recv=re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
         ),
+        "reset_currents": CommandEntry(
+            "reset_currents",
+            send="",
+            method_command=True,
+        ),
         "retrieve_motor_alarm": CommandEntry(
             "retrieve_motor_alarm",
             send="",
@@ -302,6 +346,31 @@ class Motor(BaseActor):
             "retrieve_motor_status",
             send="",
             method_command=True,
+        ),
+        "set_current": CommandEntry(
+            "set_current",
+            send="",
+            method_command=True,
+        ),
+        "set_idle_current": CommandEntry(
+            "set_idle_current",
+            send="",
+            method_command=True,
+        ),
+        "set_position": CommandEntry(
+            "set_position",
+            send="",
+            method_command=True,
+            units=u.steps,
+        ),
+        "set_position_SP": CommandEntry(
+            "set_position_SP",
+            send="SP",
+            send_processor=lambda value: f"{int(value)}",
+            recv=re.compile(r"SP=(?P<return>[0-9]+)"),
+            recv_processor=int,
+            two_way=True,
+            units=u.steps,
         ),
         "speed": CommandEntry(
             "speed",
@@ -320,6 +389,12 @@ class Motor(BaseActor):
             recv=re.compile(r"DI=(?P<return>[0-9]+)"),
             recv_processor=int,
             two_way=True,
+            units=u.steps,
+        ),
+        "zero": CommandEntry(
+            "zero",
+            send="",
+            method_command=True,
             units=u.steps,
         ),
     }  # type: Dict[str, Optional[Dict[str, Any]]]
@@ -451,6 +526,10 @@ class Motor(BaseActor):
                 "speed": 12.5,
                 "accel": 25,
                 "decel": 25,
+                "idle_current": 0.3,  # 30% of current
+                "current": 4.0,  # 4.0 amps
+                "max_idle_current": .9,  # 90% of current
+                "max_current": 5.0  # 5 amps
             },
             "speed": None,
             "accel": None,
@@ -472,6 +551,10 @@ class Motor(BaseActor):
             "in_position": None,
             "stopping": None,
             "waiting": None,
+            "limit": {
+                "CW": False,
+                "CCW": False,
+            },
         }  # type: Dict[str, Any]
 
         #: simple signal to tell handlers that _status changed
@@ -488,7 +571,7 @@ class Motor(BaseActor):
         """
         # ensure motor always sends Ack/Nack
         # - Needs to be set before any commands are sent, otherwise
-        #   receiving will timeout and throw an Exception on commands
+        #   receiving will time out and throw an Exception on commands
         #   that do not return a reply
         self._read_and_set_protocol()
 
@@ -496,7 +579,7 @@ class Motor(BaseActor):
         # input is closed (energized)
         # TODO: Replace with normal send_command when "define_limits" command
         #       is added to _commands dict
-        self._send_raw_command("DL1")
+        self.send_command("define_limits", 1)
 
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
@@ -527,7 +610,7 @@ class Motor(BaseActor):
 
         if _bits[-3] == "0":
             # motor does not always respond with ack/nack, change
-            # protocol so it does
+            # protocol, so it does
             _bits = list(_bits)
             _bits[-3] = "1"  # sets always ack/nack
             _bits = "".join(_bits)
@@ -608,6 +691,14 @@ class Motor(BaseActor):
     @_thread.setter
     def _thread(self, value):
         self._setup["thread"] = value
+
+    @property
+    def _thread_id(self) -> Union[int, None]:
+        """Unique ID for the thread the loop is running in."""
+        if self._loop is None and self._thread is None:
+            return None
+
+        return self._loop._thread_id if self._thread is None else self._thread.ident
 
     @property
     def heartrate(self) -> NamedTuple:
@@ -746,7 +837,7 @@ class Motor(BaseActor):
     def connect(self):
         """
         Open the ethernet connection to the motor.  The number of
-        reconnection attempts before an exception is ratised is defined
+        reconnection attempts before an exception is raised is defined
         by ``self._setup["max_connection_attempts"]``.
         """
         _allowed_attempts = self._setup["max_connection_attempts"]
@@ -777,7 +868,7 @@ class Motor(BaseActor):
                     self.logger.error(msg)
                     # TODO: make this a custom exception (e.g. MotorConnectionError)
                     #       so other bapsfdaq_motion functionality can respond
-                    #       appropriately...the exception should liekly inherit
+                    #       appropriately...the exception should likely inherit
                     #       from TimeoutError, InterruptedError, ConnectionRefusedError,
                     #       and socket.timeout
                     raise error_
@@ -819,13 +910,24 @@ class Motor(BaseActor):
             meth = getattr(self, command)
             return meth(*args)
 
-        if self._loop.is_running():
-            future = asyncio.run_coroutine_threadsafe(
-                self._send_command_async(command, *args),
-                self._loop
-            )
-            return future.result(5)
-        return self._send_command(command, *args)
+        elif not self._loop.is_running():
+            # event loop not running, just send commands directly
+            return self._send_command(command, *args)
+
+        elif threading.current_thread().ident == self._thread_id:
+            # we are in the same thread as the running event loop, just
+            # send the command directly
+            tk = self._loop.create_task(self._send_command_async(command, *args))
+            self._loop.run_until_complete(tk)
+            return tk.result()
+
+        # the event loop is running and the command is being sent from
+        # outside the event loop thread
+        future = asyncio.run_coroutine_threadsafe(
+            self._send_command_async(command, *args),
+            self._loop
+        )
+        return future.result(5)
 
     def _process_command(self, command: str, *args) -> str:
         """
@@ -1082,11 +1184,11 @@ class Motor(BaseActor):
         pos = send_command("get_position")
         _status["position"] = pos
 
-        if _status["alarm"]:
-            _status["alarm_message"] = self.retrieve_motor_alarm(
-                defer_status_update=True,
-                direct_send=True,
-            )
+        alarm_status = self.retrieve_motor_alarm(
+            defer_status_update=True,
+            direct_send=True,
+        )
+        _status.update(alarm_status)
 
         if _status["moving"] and not self._status["moving"]:
             self.movement_started.emit(True)
@@ -1095,7 +1197,9 @@ class Motor(BaseActor):
 
         self._update_status(**_status)
 
-    def retrieve_motor_alarm(self, defer_status_update=False, direct_send=False) -> str:
+    def retrieve_motor_alarm(
+            self, defer_status_update=False, direct_send=False
+    ) -> Dict[str, Any]:
         """
         Retrieve [if any] motor alarm codes.
 
@@ -1113,8 +1217,8 @@ class Motor(BaseActor):
 
         Returns
         -------
-        str
-            Alarm message.
+        Dict[str, Any]
+            Alarm status.
         """
         # this is done so self._heartbeat can directly send commands since
         # the heartbeat is already running in the event loop
@@ -1137,13 +1241,21 @@ class Motor(BaseActor):
 
         alarm_message = " :: ".join(alarm_message)
 
-        if alarm_message:
+        if rtn != "0000":
             self.logger.error(f"Motor returned alarm(s): {alarm_message}")
 
-        if not defer_status_update and alarm_message:
-            self._update_status(alarm_message=alarm_message)
+        alarm_status = {
+            "alarm_message": alarm_message,
+            "limits": {
+                "CCW": True if 2 in codes else False,
+                "CW": True if 4 in codes else False,
+            },
+        }
 
-        return alarm_message
+        if not defer_status_update:
+            self._update_status(**alarm_status)
+
+        return alarm_status
 
     def enable(self):
         """Enable motor (i.e. restore drive current to motor)."""
@@ -1158,7 +1270,7 @@ class Motor(BaseActor):
     async def _heartbeat(self):
         """
         :ref:`Coroutine <coroutine>` for the heartbeat monitor of the
-        motor.  The heartbeat will update the motor statuss via
+        motor.  The heartbeat will update the motor status via
         :meth:`retrieve_motor_status` at an interval given by
         :attr:`heartrate`.
 
@@ -1243,10 +1355,10 @@ class Motor(BaseActor):
         if self.status["alarm"]:
             self.send_command("alarm_reset")
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
-            # time.sleep(0.5 * self.heartrate.base)
 
-            if alarm_msg:
-                self.logger.error("Motor alarm could not be rest.")
+            if alarm_msg["alarm_message"]:
+                self.logger.error(
+                    f"Motor alarm could not be reset. -- {alarm_msg}")
                 return
 
         # Note:  The Applied Motion Command Reference pdf states for
@@ -1258,3 +1370,197 @@ class Motor(BaseActor):
         self.send_command("target_distance", pos)
         self.send_command("feed")
         self.send_command("retrieve_motor_status")
+
+    def move_off_limit(self):
+        """
+        Try to move the motor off of a CW or CCW limit switch.
+        """
+
+        # TODO: There could still be a more efficient and safe way to do
+        #       this...should contemplate
+
+        # are we on a limit?
+        if not any(self.status["limits"].values()):
+            self.logger.debug(f"Motor is NOT on a limit, doing nothing.")
+            return
+        elif all(self.status["limits"].values()):
+            self.logger.error(
+                "Both CW and CCW limits activated, can not do anything."
+            )
+            return
+
+        off_direction = -1 if self.status["limits"]["CW"] else 1
+
+        counts = 1
+        on_limits = any(self.status["limits"].values())
+        while on_limits:
+
+            pos = self.send_command("get_position").value
+            move_to_pos = pos + off_direction * 0.5 * self.steps_per_rev.value
+
+            # disable limit alarm so the motor can be moved
+            self.logger.warning("Moving off limits - disable limits")
+            self.send_command("define_limits", 3)
+            self.send_command("alarm_reset")
+
+            self.move_to(move_to_pos)
+
+            self.logger.warning("Moving off limits - enable limits")
+            self.send_command("define_limits", 1)
+            self.sleep(4 * self.heartrate.active)
+
+            alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
+            on_limits = any(alarm_msg["limits"].values())
+
+            if counts > 10:
+                self.logger.error(
+                    "Moving off limits - Was not able to move of limit."
+                )
+                break
+
+            counts += 1
+
+    @staticmethod
+    async def _sleep_async(delay):
+        """Asyncio coroutine so :meth:`sleep` can do an async sleep."""
+        await asyncio.sleep(delay)
+
+    def sleep(self, delay):
+        """
+        Sleep for X seconds defined by ``delay``.  The routine is smart
+        enough to know if the event loop is running or not.  If the
+        event loop is not running the sleep will be issued via
+        `time.sleep`, otherwise it will leverage `asyncio.sleep`.
+
+        Parameters
+        ----------
+        delay: ~numbers.Real
+            Number of seconds to sleep.
+        """
+        if not self._loop.is_running():
+            time.sleep(delay)
+        elif threading.current_thread().ident == self._thread_id:
+            tk = self._loop.create_task(self._sleep_async(delay))
+            self._loop.run_until_complete(tk)
+
+        future = asyncio.run_coroutine_threadsafe(
+            self._sleep_async(delay),
+            self._loop
+        )
+        future.result(5)
+
+    def set_current(self, percent):
+        r"""
+        Set the peak current setting ("peak of sine") of the stepper
+        drive, also known as the running current.  The value given
+        is a fraction of 0-1 of the peak allowable current defined
+        in  ``_motor["DEFAULTS"]["max_current"]``.
+
+        Setting the running current can affect the idle current, since
+        the max idle current is 90% of the running current.
+
+        Parameters
+        ----------
+        percent: `float`
+            A value of 0 - 1 specifying a fraction of the max running
+            current to set the running current to.  For example,
+            ``0.5`` will set the running current to 50% of the max
+            allowable running current
+            (``_motor["DEFAULTS"]["max_current"]``).
+        """
+        if not isinstance(percent, (int, float)):
+            self.logger.error(
+                f"Setting motor current, expected a value of 0 - 1 "
+                f"but got type {type(percent)}."
+            )
+            return
+        elif not (0 <= percent <= 1):
+            self.logger.error(
+                f"Setting motor current, expected a value of 0 - 1 "
+                f"but got {percent}."
+            )
+            return
+
+        new_cur = percent * self._motor["DEFAULTS"]["max_current"]
+
+        ic = self.send_command("idle_current")
+        new_ic = np.min(
+            [self._motor["DEFAULTS"]["max_idle_current"] * new_cur, ic],
+        )
+
+        self.send_command("current", new_cur)
+        self.send_command("idle_current", new_ic)
+
+    def set_idle_current(self, percent):
+        r"""
+        Set the motor's idle current.  The idle current is the current
+        supplied to the stepper motors when the motor is not moving.
+        The value given is a fraction 0 - 0.9 of the running current.
+
+        Parameters
+        ----------
+        percent: `float`
+            A value of 0 - 0.9 specifying a fraction of the running
+            current to set the idle current to.  For example,
+            ``0.5`` will set the idle current to 50% of the running
+            current.
+        """
+        max_idle = self._motor["DEFAULTS"]["max_idle_current"]
+        if not isinstance(percent, (int, float)):
+            self.logger.error(
+                f"Setting motor idle current, expected a value of 0 - {max_idle} "
+                f"but got type {type(percent)}."
+            )
+            return
+        elif not (0 <= percent <= max_idle):
+            self.logger.warning(
+                f"Setting motor idle current, expected a value of 0 - {max_idle} "
+                f"but got {percent}.  Using {max_idle}."
+            )
+            percent = max_idle
+
+        curr = self.send_command("current")
+        new_ic = percent * curr
+        self.send_command("idle_current", new_ic)
+
+    def reset_currents(self):
+        """
+        Reset running and idle currents to their default values.
+        """
+        curr = self._motor["DEFAULTS"]["current"]
+        new_ic = self._motor["DEFAULTS"]["idle_current"] * curr
+
+        self.send_command("current", curr)
+        self.send_command("idle_current", new_ic)
+
+    def set_position(self, pos):
+        """
+        Set current motor's absolute position to a value specified by
+        ``pos``.
+
+        pos: `int`
+            An integer in the range of +/- 2,147,483,647 to set the
+            motor's absolute position.
+        """
+        if not isinstance(pos, int):
+            self.logger.error(
+                f"Setting motor position, expect int between"
+                f" +/- 2,147,483,647 but got type {type(pos)}."
+            )
+            return
+
+        # set high torque
+        ic = self.send_command("idle_current")
+        curr = self.send_command("current")
+        self.set_current(1)
+        self.set_idle_current(self._motor["DEFAULTS"]["max_idle_current"])
+
+        self.send_command("encoder_position", pos)
+        self.send_command("set_position_SP", pos)
+
+        self.send_command("current", curr)
+        self.send_command("idle_current", ic)
+
+    def zero(self):
+        """Define current motor position as zero."""
+        self.set_position(0)
