@@ -52,7 +52,7 @@ class BaseTransform(ABC):
         self.dependencies = []  # type: List[BaseTransform]
 
         # validate matrix
-        matrix = self.matrix([0.0] * len(self.axes))
+        matrix = self._matrix([0.0] * len(self.axes))
         if not isinstance(matrix, np.ndarray):
             raise TypeError
         elif matrix.shape != tuple(2 * [len(self.axes) + 1]):
@@ -86,7 +86,7 @@ class BaseTransform(ABC):
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         ...
 
-    def matrix(self, points, to_coords="drive") -> np.ndarray:
+    def _matrix(self, points, to_coords="drive") -> np.ndarray:
         # to_coord should have two options "drive" and "motion_space"
         # - to_coord="drive" means to convert from motion space coordinates
         #   to drive coordinates
