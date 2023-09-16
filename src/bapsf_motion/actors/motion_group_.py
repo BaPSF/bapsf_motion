@@ -445,8 +445,6 @@ class MotionGroup(BaseActor):
 
         return transform.LaPDXYTransform(**config)
 
-
-
     def run(self):
         if self.drive is not None:
             self.drive.run()
