@@ -252,7 +252,7 @@ class LaPDXYTransform(BaseTransform):
             ),
         )
 
-    def convert(self, points, to_coords="drive"):
+    def _convert(self, points, to_coords="drive"):
         if not isinstance(points, np.ndarray):
             points = np.array(points)
 

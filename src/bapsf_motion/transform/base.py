@@ -107,6 +107,28 @@ class BaseTransform(ABC):
                 f"'motion_space', but got '{to_coords}'."
             )
 
+    def _convert(self, points, to_coords="drive"):
+        # TODO: this convert function still need to be test to show
+        #       that it'll work for N-dimensions...I stole this from
+        #       LaPDXYTransform.convert() so it works in a world where
+        #       the generated matrix _matrix() is 3x3 but the points/positions
+        #       are only given as a 2-element vector
+
+        if not isinstance(points, np.ndarray):
+            points = np.array(points)
+
+        matrix = self._matrix(points, to_coords=to_coords)
+
+        if points.ndim == 1:
+            points = np.concatenate((points, [1]))
+            return np.matmul(matrix, points)[:2]
+
+        points = np.concatenate(
+            (points, np.ones((points.shape[0], 1))),
+            axis=1,
+        )
+        return np.einsum("kmn,kn->km", matrix, points)[..., :-1]
+
     @abstractmethod
     def _matrix_to_drive(self, points):
         ...
