@@ -38,6 +38,118 @@ class MotionGroupConfig(UserDict):
         A dictionary defining the motion group configuration.  If
         ``filename`` is defined, then this argument is ignored.
         (DEFAULT: `None`)
+
+    Examples
+    --------
+
+    The following are example configures for using either the
+    ``filename`` keyword (i.e. TOML tab) or the ``config`` keyword
+    (i.e. DICT tab).
+
+    .. tabs::
+
+       .. code-tab:: toml TOML
+
+          [mgroup]
+          name = "P32 XY-drive"  # unique name of motion group
+
+          [mgroup.drive]
+          # define the make up of the probe drive
+          name = "XY-drive"  # name of probe drive
+          axis.0.name = "X"  # name of axis
+          axis.0.ip = "192.168.6.103"  # ip address of motor
+          axis.0.units = "cm"  # unit type used for axis
+          axis.0.units_per_rev = .254  # thread pitch of rod
+          axis.1.name = "Y"
+          axis.1.ip = "192.168.6.104"
+          axis.1.units = "cm"
+          axis.1.units_per_rev = .254
+
+          [mgroup.motion_list]
+          # configuration for the motion list
+          #
+          # 'space' defines the motion space
+          space.0.label = "X"
+          space.0.range = [-55, 55]
+          space.0.num = 221
+          space.1.label = "Y"
+          space.1.range = [-55, 55]
+          space.1.num = 221
+          #
+          # exclusion defines regions in space where a probe can not go
+          exclusions.0.type = "lapd-XY"
+          exclusions.0.port_location = "E"
+          exclusions.0.cone_full_angle = 60
+          #
+          # layers define the points where a probe should move to
+          layers.0.type = "grig"
+          layers.0.limits = [[0, 30], [-30, 30]]
+          layers.0.steps = [11, 21]
+
+          [mgroup.transform]
+          # define the coordinate transformation between the physical
+          # coordinate system (e.g. the LaPD) and the probe drive axes
+          type = "lapd_xy"
+          pivot_to_center = 57.7
+          pivot_to_drive = 125
+          porbe_axis_offset = 6
+
+
+       .. code-tab:: py DICT
+
+          config = {
+            "name": "P32 XY-Drive",
+            "drive": {
+                "name": "XY-Drive",
+                0: {
+                    "name": "X",
+                    "ip": "192.168.6.103",
+                    "units": "cm",
+                    "units_per_rev": .254,
+                },
+                1: {
+                    "name": "Y",
+                    "ip": "192.168.6.104",
+                    "units": "cm",
+                    "units_per_rev": .254,
+                },
+            },
+            "motion_list": {
+                "space", {
+                    0: {
+                        "label": "X",
+                        "range": [-55, 55],
+                        "num:: 221,
+                    },
+                    1: {
+                        "label": "X",
+                        "range": [-55, 55],
+                        "num:: 221,
+                    },
+                },
+                "exclusions": {
+                    "0": {
+                        "type": "lapd-XY",
+                        "port_location": "E",
+                        "cone_full_angle": 60,
+                    },
+                },
+                "layers": {
+                    "0": {
+                        "type": "grid",
+                        "limits": [[0, 30], [-30, 30]],
+                        "steps": [11, 21],
+                    },
+                },
+            },
+            "transform": {
+                "type": "lapd_xy",
+                "pivot_to_center": 57.7,
+                "pivot_to_drive": 125,
+                "porbe_axis_offset": 6,
+            },
+          }
+
     """
     #: required keys for the motion group configuration dictionary
     _required_metadata = {
@@ -253,6 +365,44 @@ class MotionGroupConfig(UserDict):
 
 
 class MotionGroup(BaseActor):
+    r"""
+    The `MotionGroup` actor brings together communication with the
+    :term:`probe drive` (i.e. |Drive|) with the drive's full
+    configuration (i.e. the :term:`probe drive`\ 's settings, the
+    :term:`motion list` |MotionList|, and coordinate transformer)
+    to form the :term:`motion group`.
+
+    Parameters
+    ----------
+    filename: `str`, optional
+        Full file path to a TOML file with the motion group
+        configuration.  If not specified, then input argument
+        ``config`` must be defined. (DEFAULT: `None`)
+
+    config: Dict[str, Any], optional
+        A dictionary containing all the necessary configuration
+        information to fully define the motion group.  If not specified,
+        then input argument ``filename`` must be defined.
+        (DEFAULT: `None`)
+
+    logger: `~logging.Logger`, optional
+        An instance of `~logging.Logger` that the Actor will record
+        events and status updates to.  If `None`, then a logger will
+        automatically be generated. (DEFAULT: `None`)
+
+    loop: `asyncio.AbstractEventLoop`, optional
+        Instance of an `asyncio` `event loop`_. Communication with all
+        the axes will happen primarily through the event loop.  If
+        `None`, then an `event loop`_ will be auto-generated.
+        (DEFAULT: `None`)
+
+    auto_run: bool, optional
+        If `True`, then the `event loop`_ will be placed in a separate
+        thread and started.  This is all done via the :meth:`run`
+        method. (DEFAULT: `False`)
+    """
+    # TODO: update docstring to fully explain how to define the `config`
+    #       argument
     def __init__(
         self,
         *,
@@ -262,6 +412,10 @@ class MotionGroup(BaseActor):
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
     ):
+        # TODO: can `filename` and `config` be merged into one dynamic
+        #       input argument...then MotionGroup would have to
+        #       interpret that one input argument
+
         config = self._process_config(filename=filename, config=config)
 
         super().__init__(logger=logger, name=config["name"])
@@ -284,6 +438,11 @@ class MotionGroup(BaseActor):
         filename: Optional[str] = None,
         config: Optional[Dict[str, Any]] = None,
     ):
+        """
+        Process the configuration input arguments ``filename`` and
+        ``config`` to build the full motion group configuration
+        dictionary and return the dictionary.
+        """
         # ensure filename XOR config kwargs are specified
         if filename is None and config is None:
             raise TypeError(
@@ -291,6 +450,8 @@ class MotionGroup(BaseActor):
                 "'filename' or 'config' to specify a configuration."
             )
         elif filename is not None and config is not None:
+            # TODO: should we make it possible to override the "filename"
+            #       configuration with values in the "config" dictionary
             raise TypeError(
                 "MotionGroup() takes 1 keyword argument but 2 were "
                 "given: use keyword 'filename' OR 'config' to specify "
@@ -359,6 +520,17 @@ class MotionGroup(BaseActor):
 
     def _spawn_drive(self, config, loop) -> Drive:
         """
+        Spawn and return the |Drive| instance for th motion group.
+
+        Parameters
+        ----------
+        config
+
+        loop:
+            Event loop for the |Drive| class to send motor commands
+            through.
+        """
+        """
         The Drive configuration should look like:
 
         .. code-block:
@@ -395,7 +567,7 @@ class MotionGroup(BaseActor):
                 ],
             }
 
-        Both version are acceptable, but the latter is what gets passed
+        Both versions are acceptable, but the latter is what gets passed
         to Drive and the former comes from the TOML files.
         """
         if "axes" not in config:
