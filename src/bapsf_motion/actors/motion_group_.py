@@ -499,7 +499,7 @@ class MotionGroup(BaseActor):
     @property
     def position(self):
         dr_pos = self.drive.position
-        pos = self.transform._convert(
+        pos = self.transform(
             dr_pos.value.tolist(),
             to_coords="motion_space",
         )
@@ -509,7 +509,7 @@ class MotionGroup(BaseActor):
         self.drive.stop()
 
     def move_to(self, pos, axis=None):
-        dr_pos = self.transform._convert(pos, to_coords="drive")
+        dr_pos = self.transform(pos, to_coords="drive")
         return self.drive.move_to(pos=dr_pos, axis=axis)
 
     def move_ml(self, index):

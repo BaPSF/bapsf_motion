@@ -61,6 +61,9 @@ class BaseTransform(ABC):
             # dimensions allows for shift translations
             raise ValueError(f"matrix.shape = {matrix.shape}")
 
+    def __call__(self, points, to_coords="drive"):
+        self._convert(points, to_coords=to_coords)
+
     @property
     def axes(self):
         return self._axes
