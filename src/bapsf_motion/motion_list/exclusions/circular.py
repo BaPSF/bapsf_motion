@@ -1,5 +1,9 @@
+"""
+Module that defines the `CircularExclusion` class.
+"""
 __all__ = ["CircularExclusion"]
 
+import numbers
 import numpy as np
 import xarray as xr
 
@@ -9,16 +13,88 @@ from bapsf_motion.motion_list.exclusions.helpers import register_exclusion
 
 @register_exclusion
 class CircularExclusion(BaseExclusion):
+    """
+    Class for defining circular :term:`exclusion layers` in a 2D
+    :term:`motion space`.  The excluded space can be defined as
+    internal or external to the circle.
+
+    **exclusion type:** ``'circle'``
+
+    Parameters
+    ----------
+    ds: `~xarray.DataSet`
+        The `xarray` `~xarray.Dataset` the motion list configuration
+        is constructed in.
+
+    radius: `~numbers.Real`
+        Radius that defines the circular boundary.
+
+    center: 2-D real :term:`array_like`
+        A 2-D :term:`array_like` object of real number define the
+        location of the circular region center in the
+        :term:`motion space`.
+
+    exclude: str
+        If ``'inside'``, then the interior of the circular region
+        is defined as the excluded space.  (DEFAULT: ``'outside'``)
+
+    skip_ds_add: bool
+        If `True`, then skip generating the `~xarray.DataArray`
+        corresponding to the :term:`exclusion layer` and skip adding it
+        to the `~xarray.Dataset`. (DEFAULT: `False`)
+
+    Examples
+    --------
+
+    Assume we have a 2D motion space and want a circular exclusion
+    region outside a circle of radius 20 centered at (-1, 2).  This
+    would look like:
+
+    .. code-block:: python
+
+        el = CircularExclusion(
+            ds,
+            radius = 20,
+            center = [-1, 2],
+            exclude = "outside",
+        )
+
+    Now, as down with the factory function
+
+    .. code-block:: python
+
+        el = exclusion_factor(
+            ds,
+            ex_layer = "circle",
+            **{
+                "radius": 20,
+                "center": [-1, 2],
+                "exclude": "outside",
+            },
+        )
+
+    Now, as a TOML configuration
+
+    .. code-block:: toml
+
+        [...exclusions.0]
+        type = "circle"
+        radius = 20
+        center = [-1, 20]
+        exclude = "outside"
+
+    """
+    # TODO: Can this class be extend to a N-D motion space.
     _exclusion_type = "circle"
 
     def __init__(
         self,
         ds: xr.Dataset,
         *,
-        skip_ds_add=False,
         radius,
         center=None,
-        exclude="outside",
+        exclude: str = "outside",
+        skip_ds_add: bool = False,
     ):
         super().__init__(
             ds,
@@ -29,6 +105,10 @@ class CircularExclusion(BaseExclusion):
         )
 
     def _generate_exclusion(self):
+        """
+        Generate and return the boolean mask corresponding to the
+        exclusion configuration.
+        """
         coord_dims = self.mspace_dims
         coords = (
             self.mspace_coords[coord_dims[0]],
@@ -43,6 +123,7 @@ class CircularExclusion(BaseExclusion):
         return mask if self.exclude_region == "outside" else np.logical_not(mask)
 
     def _validate_inputs(self):
+        """Validate input arguments."""
         # TODO: fill-out full conditioning of inputs
         if self.exclude_region not in ("outside", "inside"):
             raise ValueError
@@ -53,13 +134,22 @@ class CircularExclusion(BaseExclusion):
         self.inputs["center"] = (0.0, 0.0) if center is None else center
 
     @property
-    def radius(self):
+    def radius(self) -> numbers.Real:
+        """Radius of the exclusion circle."""
         return self.inputs["radius"]
 
     @property
     def center(self):
+        """
+        Array like :term:`motion space` coordinates of the center of
+        the exclusion circle.
+        """
         return self.inputs["center"]
 
     @property
-    def exclude_region(self):
+    def exclude_region(self) -> str:
+        """
+        ``'inside'`` for an interior excluded region and ``'outside'``
+        for and exterior excluded region.
+        """
         return self.inputs["exclude_region"]

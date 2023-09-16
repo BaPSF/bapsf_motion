@@ -1,4 +1,6 @@
-__all__ = ["Axis", "BaseActor", "Drive", "Manager", "MotionGroup", "Motor"]
+__all__ = []
+__actors__ = ["Axis", "BaseActor", "Drive", "Manager", "MotionGroup", "Motor"]
+__all__ += __actors__
 
 from bapsf_motion.actors.axis_ import Axis
 from bapsf_motion.actors.base import BaseActor

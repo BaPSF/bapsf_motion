@@ -1,4 +1,14 @@
+"""
+Module for functionality focused around the
+`~bapsf_motion.actors.axis_.Axis` actor class.
+"""
 __all__ = ["Axis"]
+__actors__ = ["Axis"]
+
+import asyncio
+import logging
+
+from typing import Any, Dict
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.motor_ import Motor
@@ -7,6 +17,43 @@ from bapsf_motion.utils import units as u
 
 class Axis(BaseActor):
     """
+    The `Axis` actor is the next level actor above the |Motor| actor.
+    This actor is ignorant of how it is situated in a probe drive, but
+    is fully aware of the entire physical axis that defines it and the
+    motor that moves the axis.  This actor operates in physical units
+    and will handle all the necessary unit converstion to communicate
+    with the |Motor| actor.
+
+    Parameters
+    ----------
+    ip: str
+        IPv4 address for the motor driving the axis
+
+    units: str
+        Physical units the axis operates in (e.g. ``'cm'``)
+
+    units_per_rev: float
+        The number of ``units`` traversed per motor revolution.
+
+    name: str
+        Name the axis.  (DEFAULT: ``'Axis'``)
+
+    logger: `~logging.Logger`, optional
+        An instance of `~logging.Logger` that the Actor will record
+        events and status updates to.  If `None`, then a logger will
+        automatically be generated. (DEFUALT: `None`)
+
+    loop: `asyncio.AbstractEventLoop`, optional
+        Instance of an `asyncio` `event loop`_. Communication with the
+        motor will happen primaritly through the evenet loop.  If
+        `None`, then an `event loop`_ will be auto-generated.
+        (DEFAULT: `None`)
+
+    auto_run: bool, optional
+        If `True`, then the `event loop`_ will be placed in a separate
+        thread and started.  This is all done via the :meth:`run`
+        method. (DEFAULT: `False`)
+
     Examples
     --------
 
@@ -17,7 +64,7 @@ class Axis(BaseActor):
     >>> ax = Axis(
     ...     ip="192.168.6.104",
     ...     units="cm",
-    ...     units_per_rev=0.1*2.54,
+    ...     units_per_rev=0.1*2.54,  # acme rod with .1 in pitch
     ...     name="WALL-E",
     ...     auto_run=True,
     ... )
@@ -32,9 +79,9 @@ class Axis(BaseActor):
         units: str,
         units_per_rev: float,
         name: str = "Axis",
-        logger=None,
-        loop=None,
-        auto_run=False,
+        logger: logging.Logger = None,
+        loop: asyncio.AbstractEventLoop = None,
+        auto_run: bool = False,
     ):
         super().__init__(logger=logger, name=name)
 
@@ -44,9 +91,10 @@ class Axis(BaseActor):
             name="motor",
             logger=self.logger,
             loop=loop,
-            auto_start=False,
+            auto_run=False,
         )
 
+        # TODO: update units so inches can be used
         self._units = u.Unit(units)
         self._units_per_rev = units_per_rev * self._units / u.rev
 
@@ -60,15 +108,34 @@ class Axis(BaseActor):
         self._units_per_rev = None
 
     def run(self):
-        """Start the `asyncio` event loop."""
+        """
+        Activate the `asyncio` `event loop`_.   If the event loop is
+        running, then nothing happens.  Otherwise, the event loop is
+        placed in a separate thread and set to
+        `~asyncio.loop.run_forever`.
+        """
         self.motor.run()
 
     def stop_running(self, delay_loop_stop=False):
-        """Stop the `asyncio` event loop."""
+        """
+        Stop the actor's `event loop`_\ .  All actor tasks will be
+        cancelled, the connection to the motor will be shutdown, and
+        the event loop will be stopped.
+
+        Parameters
+        ----------
+        delay_loop_stop: bool
+            If `True`, then do NOT stop the `event loop`_\ .  In this
+            case it is assumed the calling functionality is managing
+            additional tasks in the event loop, and it is up to that
+            functionality to stop the loop.  (DEFAULT: `False`)
+
+        """
         self.motor.stop_running(delay_loop_stop=delay_loop_stop)
 
     @property
-    def config(self):
+    def config(self) -> Dict[str, Any]:
+        """Dictionary of the axis configuration parameters."""
         _config = {
             "name": self.name,
             "ip": self.motor.ip,
@@ -125,6 +192,10 @@ class Axis(BaseActor):
 
     @property
     def equivalencies(self):
+        """
+        List of unit equivalencies to convert back-and-forth between
+        the axis physical units and the motor units.
+        """
         steps_per_rev = self.steps_per_rev.value
         units_per_rev = self.units_per_rev.value
 
@@ -132,7 +203,7 @@ class Axis(BaseActor):
             (
                 u.rev,
                 u.steps,
-                lambda x: x * steps_per_rev,
+                lambda x: int(x * steps_per_rev),
                 lambda x: x / steps_per_rev,
             ),
             (
@@ -145,7 +216,7 @@ class Axis(BaseActor):
                 u.steps,
                 self.units,
                 lambda x: x * units_per_rev / steps_per_rev,
-                lambda x: x * steps_per_rev / units_per_rev,
+                lambda x: int(x * steps_per_rev / units_per_rev),
             ),
         ]
         for equiv in equivs.copy():
@@ -160,6 +231,10 @@ class Axis(BaseActor):
 
     @property
     def conversion_pairs(self):
+        """
+        List of conversion pairs between motor units and physical
+        units.  For example, ``[(u.steps, self.units), ...]``.
+        """
         return [
             (u.steps, self.units),
             (u.steps / u.s, self.units / u.s),
@@ -169,9 +244,25 @@ class Axis(BaseActor):
         ]
 
     def send_command(self, command, *args):
+        """
+        Send ``command`` to the motor, and receive its response.  If the
+        `event loop`_ is running, then the command will be sent as
+        a threadsafe coroutine_ in the loop.  Otherwise, the command
+        will be sent directly to the motor.
+
+        Parameters
+        ----------
+        command: str
+            The desired command to be sent to the motor.
+        *args:
+            Any arguments to the ``command`` that will be sent with the
+            motor command.
+        """
         cmd_entry = self.motor._commands[command]
         motor_unit = cmd_entry["units"]  # type: u.Unit
 
+        # TODO: put this into a separate convert() method that can handle both
+        #       the send and recv unit conversion
         if motor_unit is not None and len(args):
             axis_unit = None
             for motor_u, axis_u in self.conversion_pairs:
@@ -185,8 +276,16 @@ class Axis(BaseActor):
                     motor_unit, equivalencies=self.equivalencies
                 )
 
+                # TODO: There should be a cleaner way of enforcing this
+                #       int conversion...maybe add it to the Motor class,
+                #       but I [Erik] currently feel the conversion should
+                #       happen outside the Motor class
+                if motor_unit is u.steps:
+                    args[0] = int(args[0])
+
         rtn = self.motor.send_command(command, *args)
 
+        # TODO: see detailing todo above
         if hasattr(rtn, "unit"):
             axis_unit = None
             for motor_u, axis_u in self.conversion_pairs:
@@ -200,9 +299,15 @@ class Axis(BaseActor):
         return rtn
 
     def move_to(self, *args):
+        """
+        Quick access command for ``send_command("move_to", *args)``.
+        """
         return self.send_command("move_to", *args)
 
     def stop(self):
+        """
+        Quick access command for ``send_command("stop")``.
+        """
         # not sending STOP command through send_command() since using
         # motor.stop() should result in faster execution
         return self.motor.stop()

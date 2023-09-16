@@ -1,4 +1,4 @@
-"""bapsf_motion"""
+"""`bapsf_motion`"""
 __all__ = ["__version__"]
 
 # Enforce Python version check during package import.
