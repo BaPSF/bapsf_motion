@@ -106,7 +106,7 @@ class Base2Transform(ABC):
     _transform_type = NotImplemented  # type: str
 
     # TODO: Possible useful methods
-    #       - time to more to point (from current position)
+    #       - time to move to point (from current position)
     #       - equalize move movement to next point (est. speed, accel,
     #         and decel so all drive axes finish movement at the same
     #         time)
