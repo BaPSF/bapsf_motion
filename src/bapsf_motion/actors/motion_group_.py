@@ -443,7 +443,7 @@ class MotionGroup(BaseActor):
 
         config.pop("type")
 
-        return transform.LaPDXYTransform(**config)
+        return transform.LaPDXYTransform(self.drive, **config)
 
     def run(self):
         if self.drive is not None:
