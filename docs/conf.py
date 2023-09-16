@@ -87,6 +87,7 @@ extensions = [
     "hoverxref.extension",
     "notfound.extension",
     "sphinx_issues",
+    "sphinx_tabs.tabs",
     "sphinx_reredirects",
 ]
 
