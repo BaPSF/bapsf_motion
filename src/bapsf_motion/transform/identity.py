@@ -15,14 +15,6 @@ class IdentityTransform(BaseTransform):
     def __init__(self, drive, **settings):
         super().__init__(drive, **settings)
 
-        # naxes = len(self.axes) if self._drive is None else self._drive.naxes
-        #
-        # if naxes != 2:
-        #     raise ValueError(
-        #         f"The LaPDXYTransform requires two axes to operate on, the "
-        #         f"specified probe drive has {drive.naxes} axes."
-        #     )
-
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         return inputs
 
