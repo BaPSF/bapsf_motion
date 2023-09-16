@@ -17,20 +17,34 @@ class BaseTransform(ABC):
 
     def __init__(
         self,
-        axes: Tuple[Union[str, int], ...],
+        # axes: Tuple[Union[str, int], ...],
+        drive: Drive,
         **kwargs,
     ):
-        if not isinstance(axes, (list, tuple)):
-            axes = [axes]
+        # if not isinstance(axes, (list, tuple)):
+        #     axes = [axes]
+        #
+        # if not all(isinstance(ax, (int, str)) for ax in axes):
+        #     raise ValueError(
+        #         f"Argument 'axes' needs to be a list or tuple containing "
+        #         f"integers representing the axis' index or strings "
+        #         f"representing the axis' name."
+        #     )
+        #
+        # self._axes = axes
 
-        if not all(isinstance(ax, (int, str)) for ax in axes):
-            raise ValueError(
-                f"Argument 'axes' needs to be a list or tuple containing "
-                f"integers representing the axis' index or strings "
-                f"representing the axis' name."
+        if isinstance(drive, Drive):
+            self._drive = drive
+            self._axes = list(range(drive.naxes))
+        elif isinstance(drive, (list, tuple)) and all(isinstance(dr, (int, str)) for dr in drive):
+            # hidden mode for debugging purposes
+            self._drive = None
+            self._axes = drive
+        else:
+            raise TypeError(
+                f"For input argument 'drive' expected type {Drive}, but got type "
+                f"{type(drive)}."
             )
-
-        self._axes = axes
 
         self.inputs = self._validate_inputs(kwargs)
         self._config_keys = {"type"}.union(set(self.inputs.keys()))
