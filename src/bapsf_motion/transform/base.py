@@ -62,7 +62,7 @@ class BaseTransform(ABC):
             raise ValueError(f"matrix.shape = {matrix.shape}")
 
     def __call__(self, points, to_coords="drive"):
-        self._convert(points, to_coords=to_coords)
+        return self._convert(points, to_coords=to_coords)
 
     @property
     def axes(self):
