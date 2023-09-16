@@ -190,7 +190,7 @@ class LaPDXYTransform(BaseTransform):
         points = self.mspace_polarity * points  # type: np.ndarray
 
         # need to handle when x_L = pivot_to_center
-        # since alpha can never be 90deg we done need to worry about that case
+        # since alpha can never be 90deg we don't need to worry about that case
         alpha = np.arctan(points[..., 1] / (self.pivot_to_center + points[..., 0]))
 
         npoints = 1 if points.ndim == 1 else points.shape[0]
