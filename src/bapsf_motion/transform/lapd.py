@@ -91,7 +91,9 @@ class LaPDXYTransform(BaseTransform):
 
         points = points.squeeze()
         if points.ndim not in (1, 2):
-            raise ValueError
+            raise ValueError(
+                f"Expected given 'points' to ndims 1 or 2, got {points.ndim}."
+            )
         elif points.ndim == 1 and points.size != 2:
             # a single point must have both x and y values
             raise ValueError
