@@ -17,27 +17,18 @@ class BaseTransform(ABC):
 
     def __init__(
         self,
-        # axes: Tuple[Union[str, int], ...],
         drive: Drive,
         **kwargs,
     ):
-        # if not isinstance(axes, (list, tuple)):
-        #     axes = [axes]
-        #
-        # if not all(isinstance(ax, (int, str)) for ax in axes):
-        #     raise ValueError(
-        #         f"Argument 'axes' needs to be a list or tuple containing "
-        #         f"integers representing the axis' index or strings "
-        #         f"representing the axis' name."
-        #     )
-        #
-        # self._axes = axes
 
         if isinstance(drive, Drive):
             self._drive = drive
             self._axes = list(range(drive.naxes))
         elif isinstance(drive, (list, tuple)) and all(isinstance(dr, (int, str)) for dr in drive):
             # hidden mode for debugging purposes
+
+            # TODO: ADD A WARNING HERE THAT WE ARE IN A DEBUG MODE
+
             self._drive = None
             self._axes = drive
         else:
