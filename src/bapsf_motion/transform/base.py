@@ -114,10 +114,10 @@ class BaseTransform(ABC):
         ----------
         points: :term:`array_like`
             A single point or array of points for which the
-            transformation will be generated.  The generated matrix
-            has dimensions :math:`M \times M \times M \time N` where
+            transformation will be generated.  The array of points
+            needs to be of size :math:`M` or :math:`M \times N` where
             :math:`M` is the dimensionality of the :term:`motion space`
-            plus 1 and :math:`N` is the number of points passed in.
+            and :math:`N` is the number of points to be transformed.
 
         to_coords: `str`
             If ``"drive"``, then generate a transformation matrix that
@@ -127,21 +127,30 @@ class BaseTransform(ABC):
             coordinates to :term:`motion space` coordinates.
             (DEFAULT: ``"drive"``)
 
+        Returns
+        -------
+        matrix: :term:`array_like`
+            A transformation matrix of size
+            :math:`M+1 \times M+1 \times N`.  The :math:`M+1`
+            dimensionality allows for the inclusion of a dimension
+            for coordinate translations.
+
         Notes
         -----
 
         The generated matrix must have a dimensionality of
-        :math:`M \times M \times M \time N` where :math:`M` is the
-        dimensionality of the :term:`motion space` plus 1 and
-        :math:`N` is the number of points passed in.  The +1 in
-        :math:`M` corresponds to a dimension that allows for translation
-        shifts in the coordinate transformation.  For example, if a
-        2D probe drive is being used then the generated matrix for a
-        single point would be :math:`3 \times 3 \times 1`.
+        :math:`M+1 \times M+1 \times N` where :math:`M` is the
+        dimensionality of the :term:`motion space` and
+        :math:`N` is the number of points passed in.  The +1 in the
+        transformation matrix dimensionality corresponds to a dimension
+        that allows for translational shifts in the coordinate
+        transformation.  For example, if a 2D probe drive is being used
+        then the generated matrix for a single point would have a size
+        of :math:`3 \times 3 \times 1`.
 
-        The matrix generation take a ``points`` argument because not
-        all transformations out that are agnostic of the starting
-        location, for example, the XY :term:`LaPD` :term:`probe drive`.
+        The matrix generation takes a ``points`` argument because not
+        all transformations are agnostic of the starting location, for
+        example, the XY :term:`LaPD` :term:`probe drive`.
         """
         # to_coord should have two options "drive" and "motion_space"
         # - to_coord="drive" means to convert from motion space coordinates
