@@ -140,10 +140,17 @@ class BaseTransform(ABC):
 
     @property
     def axes(self):
+        """A list of axis identifiers."""
+        # TODO: this need to be redone to be more consistent with drive.axes
         return self._axes
 
     @property
     def naxes(self):
+        """
+        The number of axes of the probe drive.
+
+        This is the same as the motion space dimensionality.
+        """
         return len(self.axes)
 
     @property
