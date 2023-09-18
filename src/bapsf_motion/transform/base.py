@@ -306,7 +306,8 @@ class BaseTransform(ABC):
         example, the XY :term:`LaPD` :term:`probe drive`.
         """
         # Developer Notes:
-        # 1. Tall sequences goes __call__ -> _convert -> _matrix -> _matrix_to_drive
+        # 1. Tall sequences goes
+        #    __call__ -> _convert -> _matrix -> _matrix_to_drive
         # 2. proper condition of points has already been done s.t. an
         #    M x N numpy array will always be passed in...this could only NOT
         #    be the case if the subclass overrides methods upstream in the call
@@ -322,6 +323,59 @@ class BaseTransform(ABC):
 
     @abstractmethod
     def _matrix_to_motion_space(self, points):
+        r"""
+        Generate a transformation matrix that converts points from
+        probe drive coordinates to motion space coordinates.
+
+        Parameters
+        ----------
+        points: :term:`array_like`
+            A single point or array of points in the probe drive
+            coordinate system for which the transformation matrix will
+            be generated.  The array of points needs to be of size
+            :math:`M` or :math:`M \times N` where :math:`M` is the
+            dimensionality of the :term:`motion space` and :math:`N` is
+            the number of points to be transformed.
+
+        Returns
+        -------
+        matrix: :term:`array_like`
+            A transformation matrix of size
+            :math:`M+1 \times M+1 \times N`.  The :math:`M+1`
+            dimensionality allows for the inclusion of a dimension
+            for coordinate translations.
+
+        Notes
+        -----
+
+        The generated matrix must have a dimensionality of
+        :math:`M+1 \times M+1 \times N` where :math:`M` is the
+        dimensionality of the :term:`motion space` and
+        :math:`N` is the number of points passed in.  The +1 in the
+        transformation matrix dimensionality corresponds to a dimension
+        that allows for translational shifts in the coordinate
+        transformation.  For example, if a 2D probe drive is being used
+        then the generated matrix for a single point would have a size
+        of :math:`3 \times 3 \times 1`.
+
+        The matrix generation takes a ``points`` argument because not
+        all transformations are agnostic of the starting location, for
+        example, the XY :term:`LaPD` :term:`probe drive`.
+        """
+        # Developer Notes:
+        # 1. Tall sequences goes
+        #    __call__ -> _convert -> _matrix -> _matrix_to_motion_space
+        # 2. proper condition of points has already been done s.t. an
+        #    M x N numpy array will always be passed in...this could only NOT
+        #    be the case if the subclass overrides methods upstream in the call
+        #    sequence.
+        # 3. The generated matrix should always be of dimensionality
+        #    M+1 x M+1 x N, where M is the motion space dimensionality and
+        #    N is the number of points to convert...points has dimensionality
+        #    M x N
+        # 4. The +1 in the dimensionality corresponds to axis for coordinate
+        #    translations.  If a transformation has no translation, then all
+        #    values of this axis are zero.
         ...
 
 
