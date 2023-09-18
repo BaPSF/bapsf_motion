@@ -5,8 +5,6 @@ Module for functionality focused around the
 __all__ = ["MotionGroup", "MotionGroupConfig"]
 __actors__ = ["MotionGroup"]
 
-import logging
-
 import numpy as np
 import tomli
 
