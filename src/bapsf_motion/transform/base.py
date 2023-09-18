@@ -241,18 +241,3 @@ class Base2Transform(ABC):
         #
         # TODO: would to_coord be better as a to_drive that has a boolean value
         ...
-
-
-class TransformRule:
-    def __init__(self, drive, axes, method, **kwargs):
-        self._drive = drive
-        self._axes = axes
-
-        from bapsf_motion.transform.helpers import transform_factory
-
-        tr = transform_factory(drive, tr_type=method, **kwargs)
-
-
-class Transform(BaseTransform):
-    def __init__(self):
-        ...
