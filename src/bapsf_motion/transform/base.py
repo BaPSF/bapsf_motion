@@ -62,6 +62,35 @@ class BaseTransform(ABC):
             raise ValueError(f"matrix.shape = {matrix.shape}")
 
     def __call__(self, points, to_coords="drive"):
+        r"""
+        Perform a coordinate transformation on the supplied ``points``.
+
+        Parameters
+        ----------
+        points: :term:`array_like`
+            A single point or array of points for which the
+            transformation will be generated.  The array of points
+            needs to be of size :math:`M` or :math:`M \times N` where
+            :math:`M` is the dimensionality of the :term:`motion space`
+            and :math:`N` is the number of points to be transformed.
+
+        to_coords: `str`
+            If ``"drive"``, then generate a transformation matrix that
+            converts :term:`motion space` coordinates to probe drive
+            coordinates.  If ``"motion space"``, then generate a
+            transformation matrix that converts probe drive
+            coordinates to :term:`motion space` coordinates.
+            (DEFAULT: ``"drive"``)
+
+        Returns
+        -------
+        tpoints: :term:`array_like`
+            The points calculated from the coordinate transformation of
+            ``points``.  The returned array has the same dimensionality
+            as ``points``.
+
+        """
+        
         return self._convert(points, to_coords=to_coords)
 
     @property
