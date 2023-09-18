@@ -12,6 +12,23 @@ from bapsf_motion.transform.helpers import register_transform
 
 @register_transform
 class IdentityTransform(BaseTransform):
+    """
+    Class that defines an Identity coordinate transform, i.e. the
+    :term:`motion space` and probe drive coordinates are the same.
+
+    **transform type:** ``'identity'``
+
+    Parameters
+    ----------
+    drive: |Drive|
+        The instance of |Drive| the coordinate transformer will be
+        working with.
+
+    kwargs: Dict[str, Any]
+        No extra Keywords are required to define this class, however,
+        any supplied keywords will be included in the :attr:`config`
+        dictionary.
+    """
     _transform_type = "identity"
 
     def __init__(self, drive, **settings):
