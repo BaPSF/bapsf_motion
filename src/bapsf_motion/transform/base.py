@@ -243,15 +243,51 @@ class BaseTransform(ABC):
         )
 
     def _convert(self, points, to_coords="drive"):
+        r"""
+        Perform the coordinate transform to convert points from probe
+        drive coordinates to motion space coordinates, and vice versa.
+
+        Parameters
+        ----------
+        points: :term:`array_like`
+            A single point or array of points for which the
+            transformation will be generated.  The array of points
+            needs to be of size :math:`M` or :math:`M \times N` where
+            :math:`M` is the dimensionality of the :term:`motion space`
+            and :math:`N` is the number of points to be transformed.
+
+        to_coords: `str`
+            If ``"drive"``, then generate a transformation matrix that
+            converts :term:`motion space` coordinates to probe drive
+            coordinates.  If ``"motion space"``, then generate a
+            transformation matrix that converts probe drive
+            coordinates to :term:`motion space` coordinates.
+            (DEFAULT: ``"drive"``)
+
+        Returns
+        -------
+        tr_points: :term:`array_like`
+            The points calculated from the coordinate transformation of
+            ``points``.  The returned array has the same dimensionality
+            as ``points``.
+        """
+        # Developer Notes:
+        # 1. Call sequences goes
+        #    __call__ -> _convert
+        # 2. Proper conditioning of 'points' has already been done s.t. an
+        #    M x N numpy array will always be passed in...this could only NOT
+        #    be the case if the subclass overrides methods upstream in the call
+        #    sequence.
+        # 3. Proper conditioning of 'to_coords has already been done
+        #    by __call__
+        # 4. The generated matrix for transformed points should always be of
+        #    dimensionality M x N, that same as 'points'.
+
         # TODO: this convert function still need to be test to show
         #       that it'll work for N-dimensions...I stole this from
         #       LaPDXYTransform.convert() so it works in a world where
         #       the generated matrix _matrix() is 3x3 but the points/positions
         #       are only given as a 2-element vector
-
-        # Notes:
-        # 1. __call__ has conditioned points, so it will always be M x N
-        # 2. __call__ has validated to_coords
 
         matrix = self._matrix(points, to_coords=to_coords)
 
