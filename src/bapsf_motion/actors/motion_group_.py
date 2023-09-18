@@ -430,8 +430,7 @@ class MotionGroup(BaseActor):
         elif "type" not in config:
             raise ValueError(
                 "Transform configuration my missing key/value pair "
-                "'type'.  The key/value pair must be defined as "
-                "'type = 'lapd_xy''."
+                "'type'."
             )
 
         tr_type = config.pop("type")
