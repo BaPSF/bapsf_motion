@@ -84,18 +84,67 @@ class BaseTransform(ABC):
 
         Returns
         -------
-        tpoints: :term:`array_like`
+        tr_points: :term:`array_like`
             The points calculated from the coordinate transformation of
             ``points``.  The returned array has the same dimensionality
             as ``points``.
 
         """
-        
-        return self._convert(points, to_coords=to_coords)
+
+        # make sure points is a numpy array
+        if not isinstance(points, np.ndarray):
+            points = np.array(points)
+
+        # make sure points is always an M X N matrix
+        if points.ndim == 1 and self.naxes == 1:
+            points = points[np.newaxis, ...]
+        elif points.ndim == 1:
+            points = points[..., np.newaxis]
+
+        # points always needs to be 2D
+        if points.ndim != 2:
+            raise ValueError(
+                f"Expected a 2D array for 'points', but got a {points.ndim}-D"
+                f"array."
+            )
+
+        # validate to_coords
+        valid_coords = {"drive", "mspace", "motion_space", "motion space"}
+        if not isinstance(to_coords, str):
+            raise TypeError(
+                f"For argument 'to_coords' expected type string, got type "
+                f"{type(to_coords)}."
+            )
+        elif to_coords not in valid_coords:
+            raise ValueError(
+                f"For argument 'to_coords' expected a string value in "
+                f"{valid_coords}, but got {to_coords}."
+            )
+
+        tr_points = self._convert(points, to_coords=to_coords)
+
+        if tr_points.ndim not in (1, 2):
+            ValueError(
+                "Something went wrong! The coordinate transformed points "
+                "do not share the same dimensionality as 'points'.  The"
+                " is likely a developer error and not a user error.  "
+                "Please post an issue on the bapsfdaq_motion GitHub "
+                "repo, https://github.com/BaPSF/bapsfdaq_motion/issues."
+            )
+        elif tr_points.ndim == 1 and self.naxes == 1:
+            tr_points = tr_points[np.newaxis, ...]
+        elif tr_points.ndim == 1:
+            tr_points = tr_points[..., np.newaxis]
+
+        return tr_points
 
     @property
     def axes(self):
         return self._axes
+
+    @property
+    def naxes(self):
+        return len(self.axes)
 
     @property
     def transform_type(self) -> str:
@@ -181,25 +230,14 @@ class BaseTransform(ABC):
         all transformations are agnostic of the starting location, for
         example, the XY :term:`LaPD` :term:`probe drive`.
         """
-        # to_coord should have two options "drive" and "motion_space"
-        # - to_coord="drive" means to convert from motion space coordinates
-        #   to drive coordinates
-        # - to_coord="motion_space" converts in the opposite direction as
-        #   to_coord="drive"
-        #
-        # TODO: would to_coord be better as a to_drive that has a boolean value
-        if not isinstance(points, np.ndarray):
-            points = np.array(points)
+        # Notes:
+        # 1. __call__ has conditioned points, so it will always be M x N
+        # 2. __call__ has validated to_coords
 
-        if to_coords == "drive":
-            return self._matrix_to_drive(points)
-        elif to_coords in ("mspace", "motion_space", "motion space"):
-            return self._matrix_to_motion_space(points)
-        else:
-            raise ValueError(
-                f"Keyword 'to_coords' can only have values 'drive' or "
-                f"'motion_space', but got '{to_coords}'."
-            )
+        return (
+            self._matrix_to_drive(points) if to_coords == "drive"
+            else self._matrix_to_motion_space(points)
+        )
 
     def _convert(self, points, to_coords="drive"):
         # TODO: this convert function still need to be test to show
@@ -208,15 +246,17 @@ class BaseTransform(ABC):
         #       the generated matrix _matrix() is 3x3 but the points/positions
         #       are only given as a 2-element vector
 
-        if not isinstance(points, np.ndarray):
-            points = np.array(points)
+        # Notes:
+        # 1. __call__ has conditioned points, so it will always be M x N
+        # 2. __call__ has validated to_coords
 
         matrix = self._matrix(points, to_coords=to_coords)
 
-        if points.ndim == 1:
-            points = np.concatenate((points, [1]))
-            return np.matmul(matrix, points)[:2]
+        if points.shape[1] == 1:
+            points = np.concatenate((points[..., 0], [1]))
+            return np.matmul(matrix, points)[:-1]
 
+        # add in extra dimension for the translation axis
         points = np.concatenate(
             (points, np.ones((points.shape[0], 1))),
             axis=1,
