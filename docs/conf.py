@@ -39,6 +39,15 @@ automodapi_custom_groups = {
         ),
         "dunder": "__actors__",
     },
+    "transformers": {
+        "title": "Transformers",
+        "description": (
+            "Classes that define functionality for performing coordinate"
+            " transformations between :term:`motion space` coordinate and"
+            " probe drive coordinate, and vice versa."
+        ),
+        "dunder": "__transformer__",
+    },
 }
 automodapi_group_order = (
     "modules",

@@ -1,4 +1,6 @@
+"""Module that defines the `LaPDXYTransform` abstract class."""
 __all__ = ["LaPDXYTransform"]
+__transformer__ = ["LaPDXYTransform"]
 
 import numpy as np
 
