@@ -19,10 +19,12 @@ class IdentityTransform(BaseTransform):
         return inputs
 
     def _matrix_to_motion_space(self, points: np.ndarray):
-        return 1
+        return
 
     def _matrix_to_drive(self, points: np.ndarray):
-        return 1
+        return
 
     def _convert(self, points, to_coords="drive"):
+        # __all__ already does validation on points and to_coords, so
+        # just return points
         return points
