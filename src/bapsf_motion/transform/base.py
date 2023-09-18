@@ -52,10 +52,12 @@ class BaseTransform(ABC):
         self.dependencies = []  # type: List[BaseTransform]
 
         # validate matrix
-        matrix = self._matrix([0.0] * len(self.axes))
+        matrix = self._matrix(
+            np.array([0.0] * len(self.axes))[..., np.newaxis]
+        )
         if not isinstance(matrix, np.ndarray):
             raise TypeError
-        elif matrix.shape != tuple(2 * [len(self.axes) + 1]):
+        elif matrix.shape != tuple(2 * [len(self.axes) + 1]) + (1,):
             # matrix needs to be square with each dimension being one size
             # larger than the number axes the matrix transforms...the last
             # dimensions allows for shift translations
