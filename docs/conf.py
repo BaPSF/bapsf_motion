@@ -53,6 +53,7 @@ automodapi_group_order = (
     "modules",
     "classes",
     "actors",
+    "transformers"
     "exceptions",
     "warnings",
     "functions",
