@@ -231,9 +231,11 @@ class BaseTransform(ABC):
         all transformations are agnostic of the starting location, for
         example, the XY :term:`LaPD` :term:`probe drive`.
         """
-        # Notes:
-        # 1. __call__ has conditioned points, so it will always be M x N
-        # 2. __call__ has validated to_coords
+        # Developer Notes:
+        # 1. Call sequences goes
+        #    __call__ -> _convert -> _matrix
+        # 2. __call__ has conditioned points, so it will always be M x N
+        # 3. __call__ has validated to_coords
 
         return (
             self._matrix_to_drive(points) if to_coords == "drive"
@@ -306,9 +308,9 @@ class BaseTransform(ABC):
         example, the XY :term:`LaPD` :term:`probe drive`.
         """
         # Developer Notes:
-        # 1. Tall sequences goes
+        # 1. Call sequences goes
         #    __call__ -> _convert -> _matrix -> _matrix_to_drive
-        # 2. proper condition of points has already been done s.t. an
+        # 2. Proper conditioning of points has already been done s.t. an
         #    M x N numpy array will always be passed in...this could only NOT
         #    be the case if the subclass overrides methods upstream in the call
         #    sequence.
@@ -363,9 +365,9 @@ class BaseTransform(ABC):
         example, the XY :term:`LaPD` :term:`probe drive`.
         """
         # Developer Notes:
-        # 1. Tall sequences goes
+        # 1. Call sequences goes
         #    __call__ -> _convert -> _matrix -> _matrix_to_motion_space
-        # 2. proper condition of points has already been done s.t. an
+        # 2. Proper conditioning of points has already been done s.t. an
         #    M x N numpy array will always be passed in...this could only NOT
         #    be the case if the subclass overrides methods upstream in the call
         #    sequence.
