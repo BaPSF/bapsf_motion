@@ -192,10 +192,11 @@ class BaseTransform(ABC):
         ----------
         points: :term:`array_like`
             A single point or array of points for which the
-            transformation will be generated.  The array of points
-            needs to be of size :math:`M` or :math:`M \times N` where
-            :math:`M` is the dimensionality of the :term:`motion space`
-            and :math:`N` is the number of points to be transformed.
+            transformation matrix will be generated.  The array of
+            points needs to be of size :math:`M` or :math:`M \times N`
+            where :math:`M` is the dimensionality of the
+            :term:`motion space` and :math:`N` is the number of points
+            to be transformed.
 
         to_coords: `str`
             If ``"drive"``, then generate a transformation matrix that
