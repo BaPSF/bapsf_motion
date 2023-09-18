@@ -1,3 +1,4 @@
+"""Module that defines the `BaseTransform` abstract class."""
 __all__ = ["BaseTransform"]
 
 import numpy as np
@@ -10,6 +11,18 @@ from bapsf_motion.motion_list import MotionList
 
 
 class BaseTransform(ABC):
+    """
+    Abstract base class for coordinate transform classes.
+
+    Parameters
+    ----------
+    drive: |Drive|
+        The instance of |Drive| the coordinate transformer will be
+        working with.
+
+    kwargs: Dict[str, Any]
+        Keyword arguments that are specific to the subclass.
+    """
     _transform_type = NotImplemented  # type: str
 
     # TODO: add method illustrate_transform() to plot and show how the
@@ -60,11 +73,18 @@ class BaseTransform(ABC):
         return self._axes
 
     @property
-    def transform_type(self):
+    def transform_type(self) -> str:
+        """
+        String naming the coordinate transformation type.  This is
+        unique among all subclasses of `BaseTransform`."""
         return self._transform_type
 
     @property
-    def config(self):
+    def config(self) -> Dict[str, Any]:
+        """
+        A dictionary containing the coordinate transformation
+        configuration.
+        """
         config = {}
         for key in self._config_keys:
             if key == "type":
@@ -78,9 +98,55 @@ class BaseTransform(ABC):
 
     @abstractmethod
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validate input arguments from class instantiation.
+
+        Parameters
+        ----------
+        inputs: Dict[str, Any]
+            The optional input arguments passed during class
+            instantiation.
+        """
         ...
 
     def _matrix(self, points, to_coords="drive") -> np.ndarray:
+        r"""
+        The transformation matrix used to transform from probe drive
+        coordinates to motion space coordinates, and vice versa.
+
+        Parameters
+        ----------
+        points: :term:`array_like`
+            A single point or array of points for which the
+            transformation will be generated.  The generated matrix
+            has dimensions :math:`M \times M \times M \time N` where
+            :math:`M` is the dimensionality of the :term:`motion space`
+            plus 1 and :math:`N` is the number of points passed in.
+
+        to_coords: `str`
+            If ``"drive"``, then generate a transformation matrix that
+            converts :term:`motion space` coordinates to probe drive
+            coordinates.  If ``"motion space"``, then generate a
+            transformation matrix that converts probe drive
+            coordinates to :term:`motion space` coordinates.
+            (DEFAULT: ``"drive"``)
+
+        Notes
+        -----
+
+        The generated matrix must have a dimensionality of
+        :math:`M \times M \times M \time N` where :math:`M` is the
+        dimensionality of the :term:`motion space` plus 1 and
+        :math:`N` is the number of points passed in.  The +1 in
+        :math:`M` corresponds to a dimension that allows for translation
+        shifts in the coordinate transformation.  For example, if a
+        2D probe drive is being used then the generated matrix for a
+        single point would be :math:`3 \times 3 \times 1`.
+
+        The matrix generation take a ``points`` argument because not
+        all transformations out that are agnostic of the starting
+        location, for example, the XY :term:`LaPD` :term:`probe drive`.
+        """
         # to_coord should have two options "drive" and "motion_space"
         # - to_coord="drive" means to convert from motion space coordinates
         #   to drive coordinates
