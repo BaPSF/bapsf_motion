@@ -6,8 +6,9 @@ __all__ = [
     "layer_factory",
     "register_layer",
     "BaseLayer",
-    "GridLayer",
 ]
+__mlayers__ = ["GridLayer"]
+__all__ += __mlayers__
 
 from bapsf_motion.motion_list.layers.base import BaseLayer
 from bapsf_motion.motion_list.layers.regular_grid import GridLayer

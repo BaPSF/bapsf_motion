@@ -2,6 +2,7 @@
 Module that defines the `GridLayer` class.
 """
 __all__ = ["GridLayer"]
+__mlayers__ = ["GridLayer"]
 
 import numpy as np
 import xarray as xr
