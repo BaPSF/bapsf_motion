@@ -1,4 +1,6 @@
+"""Module that defines the `LaPDXYTransform` abstract class."""
 __all__ = ["LaPDXYTransform"]
+__transformer__ = ["LaPDXYTransform"]
 
 import numpy as np
 
@@ -15,7 +17,7 @@ class LaPDXYTransform(BaseTransform):
 
     def __init__(
         self,
-        axes,
+        drive,
         *,
         pivot_to_center,
         pivot_to_drive,
@@ -24,7 +26,7 @@ class LaPDXYTransform(BaseTransform):
         mspace_polarity=None,
     ):
         super().__init__(
-            axes,
+            drive,
             pivot_to_center=pivot_to_center,
             pivot_to_drive=pivot_to_drive,
             probe_axis_offset=probe_axis_offset,
@@ -32,10 +34,12 @@ class LaPDXYTransform(BaseTransform):
             mspace_polarity=mspace_polarity,
         )
 
-        if len(axes) != 2:
+        naxes = len(self.axes) if self._drive is None else self._drive.naxes
+
+        if naxes != 2:
             raise ValueError(
-                f"LaPDXYTransform require two axes to operate on, only "
-                f"{len(axes)} where specified."
+                f"The LaPDXYTransform requires two axes to operate on, the "
+                f"specified probe drive has {drive.naxes} axes."
             )
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
@@ -83,13 +87,15 @@ class LaPDXYTransform(BaseTransform):
 
         return inputs
 
-    def matrix(self, points, to_coords="drive") -> np.ndarray:
+    def _matrix(self, points, to_coords="drive") -> np.ndarray:
         if not isinstance(points, np.ndarray):
             points = np.array(points)
 
         points = points.squeeze()
         if points.ndim not in (1, 2):
-            raise ValueError
+            raise ValueError(
+                f"Expected given 'points' to ndims 1 or 2, got {points.ndim}."
+            )
         elif points.ndim == 1 and points.size != 2:
             # a single point must have both x and y values
             raise ValueError
@@ -98,7 +104,7 @@ class LaPDXYTransform(BaseTransform):
             # must give x and y values
             raise ValueError
 
-        return super().matrix(points, to_coords=to_coords)
+        return super()._matrix(points, to_coords=to_coords)
 
     def _matrix_to_motion_space(self, points: np.ndarray):
         # given points are in drive (e0, e1) coordinates
@@ -190,7 +196,7 @@ class LaPDXYTransform(BaseTransform):
         points = self.mspace_polarity * points  # type: np.ndarray
 
         # need to handle when x_L = pivot_to_center
-        # since alpha can never be 90deg we done need to worry about that case
+        # since alpha can never be 90deg we don't need to worry about that case
         alpha = np.arctan(points[..., 1] / (self.pivot_to_center + points[..., 0]))
 
         npoints = 1 if points.ndim == 1 else points.shape[0]
@@ -252,11 +258,11 @@ class LaPDXYTransform(BaseTransform):
             ),
         )
 
-    def convert(self, points, to_coords="drive"):
+    def _convert(self, points, to_coords="drive"):
         if not isinstance(points, np.ndarray):
             points = np.array(points)
 
-        matrix = self.matrix(points, to_coords=to_coords)
+        matrix = self._matrix(points, to_coords=to_coords)
 
         if points.ndim == 1:
             points = np.concatenate((points, [1]))

@@ -628,20 +628,11 @@ class MotionGroup(BaseActor):
         elif "type" not in config:
             raise ValueError(
                 "Transform configuration my missing key/value pair "
-                "'type'.  The key/value pair must be defined as "
-                "'type = 'lapd_xy''."
-            )
-        elif config["type"] != "lapd_xy":
-            raise ValueError(
-                "Currently only transform type 'lapd_xy' is accepted, "
-                f"got type {config['type']}."
+                "'type'."
             )
 
-        config.pop("type")
-
-        return transform.LaPDXYTransform(**config)
-
-
+        tr_type = config.pop("type")
+        return transform.transform_factory(self.drive, tr_type=tr_type, **config)
 
     def run(self):
         if self.drive is not None:
@@ -682,7 +673,7 @@ class MotionGroup(BaseActor):
             raise ValueError(
                 f"Expected type int for 'index', got {type(index)}"
             )
-        elif not np.asscalar(np.isin(index, self.ml.motion_list.index)):
+        elif not np.isin(index, self.ml.motion_list.index):
             raise ValueError(
                 f"Given index {index} is out of range, "
                 f"[0, {self.ml.motion_list.index.size}]."
@@ -697,7 +688,7 @@ class MotionGroup(BaseActor):
     @property
     def position(self):
         dr_pos = self.drive.position
-        pos = self.transform.convert(
+        pos = self.transform(
             dr_pos.value.tolist(),
             to_coords="motion_space",
         )
@@ -707,7 +698,7 @@ class MotionGroup(BaseActor):
         self.drive.stop()
 
     def move_to(self, pos, axis=None):
-        dr_pos = self.transform.convert(pos, to_coords="drive")
+        dr_pos = self.transform(pos, to_coords="drive")
         return self.drive.move_to(pos=dr_pos, axis=axis)
 
     def move_ml(self, index):
