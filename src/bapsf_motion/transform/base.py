@@ -28,11 +28,7 @@ class BaseTransform(ABC):
     # TODO: add method illustrate_transform() to plot and show how the
     #       space in transformed
 
-    def __init__(
-        self,
-        drive: Drive,
-        **kwargs,
-    ):
+    def __init__(self, drive: Drive, **kwargs):
 
         if isinstance(drive, Drive):
             self._drive = drive
