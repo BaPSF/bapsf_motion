@@ -37,11 +37,20 @@ class IdentityTransform(BaseTransform):
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         return inputs
 
+    def _identity_matrix(self, points: np.ndarray):
+        """
+        Generate an identity matrix with a zero-ed translation axis.
+        """
+        shape = points.shape
+        matrix = np.identity(shape[0] + 1)
+        matrix[-1, -1] = 0
+        return np.repeat(matrix[..., np.newaxis], shape[1], axis=2)
+
     def _matrix_to_motion_space(self, points: np.ndarray):
-        return
+        return self._identity_matrix(points)
 
     def _matrix_to_drive(self, points: np.ndarray):
-        return
+        return self._identity_matrix(points)
 
     def _convert(self, points, to_coords="drive"):
         # __all__ already does validation on points and to_coords, so
