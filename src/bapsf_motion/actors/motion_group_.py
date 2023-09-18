@@ -433,15 +433,9 @@ class MotionGroup(BaseActor):
                 "'type'.  The key/value pair must be defined as "
                 "'type = 'lapd_xy''."
             )
-        elif config["type"] != "lapd_xy":
-            raise ValueError(
-                "Currently only transform type 'lapd_xy' is accepted, "
-                f"got type {config['type']}."
-            )
 
-        config.pop("type")
-
-        return transform.LaPDXYTransform(self.drive, **config)
+        tr_type = config.pop("type")
+        return transform.transform_factory(self.drive, tr_type=tr_type, **config)
 
     def run(self):
         if self.drive is not None:
