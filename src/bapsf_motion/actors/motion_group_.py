@@ -476,7 +476,7 @@ class MotionGroup(BaseActor):
             raise ValueError(
                 f"Expected type int for 'index', got {type(index)}"
             )
-        elif not np.asscalar(np.isin(index, self.ml.motion_list.index)):
+        elif not np.isin(index, self.ml.motion_list.index):
             raise ValueError(
                 f"Given index {index} is out of range, "
                 f"[0, {self.ml.motion_list.index.size}]."
