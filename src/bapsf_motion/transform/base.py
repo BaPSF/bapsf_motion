@@ -141,7 +141,12 @@ class BaseTransform(ABC):
         ...
 
 
-class Base2Transform(ABC):
+class _Base2Transform(ABC):
+    """
+    This was a first attempt at a BaseTransform class.  I'm keeping it
+    around until I'm satisfied with BaseTransform or reimplement all
+    of _Base2Transform into BaseTransform.
+    """
     _transform_type = NotImplemented  # type: str
 
     # TODO: Possible useful methods
