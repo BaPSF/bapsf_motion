@@ -53,7 +53,7 @@ class GridLayer(BaseLayer):
     .. tabs::
        .. code-tab:: py Class Instantiation
 
-          el = GridLayer(
+          ly = GridLayer(
               ds,
               limits = [[-10, 10], [0, 20]],
               steps=[21, 21],
@@ -61,7 +61,7 @@ class GridLayer(BaseLayer):
 
        .. code-tab:: py Factory Function
 
-          el = layer_factory(
+          ly = layer_factory(
               ds,
               ly_layer = "grid",
               **{
