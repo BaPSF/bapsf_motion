@@ -55,9 +55,6 @@ class IdentityTransform(BaseTransform):
     """
     _transform_type = "identity"
 
-    def __init__(self, drive, **settings):
-        super().__init__(drive, **settings)
-
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         return inputs
 
