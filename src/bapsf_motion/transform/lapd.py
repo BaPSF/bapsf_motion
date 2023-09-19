@@ -4,7 +4,7 @@ __transformer__ = ["LaPDXYTransform"]
 
 import numpy as np
 
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from warnings import warn
 
 from bapsf_motion.transform.base import BaseTransform
@@ -13,17 +13,173 @@ from bapsf_motion.transform.helpers import register_transform
 
 @register_transform
 class LaPDXYTransform(BaseTransform):
+    """
+    Class that defines a coordinate transform for a :term:`LaPD` XY
+    :term:`probe drive`.
+
+    **transform type:** ``'lapd_xy'``
+
+    Parameters
+    ----------
+    drive: |Drive|
+        The instance of |Drive| the coordinate transformer will be
+        working with.
+
+    pivot_to_center: `float`
+        Distance from the center of the :term:`LaPD` to the center
+        "pivot" point of the ball valve.
+
+    pivot_to_drive: `float`
+        Distance from the center line of the :term:`probe drive`
+        vertical axis to the center "pivot" point of the ball valve.
+
+    probe_axis_offset: `float`
+        Perpendicular distance from the center line of the probe shaft
+        to the :term:`probe drive` pivot point on the vertical axis.
+
+    drive_polarity: 2D tuple, optional
+        A two element tuple of +/- 1 values indicating the polarity of
+        the probe drive motion to how the math was done for the
+        underlying matrix transformations.  For example, a value
+        of ``(1, 1)`` would indicate that positive movement (in
+        probe drive coordinates) of the drive would be inwards and
+        downwards.  However, this is inconsistent if the vertical axis
+        has the motor mounted to the bottom of the axis.  In this case
+        the ``drive_polarity`` would be ``(1, -1)``.
+        (DEFAULT: ``(1, 1)``)
+
+    mspace_polarity: 2D tuple, optional
+        A two element tuple of +/- 1 values indicating the polarity of
+        the motion space motion to how the math was done for the
+        underlying matrix transformations.  For example, a value
+        of ``(-1, 1)`` for a probe mounted on an East port would
+        indicate that inward probe drive movement would correspond to
+        a LaPD -X movement and downward probe drive movement
+        would correspond to LaPD +Y.  If the probe was mounted on a
+        West port then the polarity would need to be ``(1, 1)`` since
+        inward probe drive movement corresponds to +X LaPD coordinate
+        movement.  (DEFAULT: ``(-1, 1)``)
+
+    Examples
+    -------
+
+    Let's set up a :term:`transformer` for a probe drive mounted on
+    an east port.  In this case the vertical axis motor is mounted
+    at the top of the vertical axis.  (Values are NOT accurate to
+    actual LaPD values.)
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          tr = LaPDXYTransform(
+              drive,
+              pivot_to_center = 62.94,
+              pivot_to_drive = 133.51,
+              probe_axis_offset = 20.16,
+              drive_polarity = (1, 1),
+              mspace_polarity = (-1, 1),
+          )
+
+       .. code-tab:: py Factory Function
+
+          tr = transform_factory(
+              drive,
+              tr_layer = "lapd_xy",
+              **{
+                  "pivot_to_center": 62.94,
+                  "pivot_to_drive": 133.51,
+                  "probe_axis_offset": 20.16,
+                  "drive_polarity": (1, 1),
+                  "mspace_polarity": (-1, 1),
+              },
+          )
+
+       .. code-tab:: toml TOML
+
+          [...transform]
+          type = "lapd_xy"
+          pivot_to_center = 62.94
+          pivot_to_drive = 133.51
+          probe_axis_offset = 20.16
+          drive_polarity = (1, 1)
+          mspace_polarity = (-1, 1)
+
+       .. code-tab:: py Dict Entry
+
+          config["transform"] = {
+              "type": "lapd_xy",
+              "pivot_to_center": 62.94,
+              "pivot_to_drive": 133.51,
+              "probe_axis_offset": 20.16,
+              "drive_polarity": (1, 1),
+              "mspace_polarity": (-1, 1),
+          }
+
+    Now, let's do the same thing for a probe drive mounted on a West
+    port and has the vertical axis motor mounted at the base.
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          tr = LaPDXYTransform(
+              drive,
+              pivot_to_center = 62.94,
+              pivot_to_drive = 133.51,
+              probe_axis_offset = 20.16,
+              drive_polarity = (1, -1),
+              mspace_polarity = (1, 1),
+          )
+
+       .. code-tab:: py Factory Function
+
+          tr = transform_factory(
+              drive,
+              tr_layer = "lapd_xy",
+              **{
+                  "pivot_to_center": 62.94,
+                  "pivot_to_drive": 133.51,
+                  "probe_axis_offset": 20.16,
+                  "drive_polarity": (1, -1),
+                  "mspace_polarity": (1, 1),
+              },
+          )
+
+       .. code-tab:: toml TOML
+
+          [...transform]
+          type = "lapd_xy"
+          pivot_to_center = 62.94
+          pivot_to_drive = 133.51
+          probe_axis_offset = 20.16
+          drive_polarity = (1, -1)
+          mspace_polarity = (1, 1)
+
+       .. code-tab:: py Dict Entry
+
+          config["transform"] = {
+              "type": "lapd_xy",
+              "pivot_to_center": 62.94,
+              "pivot_to_drive": 133.51,
+              "probe_axis_offset": 20.16,
+              "drive_polarity": (1, -1),
+              "mspace_polarity": (1, 1),
+          }
+    """
+    # TODO: confirm polarity descriptions once issue #38 is resolved
+    # TODO: review that default polarities are correct
+    # TODO: write a full primer on how the coordinate transform was
+    #       calculated
     _transform_type = "lapd_xy"
 
     def __init__(
         self,
         drive,
         *,
-        pivot_to_center,
-        pivot_to_drive,
-        probe_axis_offset,
-        drive_polarity=None,
-        mspace_polarity=None,
+        pivot_to_center: float,
+        pivot_to_drive: float,
+        probe_axis_offset: float,
+        drive_polarity: Tuple[int, int] = (1, 1),
+        mspace_polarity: Tuple[int, int] = (-1, 1),
     ):
         super().__init__(
             drive,
@@ -63,12 +219,7 @@ class LaPDXYTransform(BaseTransform):
 
         for key in ("drive_polarity", "mspace_polarity"):
             polarity = inputs[key]
-            if polarity is None:
-                # TODO: review that default polarities are correct
-                polarity = (
-                    np.array([-1, 1]) if key == "mspace_polarity" else np.array([1, 1])
-                )
-            elif not isinstance(polarity, np.ndarray):
+            if not isinstance(polarity, np.ndarray):
                 polarity = np.array(polarity)
 
             if polarity.shape != (2,):
@@ -275,21 +426,57 @@ class LaPDXYTransform(BaseTransform):
         return np.einsum("kmn,kn->km", matrix, points)[..., :2]
 
     @property
-    def pivot_to_center(self):
+    def pivot_to_center(self) -> float:
+        """
+        Distance from the center of the :term:`LaPD` to the center
+        "pivot" point of the ball valve.
+        """
         return self.inputs["pivot_to_center"]
 
     @property
-    def pivot_to_drive(self):
+    def pivot_to_drive(self) -> float:
+        """
+        Distance from the center line of the :term:`probe drive`
+        vertical axis to the center "pivot" point of the ball valve.
+        """
         return self.inputs["pivot_to_drive"]
 
     @property
+    def probe_axis_offset(self) -> float:
+        """
+        Perpendicular distance from the center line of the probe shaft
+        to the :term:`probe drive` pivot point on the vertical axis.
+        """
+        return self.inputs["probe_axis_offset"]
+
+    @property
     def drive_polarity(self) -> np.ndarray:
+        """
+        A two element array of +/- 1 values indicating the polarity of
+        the probe drive motion to how the math was done for the
+        underlying matrix transformations.
+
+        For example, a value of ``[1, 1]`` would indicate that positive
+        movement (in probe drive coordinates) of the drive would be
+        inwards and downwards.  However, this is inconsistent if the
+        vertical axis has the motor mounted to the bottom of the axis.
+        In this case the ``drive_polarity`` would be ``(1, -1)``.
+        """
         return self.inputs["drive_polarity"]
 
     @property
     def mspace_polarity(self) -> np.ndarray:
-        return self.inputs["mspace_polarity"]
+        """
+        A two element array of +/- 1 values indicating the polarity of
+        the motion space motion to how the math was done for the
+        underlying matrix transformations.
 
-    @property
-    def probe_axis_offset(self):
-        return self.inputs["probe_axis_offset"]
+        For example, a value of ``(-1, 1)`` for a probe mounted on an
+        East port would indicate that inward probe drive movement would
+        correspond to a LaPD -X movement and downward probe drive
+        movement would correspond to LaPD +Y.  If the probe was mounted
+        on a West port then the polarity would need to be ``(1, 1)``
+        since inward probe drive movement corresponds to +X LaPD
+        coordinate movement.
+        """
+        return self.inputs["mspace_polarity"]
