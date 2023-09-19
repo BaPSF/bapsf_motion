@@ -50,6 +50,11 @@ class DividerExclusion(BaseExclusion):
     Examples
     --------
 
+    .. note::
+       The following examples include examples for direct instantiation,
+       as well as configuration passing at the |MotionGroup| and
+       |Manager| levels.
+
     Assume we have a 2D motion space and want to exclude the -X region.
     This would look like:
 
