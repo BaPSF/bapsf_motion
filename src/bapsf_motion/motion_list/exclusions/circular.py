@@ -51,38 +51,50 @@ class CircularExclusion(BaseExclusion):
     region outside a circle of radius 20 centered at (-1, 2).  This
     would look like:
 
-    .. code-block:: python
+    .. tabs::
 
-        el = CircularExclusion(
-            ds,
-            radius = 20,
-            center = [-1, 2],
-            exclude = "outside",
-        )
+        .. code-tab:: py Class Instantiation
 
-    Now, as down with the factory function
+           el = CircularExclusion(
+               ds,
+               radius = 20,
+               center = [-1, 2],
+               exclude = "outside",
+           )
 
-    .. code-block:: python
+        .. code-tab:: py Factory Function
 
-        el = exclusion_factor(
-            ds,
-            ex_layer = "circle",
-            **{
-                "radius": 20,
-                "center": [-1, 2],
-                "exclude": "outside",
-            },
-        )
+           el = exclusion_factor(
+               ds,
+               ex_layer = "circle",
+               **{
+                   "radius": 20,
+                   "center": [-1, 2],
+                   "exclude": "outside",
+               },
+           )
 
-    Now, as a TOML configuration
+    If the layer is being defined at the |MotionGroup| or |Manager|
+    levels then the configuration can be defined in a TOML file or
+    as a dictionary entry:
 
-    .. code-block:: toml
+    .. tabs::
+       .. code-tab:: toml TOML
 
-        [...exclusions.0]
-        type = "circle"
-        radius = 20
-        center = [-1, 20]
-        exclude = "outside"
+          [...motion_list.exclusions]
+          type = "circle"
+          radius = 20
+          center = [-1, 20]
+          exclude = "outside"
+
+       .. code-tab:: py DICT
+
+          config["motion_list"]["exclusions"] = {
+              "type": "circle",
+              "radius": 20,
+              "center": [-1, 20],
+              "exclude": "outside",
+          }
 
     """
     # TODO: Can this class be extend to a N-D motion space.
