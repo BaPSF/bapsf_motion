@@ -38,6 +38,12 @@ Glossary
       define regions in the :term:`motion space` where a probe is not
       allowed to be moved to.
 
+   motion group
+      A motion group is the entity that brings together the full
+      configuration of a :term:`probe drive` and the functionality to
+      communicate with the :term:`probe drive`. This configuration
+      collection also includes the :term:`motion list`.
+
    motion layer
    motion layers
       A "point" layer defined within the `~xarray.Dataset` of the
