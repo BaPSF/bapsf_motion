@@ -77,7 +77,7 @@ class MotionGroupConfig(UserDict):
           space.1.num = 221
           #
           # exclusion defines regions in space where a probe can not go
-          exclusions.0.type = "lapd-XY"
+          exclusions.0.type = "lapd_xy"
           exclusions.0.port_location = "E"
           exclusions.0.cone_full_angle = 60
           #
@@ -129,7 +129,7 @@ class MotionGroupConfig(UserDict):
                 },
                 "exclusions": {
                     "0": {
-                        "type": "lapd-XY",
+                        "type": "lapd_xy",
                         "port_location": "E",
                         "cone_full_angle": 60,
                     },
