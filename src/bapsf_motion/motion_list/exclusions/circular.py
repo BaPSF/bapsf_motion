@@ -2,6 +2,7 @@
 Module that defines the `CircularExclusion` class.
 """
 __all__ = ["CircularExclusion"]
+__mexclusions__ = ["CircularExclusion"]
 
 import numbers
 import numpy as np
