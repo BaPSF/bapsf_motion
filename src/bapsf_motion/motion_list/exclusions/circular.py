@@ -52,27 +52,26 @@ class CircularExclusion(BaseExclusion):
     would look like:
 
     .. tabs::
+       .. code-tab:: py Class Instantiation
 
-        .. code-tab:: py Class Instantiation
+          el = CircularExclusion(
+              ds,
+              radius = 20,
+              center = [-1, 2],
+              exclude = "outside",
+          )
 
-           el = CircularExclusion(
-               ds,
-               radius = 20,
-               center = [-1, 2],
-               exclude = "outside",
-           )
+       .. code-tab:: py Factory Function
 
-        .. code-tab:: py Factory Function
-
-           el = exclusion_factor(
-               ds,
-               ex_layer = "circle",
-               **{
-                   "radius": 20,
-                   "center": [-1, 2],
-                   "exclude": "outside",
-               },
-           )
+          el = exclusion_factor(
+              ds,
+              ex_layer = "circle",
+              **{
+                  "radius": 20,
+                  "center": [-1, 2],
+                  "exclude": "outside",
+              },
+          )
 
     If the layer is being defined at the |MotionGroup| or |Manager|
     levels then the configuration can be defined in a TOML file or
@@ -95,7 +94,6 @@ class CircularExclusion(BaseExclusion):
               "center": [-1, 20],
               "exclude": "outside",
           }
-
     """
     # TODO: Can this class be extend to a N-D motion space.
     _exclusion_type = "circle"
