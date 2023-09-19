@@ -20,7 +20,7 @@ class BaseTransform(ABC):
         The instance of |Drive| the coordinate transformer will be
         working with.
 
-    kwargs: Dict[str, Any]
+    kwargs:
         Keyword arguments that are specific to the subclass.
     """
     _transform_type = NotImplemented  # type: str
