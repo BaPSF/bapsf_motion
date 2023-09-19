@@ -56,7 +56,7 @@ class IdentityTransform(BaseTransform):
     _transform_type = "identity"
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        return inputs
+        return dict()
 
     def _identity_matrix(self, points: np.ndarray):
         """
