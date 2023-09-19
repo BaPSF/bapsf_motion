@@ -76,7 +76,7 @@ class LaPDXYExclusion(BaseExclusion):
 
        .. code-tab:: py Factory Function
 
-          el = exclusion_factor(
+          el = exclusion_factory(
               ds,
               ex_layer = "lapd-XY",
           )
@@ -107,7 +107,7 @@ class LaPDXYExclusion(BaseExclusion):
 
        .. code-tab:: py Factory Function
 
-          el = exclusion_factor(
+          el = exclusion_factory(
               ds,
               ex_layer = "lapd-XY",
               **{
