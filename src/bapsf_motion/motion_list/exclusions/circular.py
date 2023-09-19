@@ -47,6 +47,11 @@ class CircularExclusion(BaseExclusion):
     Examples
     --------
 
+    .. note::
+       The following examples include examples for direct instantiation,
+       as well as configuration passing at the |MotionGroup| and
+       |Manager| levels.
+
     Assume we have a 2D motion space and want a circular exclusion
     region outside a circle of radius 20 centered at (-1, 2).  This
     would look like:
@@ -73,11 +78,6 @@ class CircularExclusion(BaseExclusion):
               },
           )
 
-    If the layer is being defined at the |MotionGroup| or |Manager|
-    levels then the configuration can be defined in a TOML file or
-    as a dictionary entry:
-
-    .. tabs::
        .. code-tab:: toml TOML
 
           [...motion_list.exclusions]
@@ -86,7 +86,7 @@ class CircularExclusion(BaseExclusion):
           center = [-1, 20]
           exclude = "outside"
 
-       .. code-tab:: py DICT
+       .. code-tab:: py Dict Entry
 
           config["motion_list"]["exclusions"] = {
               "type": "circle",

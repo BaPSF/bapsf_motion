@@ -44,7 +44,7 @@ class MotionGroupConfig(UserDict):
 
     The following are example configures for using either the
     ``filename`` keyword (i.e. TOML tab) or the ``config`` keyword
-    (i.e. DICT tab).
+    (i.e. "Dict Entry" tab).
 
     .. tabs::
 
@@ -95,7 +95,7 @@ class MotionGroupConfig(UserDict):
           porbe_axis_offset = 6
 
 
-       .. code-tab:: py DICT
+       .. code-tab:: py Dict Entry
 
           config = {
             "name": "P32 XY-Drive",

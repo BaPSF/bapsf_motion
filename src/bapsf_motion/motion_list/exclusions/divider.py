@@ -73,11 +73,6 @@ class DividerExclusion(BaseExclusion):
               },
           )
 
-    If the layer is being defined at the |MotionGroup| or |Manager|
-    levels then the configuration can be defined in a TOML file or
-    as a dictionary entry:
-
-    .. tabs::
        .. code-tab:: toml TOML
 
           [...motion_list.exclusions]
@@ -85,7 +80,7 @@ class DividerExclusion(BaseExclusion):
           mb = ["inf", 0]
           exclude = "-e0"
 
-       .. code-tab:: py DICT
+       .. code-tab:: py Dict Entry
 
           config["motion_list"]["exclusions"] = {
               "type": "divider",
