@@ -70,7 +70,7 @@ class CircularExclusion(BaseExclusion):
 
           el = exclusion_factory(
               ds,
-              ex_layer = "circle",
+              ex_type = "circle",
               **{
                   "radius": 20,
                   "center": [-1, 2],

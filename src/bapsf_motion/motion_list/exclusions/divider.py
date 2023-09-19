@@ -71,7 +71,7 @@ class DividerExclusion(BaseExclusion):
 
           el = exclusion_factory(
               ds,
-              ex_layer = "divider",
+              ex_type = "divider",
               **{
                   "mb": ["inf", 0],
                   "exclude": "-e0",

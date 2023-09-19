@@ -78,7 +78,7 @@ class LaPDXYExclusion(BaseExclusion):
 
           el = exclusion_factory(
               ds,
-              ex_layer = "lapd_xy",
+              ex_type = "lapd_xy",
           )
 
        .. code-tab:: toml TOML
@@ -109,7 +109,7 @@ class LaPDXYExclusion(BaseExclusion):
 
           el = exclusion_factory(
               ds,
-              ex_layer = "lapd_xy",
+              ex_type = "lapd_xy",
               **{
                   "diameter": 60,
                   "port_location": "W",

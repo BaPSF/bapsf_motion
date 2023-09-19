@@ -63,7 +63,7 @@ class GridLayer(BaseLayer):
 
           ly = layer_factory(
               ds,
-              ly_layer = "grid",
+              ly_type = "grid",
               **{
                   "limits": [[-10, 10], [0, 20]],
                   "steps": [21, 21],
