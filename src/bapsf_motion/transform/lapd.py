@@ -84,7 +84,7 @@ class LaPDXYTransform(BaseTransform):
 
           tr = transform_factory(
               drive,
-              tr_layer = "lapd_xy",
+              tr_type = "lapd_xy",
               **{
                   "pivot_to_center": 62.94,
                   "pivot_to_drive": 133.51,
@@ -134,7 +134,7 @@ class LaPDXYTransform(BaseTransform):
 
           tr = transform_factory(
               drive,
-              tr_layer = "lapd_xy",
+              tr_type = "lapd_xy",
               **{
                   "pivot_to_center": 62.94,
                   "pivot_to_drive": 133.51,
