@@ -364,6 +364,348 @@ class MotionGroupConfig(UserDict):
         return settings
 
 
+class _MotionGroupConfig(UserDict):
+    """
+    A dictionary containing the full configuration for a motion group.
+
+    Parameters
+    ----------
+    filename: str, optional
+        Full path to a TOML file that defines a motion group
+        configuration.  This argument supersedes ``config``, but if not
+        supplied then the ``config`` argument must be defined.
+        (DEFAULT: `None`)
+
+    config: Dict[str, Any], optional
+        A dictionary defining the motion group configuration.  If
+        ``filename`` is defined, then this argument is ignored.
+        (DEFAULT: `None`)
+
+    Examples
+    --------
+
+    The following are example configures for using either the
+    ``filename`` keyword (i.e. TOML tab) or the ``config`` keyword
+    (i.e. "Dict Entry" tab).
+
+    .. tabs::
+
+       .. code-tab:: toml TOML
+
+          [mgroup]
+          name = "P32 XY-drive"  # unique name of motion group
+
+          [mgroup.drive]
+          # define the make up of the probe drive
+          name = "XY-drive"  # name of probe drive
+          axis.0.name = "X"  # name of axis
+          axis.0.ip = "192.168.6.103"  # ip address of motor
+          axis.0.units = "cm"  # unit type used for axis
+          axis.0.units_per_rev = .254  # thread pitch of rod
+          axis.1.name = "Y"
+          axis.1.ip = "192.168.6.104"
+          axis.1.units = "cm"
+          axis.1.units_per_rev = .254
+
+          [mgroup.motion_list]
+          # configuration for the motion list
+          #
+          # 'space' defines the motion space
+          space.0.label = "X"
+          space.0.range = [-55, 55]
+          space.0.num = 221
+          space.1.label = "Y"
+          space.1.range = [-55, 55]
+          space.1.num = 221
+          #
+          # exclusion defines regions in space where a probe can not go
+          exclusions.0.type = "lapd_xy"
+          exclusions.0.port_location = "E"
+          exclusions.0.cone_full_angle = 60
+          #
+          # layers define the points where a probe should move to
+          layers.0.type = "grig"
+          layers.0.limits = [[0, 30], [-30, 30]]
+          layers.0.steps = [11, 21]
+
+          [mgroup.transform]
+          # define the coordinate transformation between the physical
+          # coordinate system (e.g. the LaPD) and the probe drive axes
+          type = "lapd_xy"
+          pivot_to_center = 57.7
+          pivot_to_drive = 125
+          porbe_axis_offset = 6
+
+
+       .. code-tab:: py Dict Entry
+
+          config = {
+            "name": "P32 XY-Drive",
+            "drive": {
+                "name": "XY-Drive",
+                0: {
+                    "name": "X",
+                    "ip": "192.168.6.103",
+                    "units": "cm",
+                    "units_per_rev": .254,
+                },
+                1: {
+                    "name": "Y",
+                    "ip": "192.168.6.104",
+                    "units": "cm",
+                    "units_per_rev": .254,
+                },
+            },
+            "motion_list": {
+                "space", {
+                    0: {
+                        "label": "X",
+                        "range": [-55, 55],
+                        "num:: 221,
+                    },
+                    1: {
+                        "label": "X",
+                        "range": [-55, 55],
+                        "num:: 221,
+                    },
+                },
+                "exclusions": {
+                    "0": {
+                        "type": "lapd_xy",
+                        "port_location": "E",
+                        "cone_full_angle": 60,
+                    },
+                },
+                "layers": {
+                    "0": {
+                        "type": "grid",
+                        "limits": [[0, 30], [-30, 30]],
+                        "steps": [11, 21],
+                    },
+                },
+            },
+            "transform": {
+                "type": "lapd_xy",
+                "pivot_to_center": 57.7,
+                "pivot_to_drive": 125,
+                "porbe_axis_offset": 6,
+            },
+          }
+
+    """
+    #: required keys for the motion group configuration dictionary
+    _required_metadata = {
+        "mgroup": {
+            "name",
+            "axes",
+            "transform",
+            "motion_list",
+        },
+        "axes": {"ip", "units", "name", "units_per_rev"},
+        "transform": {
+            "type",
+            "droop_correction",
+            "pivot_to_center",
+            "pivot_to_clamp",
+            "zero_to_home",
+        },
+        "motion_list": {"space", "exclusions", "layers"},
+        "motion_list.space": {"label", "range", "num"},
+    }
+
+    def __init__(
+        self,
+        *,
+        filename: Optional[str] = None,
+        config: Optional[Dict[str, Any]] = None,
+    ):
+        # TODO: can this be updated so the config argument can modify
+        #       the config defined in filename if both arguments are
+        #       supplied
+        # ensure filename XOR config kwargs are specified
+        if filename is None and config is None:
+            raise TypeError(
+                "MotionGroup() missing 1 required keyword argument: use "
+                "'filename' or 'config' to specify a configuration."
+            )
+        elif filename is not None and config is not None:
+            raise TypeError(
+                "MotionGroup() takes 1 keyword argument but 2 were "
+                "given: use keyword 'filename' OR 'config' to specify "
+                "a configuration."
+            )
+        elif filename is not None:
+            filename = Path(filename).resolve()
+
+            if not filename.exists():
+                for efile in _EXAMPLES:
+                    if filename.name == efile.name:
+                        filename = efile
+                        break
+
+            if not filename.exists():
+                raise ValueError(
+                    f"Specified Motion Group configuration file does "
+                    f"not exist, {filename}."
+                )
+
+            with open(filename, "rb") as f:
+                config = toml.load(f)
+
+        if "mgroup" in config and len(config) != 1:
+            raise ValueError(
+                "Supplied configuration unrecognized, suspected "
+                "multiple Motion Groups defined."
+            )
+        elif "mgroup" in config:
+            config = config["mgroup"]
+
+        config = self._validate_config(config)
+
+        super().__init__(config)
+
+    def _validate_config(self, config):
+        """Validate the motion group configuration."""
+        if len(config) == 1:
+            key, val = tuple(config.items())[0]
+            if key.isnumeric():
+                config = val
+            else:
+                raise ValueError(
+                    "Supplied configuration is unrecognized, only one "
+                    "key-value pair defined."
+                )
+
+        missing_configs = self._required_metadata["mgroup"] - set(config.keys())
+        if missing_configs:
+            raise ValueError(
+                f"Supplied configuration is missing required keys {missing_configs}."
+            )
+
+        config["name"] = str(config["name"])
+
+        config["axes"] = self._validate_axes(config["axes"])
+        config["transform"] = self._validate_transform(config["transform"])
+        config["motion_list"] = self._validate_motion_list(config["motion_list"])
+
+        # check axis names are the same as the motion list labels
+        axis_labels = (ax["name"] for ax in config["axes"])
+        ml_labels = tuple(config["motion_list"]["label"])
+        if axis_labels != ml_labels:
+            raise ValueError(
+                f"The Motion List space and Axes must have the same "
+                f"ordered names, got {ml_labels} and {axis_labels} "
+                f"respectively."
+            )
+
+        return config
+
+    def _validate_axes(self, config):
+        """Validate the axis configuration for all axes."""
+        valid_config = []
+        req_meta = self._required_metadata["axes"]
+
+        if set(config.keys()) != req_meta:
+            raise ValueError(
+                "Axis configuration is missing keys or has unrecognized "
+                f"keys.  Got {set(config.keys())}, but expected {req_meta}."
+            )
+
+        for key, val in config.items():
+            if not isinstance(val, (list, tuple)):
+                config[key] = (val,)
+
+        naxes = len(config["ip"])
+
+        if any(len(val) != naxes for val in config.values()):
+            raise ValueError(
+                "Axis configuration is invalid.  All keys need to "
+                f"lists of equal length."
+            )
+        elif len(set(config["name"])) != len(config["name"]):
+            raise ValueError(
+                "Axis 'name' configuration must be unique for each axis,"
+                f" got {config['name']}."
+            )
+
+        for ii in range(naxes):
+            ax_dict = {}
+            for key in req_meta:
+                ax_dict[key] = config[key][ii]
+
+            valid_config.append(ax_dict)
+
+        # indices = None
+        # if all(key.isnumeric() for key in config.keys()):
+        #     indices = set(key for key in config.keys())
+        #
+        # if indices is None:
+        #     indices = {"0"}
+        #     config = {"0": config}
+        #
+        # for index in indices:
+        #     val = config[index]
+        #
+        #     if set(val.keys()) != req_meta:
+        #         raise ValueError(
+        #             "Axis configuration is missing keys or has unrecognized "
+        #             f"keys.  Got {set(val.keys())}, but expected {req_meta}."
+        #         )
+        #
+        #     valid_config.append(val)
+
+        return valid_config
+
+    def _validate_motion_list(self, config):
+        """Validate motion list configuration."""
+
+        if set(config.keys()) != self._required_metadata["motion_list"]:
+            raise ValueError(
+                "Motion List configuration is missing or has unrecognized"
+                f" keys, got {set(config.keys())} and expected "
+                f"{self._required_metadata['motion_list']}."
+            )
+
+        space_config = config["space"]
+        if set(space_config.keys()) != self._required_metadata["motion_list.space"]:
+            raise ValueError(
+                "Motion List 'space' configuration is missing or has "
+                f"unrecognized keys, got {set(space_config.keys())} and "
+                f"expected "
+                f"{self._required_metadata['motion_list.space']}."
+            )
+
+        for key, val in space_config.items():
+            if not isinstance(val, (list, tuple)):
+                space_config[key] = [val, ]
+
+        naxes = len(space_config["label"])
+        if any(len(val) != naxes for val in space_config.values()):
+            raise ValueError(
+                "Motion List 'space' configuration is invalid.  All "
+                "keys need to be lists of equal length."
+            )
+
+        # TODO: pickup validation work here ...
+
+        return config
+
+    def _validate_transform(self, config):
+        """Validate transform configuration."""
+        return config
+
+    @property
+    def drive_settings(self) -> Iterable[Dict[str, Any]]:
+        axes = self["axes"]
+        naxes = len(axes["ip"])
+        settings = [{}, {}]
+        for ii in range(naxes):
+            for key, val in axes.items():
+                settings[ii][key] = val[ii]
+
+        return settings
+
+
 class MotionGroup(BaseActor):
     r"""
     The `MotionGroup` actor brings together communication with the
