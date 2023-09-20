@@ -11,7 +11,7 @@ import numpy as np
 
 from collections import UserDict
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional
+from typing import Any, Dict, Iterable, Optional, Union
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.drive_ import Drive
@@ -28,12 +28,6 @@ class MotionGroupConfig(UserDict):
 
     Parameters
     ----------
-    filename: str, optional
-        Full path to a TOML file that defines a motion group
-        configuration.  This argument supersedes ``config``, but if not
-        supplied then the ``config`` argument must be defined.
-        (DEFAULT: `None`)
-
     config: Dict[str, Any], optional
         A dictionary defining the motion group configuration.  If
         ``filename`` is defined, then this argument is ignored.
@@ -171,53 +165,58 @@ class MotionGroupConfig(UserDict):
         "motion_list.space": {"label", "range", "num"},
     }
 
-    def __init__(
-        self,
-        *,
-        filename: Optional[str] = None,
-        config: Optional[Dict[str, Any]] = None,
-    ):
-        # TODO: can this be updated so the config argument can modify
-        #       the config defined in filename if both arguments are
-        #       supplied
-        # ensure filename XOR config kwargs are specified
-        if filename is None and config is None:
-            raise TypeError(
-                "MotionGroup() missing 1 required keyword argument: use "
-                "'filename' or 'config' to specify a configuration."
-            )
-        elif filename is not None and config is not None:
-            raise TypeError(
-                "MotionGroup() takes 1 keyword argument but 2 were "
-                "given: use keyword 'filename' OR 'config' to specify "
-                "a configuration."
-            )
-        elif filename is not None:
-            filename = Path(filename).resolve()
+    #: allowable motion group header names
+    _mg_names = {"motion_group", "mgroup", "mg"}
 
-            if not filename.exists():
-                for efile in _EXAMPLES:
-                    if filename.name == efile.name:
-                        filename = efile
-                        break
+    def __init__(self, config: Union[str, Dict[str, Any]]):
 
-            if not filename.exists():
-                raise ValueError(
-                    f"Specified Motion Group configuration file does "
-                    f"not exist, {filename}."
+        # Make sure config is the right type, and is a dict by the
+        # end of ths code block
+        if isinstance(config, MotionGroupConfig):
+            # This would happen if Manager is passing in a configuration
+            pass
+        elif isinstance(config, str):
+            # Assume config is a TOML like string
+            config = toml.loads(config)
+        elif not isinstance(config, dict):
+            raise TypeError(
+                f"Expected 'config' to be of type dict, got type {type(config)}."
+            )
+
+        # Check if the configuration has a motion group header or just
+        # the configuration
+        mg_names = self._mg_names
+        if len(mg_names - set(config.keys())) < len(mg_names) - 1:
+            raise ValueError(
+                "Unable to interpret configuration, since there appears"
+                " to be multiple motion group configurations supplied."
+            )
+        elif len(mg_names - set(config.keys())) == len(mg_names) - 1:
+            # mg_name found in config
+            mg_name = tuple(mg_names - (mg_names - set(config.keys())))[0]
+            config = config[mg_name]
+
+            if not isinstance(config, dict):
+                raise TypeError(
+                    f"Expected 'config' to be of type dict, "
+                    f"got type {type(config)}."
                 )
 
-            with open(filename, "rb") as f:
-                config = toml.load(f)
-
-        if "mgroup" in config and len(config) != 1:
+        if "name" not in config and len(config) != 1:
             raise ValueError(
-                "Supplied configuration unrecognized, suspected "
-                "multiple Motion Groups defined."
+                "Unable to interpret configuration, since there appears"
+                " to be multiple motion group configurations supplied."
             )
-        elif "mgroup" in config:
-            config = config["mgroup"]
+        elif "name" not in config:
+            config = list(config.values())[0]
 
+            if not isinstance(config, dict):
+                raise TypeError(
+                    f"Expected 'config' to be of type dict, "
+                    f"got type {type(config)}."
+                )
+
+        # validate config
         config = self._validate_config(config)
 
         super().__init__(config)
