@@ -50,14 +50,14 @@ class MotionGroupConfig(UserDict):
           [mgroup.drive]
           # define the make up of the probe drive
           name = "XY-drive"  # name of probe drive
-          axis.0.name = "X"  # name of axis
-          axis.0.ip = "192.168.6.103"  # ip address of motor
-          axis.0.units = "cm"  # unit type used for axis
-          axis.0.units_per_rev = .254  # thread pitch of rod
-          axis.1.name = "Y"
-          axis.1.ip = "192.168.6.104"
-          axis.1.units = "cm"
-          axis.1.units_per_rev = .254
+          axes.0.name = "X"  # name of axis
+          axes.0.ip = "192.168.6.103"  # ip address of motor
+          axes.0.units = "cm"  # unit type used for axis
+          axes.0.units_per_rev = 0.254  # thread pitch of rod
+          axes.1.name = "Y"
+          axes.1.ip = "192.168.6.104"
+          axes.1.units = "cm"
+          axes.1.units_per_rev = 0.254
 
           [mgroup.motion_list]
           # configuration for the motion list
@@ -76,7 +76,7 @@ class MotionGroupConfig(UserDict):
           exclusions.0.cone_full_angle = 60
           #
           # layers define the points where a probe should move to
-          layers.0.type = "grig"
+          layers.0.type = "grid"
           layers.0.limits = [[0, 30], [-30, 30]]
           layers.0.steps = [11, 21]
 
@@ -92,56 +92,58 @@ class MotionGroupConfig(UserDict):
        .. code-tab:: py Dict Entry
 
           config = {
-            "name": "P32 XY-Drive",
-            "drive": {
-                "name": "XY-Drive",
-                0: {
-                    "name": "X",
-                    "ip": "192.168.6.103",
-                    "units": "cm",
-                    "units_per_rev": .254,
-                },
-                1: {
-                    "name": "Y",
-                    "ip": "192.168.6.104",
-                    "units": "cm",
-                    "units_per_rev": .254,
-                },
-            },
-            "motion_list": {
-                "space", {
-                    0: {
-                        "label": "X",
-                        "range": [-55, 55],
-                        "num:: 221,
-                    },
-                    1: {
-                        "label": "X",
-                        "range": [-55, 55],
-                        "num:: 221,
-                    },
-                },
-                "exclusions": {
-                    "0": {
-                        "type": "lapd_xy",
-                        "port_location": "E",
-                        "cone_full_angle": 60,
-                    },
-                },
-                "layers": {
-                    "0": {
-                        "type": "grid",
-                        "limits": [[0, 30], [-30, 30]],
-                        "steps": [11, 21],
-                    },
-                },
-            },
-            "transform": {
-                "type": "lapd_xy",
-                "pivot_to_center": 57.7,
-                "pivot_to_drive": 125,
-                "porbe_axis_offset": 6,
-            },
+              "name": "P32 XY-Drive",
+              "drive": {
+                  "name": "XY-Drive",
+                  "axes": {
+                      0: {
+                          "name": "X",
+                          "ip": "192.168.6.103",
+                          "units": "cm",
+                          "units_per_rev": .254,
+                      },
+                      1: {
+                          "name": "Y",
+                          "ip": "192.168.6.104",
+                          "units": "cm",
+                          "units_per_rev": .254,
+                      },
+                  },
+              },
+              "motion_list": {
+                  "space", {
+                      0: {
+                          "label": "X",
+                          "range": [-55, 55],
+                          "num:: 221,
+                      },
+                      1: {
+                          "label": "X",
+                          "range": [-55, 55],
+                          "num:: 221,
+                      },
+                  },
+                  "exclusions": {
+                      "0": {
+                          "type": "lapd_xy",
+                          "port_location": "E",
+                          "cone_full_angle": 60,
+                      },
+                  },
+                  "layers": {
+                      "0": {
+                          "type": "grid",
+                          "limits": [[0, 30], [-30, 30]],
+                          "steps": [11, 21],
+                      },
+                  },
+              },
+              "transform": {
+                  "type": "lapd_xy",
+                  "pivot_to_center": 57.7,
+                  "pivot_to_drive": 125,
+                  "porbe_axis_offset": 6,
+              },
           }
 
     """
