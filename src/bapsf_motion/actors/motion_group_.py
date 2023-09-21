@@ -332,7 +332,10 @@ class MotionGroupConfig(UserDict):
         # now check for requited meta keys of the lower level required
         # keys (i.e. layers and exceptions)
         for key in opt_meta:
-            sub_config = config[key]
+            try:
+                sub_config = config[key]
+            except KeyError:
+                continue
 
             if not isinstance(sub_config, dict):
                 raise TypeError(
@@ -823,20 +826,25 @@ class MotionGroup(BaseActor):
     """
     # TODO: update docstring to fully explain how to define the `config`
     #       argument
+    # TODO: Add a keyword 'mode' that changes how restrictive
+    #       instantiation is.  For example,
+    #       1. 'run' would be very restrictive since it's intended for
+    #          a data run
+    #       2. 'build' would be relaxed since it is intended as a
+    #          configuration build mode
+    #       3. 'test' would probably be inbetween the the above two
+    #          mode since it's intended for debugging purposes
     def __init__(
         self,
+        config: Union[str, Dict[str, Any]] = None,
         *,
-        filename: Optional[str] = None,
-        config: Optional[Dict[str, Any]] = None,
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
     ):
-        # TODO: can `filename` and `config` be merged into one dynamic
-        #       input argument...then MotionGroup would have to
-        #       interpret that one input argument
 
-        config = self._process_config(filename=filename, config=config)
+        # config = self._process_config(filename=filename, config=config)
+        config = MotionGroupConfig(config)
 
         super().__init__(logger=logger, name=config["name"])
 
@@ -846,6 +854,8 @@ class MotionGroup(BaseActor):
         self._ml_index = None
 
         self._transform = self._setup_transform(config["transform"])
+
+        self._config = config
 
         # self._validate_setup()
 
@@ -990,68 +1000,84 @@ class MotionGroup(BaseActor):
         Both versions are acceptable, but the latter is what gets passed
         to Drive and the former comes from the TOML files.
         """
-        if "axes" not in config:
-            raise ValueError(
-                "The Drive configuration for the motion group does"
-                f" NOT specify any axes.  Got {config}."
-            )
-        elif isinstance(config["axes"], dict):
-            axes = config["axes"]
-            new_axes = []
-            keys = list(axes.keys())
-            size = len(axes[keys[0]])
-            for ii in range(size):
-                ax = {}
-                for key in keys:
-                    ax[key] = axes[key][ii]
-
-                new_axes.append(ax)
-
-            config["axes"] = new_axes
+        # if "axes" not in config:
+        #     raise ValueError(
+        #         "The Drive configuration for the motion group does"
+        #         f" NOT specify any axes.  Got {config}."
+        #     )
+        # elif isinstance(config["axes"], dict):
+        #     axes = config["axes"]
+        #     new_axes = []
+        #     keys = list(axes.keys())
+        #     size = len(axes[keys[0]])
+        #     for ii in range(size):
+        #         ax = {}
+        #         for key in keys:
+        #             ax[key] = axes[key][ii]
+        #
+        #         new_axes.append(ax)
+        #
+        #     config["axes"] = new_axes
 
         dr = Drive(
             logger=self.logger,
             loop=loop,
             auto_run=False,
-            **config,
+            name=config["name"],
+            axes=list(config["axes"].values()),
         )
         return dr
 
-    def _setup_motion_list(self, config):
+    def _setup_motion_list(self, config: Dict[str, Any]):
         # initialize the motion list object
 
-        if config is None:
-            return
+        # if config is None:
+        #     return
+        #
+        # # re-pack exclusions
+        # exclusions = []
+        # for val in config["exclusions"].values():
+        #     exclusions.append(val)
+        # config["exclusions"] = exclusions
+        #
+        # # re-pack layers
+        # layers = []
+        # for val in config["layers"].values():
+        #     layers.append(val)
+        # config["layers"] = layers
+        ml_config = config.copy()
 
-        # re-pack exclusions
-        exclusions = []
-        for val in config["exclusions"].values():
-            exclusions.append(val)
-        config["exclusions"] = exclusions
+        for key in {"name", "user"}:
+            try:
+                ml_config.pop(key)
+            except KeyError:
+                pass
 
-        # re-pack layers
-        layers = []
-        for val in config["layers"].values():
-            layers.append(val)
-        config["layers"] = layers
+        for key in {"space", "layers", "exclusions"}:
+            try:
+                ml_config[key] = list(ml_config.pop(key).values())
+            except KeyError:
+                continue
 
-        _ml = MotionList(**config)
+        _ml = MotionList(**ml_config)
         return _ml
 
     def _setup_transform(self, config: Dict[str, Any]):
-        # initialize the transform object, this is used to convert between
-        # LaPD coordinates and drive coordinates
-        if config is None:
-            raise ValueError(
-                "Currently, the only valid transform is 'lapd_xy'."
-            )
-        elif "type" not in config:
-            raise ValueError(
-                "Transform configuration my missing key/value pair "
-                "'type'."
-            )
+        # # initialize the transform object, this is used to convert between
+        # # LaPD coordinates and drive coordinates
+        # if config is None:
+        #     raise ValueError(
+        #         "Currently, the only valid transform is 'lapd_xy'."
+        #     )
+        # elif "type" not in config:
+        #     raise ValueError(
+        #         "Transform configuration my missing key/value pair "
+        #         "'type'."
+        #     )
 
-        tr_type = config.pop("type")
+        tr_config = config.copy()
+
+        tr_type = tr_config.pop("type")
         return transform.transform_factory(self.drive, tr_type=tr_type, **config)
 
     def run(self):
