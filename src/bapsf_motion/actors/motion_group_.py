@@ -350,6 +350,8 @@ class MotionGroupConfig(UserDict):
                         f"missing required  keys {missing_meta}."
                     )
 
+                config[key][0] = config.pop(key)
+
                 continue
 
             for sck, scv in sub_config:
