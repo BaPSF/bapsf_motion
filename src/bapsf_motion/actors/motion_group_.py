@@ -285,9 +285,7 @@ class MotionGroupConfig(UserDict):
         # ensure all axis names and ips are unique
         naxes = len(config["axes"])
         for key in {"name", "ip"}:
-            vals = []
-            for val in config["axes"].values():
-                vals.append(val[key])
+            vals = [val[key] for val in config["axes"].values()]
 
             if len(set(vals)) != naxes:
                 raise ValueError(
