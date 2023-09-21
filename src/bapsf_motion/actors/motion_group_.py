@@ -156,8 +156,15 @@ class MotionGroupConfig(UserDict):
         "drive": {"name", "axes"},
         "drive.axes": {"ip", "units", "name", "units_per_rev"},
         "transform": {"type"},
-        "motion_list": {"space", "exclusions", "layers"},
+        "motion_list": {"space"},
+        "motion_list.exclusions": {"type"},
+        "motion_list.layers": {"type"},
         # "motion_list.space": {"label", "range", "num"},
+    }
+
+    #: optional keys for the motion group configuration dictionary
+    _optional_metadata = {
+        "motion_list": {"exclusions", "layers"},
     }
 
     #: allowable motion group header names
@@ -303,37 +310,61 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def _validate_motion_list(self, config):
+    def _validate_motion_list(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Validate motion list configuration."""
+        req_meta = self._required_metadata["motion_list"]
+        opt_meta = self._optional_metadata["motion_list"]
 
-        if set(config.keys()) != self._required_metadata["motion_list"]:
+        missing_meta = req_meta - set(config.keys())
+        if missing_meta:
             raise ValueError(
-                "Motion List configuration is missing or has unrecognized"
-                f" keys, got {set(config.keys())} and expected "
-                f"{self._required_metadata['motion_list']}."
+                f"Supplied configuration for MotionList is missing required "
+                f"keys {missing_meta}."
             )
 
-        space_config = config["space"]
-        if set(space_config.keys()) != self._required_metadata["motion_list.space"]:
-            raise ValueError(
-                "Motion List 'space' configuration is missing or has "
-                f"unrecognized keys, got {set(space_config.keys())} and "
-                f"expected "
-                f"{self._required_metadata['motion_list.space']}."
-            )
+        config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
-        for key, val in space_config.items():
-            if not isinstance(val, (list, tuple)):
-                space_config[key] = [val, ]
+        # now check for requited meta keys of the lower level required
+        # keys (i.e. layers and exceptions)
+        for key in opt_meta:
+            sub_config = config[key]
 
-        naxes = len(space_config["label"])
-        if any(len(val) != naxes for val in space_config.values()):
-            raise ValueError(
-                "Motion List 'space' configuration is invalid.  All "
-                "keys need to be lists of equal length."
-            )
+            if not isinstance(sub_config, dict):
+                raise TypeError(
+                    f"Expected type dict for the motion_list.{key} configuration,"
+                    f" got type {type(sub_config)}."
+                )
 
-        # TODO: pickup validation work here ...
+            try:
+                rmeta = self._required_metadata[f"motion_list.{key}"]
+            except KeyError:
+                continue
+
+            if "type" in sub_config.keys():
+                # there's only 1 item with required meta 'type'
+
+                missing_meta = rmeta - set(sub_config.keys())
+                if missing_meta:
+                    raise ValueError(
+                        f"Supplied configuration for motion_list.{key} is "
+                        f"missing required  keys {missing_meta}."
+                    )
+
+                continue
+
+            for sck, scv in sub_config:
+                if not isinstance(scv, dict):
+                    raise ValueError(
+                        f"Expected type dict for the motion_list.{key}.{sck} "
+                        f"configuration, got type {type(sub_config)}."
+                    )
+
+                missing_meta = rmeta - set(scv.keys())
+                if missing_meta:
+                    raise ValueError(
+                        f"Supplied configuration for motion_list.{key}.{sck} is "
+                        f"missing required  keys {missing_meta}."
+                    )
 
         return config
 
