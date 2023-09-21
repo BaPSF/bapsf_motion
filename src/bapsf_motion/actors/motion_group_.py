@@ -354,7 +354,7 @@ class MotionGroupConfig(UserDict):
 
                 continue
 
-            for sck, scv in sub_config:
+            for sck, scv in sub_config.items():
                 if not isinstance(scv, dict):
                     raise ValueError(
                         f"Expected type dict for the motion_list.{key}.{sck} "
