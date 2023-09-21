@@ -409,6 +409,23 @@ class MotionGroupConfig(UserDict):
 
         return settings
 
+    def _link_config(self, name: str, config: Dict[str, Any]):
+        if not isinstance(config, dict):
+            raise TypeError(
+                "Expected linked configuration to be a dictionary, but"
+                f"got type {type(config)}"
+            )
+        self[name] = config
+
+    def link_motion_list(self, obj):
+        self._link_config("motion_list", obj)
+
+    def link_drive(self, obj):
+        self._link_config("drive", obj)
+
+    def link_transform(self, obj):
+        self._link_config("transform", obj)
+
 
 class _MotionGroupConfig(UserDict):
     """
