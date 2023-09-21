@@ -465,6 +465,9 @@ class Motor(BaseActor):
     # TODO: create a method that lists all available commands
     # TODO: create a method the shows a commands definition
     #       (i.e. self._commands[command])
+    # TODO: Do we need a 2nd Task that monitors the heartbeat and
+    #       restarts the heartbeat if it stops...this could lead to
+    #       restarts when it IS intended that the heartbeat be stopped
 
     def __init__(
         self,
@@ -854,6 +857,9 @@ class Motor(BaseActor):
                 self.logger.debug(msg)
                 self.socket = s
                 self._update_status(connected=True)
+
+                # TODO: if the connection as lost then the heart beat stopped
+                #       need to restart heartbeat
                 return
             except (
                 TimeoutError,
