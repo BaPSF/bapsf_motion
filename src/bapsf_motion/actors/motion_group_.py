@@ -147,22 +147,17 @@ class MotionGroupConfig(UserDict):
     """
     #: required keys for the motion group configuration dictionary
     _required_metadata = {
-        "mgroup": {
+        "motion_group": {
             "name",
-            "axes",
+            "drive",
             "transform",
             "motion_list",
         },
-        "axes": {"ip", "units", "name", "units_per_rev"},
-        "transform": {
-            "type",
-            "droop_correction",
-            "pivot_to_center",
-            "pivot_to_clamp",
-            "zero_to_home",
-        },
+        "drive": {"name", "axes"},
+        "drive.axes": {"ip", "units", "name", "units_per_rev"},
+        "transform": {"type"},
         "motion_list": {"space", "exclusions", "layers"},
-        "motion_list.space": {"label", "range", "num"},
+        # "motion_list.space": {"label", "range", "num"},
     }
 
     #: allowable motion group header names
@@ -223,27 +218,21 @@ class MotionGroupConfig(UserDict):
 
     def _validate_config(self, config):
         """Validate the motion group configuration."""
-        if len(config) == 1:
-            key, val = tuple(config.items())[0]
-            if key.isnumeric():
-                config = val
-            else:
-                raise ValueError(
-                    "Supplied configuration is unrecognized, only one "
-                    "key-value pair defined."
-                )
 
-        missing_configs = self._required_metadata["mgroup"] - set(config.keys())
-        if missing_configs:
+        # Check for root level required key-value pairs
+        missing_meta = self._required_metadata["motion_group"] - set(config.keys())
+        if missing_meta:
             raise ValueError(
-                f"Supplied configuration is missing required keys {missing_configs}."
+                f"Supplied configuration is missing required root level "
+                f"keys {missing_meta}."
             )
 
         config["name"] = str(config["name"])
-
-        config["axes"] = self._validate_axes(config["axes"])
+        config["drive"] = self._validate_drive(config["drive"])
         config["transform"] = self._validate_transform(config["transform"])
         config["motion_list"] = self._validate_motion_list(config["motion_list"])
+
+        config = self._handle_user_meta(config, self._required_metadata["motion_group"])
 
         # check axis names are the same as the motion list labels
         axis_labels = (ax["name"] for ax in config["axes"])
@@ -257,61 +246,62 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def _validate_axes(self, config):
-        """Validate the axis configuration for all axes."""
-        valid_config = []
+    def _validate_drive(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate the drive configuration."""
+        req_meta = self._required_metadata["drive"]
+
+        missing_meta = req_meta - set(config.keys())
+        if missing_meta:
+            raise ValueError(
+                f"Supplied configuration for Drive is missing required "
+                f"keys {missing_meta}."
+            )
+
+        config = self._handle_user_meta(config, req_meta)
+
+        ax_meta = set(config["axes"].keys())
+        if len(self._required_metadata["drive.axes"] - ax_meta) == 0:
+            # assume drive only has one axis
+            ax_config = config.pop("axes")
+            config["axes"][0] = ax_config
+
+        for ax_id, ax_config in config["axes"].items():
+            # TODO: is there a good way of enforcing ax_id to be an int
+            #       starting at 0 and monotonically increasing
+            config["axes"][ax_id] = self._validate_axis(ax_config)
+
+        # ensure all axis names and ips are unique
+        naxes = len(config["axes"])
+        for key in {"name", "ip"}:
+            vals = []
+            for val in config["axes"].values():
+                vals.append(val[key])
+
+            if len(set(vals)) != naxes:
+                raise ValueError(
+                    f"The axes of the configured probe drive do NOT have"
+                    f" unique {key}s.  The drive has {naxes} and only "
+                    f"{len(set(vals))} unique {key}s, {set(vals)}."
+                )
+
+        return config
+
+    def _validate_axis(self, config: Dict[str, Any]) -> Dict[str, Any]:
         req_meta = self._required_metadata["axes"]
 
-        if set(config.keys()) != req_meta:
+        missing_meta = req_meta - set(config.keys())
+        if missing_meta:
             raise ValueError(
-                "Axis configuration is missing keys or has unrecognized "
-                f"keys.  Got {set(config.keys())}, but expected {req_meta}."
+                f"Supplied configuration for Axis is missing required "
+                f"keys {missing_meta}."
             )
 
-        for key, val in config.items():
-            if not isinstance(val, (list, tuple)):
-                config[key] = (val,)
+        config = self._handle_user_meta(config, req_meta)
 
-        naxes = len(config["ip"])
+        # TODO: Is it better to do the type checks here or allow class
+        #       instantiation to handle it.
 
-        if any(len(val) != naxes for val in config.values()):
-            raise ValueError(
-                "Axis configuration is invalid.  All keys need to "
-                f"lists of equal length."
-            )
-        elif len(set(config["name"])) != len(config["name"]):
-            raise ValueError(
-                "Axis 'name' configuration must be unique for each axis,"
-                f" got {config['name']}."
-            )
-
-        for ii in range(naxes):
-            ax_dict = {}
-            for key in req_meta:
-                ax_dict[key] = config[key][ii]
-
-            valid_config.append(ax_dict)
-
-        # indices = None
-        # if all(key.isnumeric() for key in config.keys()):
-        #     indices = set(key for key in config.keys())
-        #
-        # if indices is None:
-        #     indices = {"0"}
-        #     config = {"0": config}
-        #
-        # for index in indices:
-        #     val = config[index]
-        #
-        #     if set(val.keys()) != req_meta:
-        #         raise ValueError(
-        #             "Axis configuration is missing keys or has unrecognized "
-        #             f"keys.  Got {set(val.keys())}, but expected {req_meta}."
-        #         )
-        #
-        #     valid_config.append(val)
-
-        return valid_config
+        return config
 
     def _validate_motion_list(self, config):
         """Validate motion list configuration."""
@@ -349,6 +339,32 @@ class MotionGroupConfig(UserDict):
 
     def _validate_transform(self, config):
         """Validate transform configuration."""
+        return config
+
+    @staticmethod
+    def _handle_user_meta(config: Dict[str, Any], req_meta: set):
+        user_meta = set(config.keys()) - req_meta
+
+        if len(user_meta) == 0:
+            return config
+
+        if "user" in user_meta:
+            user_meta.remove("user")
+
+            if not isinstance(config["user"], dict):
+                raise ValueError(
+                    "The 'user' metadate field `config['user']` must be a dict,"
+                    f" got type {type(config['user'])}."
+                )
+        else:
+            config["user"] = dict()
+
+        for key in user_meta:
+            config["user"][key] = config.pop(key)
+
+        if len(config["user"]) == 0:
+            del config["user"]
+
         return config
 
     @property
