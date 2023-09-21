@@ -294,7 +294,7 @@ class MotionGroupConfig(UserDict):
         return config
 
     def _validate_axis(self, config: Dict[str, Any]) -> Dict[str, Any]:
-        req_meta = self._required_metadata["axes"]
+        req_meta = self._required_metadata["drive.axes"]
 
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
