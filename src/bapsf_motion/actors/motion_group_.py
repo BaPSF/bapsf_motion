@@ -368,8 +368,16 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def _validate_transform(self, config):
+    def _validate_transform(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """Validate transform configuration."""
+        req_meta = self._required_metadata["transform"]
+
+        missing_meta = req_meta - set(config.keys())
+        if missing_meta:
+            raise ValueError(
+                f"Supplied configuration for Transformer is missing required "
+                f"keys {missing_meta}."
+            )
         return config
 
     @staticmethod
