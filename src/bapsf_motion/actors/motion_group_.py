@@ -241,15 +241,20 @@ class MotionGroupConfig(UserDict):
 
         config = self._handle_user_meta(config, self._required_metadata["motion_group"])
 
-        # check axis names are the same as the motion list labels
-        axis_labels = (ax["name"] for ax in config["axes"])
-        ml_labels = tuple(config["motion_list"]["label"])
-        if axis_labels != ml_labels:
-            raise ValueError(
-                f"The Motion List space and Axes must have the same "
-                f"ordered names, got {ml_labels} and {axis_labels} "
-                f"respectively."
-            )
+        # TODO: the below commented out code block is not do-able since
+        #       motion_list.space can be defined as a string for builtin spaces
+        #       or ranges for all axes...once this is reconciled then the
+        #       code block below can be reinstated.
+        #
+        # # check axis names are the same as the motion list labels
+        # axis_labels = (ax["name"] for ax in config["drive"]["axes"].values())
+        # ml_labels = tuple(config["motion_list"]["label"])
+        # if axis_labels != ml_labels:
+        #     raise ValueError(
+        #         f"The Motion List space and Axes must have the same "
+        #         f"ordered names, got {ml_labels} and {axis_labels} "
+        #         f"respectively."
+        #     )
 
         return config
 
