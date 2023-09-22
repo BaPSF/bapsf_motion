@@ -189,12 +189,8 @@ class Drive(BaseActor):
             "axes": {},
         }
 
-        for ax in self.axes:
-            for key, val in ax.config.items():
-                if key not in _config["axes"]:
-                    _config["axes"][key] = [val]
-                else:
-                    _config["axes"][key].append(val)
+        for ii, ax in enumerate(self.axes):
+            _config["axes"][ii] = ax.config.copy()
 
         return _config
 
