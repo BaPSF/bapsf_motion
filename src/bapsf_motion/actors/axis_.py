@@ -136,13 +136,12 @@ class Axis(BaseActor):
     @property
     def config(self) -> Dict[str, Any]:
         """Dictionary of the axis configuration parameters."""
-        _config = {
+        return {
             "name": self.name,
             "ip": self.motor.ip,
             "units": str(self.units),
             "units_per_rev": self.units_per_rev.value.item()
         }
-        return _config
 
     @property
     def is_moving(self) -> bool:
