@@ -669,6 +669,27 @@ class Motor(BaseActor):
         self._setup["name"] = value
 
     @property
+    def ip(self) -> str:
+        """IPv4 address for the motor"""
+        return self._motor["ip"]
+
+    @ip.setter
+    def ip(self, value):
+        # TODO: update ipv4_pattern so the port number can be passed with the
+        #       ip argument
+        if ipv4_pattern.fullmatch(value) is None:
+            raise ValueError(f"Supplied IP address ({value}) is not a valid IPv4.")
+
+        self._motor["ip"] = value
+
+    @property
+    def config(self) -> Dict[str, Any]:
+        return {
+            "name": self.name,
+            "ip": self.ip,
+        }
+
+    @property
     def logger(self) -> logging.Logger:
         """The `~logger.Logger` being used for the actor."""
         return self._setup["logger"]
@@ -723,20 +744,6 @@ class Motor(BaseActor):
     def steps_per_rev(self) -> u.steps/u.rev:
         """The number of steps the motor does per revolution."""
         return self._motor["gearing"]
-
-    @property
-    def ip(self) -> str:
-        """IPv4 address for the motor"""
-        return self._motor["ip"]
-
-    @ip.setter
-    def ip(self, value):
-        # TODO: update ipv4_pattern so the port number can be passed with the
-        #       ip argument
-        if ipv4_pattern.fullmatch(value) is None:
-            raise ValueError(f"Supplied IP address ({value}) is not a valid IPv4.")
-
-        self._motor["ip"] = value
 
     @property
     def port(self) -> int:
