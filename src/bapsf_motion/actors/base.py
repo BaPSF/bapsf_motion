@@ -7,11 +7,15 @@ __actors__ = ["BaseActor"]
 
 import logging
 
+from abc import ABC, abstractmethod
+from typing import Any, Dict
+
+
 # TODO: create an EventActor for an actor that utilizes asyncio event loops
 #       - EventActor should inherit from BaseActor and ABC
 
 
-class BaseActor:
+class BaseActor(ABC):
     """
     Base class for any Actor class.
 
@@ -71,6 +75,11 @@ class BaseActor:
     @logger.setter
     def logger(self, value):
         self._logger = value
+
+    @property
+    @abstractmethod
+    def config(self) -> Dict[str, Any]:
+        ...
 
 
 # TODO: Create an EventActor
