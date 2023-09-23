@@ -38,16 +38,19 @@ blocks.
 About Point Layers
 ------------------
 
-.. _available_layers:
-
-Available Layers
-~~~~~~~~~~~~~~~~
-
 .. note::
 
     Discuss the mechanics of a motion layer class.  How it creates the
     DataArray. What the DataArray looks like.  How it interacts with
     the motion list DataSet.
+
+.. _available_layers:
+
+Available Layers
+~~~~~~~~~~~~~~~~
+
+.. automodsumm:: bapsf_motion.motion_list.layers
+    :groups: mlayers
 
 Creating a New Layer Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~
