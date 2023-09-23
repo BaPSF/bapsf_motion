@@ -28,6 +28,30 @@ class IdentityTransform(BaseTransform):
         No extra Keywords are required to define this class, however,
         any supplied keywords will be included in the :attr:`config`
         dictionary.
+
+    Examples
+    --------
+
+    The identity transform is super simple to instantiate/configure,
+    since there are no defining keywords.
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          tr = IdentityTransform(drive)
+
+       .. code-tab:: py Factory Function
+
+          tr = transform_factory(drive, tr_type = "identity")
+
+       .. code-tab:: toml TOML
+
+          [...transform]
+          type = "identity"
+
+       .. code-tab:: py Dict Entry
+
+          config["transform"] = {"type": "identity"}
     """
     _transform_type = "identity"
 
