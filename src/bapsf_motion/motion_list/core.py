@@ -85,24 +85,20 @@ class MotionList(MLItem):
         _config = {"space": {}}
 
         # pack the space config
-        for sitem in self._space:
-            for key, val in sitem.items():
-                if key not in _config["space"]:
-                    _config["space"][key] = [val]
-                else:
-                    _config["space"][key].append(val)
+        for ii, item in enumerate(self._space):
+            _config["space"][ii] = item
 
         # pack the exclusion config
         if len(self.exclusions):
             _config["exclusion"] = {}
         for ii, ex in enumerate(self.exclusions):
-            _config["exclusion"][f"{ii}"] = ex.config
+            _config["exclusion"][ii] = ex.config
 
         # pack the layer config
         if len(self.layers):
             _config["layer"] = {}
         for ii, ly in enumerate(self.layers):
-            _config["layer"][f"{ii}"] = ly.config
+            _config["layer"][ii] = ly.config
 
         return _config
 
