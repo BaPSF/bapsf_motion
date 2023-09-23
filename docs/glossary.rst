@@ -72,3 +72,11 @@ Glossary
    probe drive
       A collection of :math:`N` motor driven axes that are used to
       move a :term:`probe` around the :term:`motion space`.
+
+   transformer
+   transformers
+      A transformer is a member of the
+      `~bapsf_motion.transform.base.BaseTransform` subclasses that
+      provide, and do, coordinate transforms between the
+      :term:`motion space` coordinate system and the :term:`probe drive`
+      coordinate system, and vice versa.
