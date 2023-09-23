@@ -40,41 +40,50 @@ class GridLayer(BaseLayer):
     Examples
     --------
 
+    .. note::
+       The following examples include examples for direct instantiation,
+       as well as configuration passing at the |MotionGroup| and
+       |Manager| levels.
+
     Assume we have a 2D motion space and want to define a grid of
     points spaced at an interval of 2 ranging from -10 to 10 along
     the first axis and 0 to 20 along the second axis.  This would look
     like:
 
-    .. code-block:: python
+    .. tabs::
+       .. code-tab:: py Class Instantiation
 
-        gl = GridLayer(
-            ds,
-            limits=[[-10, 10], [0, 20]],
-            steps=[21, 21],
-        )
+          ly = GridLayer(
+              ds,
+              limits = [[-10, 10], [0, 20]],
+              steps=[21, 21],
+          )
 
-    Now, as done with the factory function
+       .. code-tab:: py Factory Function
 
-    .. code-block:: python
+          ly = layer_factory(
+              ds,
+              ly_type = "grid",
+              **{
+                  "limits": [[-10, 10], [0, 20]],
+                  "steps": [21, 21],
+              },
+          )
 
-        gl = layer_factory(
-            ds,
-            ly_type = "grid",
-            **{
-                "limits": [[-10, 10], [0, 20]],
-                "steps": [21, 21],
-            },
-        )
+       .. code-tab:: toml TOML
 
-    Now, as a TOML configuration
+          [...motion_list.layers]
+          type = "grid"
+          limits = [[-10, 10], [0, 20]]
+          steps = [21, 21]
 
-    .. code-block:: toml
+       .. code-tab:: py Dict Entry
 
-        [...layers.0]
-        type = "grid"
-        limits = [[-10, 10], [0, 20]]
-        steps = [21, 21]
-
+          config["motion_list"]["layers"] = {
+              "type": "grid",
+              "limits": [[-10, 10], [0, 20]],
+              "steps": [21, 21],
+          }
     """
     # TODO: Can the different code types in teh docstring be done with
     #       tabs?
