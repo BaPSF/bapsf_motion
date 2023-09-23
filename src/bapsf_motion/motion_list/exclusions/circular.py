@@ -47,43 +47,53 @@ class CircularExclusion(BaseExclusion):
     Examples
     --------
 
+    .. note::
+       The following examples include examples for direct instantiation,
+       as well as configuration passing at the |MotionGroup| and
+       |Manager| levels.
+
     Assume we have a 2D motion space and want a circular exclusion
     region outside a circle of radius 20 centered at (-1, 2).  This
     would look like:
 
-    .. code-block:: python
+    .. tabs::
+       .. code-tab:: py Class Instantiation
 
-        el = CircularExclusion(
-            ds,
-            radius = 20,
-            center = [-1, 2],
-            exclude = "outside",
-        )
+          el = CircularExclusion(
+              ds,
+              radius = 20,
+              center = [-1, 2],
+              exclude = "outside",
+          )
 
-    Now, as down with the factory function
+       .. code-tab:: py Factory Function
 
-    .. code-block:: python
+          el = exclusion_factory(
+              ds,
+              ex_type = "circle",
+              **{
+                  "radius": 20,
+                  "center": [-1, 2],
+                  "exclude": "outside",
+              },
+          )
 
-        el = exclusion_factor(
-            ds,
-            ex_layer = "circle",
-            **{
-                "radius": 20,
-                "center": [-1, 2],
-                "exclude": "outside",
-            },
-        )
+       .. code-tab:: toml TOML
 
-    Now, as a TOML configuration
+          [...motion_list.exclusions]
+          type = "circle"
+          radius = 20
+          center = [-1, 20]
+          exclude = "outside"
 
-    .. code-block:: toml
+       .. code-tab:: py Dict Entry
 
-        [...exclusions.0]
-        type = "circle"
-        radius = 20
-        center = [-1, 20]
-        exclude = "outside"
-
+          config["motion_list"]["exclusions"] = {
+              "type": "circle",
+              "radius": 20,
+              "center": [-1, 20],
+              "exclude": "outside",
+          }
     """
     # TODO: Can this class be extend to a N-D motion space.
     _exclusion_type = "circle"
