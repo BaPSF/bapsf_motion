@@ -884,8 +884,9 @@ class MotionGroup(BaseActor):
         self._transform = self._setup_transform(config["transform"])
 
         self._config = config
-
-        # self._validate_setup()
+        self._config.link_drive(self.drive)
+        self._config.link_motion_list(self.ml)
+        self._config.link_transform(self.transform)
 
         if auto_run:
             self.run()
@@ -1120,12 +1121,7 @@ class MotionGroup(BaseActor):
 
     @property
     def config(self):
-        return {
-            "name": self.name,
-            "drive": self.drive.config,
-            "motion_list": self.ml.config,
-            "transform": self.transform.config,
-        }
+        return self._config
 
     @property
     def drive(self):
