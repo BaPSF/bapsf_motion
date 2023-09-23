@@ -13,6 +13,7 @@ BaPSF Motion Documentation
    :maxdepth: 1
 
    toml/index
+   available_transformers
 
 .. Installing <install>
 .. getting_started
