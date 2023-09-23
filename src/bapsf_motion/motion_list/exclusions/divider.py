@@ -50,39 +50,48 @@ class DividerExclusion(BaseExclusion):
     Examples
     --------
 
+    .. note::
+       The following examples include examples for direct instantiation,
+       as well as configuration passing at the |MotionGroup| and
+       |Manager| levels.
+
     Assume we have a 2D motion space and want to exclude the -X region.
     This would look like:
 
-    .. code-block:: python
+    .. tabs::
+       .. code-tab:: py Class Instantiation
 
-        el = DividerExclusion(
-            ds,
-            mb = (np.inf, 0),
-            exclude = "-e0",
-        )
+          el = DividerExclusion(
+              ds,
+              mb = (np.inf, 0),
+              exclude = "-e0",
+          )
 
-    Now, as down with the factory function
+       .. code-tab:: py Factory Function
 
-    .. code-block:: python
+          el = exclusion_factory(
+              ds,
+              ex_type = "divider",
+              **{
+                  "mb": ["inf", 0],
+                  "exclude": "-e0",
+              },
+          )
 
-        el = exclusion_factor(
-            ds,
-            ex_layer = "divider",
-            **{
-                "mb": ["inf", 0],
-                "exclude": "-e0",
-            },
-        )
+       .. code-tab:: toml TOML
 
-    Now, as a TOML configuration
+          [...motion_list.exclusions]
+          type = "divider"
+          mb = ["inf", 0]
+          exclude = "-e0"
 
-    .. code-block:: toml
+       .. code-tab:: py Dict Entry
 
-        [...exclusions.0]
-        type = "divider"
-        mb = ["inf", 0]
-        exclude = "-e0"
-
+          config["motion_list"]["exclusions"] = {
+              "type": "divider",
+              "mb": (np.inf, 0),
+              "exclude": "-e0",
+          }
     """
     # TODO: Can `exclude` be updated to only take "+" and "-"?
     _exclusion_type = "divider"
