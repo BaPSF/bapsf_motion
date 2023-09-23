@@ -23,7 +23,7 @@ class LaPDXYExclusion(BaseExclusion):
     :term:`motion space`.  This class setups up the typical XY
     exclusion layer for a probe installed on a LaPD ball valve.
 
-    **exclusion type:** ``'lapd-XY'``
+    **exclusion type:** ``'lapd_xy'``
 
     Parameters
     ----------
@@ -134,7 +134,7 @@ class LaPDXYExclusion(BaseExclusion):
               "cone_full_angle": 60,
           }
     """
-    _exclusion_type = "lapd-XY"
+    _exclusion_type = "lapd_xy"
     _port_location_to_angle = {
         "e": 0,
         "east": 0,
