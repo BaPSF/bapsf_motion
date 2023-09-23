@@ -222,8 +222,29 @@ class MotionGroupConfig(UserDict):
 
         # validate config
         config = self._validate_config(config)
+        self._drive = None
+        self._transform = None
+        self._motion_list = None
 
         super().__init__(config)
+        self._data = self.data
+
+    @property
+    def data(self):
+        if self._drive is not None:
+            self._data = {**self._data, "drive": self._drive.config}
+
+        if self._motion_list is not None:
+            self._data = {**self._data, "motion_list": self._motion_list.config}
+
+        if self._transform is not None:
+            self._data = {**self._data, "transform": self._transform.config}
+
+        return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = value
 
     def _validate_config(self, config):
         """Validate the motion group configuration."""
@@ -416,33 +437,40 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    @property
-    def drive_settings(self) -> Iterable[Dict[str, Any]]:
-        axes = self["axes"]
-        naxes = len(axes["ip"])
-        settings = [{}, {}]
-        for ii in range(naxes):
-            for key, val in axes.items():
-                settings[ii][key] = val[ii]
-
-        return settings
-
     def _link_config(self, name: str, config: Dict[str, Any]):
         if not isinstance(config, dict):
             raise TypeError(
-                "Expected linked configuration to be a dictionary, but"
+                "Expected linked configuration to be a dictionary, but "
                 f"got type {type(config)}"
             )
         self[name] = config
 
-    def link_motion_list(self, obj):
-        self._link_config("motion_list", obj)
+    def link_motion_list(self, ml):
+        if not isinstance(ml, MotionList):
+            raise TypeError(
+                f"For argument 'ml' expected type {MotionList}, but got "
+                f"type {type(ml)}."
+            )
 
-    def link_drive(self, obj):
-        self._link_config("drive", obj)
+        self._motion_list = ml
 
-    def link_transform(self, obj):
-        self._link_config("transform", obj)
+    def link_drive(self, drive):
+        if not isinstance(drive, Drive):
+            raise TypeError(
+                f"For argument 'drive' expected type {Drive}, but got "
+                f"type {type(drive)}."
+            )
+
+        self._drive = drive
+
+    def link_transform(self, tr):
+        if not isinstance(tr, transform.BaseTransform):
+            raise TypeError(
+                f"For argument 'tr' expected a subclass of "
+                f"{transform.BaseTransform}, but got type {type(tr)}."
+            )
+
+        self._transform = tr
 
 
 class _MotionGroupConfig(UserDict):
