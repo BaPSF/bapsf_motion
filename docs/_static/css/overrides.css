@@ -1,0 +1,4 @@
+/* Remove excess margin at bottom of a tab code highlight */
+.rst-content div.code-tab div[class^="highlight"] {
+  margin-bottom: 1px
+}
