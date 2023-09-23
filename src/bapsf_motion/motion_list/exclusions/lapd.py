@@ -2,6 +2,7 @@
 Module that defines the `LaPDXYExclusion` class.
 """
 __all__ = ["LaPDXYExclusion"]
+__mexclusions__ = ["LaPDXYExclusion"]
 
 import numpy as np
 import xarray as xr

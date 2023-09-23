@@ -69,6 +69,9 @@ About Exclusion Layers
 Available Exclusions
 ~~~~~~~~~~~~~~~~~~~~
 
+.. automodsumm:: bapsf_motion.motion_list.exclusions
+    :groups: mexclusions
+
 Creating a New Exclusion Type
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

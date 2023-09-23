@@ -39,6 +39,15 @@ automodapi_custom_groups = {
         ),
         "dunder": "__actors__",
     },
+    "mexclusions": {
+        "title": "Motion List Exclusion Layers",
+        "description": (
+            "Classes that define functionality for generating "
+            ":term:`motion layers` (a.k.a. :term:`point layers`) for a "
+            ":term:`motion list`."
+        ),
+        "dunder": "__mexclusions__",
+    },
     "mlayers": {
         "title": "Motion List Point Layers",
         "description": (
@@ -62,6 +71,7 @@ automodapi_group_order = (
     "classes",
     "actors",
     "mlayers",
+    "mexclusions",
     "transformers",
     "exceptions",
     "warnings",

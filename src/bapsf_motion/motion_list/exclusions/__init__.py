@@ -6,10 +6,13 @@ __all__ = [
     "exclusion_factory",
     "register_exclusion",
     "BaseExclusion",
+]
+__mexclusions__ = [
     "CircularExclusion",
     "DividerExclusion",
     "LaPDXYExclusion",
 ]
+__all__ += __mexclusions__
 
 from bapsf_motion.motion_list.exclusions.base import BaseExclusion
 from bapsf_motion.motion_list.exclusions.circular import CircularExclusion

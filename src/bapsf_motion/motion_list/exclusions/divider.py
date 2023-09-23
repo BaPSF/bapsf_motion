@@ -2,6 +2,7 @@
 Module that defines the `DividerExclusion` class.
 """
 __all__ = ["DividerExclusion"]
+__mexclusions__ = ["DividerExclusion"]
 
 import numbers
 import numpy as np
