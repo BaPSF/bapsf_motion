@@ -545,24 +545,21 @@ class MotionGroupConfig(UserDict):
 
 class MotionGroup(BaseActor):
     r"""
-    The `MotionGroup` actor brings together communication with the
-    :term:`probe drive` (i.e. |Drive|) with the drive's full
-    configuration (i.e. the :term:`probe drive`\ 's settings, the
-    :term:`motion list` |MotionList|, and coordinate transformer)
-    to form the :term:`motion group`.
+    The `MotionGroup` actor brings together all the components that
+    are needed to move a probe drive around the motion space.  These
+    components include: (1) the full motion group configuration
+    (i.e. instance of `MotionGroupConfig`), (2) communication with
+    the probe drive (i.e. instance of |Drive|), (3) an understanding
+    of the motion space (i.e. instance of |MotionList|, and (4) how
+    to convert back and forth from the motion space coordinate system
+    and the probe drive coordinate system (i.e. instance of a subclass
+    of `~bapsf_motion.transform.base.BaseTransform`).
 
     Parameters
     ----------
-    filename: `str`, optional
-        Full file path to a TOML file with the motion group
-        configuration.  If not specified, then input argument
-        ``config`` must be defined. (DEFAULT: `None`)
-
-    config: Dict[str, Any], optional
-        A dictionary containing all the necessary configuration
-        information to fully define the motion group.  If not specified,
-        then input argument ``filename`` must be defined.
-        (DEFAULT: `None`)
+    config:`str` or `dict`
+        A TOML like string or dictionary defining the motion group
+        configuration.  See `MotionGroupConfig` for further details.
 
     logger: `~logging.Logger`, optional
         An instance of `~logging.Logger` that the Actor will record
@@ -622,55 +619,16 @@ class MotionGroup(BaseActor):
         self, config: Dict[str, Any], loop: asyncio.AbstractEventLoop
     ) -> Drive:
         """
-        Spawn and return the |Drive| instance for th motion group.
+        Spawn and return the |Drive| instance for the motion group.
 
         Parameters
         ----------
-        config
+        config: `dict`
+            Drive component of the motion group configuration.
 
         loop:
             Event loop for the |Drive| class to send motor commands
             through.
-        """
-        """
-        The Drive configuration should look like:
-
-        .. code-block:
-
-            config = {
-                "name": "probe_drive_name",
-                "axes": {
-                    "ip": ["192.168.0.70", "192.168.0.80"],
-                    "name": ["x", "y"],
-                    "units": ["cm", "cm"],
-                    "units_per_rev": [0.254, 0.254],
-                },
-            }
-
-        or
-
-        .. code-block:
-
-            config = {
-                "name": "probe_drive_name",
-                "axes": [
-                    {
-                        "ip": "192.168.0.70",
-                        "name": "x",
-                        "units": "cm",
-                        "units_per_rev": 0.256,
-                    },
-                    {
-                        "ip": "192.168.0.80",
-                        "name": "y",
-                        "units": "cm",
-                        "units_per_rev": 0.256,
-                    },
-                ],
-            }
-
-        Both versions are acceptable, but the latter is what gets passed
-        to Drive and the former comes from the TOML files.
         """
 
         dr = Drive(
@@ -682,9 +640,9 @@ class MotionGroup(BaseActor):
         )
         return dr
 
-    def _setup_motion_list(self, config: Dict[str, Any]):
     @staticmethod
     def _setup_motion_list(config: Dict[str, Any]) -> MotionList:
+        """Return an instance of |MotionList|."""
         # initialize the motion list object
 
         ml_config = config.copy()
@@ -704,9 +662,8 @@ class MotionGroup(BaseActor):
         _ml = MotionList(**ml_config)
         return _ml
 
-    def _setup_transform(self, config: Dict[str, Any]):
-        # # initialize the transform object, this is used to convert between
     def _setup_transform(self, config: Dict[str, Any]) -> transform.BaseTransform:
+        """Return an instance of the :term:`transformer`."""
 
         tr_config = config.copy()
 
@@ -714,10 +671,30 @@ class MotionGroup(BaseActor):
         return transform.transform_factory(self.drive, tr_type=tr_type, **config)
 
     def run(self):
+        """
+        Activate the `asyncio` `event loop`_ used by :attr:`drive`.  If
+        the event loop is running, then nothing happens.  Otherwise,
+        the event loop is placed in a separate thread and set to
+        `~asyncio.loop.run_forever`.
+        """
         if self.drive is not None:
             self.drive.run()
 
     def stop_running(self, delay_loop_stop=False):
+        r"""
+        Stop the actor's `event loop`_\ .  All actor tasks will be
+        cancelled, the connection to the motor will be shutdown, and
+        the event loop will be stopped.
+
+        Parameters
+        ----------
+        delay_loop_stop: bool
+            If `True`, then do NOT stop the `event loop`_\ .  In this
+            case it is assumed the calling functionality is managing
+            additional tasks in the event loop, and it is up to that
+            functionality to stop the loop.  (DEFAULT: `False`)
+
+        """
         if self.drive is None:
             return
 
@@ -729,17 +706,18 @@ class MotionGroup(BaseActor):
     config.__doc__ = BaseActor.config.__doc__
 
     @property
-    def drive(self):
     def drive(self) -> Drive:
+        """Instance of |Drive| associated with the motion group."""
         return self._drive
 
     @property
-    def ml(self):
     def ml(self) -> MotionList:
+        """Instance of |MotionList| associated with the motion group."""
         return self._ml
 
     @property
     def ml_index(self):
+        """Last motion list index the probe drive moved to."""
         return self._ml_index
 
     @ml_index.setter
@@ -759,13 +737,19 @@ class MotionGroup(BaseActor):
         self._ml_index = index
 
     @property
-    def transform(self) -> "transform.LaPDXYTransform":
     def transform(self) -> transform.BaseTransform:
+        """
+        Instance of the :term:`transformer` associated with the motion
+        group.
+        """
         return self._transform
 
     @property
-    def position(self):
     def position(self) -> u.Quantity:
+        """
+        Current position of the probe drive, in motion space
+        coordinates and units.
+        """
         dr_pos = self.drive.position
         pos = self.transform(
             dr_pos.value.tolist(),
@@ -774,15 +758,32 @@ class MotionGroup(BaseActor):
         return pos * dr_pos.unit
 
     def stop(self):
+        """Immediately stop the probe drive motion."""
         self.drive.stop()
 
-    def move_to(self, pos, axis=None):
     def move_to(self, pos, axis: Optional[int] = None):
+        """
+        Move the probe drive to a specified location, ``pos``.
+
+        Parameters
+        ----------
+        pos: :term:`array_like`
+            A position in the :term:`motion space` for the probe to be
+            moved to.  ``pos`` should have the same dimensionality as
+            the motion space unless keyword ``axis`` is used.
+
+        axis: `int`, optional
+            An integer specifying which axis is to be moved.  ``axis``
+            is integer of 0 to :math:`N-1`, where :math:`N` is the
+            dimensionality of the motion space.
+        """
         dr_pos = self.transform(pos, to_coords="drive")
         return self.drive.move_to(pos=dr_pos, axis=axis)
 
-    def move_ml(self, index):
     def move_ml(self, index: int):
+        """
+        Move the probe drive to a specific index of the motion list.
+        """
         if index == "next":
             index = 0 if self.ml_index is None else self.ml_index + 1
         elif index == "first":
