@@ -8,6 +8,6 @@ PyQt5
 PySide6
 qtwidgets
 scipy
-tomli
+tomli; python_version < '3.11'
 tomli_w
 xarray

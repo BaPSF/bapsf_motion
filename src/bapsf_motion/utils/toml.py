@@ -20,6 +20,7 @@ if sys.version_info < (3, 11):
     from tomli import __all__ as __wall__
 else:
     # noqa
+    # tomllib is a builtin package for py3.11+
     from tomllib import *
     from tomllib import __all__ as __wall__
 
