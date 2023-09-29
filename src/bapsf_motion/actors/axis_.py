@@ -117,7 +117,7 @@ class Axis(BaseActor):
         self.motor.run()
 
     def stop_running(self, delay_loop_stop=False):
-        """
+        r"""
         Stop the actor's `event loop`_\ .  All actor tasks will be
         cancelled, the connection to the motor will be shutdown, and
         the event loop will be stopped.
