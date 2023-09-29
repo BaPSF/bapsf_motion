@@ -246,8 +246,8 @@ class MotionGroupConfig(UserDict):
     def data(self, value):
         self._data = value
 
-    def _validate_config(self, config):
         """Validate the motion group configuration."""
+    def _validate_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
 
         # Check for root level required key-value pairs
         missing_meta = self._required_metadata["motion_group"] - set(config.keys())
@@ -412,7 +412,7 @@ class MotionGroupConfig(UserDict):
         return config
 
     @staticmethod
-    def _handle_user_meta(config: Dict[str, Any], req_meta: set):
+    def _handle_user_meta(config: Dict[str, Any], req_meta: set) -> Dict[str, Any]:
         user_meta = set(config.keys()) - req_meta
 
         if len(user_meta) == 0:
@@ -437,7 +437,7 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def link_motion_list(self, ml):
+    def link_motion_list(self, ml: MotionList):
         if not isinstance(ml, MotionList):
             raise TypeError(
                 f"For argument 'ml' expected type {MotionList}, but got "
@@ -446,7 +446,7 @@ class MotionGroupConfig(UserDict):
 
         self._motion_list = ml
 
-    def link_drive(self, drive):
+    def link_drive(self, drive: Drive):
         if not isinstance(drive, Drive):
             raise TypeError(
                 f"For argument 'drive' expected type {Drive}, but got "
@@ -455,7 +455,7 @@ class MotionGroupConfig(UserDict):
 
         self._drive = drive
 
-    def link_transform(self, tr):
+    def link_transform(self, tr: transform.BaseTransform):
         if not isinstance(tr, transform.BaseTransform):
             raise TypeError(
                 f"For argument 'tr' expected a subclass of "
