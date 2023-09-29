@@ -26,43 +26,57 @@ class MotionGroupConfig(UserDict):
     """
     A dictionary containing the full configuration for a motion group.
 
+    At instantiation the class will take either a TOML-like string or
+    dictionary defining a motion group configuration.  The class will
+    validate this input configuration, convert it to a viable
+    dictionary configuration, and poses it as `self`.
+
     Parameters
     ----------
-    config: Dict[str, Any], optional
-        A dictionary defining the motion group configuration.  If
-        ``filename`` is defined, then this argument is ignored.
-        (DEFAULT: `None`)
+    config: `str` or `dict`
+        A TOML like string or dictionary defining the motion group
+        configuration.  See examples section below for additional
+        details.
 
     Examples
     --------
 
-    The following are example configures for using either the
-    ``filename`` keyword (i.e. TOML tab) or the ``config`` keyword
-    (i.e. "Dict Entry" tab).
+    The following example shows how a typical XY probe drive on an East
+    port of the LaPD could be configured using either a TOML-like string
+    or a dictionary.  Note, values used are not necessarily appropriate
+    for a real world setup.
 
     .. tabs::
 
        .. code-tab:: toml TOML
 
-          [mgroup]
+          [motion_group]
           name = "P32 XY-drive"  # unique name of motion group
 
-          [mgroup.drive]
-          # define the make up of the probe drive
+          [motion_group.drive]
+          # define the makeup of the probe drive
           name = "XY-drive"  # name of probe drive
+          #
+          # setup first axis
           axes.0.name = "X"  # name of axis
           axes.0.ip = "192.168.6.103"  # ip address of motor
           axes.0.units = "cm"  # unit type used for axis
           axes.0.units_per_rev = 0.254  # thread pitch of rod
+          #
+          # setup second axis
           axes.1.name = "Y"
           axes.1.ip = "192.168.6.104"
           axes.1.units = "cm"
           axes.1.units_per_rev = 0.254
 
-          [mgroup.motion_list]
+          [motion_group.motion_list]
           # configuration for the motion list
           #
           # 'space' defines the motion space
+          # - motion space is the "volume" in which the motion will
+          #   occur in
+          # - these axes correspond to the same 0 and 1 axes of the
+          #   motion_group.drive.axes configuration
           space.0.label = "X"
           space.0.range = [-55, 55]
           space.0.num = 221
@@ -70,19 +84,38 @@ class MotionGroupConfig(UserDict):
           space.1.range = [-55, 55]
           space.1.num = 221
           #
-          # exclusion defines regions in space where a probe can not go
+          # exclusion defines regions in space where a probe can NOT go
+          # - exclusion entries should be numbered starting with 0 since
+          #   complex exclusions can be construction from multiple
+          #   exclusion layers
+          # - an exclusion always requires the 'type' parameter, but
+          #   the subsequent required parameters depend on that type
+          # - See online documentation for available exclusion layers.
           exclusions.0.type = "lapd_xy"
           exclusions.0.port_location = "E"
           exclusions.0.cone_full_angle = 60
           #
           # layers define the points where a probe should move to
+          # - the example given defines a grid of points wih 11
+          #   locations along the 1st axis from 0 to 30, and 21
+          #   locations along the 2nd axis from -30 to 30
+          # - layer entries should be numbered starting with 0 since
+          #   complex point layers can be construction from multiple
+          #   point layers
+          # - a layer always requires the 'type' parameter, but
+          #   the subsequent required parameters depend on that type
+          # - See online documentation for available point layers.
           layers.0.type = "grid"
           layers.0.limits = [[0, 30], [-30, 30]]
           layers.0.steps = [11, 21]
 
-          [mgroup.transform]
+          [motion_group.transform]
           # define the coordinate transformation between the physical
-          # coordinate system (e.g. the LaPD) and the probe drive axes
+          # coordinate system, a.k.a. motion space, (e.g. the LaPD) and
+          # the probe drive axes
+          # - a transform always requires the 'type' parameter, but
+          #   the subsequent required parameters depend on that type
+          # - See online documentation for available point layers.
           type = "lapd_xy"
           pivot_to_center = 57.7
           pivot_to_drive = 125
@@ -91,6 +124,7 @@ class MotionGroupConfig(UserDict):
 
        .. code-tab:: py Dict Entry
 
+          # Look to the TOML tab for descriptions of each entry
           config = {
               "name": "P32 XY-Drive",
               "drive": {
@@ -231,6 +265,10 @@ class MotionGroupConfig(UserDict):
 
     @property
     def data(self):
+        """
+        A real dictionary used to store the contents of
+        `MotionGroupConfig`.
+        """
         if self._drive is not None:
             self._data = {**self._data, "drive": self._drive.config}
 
@@ -246,8 +284,8 @@ class MotionGroupConfig(UserDict):
     def data(self, value):
         self._data = value
 
-        """Validate the motion group configuration."""
     def _validate_config(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """Validate the motion group configuration dictionary."""
 
         # Check for root level required key-value pairs
         missing_meta = self._required_metadata["motion_group"] - set(config.keys())
@@ -282,7 +320,9 @@ class MotionGroupConfig(UserDict):
         return config
 
     def _validate_drive(self, config: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate the drive configuration."""
+        """
+        Validate the drive component of the motion group configuration.
+        """
         req_meta = self._required_metadata["drive"]
 
         missing_meta = req_meta - set(config.keys())
@@ -320,6 +360,10 @@ class MotionGroupConfig(UserDict):
         return config
 
     def _validate_axis(self, config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Validate the axis (e.g. axes.0) component of the drive
+        component of the motion group configuration.
+        """
         req_meta = self._required_metadata["drive.axes"]
 
         missing_meta = req_meta - set(config.keys())
@@ -337,7 +381,10 @@ class MotionGroupConfig(UserDict):
         return config
 
     def _validate_motion_list(self, config: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate motion list configuration."""
+        """
+        Validate the motion list component of the motion group
+        configuration.
+        """
         req_meta = self._required_metadata["motion_list"]
         opt_meta = self._optional_metadata["motion_list"]
 
@@ -400,7 +447,10 @@ class MotionGroupConfig(UserDict):
         return config
 
     def _validate_transform(self, config: Dict[str, Any]) -> Dict[str, Any]:
-        """Validate transform configuration."""
+        """
+        Validate the transform component of the motion group
+        configuration.
+        """
         req_meta = self._required_metadata["transform"]
 
         missing_meta = req_meta - set(config.keys())
@@ -413,6 +463,11 @@ class MotionGroupConfig(UserDict):
 
     @staticmethod
     def _handle_user_meta(config: Dict[str, Any], req_meta: set) -> Dict[str, Any]:
+        """
+        If a user specifies metadata that is not required by a specific
+        configuration component, then collect all the metadata and
+        store it under the 'user' key.  Return the modified dictionary.
+        """
         user_meta = set(config.keys()) - req_meta
 
         if len(user_meta) == 0:
@@ -438,6 +493,12 @@ class MotionGroupConfig(UserDict):
         return config
 
     def link_motion_list(self, ml: MotionList):
+        """
+        Link the 'motion_list' configuration component to an instance
+        of |MotionList|.  The 'motion_list' configuration component
+        will now be pulled from the :attr:`config` property of
+        |MotionList|.
+        """
         if not isinstance(ml, MotionList):
             raise TypeError(
                 f"For argument 'ml' expected type {MotionList}, but got "
@@ -447,6 +508,11 @@ class MotionGroupConfig(UserDict):
         self._motion_list = ml
 
     def link_drive(self, drive: Drive):
+        """
+        Link the 'drive' configuration component to an instance  of
+        |Drive|.  The 'drive' configuration component  will now be
+        pulled from the :attr:`config` property of |Drive|.
+        """
         if not isinstance(drive, Drive):
             raise TypeError(
                 f"For argument 'drive' expected type {Drive}, but got "
@@ -456,6 +522,13 @@ class MotionGroupConfig(UserDict):
         self._drive = drive
 
     def link_transform(self, tr: transform.BaseTransform):
+        """
+        Link the 'transform' configuration component to an instance of
+        a subclass of `~bapsf_motion.transform.base.BaseTransform`.
+        The 'transform' configuration component  will now be
+        pulled from the :attr:`config` property of that transform
+        instance.
+        """
         if not isinstance(tr, transform.BaseTransform):
             raise TypeError(
                 f"For argument 'tr' expected a subclass of "
