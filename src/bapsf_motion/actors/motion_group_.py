@@ -600,24 +600,6 @@ class MotionGroup(BaseActor):
         Both versions are acceptable, but the latter is what gets passed
         to Drive and the former comes from the TOML files.
         """
-        # if "axes" not in config:
-        #     raise ValueError(
-        #         "The Drive configuration for the motion group does"
-        #         f" NOT specify any axes.  Got {config}."
-        #     )
-        # elif isinstance(config["axes"], dict):
-        #     axes = config["axes"]
-        #     new_axes = []
-        #     keys = list(axes.keys())
-        #     size = len(axes[keys[0]])
-        #     for ii in range(size):
-        #         ax = {}
-        #         for key in keys:
-        #             ax[key] = axes[key][ii]
-        #
-        #         new_axes.append(ax)
-        #
-        #     config["axes"] = new_axes
 
         dr = Drive(
             logger=self.logger,
@@ -631,20 +613,6 @@ class MotionGroup(BaseActor):
     def _setup_motion_list(self, config: Dict[str, Any]):
         # initialize the motion list object
 
-        # if config is None:
-        #     return
-        #
-        # # re-pack exclusions
-        # exclusions = []
-        # for val in config["exclusions"].values():
-        #     exclusions.append(val)
-        # config["exclusions"] = exclusions
-        #
-        # # re-pack layers
-        # layers = []
-        # for val in config["layers"].values():
-        #     layers.append(val)
-        # config["layers"] = layers
         ml_config = config.copy()
 
         for key in {"name", "user"}:
@@ -664,16 +632,6 @@ class MotionGroup(BaseActor):
 
     def _setup_transform(self, config: Dict[str, Any]):
         # # initialize the transform object, this is used to convert between
-        # # LaPD coordinates and drive coordinates
-        # if config is None:
-        #     raise ValueError(
-        #         "Currently, the only valid transform is 'lapd_xy'."
-        #     )
-        # elif "type" not in config:
-        #     raise ValueError(
-        #         "Transform configuration my missing key/value pair "
-        #         "'type'."
-        #     )
 
         tr_config = config.copy()
 
