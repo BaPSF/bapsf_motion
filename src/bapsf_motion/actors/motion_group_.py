@@ -529,7 +529,6 @@ class MotionGroup(BaseActor):
         auto_run: bool = False,
     ):
 
-        # config = self._process_config(filename=filename, config=config)
         config = MotionGroupConfig(config)
 
         super().__init__(logger=logger, name=config["name"])
@@ -548,92 +547,6 @@ class MotionGroup(BaseActor):
 
         if auto_run:
             self.run()
-
-    @staticmethod
-    def _process_config(
-        *,
-        filename: Optional[str] = None,
-        config: Optional[Dict[str, Any]] = None,
-    ):
-        """
-        Process the configuration input arguments ``filename`` and
-        ``config`` to build the full motion group configuration
-        dictionary and return the dictionary.
-        """
-        # ensure filename XOR config kwargs are specified
-        if filename is None and config is None:
-            raise TypeError(
-                "MotionGroup() missing 1 required keyword argument: use "
-                "'filename' or 'config' to specify a configuration."
-            )
-        elif filename is not None and config is not None:
-            # TODO: should we make it possible to override the "filename"
-            #       configuration with values in the "config" dictionary
-            raise TypeError(
-                "MotionGroup() takes 1 keyword argument but 2 were "
-                "given: use keyword 'filename' OR 'config' to specify "
-                "a configuration."
-            )
-        elif filename is not None:
-            filename = Path(filename).resolve()
-
-            if not filename.exists():
-                for efile in _EXAMPLES:
-                    if filename.name == efile.name:
-                        filename = efile
-                        break
-
-            if not filename.exists():
-                raise ValueError(
-                    f"Specified Motion Group configuration file does "
-                    f"not exist, {filename}."
-                )
-
-            with open(filename, "rb") as f:
-                config = toml.load(f)
-
-        # trim so we're at the motion group root config
-        if "mgroup" in config and len(config) != 1:
-            raise ValueError(
-                "Supplied configuration unrecognized, suspected "
-                "multiple Motion Groups defined."
-            )
-        elif "mgroup" in config:
-            config = config["mgroup"]
-
-        # validate root level config
-        # _required_metadata = {"name", "drive", "motion_list", "transform"}
-        # _required_metadata = {"name", "drive", "motion_list"}
-        # TODO: "motion_list" should be optional under certain situations,
-        #       but not others...e.g. ml is required during a run but
-        #       not one off operation
-
-        if len(config) == 1:
-            key, val = tuple(config.items())[0]
-            if key.isnumeric():
-                config = val
-            else:
-                raise ValueError(
-                    "Supplied configuration is unrecognized, only one "
-                    "key-value pair defined."
-                )
-
-        _required_metadata = {"name", "drive"}
-        missing_configs = _required_metadata - set(config.keys())
-        if missing_configs:
-            raise ValueError(
-                f"Supplied configuration is missing required keys {missing_configs}."
-            )
-
-        config["name"] = str(config["name"])
-
-        if "motion_list" not in config:
-            config["motion_list"] = None
-
-        if "transform" not in config:
-            config["transform"] = None
-
-        return config
 
     def _spawn_drive(self, config, loop) -> Drive:
         """
