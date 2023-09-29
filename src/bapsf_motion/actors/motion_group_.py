@@ -11,7 +11,7 @@ import numpy as np
 
 from collections import UserDict
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Union
+from typing import Any, Dict, Union
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.drive_ import Drive
