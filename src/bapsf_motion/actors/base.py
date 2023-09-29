@@ -79,6 +79,14 @@ class BaseActor(ABC):
     @property
     @abstractmethod
     def config(self) -> Dict[str, Any]:
+        """
+        Configuration dictionary of the actor.
+
+        .. warning::
+
+           This dictionary should never be written to from outside the
+           owning actor.
+        """
         ...
 
 
