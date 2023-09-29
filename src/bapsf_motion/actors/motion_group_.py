@@ -11,13 +11,18 @@ import numpy as np
 
 from collections import UserDict
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_list import MotionList
 from bapsf_motion import transform
 from bapsf_motion.utils import toml
+
+if False:
+    # noqa
+    # only needed for annotations
+    import astropy.units as u
 
 _EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.toml"))
 
@@ -613,7 +618,9 @@ class MotionGroup(BaseActor):
         if auto_run:
             self.run()
 
-    def _spawn_drive(self, config, loop) -> Drive:
+    def _spawn_drive(
+        self, config: Dict[str, Any], loop: asyncio.AbstractEventLoop
+    ) -> Drive:
         """
         Spawn and return the |Drive| instance for th motion group.
 
@@ -676,6 +683,8 @@ class MotionGroup(BaseActor):
         return dr
 
     def _setup_motion_list(self, config: Dict[str, Any]):
+    @staticmethod
+    def _setup_motion_list(config: Dict[str, Any]) -> MotionList:
         # initialize the motion list object
 
         ml_config = config.copy()
@@ -697,6 +706,7 @@ class MotionGroup(BaseActor):
 
     def _setup_transform(self, config: Dict[str, Any]):
         # # initialize the transform object, this is used to convert between
+    def _setup_transform(self, config: Dict[str, Any]) -> transform.BaseTransform:
 
         tr_config = config.copy()
 
@@ -720,10 +730,12 @@ class MotionGroup(BaseActor):
 
     @property
     def drive(self):
+    def drive(self) -> Drive:
         return self._drive
 
     @property
     def ml(self):
+    def ml(self) -> MotionList:
         return self._ml
 
     @property
@@ -748,10 +760,12 @@ class MotionGroup(BaseActor):
 
     @property
     def transform(self) -> "transform.LaPDXYTransform":
+    def transform(self) -> transform.BaseTransform:
         return self._transform
 
     @property
     def position(self):
+    def position(self) -> u.Quantity:
         dr_pos = self.drive.position
         pos = self.transform(
             dr_pos.value.tolist(),
@@ -763,10 +777,12 @@ class MotionGroup(BaseActor):
         self.drive.stop()
 
     def move_to(self, pos, axis=None):
+    def move_to(self, pos, axis: Optional[int] = None):
         dr_pos = self.transform(pos, to_coords="drive")
         return self.drive.move_to(pos=dr_pos, axis=axis)
 
     def move_ml(self, index):
+    def move_ml(self, index: int):
         if index == "next":
             index = 0 if self.ml_index is None else self.ml_index + 1
         elif index == "first":
