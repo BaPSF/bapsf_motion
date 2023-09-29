@@ -777,6 +777,9 @@ class MotionGroup(BaseActor):
             is integer of 0 to :math:`N-1`, where :math:`N` is the
             dimensionality of the motion space.
         """
+        if isinstance(pos, u.Quantity):
+            pos = pos.value
+
         dr_pos = self.transform(pos, to_coords="drive")
         return self.drive.move_to(pos=dr_pos, axis=axis)
 
