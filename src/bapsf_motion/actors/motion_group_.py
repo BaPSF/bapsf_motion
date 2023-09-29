@@ -437,14 +437,6 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def _link_config(self, name: str, config: Dict[str, Any]):
-        if not isinstance(config, dict):
-            raise TypeError(
-                "Expected linked configuration to be a dictionary, but "
-                f"got type {type(config)}"
-            )
-        self[name] = config
-
     def link_motion_list(self, ml):
         if not isinstance(ml, MotionList):
             raise TypeError(
