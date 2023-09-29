@@ -1,4 +1,12 @@
-"""Module for TOML file functionality."""
+"""
+Module for TOML file functionality.
+
+TOMl functionality exists in different 3rd party packages and builtin
+packages across Python versions.  This module is intended to import
+the appropriate packages based on the Python environment version and
+name wrangle the functionality to provide a consistent interface for
+`bapsf_motion`.
+"""
 __all__ = []
 
 import sys
@@ -6,10 +14,12 @@ import sys
 from tomli_w import *
 from tomli_w import __all__ as __rall__
 
-if sys.version_info < (3, 11):   # coverage: ignore
+if sys.version_info < (3, 11):
+    # noqa
     from tomli import *
     from tomli import __all__ as __wall__
 else:
+    # noqa
     from tomllib import *
     from tomllib import __all__ as __wall__
 
