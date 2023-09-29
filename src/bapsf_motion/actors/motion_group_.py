@@ -5,6 +5,7 @@ Module for functionality focused around the
 __all__ = ["MotionGroup", "MotionGroupConfig"]
 __actors__ = ["MotionGroup"]
 
+import astropy.units as u
 import asyncio
 import logging
 import numpy as np
@@ -19,10 +20,6 @@ from bapsf_motion.motion_list import MotionList
 from bapsf_motion import transform
 from bapsf_motion.utils import toml
 
-if False:
-    # noqa
-    # only needed for annotations
-    import astropy.units as u
 
 _EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.toml"))
 
