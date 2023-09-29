@@ -142,6 +142,7 @@ class Axis(BaseActor):
             "units": str(self.units),
             "units_per_rev": self.units_per_rev.value.item()
         }
+    config.__doc__ = BaseActor.config.__doc__
 
     @property
     def is_moving(self) -> bool:

@@ -1122,6 +1122,7 @@ class MotionGroup(BaseActor):
     @property
     def config(self):
         return self._config
+    config.__doc__ = BaseActor.config.__doc__
 
     @property
     def drive(self):

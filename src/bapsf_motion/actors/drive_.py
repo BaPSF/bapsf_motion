@@ -193,6 +193,7 @@ class Drive(BaseActor):
             _config["axes"][ii] = ax.config.copy()
 
         return _config
+    config.__doc__ = BaseActor.config.__doc__
 
     @property
     def is_moving(self) -> bool:

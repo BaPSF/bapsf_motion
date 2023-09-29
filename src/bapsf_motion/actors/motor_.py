@@ -688,6 +688,7 @@ class Motor(BaseActor):
             "name": self.name,
             "ip": self.ip,
         }
+    config.__doc__ = BaseActor.config.__doc__
 
     @property
     def logger(self) -> logging.Logger:
