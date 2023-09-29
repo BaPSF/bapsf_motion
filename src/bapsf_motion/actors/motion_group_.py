@@ -794,15 +794,3 @@ class MotionGroup(BaseActor):
         pos = self.ml.motion_list.sel(index=index).to_numpy().tolist()
 
         return self.move_to(pos=pos)
-
-    def replace_motion_list(self, config):
-        self._ml = self._setup_motion_list(config)
-        self.ml_index = None
-
-    def _validate_setup(self):
-        # Needs to enforce that the drive, motion list, and transform
-        # are all valid with respect to each other.  The following
-        # should be validated.
-        # 1. All elements have the same axis dimensionality
-        # 2. All share the same naming for the axes
-        ...
