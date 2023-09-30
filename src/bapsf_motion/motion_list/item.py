@@ -1,8 +1,8 @@
 """
 Module containing the definition of
-:class:`~bapsf_motion.motion_list.item.MLItem`.
+:class:`~bapsf_motion.motion_list.item.MBItem`.
 """
-__all__ = ["MLItem"]
+__all__ = ["MBItem"]
 
 import re
 import xarray as xr
@@ -10,7 +10,7 @@ import xarray as xr
 from typing import Hashable, Tuple
 
 
-class MLItem:
+class MBItem:
     r"""
     A base class for any :term:`motion list` class that will interact
     with the `xarray` `~xarray.Dataset` containing the

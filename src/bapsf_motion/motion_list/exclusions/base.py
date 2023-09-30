@@ -8,10 +8,10 @@ import xarray as xr
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
-from bapsf_motion.motion_list.item import MLItem
+from bapsf_motion.motion_list.item import MBItem
 
 
-class BaseExclusion(ABC, MLItem):
+class BaseExclusion(ABC, MBItem):
     """
     Abstract base class for :term:`motion exclusion` classes.
 

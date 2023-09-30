@@ -9,7 +9,7 @@ import xarray as xr
 
 from typing import Any, Dict, List, Optional, Union
 
-from bapsf_motion.motion_list.item import MLItem
+from bapsf_motion.motion_list.item import MBItem
 from bapsf_motion.motion_list.exclusions import (
     exclusion_factory,
     BaseExclusion,
@@ -23,7 +23,7 @@ from bapsf_motion.motion_list.layers import (
 #        a motion list is finished but other motion lists are still running
 
 
-class MotionBuilder(MLItem):
+class MotionBuilder(MBItem):
     """
     A class that manages all the functionality around creating,
     generating, and reading a :term:`motion list`.

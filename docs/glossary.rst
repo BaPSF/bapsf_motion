@@ -62,7 +62,7 @@ Glossary
       Terminology referring to the `xarray.DataArray` or the class/
       instance object that manages that `~xarray.DataArray` in the
       :term:`motion list` `xarray.Dataset`.  Also see |MotionBuilder| and
-      `~bapsf_motion.motion_list.item.MLItem`.
+      `~bapsf_motion.motion_list.item.MBItem`.
 
    motion space
       The :math:`N`-D space the probe drive moves in.
