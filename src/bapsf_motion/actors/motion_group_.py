@@ -16,7 +16,7 @@ from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import BaseActor
 from bapsf_motion.actors.drive_ import Drive
-from bapsf_motion.motion_list import MotionList
+from bapsf_motion.motion_list import MotionBuilder
 from bapsf_motion import transform
 from bapsf_motion.utils import toml
 
@@ -393,7 +393,7 @@ class MotionGroupConfig(UserDict):
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
             raise ValueError(
-                f"Supplied configuration for MotionList is missing required "
+                f"Supplied configuration for MotionBuilder is missing required "
                 f"keys {missing_meta}."
             )
 
@@ -494,16 +494,16 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def link_motion_list(self, ml: MotionList):
+    def link_motion_list(self, ml: MotionBuilder):
         """
         Link the 'motion_list' configuration component to an instance
-        of |MotionList|.  The 'motion_list' configuration component
+        of |MotionBuilder|.  The 'motion_list' configuration component
         will now be pulled from the :attr:`config` property of
-        |MotionList|.
+        |MotionBuilder|.
         """
-        if not isinstance(ml, MotionList):
+        if not isinstance(ml, MotionBuilder):
             raise TypeError(
-                f"For argument 'ml' expected type {MotionList}, but got "
+                f"For argument 'ml' expected type {MotionBuilder}, but got "
                 f"type {type(ml)}."
             )
 
@@ -547,7 +547,7 @@ class MotionGroup(BaseActor):
     components include: (1) the full motion group configuration
     (i.e. instance of `MotionGroupConfig`), (2) communication with
     the probe drive (i.e. instance of |Drive|), (3) an understanding
-    of the motion space (i.e. instance of |MotionList|, and (4) how
+    of the motion space (i.e. instance of |MotionBuilder|, and (4) how
     to convert back and forth from the motion space coordinate system
     and the probe drive coordinate system (i.e. instance of a subclass
     of `~bapsf_motion.transform.base.BaseTransform`).
@@ -638,8 +638,8 @@ class MotionGroup(BaseActor):
         return dr
 
     @staticmethod
-    def _setup_motion_list(config: Dict[str, Any]) -> MotionList:
-        """Return an instance of |MotionList|."""
+    def _setup_motion_list(config: Dict[str, Any]) -> MotionBuilder:
+        """Return an instance of |MotionBuilder|."""
         # initialize the motion list object
 
         ml_config = config.copy()
@@ -656,7 +656,7 @@ class MotionGroup(BaseActor):
             except KeyError:
                 continue
 
-        _ml = MotionList(**ml_config)
+        _ml = MotionBuilder(**ml_config)
         return _ml
 
     def _setup_transform(self, config: Dict[str, Any]) -> transform.BaseTransform:
@@ -708,8 +708,8 @@ class MotionGroup(BaseActor):
         return self._drive
 
     @property
-    def ml(self) -> MotionList:
-        """Instance of |MotionList| associated with the motion group."""
+    def ml(self) -> MotionBuilder:
+        """Instance of |MotionBuilder| associated with the motion group."""
         return self._ml
 
     @property

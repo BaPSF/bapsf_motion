@@ -1,7 +1,7 @@
 """
-Module containing the definition of |MotionList|.
+Module containing the definition of |MotionBuilder|.
 """
-__all__ = ["MotionList"]
+__all__ = ["MotionBuilder"]
 
 import numpy as np
 import re
@@ -23,7 +23,7 @@ from bapsf_motion.motion_list.layers import (
 #        a motion list is finished but other motion lists are still running
 
 
-class MotionList(MLItem):
+class MotionBuilder(MLItem):
     """
     A class that manages all the functionality around creating,
     generating, and reading a :term:`motion list`.
@@ -107,7 +107,7 @@ class MotionList(MLItem):
         """
         Validate the ``space`` argument given during instantiation.
 
-        See the notes section for |MotionList| for additional details.
+        See the notes section for |MotionBuilder| for additional details.
         """
         # TODO: !!! allow `space` to be defined as a list of
         #       !!! dictionaries of a dictionary of lists

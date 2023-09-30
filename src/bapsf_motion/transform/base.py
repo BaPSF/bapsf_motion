@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from bapsf_motion.actors import Drive
-from bapsf_motion.motion_list import MotionList
+from bapsf_motion.motion_list import MotionBuilder
 
 
 class BaseTransform(ABC):
@@ -440,13 +440,13 @@ class _Base2Transform(ABC):
     #         and decel so all drive axes finish movement at the same
     #         time)
     #       - est. time to complete motion list (this might be more
-    #         suited on the MotionGroup class, or MotionList class)
+    #         suited on the MotionGroup class, or MotionBuilder class)
 
     def __init__(
         self,
         drive: Drive,
         # *,
-        # ml: MotionList = None,
+        # ml: MotionBuilder = None,
         **kwargs,
     ):
         self._drive = self._validate_drive(drive)
@@ -493,13 +493,13 @@ class _Base2Transform(ABC):
 
         return drive
 
-    def _validate_motion_list(self, ml: Optional[MotionList]) -> Optional[MotionList]:
+    def _validate_motion_list(self, ml: Optional[MotionBuilder]) -> Optional[MotionBuilder]:
         if ml is None:
             return
-        elif not isinstance(ml, MotionList):
+        elif not isinstance(ml, MotionBuilder):
             raise TypeError(
                 f"Argument 'ml' expected type "
-                f"{MotionList.__module__}.{MotionList.__qualname__}, and "
+                f"{MotionBuilder.__module__}.{MotionBuilder.__qualname__}, and "
                 f"got type {type(ml)}."
             )
         elif self.drive.naxes != ml.mspace_ndims:

@@ -33,7 +33,7 @@ Glossary
    motion exclusion
    motion exclusions
       An exclusion "layer" defined within the `~xarray.Dataset` of the
-      |MotionList|.  These layers are constructed by subclasses
+      |MotionBuilder|.  These layers are constructed by subclasses
       of `~bapsf_motion.motion_list.exclusions.base.BaseExclusion` and
       define regions in the :term:`motion space` where a probe is not
       allowed to be moved to.
@@ -47,7 +47,7 @@ Glossary
    motion layer
    motion layers
       A "point" layer defined within the `~xarray.Dataset` of the
-      |MotionList|.  These layers are constructed by subclasses
+      |MotionBuilder|.  These layers are constructed by subclasses
       of `~bapsf_motion.motion_list.layers.base.BaseLayer` and defined
       the desired points a probe should move to.
 
@@ -61,7 +61,7 @@ Glossary
    motion list item
       Terminology referring to the `xarray.DataArray` or the class/
       instance object that manages that `~xarray.DataArray` in the
-      :term:`motion list` `xarray.Dataset`.  Also see |MotionList| and
+      :term:`motion list` `xarray.Dataset`.  Also see |MotionBuilder| and
       `~bapsf_motion.motion_list.item.MLItem`.
 
    motion space
