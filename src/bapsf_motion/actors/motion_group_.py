@@ -494,20 +494,20 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def link_motion_list(self, ml: MotionBuilder):
+    def link_motion_list(self, mb: MotionBuilder):
         """
         Link the 'motion_list' configuration component to an instance
         of |MotionBuilder|.  The 'motion_list' configuration component
         will now be pulled from the :attr:`config` property of
         |MotionBuilder|.
         """
-        if not isinstance(ml, MotionBuilder):
+        if not isinstance(mb, MotionBuilder):
             raise TypeError(
-                f"For argument 'ml' expected type {MotionBuilder}, but got "
-                f"type {type(ml)}."
+                f"For argument 'mb' expected type {MotionBuilder}, but got "
+                f"type {type(mb)}."
             )
 
-        self._motion_list = ml
+        self._motion_list = mb
 
     def link_drive(self, drive: Drive):
         """
@@ -606,7 +606,7 @@ class MotionGroup(BaseActor):
 
         self._config = config
         self._config.link_drive(self.drive)
-        self._config.link_motion_list(self.ml)
+        self._config.link_motion_list(self.mb)
         self._config.link_transform(self.transform)
 
         if auto_run:
@@ -708,7 +708,7 @@ class MotionGroup(BaseActor):
         return self._drive
 
     @property
-    def ml(self) -> MotionBuilder:
+    def mb(self) -> MotionBuilder:
         """Instance of |MotionBuilder| associated with the motion group."""
         return self._ml
 
@@ -725,10 +725,10 @@ class MotionGroup(BaseActor):
             raise ValueError(
                 f"Expected type int for 'index', got {type(index)}"
             )
-        elif not np.isin(index, self.ml.motion_list.index):
+        elif not np.isin(index, self.mb.motion_list.index):
             raise ValueError(
                 f"Given index {index} is out of range, "
-                f"[0, {self.ml.motion_list.index.size}]."
+                f"[0, {self.mb.motion_list.index.size}]."
             )
 
         self._ml_index = index
@@ -789,9 +789,9 @@ class MotionGroup(BaseActor):
         elif index == "first":
             index = 0
         elif index == "last":
-            index = self.ml.motion_list.index[-1].item()
+            index = self.mb.motion_list.index[-1].item()
 
         self.ml_index = index
-        pos = self.ml.motion_list.sel(index=index).to_numpy().tolist()
+        pos = self.mb.motion_list.sel(index=index).to_numpy().tolist()
 
         return self.move_to(pos=pos)

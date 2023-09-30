@@ -197,7 +197,7 @@ class MotionBuilder(MBItem):
 
         .. code-block:: python
 
-            ml.add_layer(
+            mb.add_layer(
                 "grid",
                 **{
                     "limits": [[0, 30], [, -30, 30]],
@@ -394,10 +394,10 @@ class MotionBuilder(MBItem):
         """
         # return the generated motion list
         try:
-            ml = self._ds["motion_list"]
+            mb = self._ds["motion_list"]
         except KeyError:
             self.rebuild_mask()
             self.generate()
-            ml = self._ds["motion_list"]
+            mb = self._ds["motion_list"]
 
-        return ml
+        return mb
