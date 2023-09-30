@@ -28,7 +28,7 @@ BaPSF Motion Documentation
    :caption: Package features
 
    Actors <api_static/bapsf_motion.actors>
-   Motion Builder <motion_list/index>
+   Motion Builder <motion_builder/index>
    Transform <api_static/bapsf_motion.transform>
    Utilities <api_static/bapsf_motion.utils>
 
