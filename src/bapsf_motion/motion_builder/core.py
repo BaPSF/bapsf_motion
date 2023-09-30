@@ -9,12 +9,12 @@ import xarray as xr
 
 from typing import Any, Dict, List, Optional, Union
 
-from bapsf_motion.motion_list.item import MBItem
-from bapsf_motion.motion_list.exclusions import (
+from bapsf_motion.motion_builder.item import MBItem
+from bapsf_motion.motion_builder.exclusions import (
     exclusion_factory,
     BaseExclusion,
 )
-from bapsf_motion.motion_list.layers import (
+from bapsf_motion.motion_builder.layers import (
     layer_factory,
     BaseLayer,
 )
@@ -56,8 +56,8 @@ class MotionBuilder(MBItem):
 
         super().__init__(
             self._build_initial_ds(),
-            base_name="motion_list",
-            name_pattern=re.compile(r"motion_list")
+            base_name="motion_builder",
+            name_pattern=re.compile(r"motion_builder")
         )
 
         self.layers = []  # type: List[BaseLayer]
@@ -193,7 +193,7 @@ class MotionBuilder(MBItem):
         the first axis and -30 to 30 along the second axis.  In this
         case the steps size along both axes is 3.  A ``"grid"`` layer
         is defined/constructed by the
-        `~bapsf_motion.motion_list.layers.regular_grid.GridLayer` class.
+        `~bapsf_motion.motion_builder.layers.regular_grid.GridLayer` class.
 
         .. code-block:: python
 
@@ -207,7 +207,7 @@ class MotionBuilder(MBItem):
 
         See Also
         --------
-        ~bapsf_motion.motion_list.layers.helpers.layer_factory
+        ~bapsf_motion.motion_builder.layers.helpers.layer_factory
         """
         # TODO: add ref in docstring to documented available layers
         layer = layer_factory(self._ds, ly_type=ly_type, **settings)
@@ -250,7 +250,7 @@ class MotionBuilder(MBItem):
 
         See Also
         --------
-        ~bapsf_motion.motion_list.exclusions.helpers.exclusion_factory
+        ~bapsf_motion.motion_builder.exclusions.helpers.exclusion_factory
         """
         # TODO: add ref in docstring to documented available layers
         exclusion = exclusion_factory(self._ds, ex_type=ex_type, **settings)

@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 from bapsf_motion.actors import Drive
-from bapsf_motion.motion_list import MotionBuilder
+from bapsf_motion.motion_builder import MotionBuilder
 
 
 class BaseTransform(ABC):

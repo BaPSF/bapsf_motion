@@ -40,7 +40,7 @@
 .. PKG Common Functionality
 .. ------------------------
 
-.. |MotionBuilder| replace:: :class:`~bapsf_motion.motion_list.core.MotionBuilder`
+.. |MotionBuilder| replace:: :class:`~bapsf_motion.motion_builder.core.MotionBuilder`
 
 
 .. ----------------------

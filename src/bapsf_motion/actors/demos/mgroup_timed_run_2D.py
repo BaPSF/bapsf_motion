@@ -69,7 +69,7 @@ if __name__ == "__main__":
                 "name": ["x", "y"],
             },
         },
-        "motion_list": {
+        "motion_builder": {
             "space": "lapd_xy",
             "exclusions": {
                 "0": {

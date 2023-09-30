@@ -8,8 +8,8 @@ import numbers
 import numpy as np
 import xarray as xr
 
-from bapsf_motion.motion_list.exclusions.base import BaseExclusion
-from bapsf_motion.motion_list.exclusions.helpers import register_exclusion
+from bapsf_motion.motion_builder.exclusions.base import BaseExclusion
+from bapsf_motion.motion_builder.exclusions.helpers import register_exclusion
 
 
 @register_exclusion
@@ -80,7 +80,7 @@ class CircularExclusion(BaseExclusion):
 
        .. code-tab:: toml TOML
 
-          [...motion_list.exclusions]
+          [...motion_builder.exclusions]
           type = "circle"
           radius = 20
           center = [-1, 20]
@@ -88,7 +88,7 @@ class CircularExclusion(BaseExclusion):
 
        .. code-tab:: py Dict Entry
 
-          config["motion_list"]["exclusions"] = {
+          config["motion_builder"]["exclusions"] = {
               "type": "circle",
               "radius": 20,
               "center": [-1, 20],

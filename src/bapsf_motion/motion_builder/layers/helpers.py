@@ -9,7 +9,7 @@ import xarray as xr
 
 from typing import Type
 
-from bapsf_motion.motion_list.layers import base
+from bapsf_motion.motion_builder.layers import base
 
 #: The :term:`motion layer` registry.
 _LAYER_REGISTRY = {}
@@ -25,9 +25,9 @@ def register_layer(layer_cls: Type[base.BaseLayer]):
     layer_cls:
         The :term:`motion layer` class to be registered.  The class
         has to be a subclass of
-        `~bapsf_motion.motion_list.layers.base.BaseLayer` and the
+        `~bapsf_motion.motion_builder.layers.base.BaseLayer` and the
         registry key will be taken from
-        :attr:`~bapsf_motion.motion_list.layers.base.BaseLayer.layer_type`.
+        :attr:`~bapsf_motion.motion_builder.layers.base.BaseLayer.layer_type`.
 
     Examples
     --------
@@ -84,7 +84,7 @@ def layer_factory(ds: xr.Dataset, *, ly_type: str, **settings):
 
     Returns
     -------
-    ~bapsf_motion.motion_list.layers.base.BaseLayer
+    ~bapsf_motion.motion_builder.layers.base.BaseLayer
         Instantiated motion layer class associated with ``ly_type``.
     """
     # TODO: How to automatically document the available ly_types?

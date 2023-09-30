@@ -14,14 +14,14 @@ __mexclusions__ = [
 ]
 __all__ += __mexclusions__
 
-from bapsf_motion.motion_list.exclusions.base import BaseExclusion
-from bapsf_motion.motion_list.exclusions.circular import CircularExclusion
-from bapsf_motion.motion_list.exclusions.divider import DividerExclusion
-from bapsf_motion.motion_list.exclusions.helpers import (
+from bapsf_motion.motion_builder.exclusions.base import BaseExclusion
+from bapsf_motion.motion_builder.exclusions.circular import CircularExclusion
+from bapsf_motion.motion_builder.exclusions.divider import DividerExclusion
+from bapsf_motion.motion_builder.exclusions.helpers import (
     exclusion_factory,
     register_exclusion,
 )
-from bapsf_motion.motion_list.exclusions.lapd import LaPDXYExclusion
+from bapsf_motion.motion_builder.exclusions.lapd import LaPDXYExclusion
 
 # TODO: types of exclusions
 #       - Divider (greater/less than a dividing line)

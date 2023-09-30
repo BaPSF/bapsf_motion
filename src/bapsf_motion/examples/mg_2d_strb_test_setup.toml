@@ -8,7 +8,7 @@ axes.units = ["cm", "cm"]
 axes.name = ["x", "y"]
 axes.units_per_rev = [0.508, 0.508]
 
-[mgroup.0.motion_list]
+[mgroup.0.motion_builder]
 space = "lapd_xy"
 exclusions.0.type = "lapd"
 exclusions.0.port_location = "E"

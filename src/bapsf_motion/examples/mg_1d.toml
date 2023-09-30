@@ -14,7 +14,7 @@ pivot_to_center = 57.7
 pivot_to_clamp = 125.0
 zero_to_home = [10, 10]
 
-[mgroup.0.motion_list]
+[mgroup.0.motion_builder]
 space.label = ["x"]
 space.range = [[-5, 5]]
 space.num = [41]

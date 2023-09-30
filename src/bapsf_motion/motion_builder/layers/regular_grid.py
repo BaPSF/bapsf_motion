@@ -9,8 +9,8 @@ import xarray as xr
 
 from typing import List
 
-from bapsf_motion.motion_list.layers.base import BaseLayer
-from bapsf_motion.motion_list.layers.helpers import register_layer
+from bapsf_motion.motion_builder.layers.base import BaseLayer
+from bapsf_motion.motion_builder.layers.helpers import register_layer
 
 
 @register_layer
@@ -72,14 +72,14 @@ class GridLayer(BaseLayer):
 
        .. code-tab:: toml TOML
 
-          [...motion_list.layers]
+          [...motion_builder.layers]
           type = "grid"
           limits = [[-10, 10], [0, 20]]
           steps = [21, 21]
 
        .. code-tab:: py Dict Entry
 
-          config["motion_list"]["layers"] = {
+          config["motion_builder"]["layers"] = {
               "type": "grid",
               "limits": [[-10, 10], [0, 20]],
               "steps": [21, 21],

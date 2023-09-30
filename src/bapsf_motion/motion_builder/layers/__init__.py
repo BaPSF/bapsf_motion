@@ -10,9 +10,9 @@ __all__ = [
 __mlayers__ = ["GridLayer"]
 __all__ += __mlayers__
 
-from bapsf_motion.motion_list.layers.base import BaseLayer
-from bapsf_motion.motion_list.layers.regular_grid import GridLayer
-from bapsf_motion.motion_list.layers.helpers import register_layer, layer_factory
+from bapsf_motion.motion_builder.layers.base import BaseLayer
+from bapsf_motion.motion_builder.layers.regular_grid import GridLayer
+from bapsf_motion.motion_builder.layers.helpers import register_layer, layer_factory
 
 # TODO: types of layers
 #       - Sphere (regular grid & bloom)

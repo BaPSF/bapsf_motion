@@ -8,7 +8,7 @@ import inspect
 
 from typing import Type
 
-from bapsf_motion.motion_list.exclusions import base
+from bapsf_motion.motion_builder.exclusions import base
 
 _EXCLUSION_REGISTRY = {}
 
@@ -23,9 +23,9 @@ def register_exclusion(exclusion_cls: Type[base.BaseExclusion]):
     exclusion_cls:
         The :term:`exclusion layer` class to be registered.  The class
         has to be a subclass of
-        `~bapsf_motion.motion_list.exclusions.base.BaseExclusion` and
+        `~bapsf_motion.motion_builder.exclusions.base.BaseExclusion` and
         the registry key will be taken from
-        :attr:`~bapsf_motion.motion_list.exclusions.base.BaseExclusion.exclusion_type`.
+        :attr:`~bapsf_motion.motion_builder.exclusions.base.BaseExclusion.exclusion_type`.
 
     Examples
     --------
@@ -82,7 +82,7 @@ def exclusion_factory(ds, *, ex_type: str, **settings):
 
     Returns
     -------
-    ~bapsf_motion.motion_list.exclusions.base.BaseExclusion
+    ~bapsf_motion.motion_builder.exclusions.base.BaseExclusion
         Instantiated motion exclusion class associated with ``ex_type``.
     """
     # TODO: How to automatically document the available ex_types?

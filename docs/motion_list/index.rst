@@ -1,5 +1,5 @@
-`bapsf_motion.motion_list`
-==========================
+`bapsf_motion.motion_builder`
+=============================
 
 The term :term:`motion list` can be a bit confusing, since it can have
 multiple meanings.  Strictly put, the term motion list refers to the
@@ -13,7 +13,7 @@ The |MotionBuilder| class hase four fundamental building blocks:
 
 1. The :term:`motion space` which defines the :math:`N`\ -D space the
    :term:`probe` is supposed to move in.
-2. The `~bapsf_motion.motion_list.MotionBuilder.mask`, which is a high
+2. The `~bapsf_motion.motion_builder.MotionBuilder.mask`, which is a high
    resolution boolean array over the :term:`motion space` indicating
    where a probe is allowed or not allowed to move to.
 3. The :term:`motion layers` (sometimes also referred to as
@@ -49,7 +49,7 @@ About Point Layers
 Available Layers
 ~~~~~~~~~~~~~~~~
 
-.. automodsumm:: bapsf_motion.motion_list.layers
+.. automodsumm:: bapsf_motion.motion_builder.layers
     :groups: mlayers
 
 Creating a New Layer Type
@@ -69,7 +69,7 @@ About Exclusion Layers
 Available Exclusions
 ~~~~~~~~~~~~~~~~~~~~
 
-.. automodsumm:: bapsf_motion.motion_list.exclusions
+.. automodsumm:: bapsf_motion.motion_builder.exclusions
     :groups: mexclusions
 
 Creating a New Exclusion Type
@@ -78,4 +78,4 @@ Creating a New Exclusion Type
 API
 ---
 
-.. automodapi:: bapsf_motion.motion_list
+.. automodapi:: bapsf_motion.motion_builder

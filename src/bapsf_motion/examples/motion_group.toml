@@ -11,8 +11,8 @@ transform.droop_correction = "None"
 transform.pivot_to_center = 57.7
 transform.pivot_to_clamp = 125.0
 transform.zero_to_home = [10, 10]
-motion_list.0.type = "grid"
-motion_list.0.n = [20, 20]
-motion_list.0.center = [0, 0]
-motion_list.0.size = [10, 10]
+motion_builder.0.type = "grid"
+motion_builder.0.n = [20, 20]
+motion_builder.0.center = [0, 0]
+motion_builder.0.size = [10, 10]
 

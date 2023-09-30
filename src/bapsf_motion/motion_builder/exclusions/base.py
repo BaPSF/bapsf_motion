@@ -8,7 +8,7 @@ import xarray as xr
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 
-from bapsf_motion.motion_list.item import MBItem
+from bapsf_motion.motion_builder.item import MBItem
 
 
 class BaseExclusion(ABC, MBItem):

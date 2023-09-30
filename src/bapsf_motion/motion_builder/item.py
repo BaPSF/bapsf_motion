@@ -1,6 +1,6 @@
 """
 Module containing the definition of
-:class:`~bapsf_motion.motion_list.item.MBItem`.
+:class:`~bapsf_motion.motion_builder.item.MBItem`.
 """
 __all__ = ["MBItem"]
 

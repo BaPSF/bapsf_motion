@@ -10,10 +10,10 @@ import xarray as xr
 from numbers import Real
 from typing import Union
 
-from bapsf_motion.motion_list.exclusions.base import BaseExclusion
-from bapsf_motion.motion_list.exclusions.circular import CircularExclusion
-from bapsf_motion.motion_list.exclusions.divider import DividerExclusion
-from bapsf_motion.motion_list.exclusions.helpers import register_exclusion
+from bapsf_motion.motion_builder.exclusions.base import BaseExclusion
+from bapsf_motion.motion_builder.exclusions.circular import CircularExclusion
+from bapsf_motion.motion_builder.exclusions.divider import DividerExclusion
+from bapsf_motion.motion_builder.exclusions.helpers import register_exclusion
 
 
 @register_exclusion
@@ -83,12 +83,12 @@ class LaPDXYExclusion(BaseExclusion):
 
        .. code-tab:: toml TOML
 
-          [...motion_list.exclusions]
+          [...motion_builder.exclusions]
           type = "lapd_xy"
 
        .. code-tab:: py Dict Entry
 
-          config["motion_list"]["exclusions"] = {
+          config["motion_builder"]["exclusions"] = {
               "type": "lapd_xy",
           }
 
@@ -119,7 +119,7 @@ class LaPDXYExclusion(BaseExclusion):
 
        .. code-tab:: toml TOML
 
-          [...motion_list.exclusions]
+          [...motion_builder.exclusions]
           type = "lapd_xy"
           diameter = 60
           port_location = "W"
@@ -127,7 +127,7 @@ class LaPDXYExclusion(BaseExclusion):
 
        .. code-tab:: py Dict Entry
 
-          config["motion_list"]["exclusions"] = {
+          config["motion_builder"]["exclusions"] = {
               "type": "lapd_xy",
               "diameter": 60,
               "port_location": "W",
