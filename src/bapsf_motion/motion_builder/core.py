@@ -26,7 +26,7 @@ from bapsf_motion.motion_builder.layers import (
 class MotionBuilder(MBItem):
     r"""
     A class that manages all the functionality around
-    :term:`probe drive` motion in the :term:`motion space`\ .  Ths
+    :term:`probe drive` motion in the :term:`motion space`\ .  This
     functionality includes:
 
     1. Defining the motion space the probe moves in.
@@ -40,6 +40,8 @@ class MotionBuilder(MBItem):
     layers
     exclusions
     """
+    # TODO: ^ fully write out the above docstring
+
     #: Dictionary of :term:`motion builder item` base names.
     base_names = {
         "layer": BaseLayer.base_name,
