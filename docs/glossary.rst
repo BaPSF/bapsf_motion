@@ -30,6 +30,14 @@ Glossary
       <https://plasma.physics.ucla.edu/large-plasma-device.html>`_ is
       the primary devices deployed at :term:`BaPSF`.
 
+   motion builder
+      The motion builder (i.e. |MotionBuilder|) is the entity that
+      manages all the functionality around :term:`probe drive` motion
+      in the :term:`motion space`.  This functionality includes: (1)
+      defining the physical motion space, (2) building and generating
+      the :term:`motion list`, and (3) generating motion trajectories
+      to avoid obstacles in the motion space.
+
    motion exclusion
    motion exclusions
       An exclusion "layer" defined within the `~xarray.Dataset` of the
