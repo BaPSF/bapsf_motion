@@ -4,10 +4,9 @@ __all__ = ["BaseTransform"]
 import numpy as np
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
 from bapsf_motion.actors import Drive
-from bapsf_motion.motion_list import MotionList
 
 
 class BaseTransform(ABC):

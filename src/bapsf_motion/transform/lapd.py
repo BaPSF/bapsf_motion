@@ -7,12 +7,12 @@ import numpy as np
 from typing import Any, Dict, Tuple
 from warnings import warn
 
-from bapsf_motion.transform.base import BaseTransform
+from bapsf_motion.transform import base
 from bapsf_motion.transform.helpers import register_transform
 
 
 @register_transform
-class LaPDXYTransform(BaseTransform):
+class LaPDXYTransform(base.BaseTransform):
     """
     Class that defines a coordinate transform for a :term:`LaPD` XY
     :term:`probe drive`.
