@@ -4,10 +4,9 @@ __all__ = ["BaseTransform"]
 import numpy as np
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
 from bapsf_motion.actors import Drive
-from bapsf_motion.motion_builder import MotionBuilder
 
 
 class BaseTransform(ABC):
@@ -423,111 +422,4 @@ class BaseTransform(ABC):
         # 4. The +1 in the dimensionality corresponds to axis for coordinate
         #    translations.  If a transformation has no translation, then all
         #    values of this axis are zero.
-        ...
-
-
-class _Base2Transform(ABC):
-    """
-    This was a first attempt at a BaseTransform class.  I'm keeping it
-    around until I'm satisfied with BaseTransform or reimplement all
-    of _Base2Transform into BaseTransform.
-    """
-    _transform_type = NotImplemented  # type: str
-
-    # TODO: Possible useful methods
-    #       - time to move to point (from current position)
-    #       - equalize move movement to next point (est. speed, accel,
-    #         and decel so all drive axes finish movement at the same
-    #         time)
-    #       - est. time to complete motion list (this might be more
-    #         suited on the MotionGroup class, or MotionBuilder class)
-
-    def __init__(
-        self,
-        drive: Drive,
-        # *,
-        # mb: MotionBuilder = None,
-        **kwargs,
-    ):
-        self._drive = self._validate_drive(drive)
-        # self._ml = self._validate_motion_list(mb)
-
-        self.inputs = self._validate_inputs(kwargs)
-        self._config_keys = {"type"}.union(set(self.inputs.keys()))
-
-        self.dependencies = []  # type: List[BaseTransform]
-
-    @property
-    def transform_type(self):
-        return self._transform_type
-
-    @property
-    def config(self):
-        config = {}
-        for key in self._config_keys:
-            if key == "type":
-                config[key] = self.transform_type
-            else:
-                val = self.inputs[key]
-                if isinstance(val, np.ndarray):
-                    val = val.tolist()
-                config[key] = val if not isinstance(val, np.generic) else val.item()
-        return config
-
-    @property
-    def drive(self):
-        return self._drive
-
-    # @property
-    # def mb(self):
-    #     return self._mb
-
-    @staticmethod
-    def _validate_drive(drive: "Drive") -> "Drive":
-        if not isinstance(drive, Drive):
-            raise TypeError(
-                f"Argument 'drive' expected type "
-                f"{Drive.__module__}.{Drive.__qualname__} and got type "
-                f"{type(drive)}."
-            )
-
-        return drive
-
-    def _validate_motion_list(self, mb: Optional[MotionBuilder]) -> Optional[MotionBuilder]:
-        if mb is None:
-            return
-        elif not isinstance(mb, MotionBuilder):
-            raise TypeError(
-                f"Argument 'mb' expected type "
-                f"{MotionBuilder.__module__}.{MotionBuilder.__qualname__}, and "
-                f"got type {type(mb)}."
-            )
-        elif self.drive.naxes != mb.mspace_ndims:
-            raise ValueError(
-                f"The given 'drive' object and motion list 'mb' object "
-                f" do not have matching dimensions, got "
-                f"{self.drive.naxes} and {mb.mspace_ndims} respectively."
-            )
-        elif set(self.drive.anames) != set(mb.mspace_coords.dims):
-            raise ValueError(
-                f"The give 'drive' axis names and motion spaces axis "
-                f"names do not match, got {set(self.drive.anames)} and "
-                f"{set(mb.mspace_coords.dims)} respectively."
-            )
-
-        return mb
-
-    @abstractmethod
-    def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        ...
-
-    @abstractmethod
-    def convert(self, points, to_coord="drive"):
-        # to_coord should have two options "drive" and "motion_space"
-        # - to_coord="drive" means to convert from motion space coordinates
-        #   to drive coordinates
-        # - to_coord="motion_space" converts in the opposite direction as
-        #   to_coord="drive"
-        #
-        # TODO: would to_coord be better as a to_drive that has a boolean value
         ...

@@ -6,12 +6,12 @@ import numpy as np
 
 from typing import Any, Dict
 
-from bapsf_motion.transform.base import BaseTransform
+from bapsf_motion.transform import base
 from bapsf_motion.transform.helpers import register_transform
 
 
 @register_transform
-class IdentityTransform(BaseTransform):
+class IdentityTransform(base.BaseTransform):
     """
     Class that defines an Identity coordinate transform, i.e. the
     :term:`motion space` and probe drive coordinates are the same.
