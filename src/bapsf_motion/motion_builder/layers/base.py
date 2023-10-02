@@ -18,7 +18,7 @@ class BaseLayer(ABC, MBItem):
     Parameters
     ----------
     ds: `~xr.Dataset`
-        The `xarray` `~xarray.Dataset` the motion list configuration
+        The `xarray` `~xarray.Dataset` the motion builder configuration
         is constructed in.
 
     skip_ds_add: bool
@@ -31,7 +31,7 @@ class BaseLayer(ABC, MBItem):
     """
 
     # TODO: Can we define a __del__ that properly removes a layer and
-    #       its dependencies from the motion list dataset?
+    #       its dependencies from the motion builder dataset?
 
     _layer_type = NotImplemented  # type: str
 
@@ -117,8 +117,8 @@ class BaseLayer(ABC, MBItem):
         Notes
         -----
 
-        The method should only generate and return the points associated
-        with the motion list.  The :attr:`_generate_point_matrix_da`
+        This method should only generate and return the points associated
+        with the motion layer.  The :attr:`_generate_point_matrix_da`
         method will then validate the array and add it to the
         `xarray.Dataset`.
         """

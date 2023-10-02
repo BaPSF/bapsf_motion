@@ -28,7 +28,7 @@ class LaPDXYExclusion(BaseExclusion):
     Parameters
     ----------
     ds: `~xarray.DataSet`
-        The `xarray` `~xarray.Dataset` the motion list configuration
+        The `xarray` `~xarray.Dataset` the motion builder configuration
         is constructed in.
 
     diameter: `~numbers.Real`

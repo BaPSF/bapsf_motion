@@ -34,7 +34,7 @@ class MotionBuilder(MBItem):
     layers
     exclusions
     """
-    #: Dictionary of :term:`motion list item` base names.
+    #: Dictionary of :term:`motion builder item` base names.
     base_names = {
         "layer": BaseLayer.base_name,
         "exclusion": BaseExclusion.base_name,
@@ -80,7 +80,7 @@ class MotionBuilder(MBItem):
     def config(self) -> Dict[str, Any]:
         """
         Dictionary containing the full configuration of the
-        :term:`motion list`.
+        :term:`motion builder`.
         """
         _config = {"space": {}}
 
@@ -173,7 +173,7 @@ class MotionBuilder(MBItem):
 
     def add_layer(self, ly_type: str, **settings):
         """
-        Add a "point" layer to the motion list.
+        Add a "point" layer to the motion builder.
 
         Parameters
         ----------
@@ -215,13 +215,13 @@ class MotionBuilder(MBItem):
 
     def remove_layer(self, name: str):
         """
-        Completely remove a layer from the :term:`motion list`.
+        Completely remove a layer from the :term:`motion builder`.
 
         Parameters
         ----------
         name: str
             Name of the layer to be removed.  The name corresponds
-            to the `~xarray.DataArray` name in the motion list
+            to the `~xarray.DataArray` name in the motion builder
             `~xarray.Dataset`,
         """
         for ii, layer in enumerate(self.layers):
@@ -236,7 +236,7 @@ class MotionBuilder(MBItem):
 
     def add_exclusion(self, ex_type: str, **settings):
         """
-        Add an exclusion "layer" to the motion list.
+        Add an exclusion "layer" to the motion builder.
 
         Parameters
         ----------
@@ -261,13 +261,13 @@ class MotionBuilder(MBItem):
     def remove_exclusion(self, name: str):
         """
         Completely remove an exclusion "layer" from the
-        :term:`motion list`.
+        :term:`motion builder`.
 
         Parameters
         ----------
         name: str
             Name of the exclusion to be removed.  The name corresponds
-            to the `~xarray.DataArray` name in the motion list
+            to the `~xarray.DataArray` name in the motion builder
             `~xarray.Dataset`,
         """
         for ii, exclusion in enumerate(self.exclusions):

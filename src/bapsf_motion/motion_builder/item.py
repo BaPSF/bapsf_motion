@@ -12,31 +12,31 @@ from typing import Hashable, Tuple
 
 class MBItem:
     r"""
-    A base class for any :term:`motion list` class that will interact
+    A base class for any :term:`motion builder` class that will interact
     with the `xarray` `~xarray.Dataset` containing the
-    :term:`motion list` configuration.
+    :term:`motion builder` configuration.
 
     Parameters
     ----------
     ds: `~xarray.Dataset`
-        The `xarray` `~xarray.Dataset` the motion list configuration
+        The `xarray` `~xarray.Dataset` the motion builder configuration
         is constructed in.
 
     base_name: str
-        A string representing the base name for the motion list item
+        A string representing the base name for the motion builder item
         in the `~xarray.Dataset` ``ds``.
 
     name_pattern: str, `re.Pattern`
         A raw string ``r''`` or `re.Pattern` representing the naming
-        pattern for associated motion list items in the
+        pattern for associated motion builder items in the
         `~xarray.Dataset`.  For example, if the ``base_name`` is
         ``'player'``, then an appropriate pattern would look like
         ``r'player(?P<number>[0-9]+)'``.
 
     """
 
-    # TODO:  Can we define a __del__() to properly hand the removal of
-    #        the motion list item from the motion list dataset...
+    # TODO:  Can we define a __del__() to properly handle the removal of
+    #        the motion builder items from the motion builder dataset...
     #        unfortunately this requires more than just the items
     #        removal, but also an update of the mask
 
@@ -61,20 +61,20 @@ class MBItem:
     @property
     def name_pattern(self) -> re.Pattern:
         """
-        The naming pattern for motion list items in the
+        The naming pattern for motion builder items in the
         `~xarray.Dataset`.
         """
         return self._name_pattern
 
     @property
     def name(self) -> str:
-        """Name of the motion list item in the `~xarray.Dataset`."""
+        """Name of the motion builder item in the `~xarray.Dataset`."""
         return self._name
 
     @property
     def item(self):
         """
-        The representative motion list item in the `~xarray.Dataset`.
+        The representative motion builder item in the `~xarray.Dataset`.
         """
         return self._ds[self.name]
 
@@ -138,13 +138,13 @@ class MBItem:
 
     def _determine_name(self):
         """
-        Determine the name for the motion list item that will be used
+        Determine the name for the motion builder item that will be used
         in the `~xarray.Dataset`.  This is generally the name of the
         `xarray.DataArray`.
 
         This method will examine the `~xarray.Dataset` of items matching
         :attr:`name_pattern` and generate a unique :attr:`name` for
-        the motion list item.
+        the motion builder item.
         """
         try:
             return self.name

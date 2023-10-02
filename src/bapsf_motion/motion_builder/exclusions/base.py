@@ -18,7 +18,7 @@ class BaseExclusion(ABC, MBItem):
     Parameters
     ----------
     ds: `~xr.Dataset`
-        The `xarray` `~xarray.Dataset` the motion list configuration
+        The `xarray` `~xarray.Dataset` the motion builder configuration
         is constructed in.
 
     skip_ds_add: bool
@@ -31,7 +31,7 @@ class BaseExclusion(ABC, MBItem):
     """
 
     # TODO: Can we define a __del__ that properly removes an exclusion
-    #       and its dependencies from the motion list dataset?
+    #       and its dependencies from the motion builder dataset?
     # TODO: Rework _generate_exclusion() and regenerate_exclusion()
     #       to match the workflow of BaseLayer._generate_point_matrix(),
     #       BaseLayer._generate_point_matrix_da(), and

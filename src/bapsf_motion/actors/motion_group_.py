@@ -72,7 +72,7 @@ class MotionGroupConfig(UserDict):
           axes.1.units_per_rev = 0.254
 
           [motion_group.motion_builder]
-          # configuration for the motion list
+          # configuration for the motion builder
           #
           # 'space' defines the motion space
           # - motion space is the "volume" in which the motion will
@@ -309,7 +309,7 @@ class MotionGroupConfig(UserDict):
         #       or ranges for all axes...once this is reconciled then the
         #       code block below can be reinstated.
         #
-        # # check axis names are the same as the motion list labels
+        # # check axis names are the same as the motion builder labels
         # axis_labels = (ax["name"] for ax in config["drive"]["axes"].values())
         # ml_labels = tuple(config["motion_builder"]["label"])
         # if axis_labels != ml_labels:
@@ -384,7 +384,7 @@ class MotionGroupConfig(UserDict):
 
     def _validate_motion_builder(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
-        Validate the motion list component of the motion group
+        Validate the motion builder component of the motion group
         configuration.
         """
         req_meta = self._required_metadata["motion_builder"]
@@ -640,7 +640,7 @@ class MotionGroup(BaseActor):
     @staticmethod
     def _setup_motion_builder(config: Dict[str, Any]) -> MotionBuilder:
         """Return an instance of |MotionBuilder|."""
-        # initialize the motion list object
+        # initialize the motion builder object
 
         ml_config = config.copy()
 
