@@ -6,7 +6,7 @@ import numpy as np
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
 
-from bapsf_motion.actors import Drive
+from bapsf_motion.actors.drive_ import Drive
 
 
 class BaseTransform(ABC):
