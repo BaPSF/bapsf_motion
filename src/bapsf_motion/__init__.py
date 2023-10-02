@@ -10,7 +10,7 @@ if sys.version_info < (3, 6):  # coverage: ignore
 
 import pkg_resources
 
-from bapsf_motion import configurator, controllers, gui
+from bapsf_motion import actors, gui, motion_builder, transform, utils
 
 # define version
 try:

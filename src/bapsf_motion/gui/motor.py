@@ -21,7 +21,7 @@ from __feature__ import snake_case  # noqa
 
 from typing import Any, Dict
 
-from bapsf_motion.controllers.motor import Motor
+from bapsf_motion.actors import Motor
 from bapsf_motion.gui.widgets import LED, StopButton, QLogHandler, IPv4Validator
 
 

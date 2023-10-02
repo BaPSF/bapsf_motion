@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QPushButton, QTextEdit, QPlainTextEdit
 
 from __feature__ import snake_case  # noqa
 
-from bapsf_motion.controllers.motor import _ipv4_pattern
+from bapsf_motion.utils import ipv4_pattern as _ipv4_pattern
 
 
 class IPv4Validator(QValidator):
