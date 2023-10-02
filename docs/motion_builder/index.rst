@@ -1,33 +1,42 @@
 `bapsf_motion.motion_builder`
 =============================
 
-The term :term:`motion list` can be a bit confusing, since it can have
-multiple meanings.  Strictly put, the term motion list refers to the
-list of points that a :term:`probe drive` will move the :term:`probe`
-through.  However, the term may be used as short hand for the
-|MotionBuilder| class and that classes components.  The |MotionBuilder|
-class is where the motion list is defined and ultimately the
-:term:`motion list` (list of points) is generated.
+The :term:`motion builder` (i.e. |MotionBuilder|) has three fundamental
+roles for in the framework for probe drive motion:
+
+1. It defined the physical :term:`motion space` at probe drive will
+   move in.  This includes any excluded regions where a probe drive
+   is not allowed to be, for example a region where a targe was
+   position in the :term:`LaPD` chamber.
+2. Building and generating the :term:`motion list` that would be used
+   for a data run.
+3. Generating motion trajectories to avoid obstacles in the motion
+   space.
+
+Note, the :term:`motion builder` does not move the probe drive, it only
+defines and calculates where a probe drive is allowed to be in the
+:term:`motion space`.
 
 The |MotionBuilder| class hase four fundamental building blocks:
 
 1. The :term:`motion space` which defines the :math:`N`\ -D space the
-   :term:`probe` is supposed to move in.
+   :term:`probe` is supposed to move in.  For example, this would be
+   the physical space of the :term:`LaPD`.
 2. The `~bapsf_motion.motion_builder.MotionBuilder.mask`, which is a high
    resolution boolean array over the :term:`motion space` indicating
    where a probe is allowed or not allowed to move to.
 3. The :term:`motion layers` (sometimes also referred to as
    :term:`point layers`), which defines an array of points where the
-   probe ought to move to.  A single :term:`motion layer` can be defined
-   or multiple layers can be defined to construct more complex
-   :term:`point layers`.  The available layers are summarized
-   :ref:`below <available_layers>`.
+   probe ought to move to during a data run.  A single
+   :term:`motion layer` can be defined or multiple layers can be
+   defined to construct more complex :term:`point layers`.  The
+   available layers are summarized :ref:`below <available_layers>`.
 4. The :term:`motion exclusions` (sometimes also referred to as
    :term:`exclusion layers`), which defines regions in the
    :term:`motion space` where a probe can not be moved to. A single
    :term:`exclusion layer` can be defined or multiple layers can be
-   defined to construct more complex
-   :term:`exclusion layers`.  The available exclusions are summarized
+   defined to construct more complex :term:`exclusion layers`.  The
+   available exclusions are summarized
    :ref:`below <available_exclusions>`.
 
 The |MotionBuilder| manages all these fundamental building blocks within
