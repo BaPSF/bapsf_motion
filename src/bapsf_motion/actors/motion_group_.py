@@ -300,7 +300,7 @@ class MotionGroupConfig(UserDict):
         config["name"] = str(config["name"])
         config["drive"] = self._validate_drive(config["drive"])
         config["transform"] = self._validate_transform(config["transform"])
-        config["motion_builder"] = self._validate_motion_list(config["motion_builder"])
+        config["motion_builder"] = self._validate_motion_builder(config["motion_builder"])
 
         config = self._handle_user_meta(config, self._required_metadata["motion_group"])
 
@@ -382,7 +382,7 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def _validate_motion_list(self, config: Dict[str, Any]) -> Dict[str, Any]:
+    def _validate_motion_builder(self, config: Dict[str, Any]) -> Dict[str, Any]:
         """
         Validate the motion list component of the motion group
         configuration.
@@ -494,7 +494,7 @@ class MotionGroupConfig(UserDict):
 
         return config
 
-    def link_motion_list(self, mb: MotionBuilder):
+    def link_motion_builder(self, mb: MotionBuilder):
         """
         Link the 'motion_builder' configuration component to an instance
         of |MotionBuilder|.  The 'motion_builder' configuration component
@@ -606,7 +606,7 @@ class MotionGroup(BaseActor):
 
         self._config = config
         self._config.link_drive(self.drive)
-        self._config.link_motion_list(self.mb)
+        self._config.link_motion_builder(self.mb)
         self._config.link_transform(self.transform)
 
         if auto_run:
