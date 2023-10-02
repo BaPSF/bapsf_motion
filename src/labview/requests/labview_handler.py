@@ -1,3 +1,5 @@
+# Note: runtherun was purposely deleted...this should be be replaced
+#       with bapsf_motion.actors.Manager when the code is developed
 from bapsf_motion.runtherun import RunManager
 
 RunManager = RunManager()
