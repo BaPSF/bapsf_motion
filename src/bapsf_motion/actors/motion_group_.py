@@ -260,7 +260,7 @@ class MotionGroupConfig(UserDict):
         config = self._validate_config(config)
         self._drive = None
         self._transform = None
-        self._motion_list = None
+        self._motion_builder = None
 
         super().__init__(config)
         self._data = self.data
@@ -274,8 +274,8 @@ class MotionGroupConfig(UserDict):
         if self._drive is not None:
             self._data = {**self._data, "drive": self._drive.config}
 
-        if self._motion_list is not None:
-            self._data = {**self._data, "motion_builder": self._motion_list.config}
+        if self._motion_builder is not None:
+            self._data = {**self._data, "motion_builder": self._motion_builder.config}
 
         if self._transform is not None:
             self._data = {**self._data, "transform": self._transform.config}
@@ -507,7 +507,7 @@ class MotionGroupConfig(UserDict):
                 f"type {type(mb)}."
             )
 
-        self._motion_list = mb
+        self._motion_builder = mb
 
     def link_drive(self, drive: Drive):
         """
@@ -599,7 +599,7 @@ class MotionGroup(BaseActor):
 
         self._drive = self._spawn_drive(config["drive"], loop)
 
-        self._ml = self._setup_motion_list(config["motion_builder"])
+        self._ml = self._setup_motion_builder(config["motion_builder"])
         self._ml_index = None
 
         self._transform = self._setup_transform(config["transform"])
@@ -638,7 +638,7 @@ class MotionGroup(BaseActor):
         return dr
 
     @staticmethod
-    def _setup_motion_list(config: Dict[str, Any]) -> MotionBuilder:
+    def _setup_motion_builder(config: Dict[str, Any]) -> MotionBuilder:
         """Return an instance of |MotionBuilder|."""
         # initialize the motion list object
 
