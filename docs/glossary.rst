@@ -87,6 +87,13 @@ Glossary
       A collection of :math:`N` motor driven axes that are used to
       move a :term:`probe` around the :term:`motion space`.
 
+   probe drive space
+      The probe drive space is the space defined by the motorized axes
+      of the :term:`probe drive`.  This space is not necessarily
+      identical to the :term:`motion space` coordinate systems. The
+      :term:`transformers` are intended to be the functionality
+      that converts between these two coordinate systems.
+
    transformer
    transformers
       A transformer is a member of the
