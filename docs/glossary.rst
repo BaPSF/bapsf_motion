@@ -71,7 +71,7 @@ Glossary
       the probe must move to and :math:`N` must me equal to the number
       of axes of the probe drive.
 
-   motion builder item
+   motion list item
       Terminology referring to the `xarray.DataArray` or the class/
       instance object that manages that `~xarray.DataArray` in the
       :term:`motion builder` `xarray.Dataset`.  Also see
