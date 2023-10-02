@@ -24,9 +24,15 @@ from bapsf_motion.motion_builder.layers import (
 
 
 class MotionBuilder(MBItem):
-    """
-    A class that manages all the functionality around creating,
-    generating, and reading a :term:`motion list`.
+    r"""
+    A class that manages all the functionality around
+    :term:`probe drive` in the :term:`motion space`\ .  Ths
+    functionality includes:
+
+    1. Defining the motion space the probe moves in.
+    2. Generating the :term:`motion list` for a motion sequence.
+    3. Generating motion trajectories to avoid obstacles in the
+       motion space.
 
     Parameters
     ----------
