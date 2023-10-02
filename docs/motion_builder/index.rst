@@ -4,9 +4,9 @@
 The :term:`motion builder` (i.e. |MotionBuilder|) has three fundamental
 roles for in the framework for probe drive motion:
 
-1. It defined the physical :term:`motion space` at probe drive will
+1. It defines the physical :term:`motion space` at probe drive will
    move in.  This includes any excluded regions where a probe drive
-   is not allowed to be, for example a region where a targe was
+   is not allowed to be, for example a region where a target was
    position in the :term:`LaPD` chamber.
 2. Building and generating the :term:`motion list` that would be used
    for a data run.
