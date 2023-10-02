@@ -38,6 +38,12 @@ Glossary
       the :term:`motion list`, and (3) generating motion trajectories
       to avoid obstacles in the motion space.
 
+   motion builder item
+      Terminology referring to the `xarray.DataArray` or the class/
+      instance object that manages that `~xarray.DataArray` in the
+      :term:`motion builder` `xarray.Dataset`.  Also see
+      |MotionBuilder| and `~bapsf_motion.motion_builder.item.MBItem`.
+
    motion exclusion
    motion exclusions
       An exclusion "layer" defined within the `~xarray.Dataset` of the
@@ -70,12 +76,6 @@ Glossary
       during a data run.  :math:`M` represents the number of positions
       the probe must move to and :math:`N` must me equal to the number
       of axes of the probe drive.
-
-   motion builder item
-      Terminology referring to the `xarray.DataArray` or the class/
-      instance object that manages that `~xarray.DataArray` in the
-      :term:`motion builder` `xarray.Dataset`.  Also see
-      |MotionBuilder| and `~bapsf_motion.motion_builder.item.MBItem`.
 
    motion space
       The :math:`N`-D space the probe drive moves in, e.g. the
