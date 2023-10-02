@@ -47,14 +47,10 @@ Glossary
       allowed to be moved to.
 
    motion group
-      A motion group is the entity that brings together all the
-      components that are needed to move a probe drive around the
-      :term:`motion space`.  These components include: (1) the full
-      motion group configuration, (2) communicate with the
-      :term:`probe drive`, (3) an understand of the :term:`motion space`
-      as defined by the :term:`motion builder`, and (4) how to covert
-      between the motion spacer coordinate system and the probe drive
-      coordinate system.
+      A motion group is the entity that brings together the full
+      configuration of a :term:`probe drive` and the functionality to
+      communicate with the :term:`probe drive`. This configuration
+      collection also includes the :term:`motion list`.
 
    motion layer
    motion layers
@@ -65,28 +61,26 @@ Glossary
 
    motion list
    motion lists
-      A motion list is a 2-D, :math:`M \times N` array containing the
-      list of positions a given probe drive is supposed to move through
-      during a data run.  :math:`M` represents the number of positions
-      the probe must move to and :math:`N` must me equal to the number
-      of axes of the probe drive.
+      A motion list is a 2-D, :math:`M \times N` array containing the list of
+      positions a given probe drive is supposed to during a data run.
+      :math:`M` represents the number of position the probe must move to and
+      :math:`N` must me equal to the number of axes of the probe drive.
 
    motion list item
       Terminology referring to the `xarray.DataArray` or the class/
       instance object that manages that `~xarray.DataArray` in the
-      :term:`motion builder` `xarray.Dataset`.  Also see
-      |MotionBuilder| and `~bapsf_motion.motion_builder.item.MBItem`.
+      :term:`motion list` `xarray.Dataset`.  Also see |MotionBuilder| and
+      `~bapsf_motion.motion_builder.item.MBItem`.
 
    motion space
-      The :math:`N`-D space the probe drive moves in, e.g. the
-      :term:`LaPD` volume.
+      The :math:`N`-D space the probe drive moves in.
 
    point layer
    point layers
       See :term:`motion layer`
 
    probe
-      The plasma diagnostic, target, etc. that will be moved by the
+      The plasma diagnostic, target, etc. the will be moved by the
       :term:`probe drive`.
 
    probe drive
@@ -104,6 +98,6 @@ Glossary
    transformers
       A transformer is a member of the
       `~bapsf_motion.transform.base.BaseTransform` subclasses that
-      provides, and does, coordinate transforms between the
+      provide, and do, coordinate transforms between the
       :term:`motion space` coordinate system and the :term:`probe drive`
       coordinate system, and vice versa.
