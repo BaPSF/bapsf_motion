@@ -11,7 +11,6 @@ import logging
 import numpy as np
 
 from collections import UserDict
-from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import BaseActor
@@ -19,9 +18,6 @@ from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion import transform
 from bapsf_motion.utils import toml
-
-
-_EXAMPLES = list((Path(__file__).parent / ".." / "examples").resolve().glob("*.toml"))
 
 
 class MotionGroupConfig(UserDict):
