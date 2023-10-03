@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='UTF-8'?>
-<Project Type="Project" LVVersion="18008000">
+<Project Type="Project" LVVersion="22308000">
 	<Property Name="SMProvider.SMVersion" Type="Int">201310</Property>
 	<Item Name="My Computer" Type="My Computer">
 		<Property Name="IOScan.Faults" Type="Str"></Property>
@@ -28,8 +28,13 @@
 		<Item Name="utils" Type="Folder" URL="../utils">
 			<Property Name="NI.DISK" Type="Bool">true</Property>
 		</Item>
-		<Item Name="bapsf_motion_lv.vi" Type="VI" URL="../bapsf_motion_lv.vi"/>
-		<Item Name="Dependencies" Type="Dependencies"/>
+		<Item Name="bapsf_motion.vi" Type="VI" URL="../bapsf_motion.vi"/>
+		<Item Name="bapsf_motion_interface.py" Type="Document" URL="../bapsf_motion_interface.py"/>
+		<Item Name="initialize.vi" Type="VI" URL="../requests/initialize.vi"/>
+		<Item Name="Dependencies" Type="Dependencies">
+			<Item Name="bapsf_motion_lv.vi" Type="VI" URL="../bapsf_motion_lv.vi"/>
+			<Item Name="motor_initialize.vi" Type="VI" URL="../utils/modules/motor/motor_initialize.vi"/>
+		</Item>
 		<Item Name="Build Specifications" Type="Build"/>
 	</Item>
 </Project>
