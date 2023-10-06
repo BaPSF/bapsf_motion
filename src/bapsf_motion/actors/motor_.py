@@ -205,7 +205,7 @@ class Motor(EventActor):
     ...     auto_run=True,
     ... )
     >>> # now stop the actor, which stops the event loop
-    >>> m1.stop_running()
+    >>> m1.terminate()
 
     Using `Motor` with ``auto_start=False``.
 
@@ -220,7 +220,7 @@ class Motor(EventActor):
     >>> # start the actor, with starts the event loop
     >>> m1.run()
     >>> # now stop the actor, which stops the event loop
-    >>> m1.stop_running()
+    >>> m1.terminate()
     """
     #: available commands that can be sent to the motor
     _commands = {
@@ -1256,9 +1256,6 @@ class Motor(EventActor):
             return
 
         self.loop.call_soon_threadsafe(self.loop.stop)
-
-    def stop_running(self, delay_loop_stop=False):
-        self.terminate(delay_loop_stop=delay_loop_stop)
 
     def stop(self):
         """Stop motor movement."""
