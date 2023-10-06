@@ -157,7 +157,7 @@ class EventActor(BaseActor, ABC):
 
         future = asyncio.run_coroutine_threadsafe(
             self._thread_id_async(),
-            self._loop
+            self.loop
         )
         return future.result(5)
 
@@ -245,4 +245,4 @@ class EventActor(BaseActor, ABC):
         if delay_loop_stop:
             return
 
-        self._loop.call_soon_threadsafe(self._loop.stop)
+        self.loop.call_soon_threadsafe(self.loop.stop)
