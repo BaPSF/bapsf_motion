@@ -155,6 +155,7 @@ class EventActor(BaseActor, ABC):
 
         # return self.loop._thread_id if self._thread is None else self.thread.ident
 
+        # get thread id from inside the event loop
         future = asyncio.run_coroutine_threadsafe(
             self._thread_id_async(),
             self.loop
