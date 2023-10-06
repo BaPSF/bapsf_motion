@@ -208,14 +208,11 @@ class EventActor(BaseActor, ABC):
         placed in a separate thread and set to
         `~asyncio.loop.run_forever`.
         """
-        if self._loop.is_running():
-            return
-        elif not auto_run:
+        if self.loop is None or self.loop.is_running() or not auto_run:
             return
 
-        _thread = threading.Thread(target=self._loop.run_forever)
-        _thread.start()
-        self._thread = _thread
+        self._thread = threading.Thread(target=self._loop.run_forever)
+        self._thread.start()
 
     def terminate(self, delay_loop_stop=False):
         r"""
