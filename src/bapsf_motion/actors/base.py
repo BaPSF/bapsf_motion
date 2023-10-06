@@ -232,15 +232,9 @@ class EventActor(BaseActor, ABC):
             functionality to stop the loop.  (DEFAULT: `False`)
 
         """
-        # TODO: add additional motor shutdown tasks (i.e. stop and disable)
         for task in list(self.tasks):
             task.cancel()
             self.tasks.remove(task)
-
-        # try:
-        #     self.socket.close()
-        # except AttributeError:
-        #     pass
 
         if delay_loop_stop:
             return
