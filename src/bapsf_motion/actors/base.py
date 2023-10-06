@@ -173,7 +173,9 @@ class EventActor(BaseActor, ABC):
     def _initialize_tasks(self):
         ...
 
-    def setup_event_loop(self, loop: Optional[asyncio.AbstractEventLoop]):
+    def setup_event_loop(
+        self, loop: Optional[asyncio.AbstractEventLoop] = None
+    ):
         """
         Set up the `asyncio` `event loop`_.  If the given loop is not an
         instance of `~asyncio.AbstractEventLoop`, then a new loop will
