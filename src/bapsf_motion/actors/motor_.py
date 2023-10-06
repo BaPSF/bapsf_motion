@@ -479,7 +479,6 @@ class Motor(EventActor):
         auto_run: bool = False,
     ):
 
-        self.ip = ip
         self._setup = self._setup_defaults.copy()
         self._motor = self._motor_defaults.copy()
         self._status = self._status_defaults.copy()
@@ -488,6 +487,8 @@ class Motor(EventActor):
         self.status_changed = SimpleSignal()
         self.movement_started = SimpleSignal()
         self.movement_finished = SimpleSignal()
+
+        self.ip = ip
 
         super().__init__(
             name=name,
