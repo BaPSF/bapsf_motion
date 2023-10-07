@@ -104,6 +104,29 @@ class BaseActor(ABC):
 
 
 class EventActor(BaseActor, ABC):
+    r"""
+    A base class for any Actor that will be interacting with an `asncio`
+    event loop.
+
+    Parameters
+    ----------
+    name : str, optional
+        A unique :attr:`name` for the Actor instance.
+
+    logger : `~logging.Logger`, optional
+        The instance of `~logging.Logger` that the Actor should record
+        events and status updates.
+
+    loop: `asyncio.AbstractEventLoop`, optional
+        Instance of an `asyncio` `event loop`_\ .  If `None`, then an
+        `event loop`_ will be auto-generated.  (DEFAULT: `None`)
+
+    auto_run: bool, optional
+        If `True`, then the `event loop`_ will be placed in a separate
+        thread and started.  This is all done via the :meth:`run`
+        method. (DEFAULT: `False`)
+    """
+
     def __init__(
         self,
         *,
@@ -151,10 +174,6 @@ class EventActor(BaseActor, ABC):
             # no loop has been created or loop is not running
             return None
 
-        # get ident from running loop
-
-        # return self.loop._thread_id if self._thread is None else self.thread.ident
-
         # get thread id from inside the event loop
         future = asyncio.run_coroutine_threadsafe(
             self._thread_id_async(),
@@ -163,14 +182,28 @@ class EventActor(BaseActor, ABC):
         return future.result(5)
 
     async def _thread_id_async(self):
+        """
+        Asyncio coroutine for retrieving the id of the thread the event
+        loop is running in.
+        """
         return threading.current_thread().ident
 
     @abstractmethod
     def _configure_before_run(self):
+        # A set of functionality for the subclass to run before the
+        # asyncio tasks are created and the event loop is started.
+        #
+        # This method is executed by __init__ before the event loop is
+        # started.
         ...
 
     @abstractmethod
     def _initialize_tasks(self):
+        # Used by the subclass to initialize a list of tasks to be
+        # executed in the event loop after the loop is started.
+        #
+        # This method is executed by __init__ after
+        # _configure_before_run() but before the event loop is started.
         ...
 
     def setup_event_loop(
@@ -187,13 +220,6 @@ class EventActor(BaseActor, ABC):
             `asyncio` `event loop`_ for the actor's tasks
 
         """
-        # 1. loop is given and running
-        #    - store loop
-        # 2. loop is given and not running
-        #    - store loop
-        # 3. loop is NOT given
-        #    - create new loop
-        #    - store loop
         # get a valid event loop
         if loop is None:
             loop = asyncio.new_event_loop()
@@ -205,8 +231,8 @@ class EventActor(BaseActor, ABC):
         return loop
 
     def run(self, auto_run=True):
-        """
-        Activate the `asyncio` `event loop`_.   If the event loop is
+        r"""
+        Activate the `asyncio` `event loop`_\ .   If the event loop is
         running, then nothing happens.  Otherwise, the event loop is
         placed in a separate thread and set to
         `~asyncio.loop.run_forever`.
@@ -230,7 +256,6 @@ class EventActor(BaseActor, ABC):
             case it is assumed the calling functionality is managing
             additional tasks in the event loop, and it is up to that
             functionality to stop the loop.  (DEFAULT: `False`)
-
         """
         for task in list(self.tasks):
             task.cancel()
