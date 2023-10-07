@@ -152,12 +152,24 @@ class EventActor(BaseActor, ABC):
 
     @property
     def thread(self) -> threading.Thread:
-        """The `~threading.Thread` the `event loop`_ is running in."""
+        """
+        The `~threading.Thread` the `event loop`_ is running in.
+
+        If :attr:`loop` was given during instantiation, then there is
+        no way of obtaining the thread object the event loop is
+        running in.  In this case :attr:`thread` will be `None`.
+
+        The thread id can always be retrieved using :attr:`_thread_id`.
+        """
         return self._thread
 
     @property
     def _thread_id(self) -> Union[int, None]:
-        """Unique ID for the thread the loop is running in."""
+        """
+        Unique ID for the thread the loop is running in.
+
+        `None` if the :attr:`loop` does not exit or is not running.
+        """
         if self.loop is None or not self.loop.is_running():
             # no loop has been created or loop is not running
             return None
