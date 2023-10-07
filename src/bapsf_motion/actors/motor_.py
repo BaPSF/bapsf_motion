@@ -16,7 +16,7 @@ import time
 from collections import namedtuple, UserDict
 from typing import Any, AnyStr, Callable, Dict, List, NamedTuple, Optional, Union
 
-from bapsf_motion.actors.base import BaseActor
+from bapsf_motion.actors.base import EventActor
 from bapsf_motion.utils import ipv4_pattern, SimpleSignal
 from bapsf_motion.utils import units as u
 
@@ -162,7 +162,7 @@ class CommandEntry(UserDict):
         return self._command
 
 
-class Motor(BaseActor):
+class Motor(EventActor):
     """
     An actor class for directly communicating to an ethernet based
     stepper motor.  This actor is only aware of the motor, and is
@@ -173,18 +173,22 @@ class Motor(BaseActor):
     ----------
     ip: `str`
         IPv4 address for the motor
+
     name: `str`, optional
         Name the motor.  If `None`, then the name will be automatically
         generated. (DEFAULT: `None`)
+
     logger: `~logging.Logger`, optional
         An instance of `~logging.Logger` that the Actor will record
         events and status updates to.  If `None`, then a logger will
         automatically be generated. (DEFUALT: `None`)
+
     loop: `asyncio.AbstractEventLoop`, optional
         Instance of an `asyncio` `event loop`_. Communication with the
         motor will happen primaritly through the evenet loop.  If
         `None`, then an `event loop`_ will be auto-generated.
         (DEFAULT: `None`)
+
     auto_run: bool, optional
         If `True`, then the `event loop`_ will be placed in a separate
         thread and started.  This is all done via the :meth:`run`
@@ -205,7 +209,7 @@ class Motor(BaseActor):
     ...     auto_run=True,
     ... )
     >>> # now stop the actor, which stops the event loop
-    >>> m1.stop_running()
+    >>> m1.terminate()
 
     Using `Motor` with ``auto_start=False``.
 
@@ -220,7 +224,7 @@ class Motor(BaseActor):
     >>> # start the actor, with starts the event loop
     >>> m1.run()
     >>> # now stop the actor, which stops the event loop
-    >>> m1.stop_running()
+    >>> m1.terminate()
     """
     #: available commands that can be sent to the motor
     _commands = {
@@ -478,33 +482,29 @@ class Motor(BaseActor):
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
     ):
-        self._init_instance_variables()
 
-        super().__init__(name=name, logger=logger)
+        self._setup = self._setup_defaults.copy()
+        self._motor = self._motor_defaults.copy()
+        self._status = self._status_defaults.copy()
+
+        # simple signal to tell handlers that _status changed
+        self.status_changed = SimpleSignal()
+        self.movement_started = SimpleSignal()
+        self.movement_finished = SimpleSignal()
 
         self.ip = ip
-        self.connect()
 
-        # loop needs to be setup before any commands are sent to the motor
-        self.setup_event_loop(loop)
+        super().__init__(
+            name=name,
+            logger=logger,
+            loop=loop,
+            auto_run=auto_run,
+        )
 
-        # configure motor before any other method sends motor commands
-        self._configure_motor()
-
-        self._get_motor_parameters()
-        self.send_command("retrieve_motor_status")
-
-        if auto_run:
-            self.run()
-
-    def _init_instance_variables(self):
-        """
-        Initialized object instance variables, which define operating
-        parameters for the actor.
-        """
-        # : parameters that define the setup of the Motor class (actual motor settings
-        # should be defined in _motor)
-        self._setup = {
+    @property
+    def _setup_defaults(self) -> Dict[str, Any]:
+        """Default values for :attr:`setup`."""
+        return {
             "name": "",
             "logger": None,
             "loop": None,
@@ -516,10 +516,29 @@ class Motor(BaseActor):
                 base=2.0, active=0.2
             ),  # in seconds
             "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
-        }  # type: Dict[str, Any]
+        }
 
-        #: these are setting that determine the motor parameters
-        self._motor = {
+    @property
+    def setup(self):
+        """
+        Dictionary of class setup parameters.
+        """
+        _setup = {
+            **self._setup,
+            "name": self.name,
+            "logger": self.logger,
+            "loop": self.loop,
+            "thread": self.thread,
+            "tasks": self.tasks,
+            "socket": self.socket,
+        }
+        self._setup = _setup
+        return self._setup
+
+    @property
+    def _motor_defaults(self) -> Dict[str, Any]:
+        """Default values for :attr:`motor`."""
+        return {
             "ip": None,
             "manufacturer": "Applied Motion Products",
             "model": "STM23S-3EE",
@@ -538,10 +557,20 @@ class Motor(BaseActor):
             "accel": None,
             "decel": None,
             "protocol_settings": None,
-        }  # type: Dict[str, Any]
+        }
 
-        #: these are parameters that define the current state of the motor
-        self._status = {
+    @property
+    def motor(self) -> Dict[str, Any]:
+        """
+        Dictionary containing properties of the Applied Motion STM
+        motor.
+        """
+        return self._motor
+
+    @property
+    def _status_defaults(self) -> Dict[str, Any]:
+        """Default values for :attr:`status`."""
+        return {
             "connected": False,
             "position": None,
             "alarm": None,
@@ -558,12 +587,13 @@ class Motor(BaseActor):
                 "CW": False,
                 "CCW": False,
             },
-        }  # type: Dict[str, Any]
+        }
 
-        #: simple signal to tell handlers that _status changed
-        self.status_changed = SimpleSignal()
-        self.movement_started = SimpleSignal()
-        self.movement_finished = SimpleSignal()
+    @property
+    def status(self) -> Dict[str, Any]:
+        """Current status of the motor."""
+        # TODO: dictionary keys and explanations to the docstring
+        return self._status
 
     def _configure_motor(self):
         """
@@ -660,15 +690,6 @@ class Motor(BaseActor):
         )
 
     @property
-    def name(self):
-        """Given motor name."""
-        return self._setup["name"]
-
-    @name.setter
-    def name(self, value):
-        self._setup["name"] = value
-
-    @property
     def ip(self) -> str:
         """IPv4 address for the motor"""
         return self._motor["ip"]
@@ -688,42 +709,7 @@ class Motor(BaseActor):
             "name": self.name,
             "ip": self.ip,
         }
-    config.__doc__ = BaseActor.config.__doc__
-
-    @property
-    def logger(self) -> logging.Logger:
-        """The `~logger.Logger` being used for the actor."""
-        return self._setup["logger"]
-
-    @logger.setter
-    def logger(self, value):
-        self._setup["logger"] = value
-
-    @property
-    def _loop(self) -> asyncio.events.AbstractEventLoop:
-        """`asyncio` `event loop`_ being used for motor communication."""
-        return self._setup["loop"]
-
-    @_loop.setter
-    def _loop(self, value):
-        self._setup["loop"] = value
-
-    @property
-    def _thread(self) -> threading.Thread:
-        """The `~threading.Thread` the `event loop`_ is running in."""
-        return self._setup["thread"]
-
-    @_thread.setter
-    def _thread(self, value):
-        self._setup["thread"] = value
-
-    @property
-    def _thread_id(self) -> Union[int, None]:
-        """Unique ID for the thread the loop is running in."""
-        if self._loop is None and self._thread is None:
-            return None
-
-        return self._loop._thread_id if self._thread is None else self._thread.ident
+    config.__doc__ = EventActor.config.__doc__
 
     @property
     def heartrate(self) -> NamedTuple:
@@ -734,12 +720,6 @@ class Motor(BaseActor):
         (2) ``heartrate.active`` for when the motor is moving.
         """
         return self._setup["heartrate"]
-
-    @property
-    def status(self) -> Dict[str, Any]:
-        """Current status of the motor."""
-        # TODO: dictionary keys and explanations to the docstring
-        return self._status
 
     @property
     def steps_per_rev(self) -> u.steps/u.rev:
@@ -764,16 +744,6 @@ class Motor(BaseActor):
         self._setup["socket"] = value
 
     @property
-    def tasks(self) -> List[asyncio.Task]:
-        """
-        List of `asyncio.Task`\ s this actor has in the `event loop`_.
-        """
-        if self._setup["tasks"] is None:
-            self._setup["tasks"] = []
-
-        return self._setup["tasks"]
-
-    @property
     def is_moving(self) -> bool:
         """`True` if the motor is actively moving, `False` otherwise."""
         is_moving = self.status["moving"]
@@ -791,6 +761,19 @@ class Motor(BaseActor):
         self._update_status(position=pos)
         return pos
 
+    def _configure_before_run(self):
+        # actions to be done during object instantiation, but before
+        # the asyncio event loop starts running.
+
+        self.connect()
+        self._configure_motor()
+        self._get_motor_parameters()
+        self.send_command("retrieve_motor_status")
+
+    def _initialize_tasks(self):
+        tk = self.loop.create_task(self._heartbeat())
+        self.tasks.append(tk)
+
     def _update_status(self, **values):
         """
         Update ``self._status` dictionary with the given arguments ``**values``.
@@ -807,43 +790,6 @@ class Motor(BaseActor):
             self.status_changed.emit(True)
 
         self._status = new_status
-
-    def setup_event_loop(self, loop: Optional[asyncio.AbstractEventLoop]):
-        """
-        Set up the `asyncio` `event loop`_.  If the given loop is not an
-        instance of `~asyncio.AbstractEventLoop`, then a new loop will
-        be created.  The `event loop`_ is, then populated with the
-        relevant actor tasks (e.g. ``self._heartbeat()``).
-
-        Parameters
-        ----------
-        loop: `asyncio.AbstractEventLoop`
-            `asyncio` `event loop`_ for the actor's tasks
-
-        """
-        # 1. loop is given and running
-        #    - store loop
-        #    - add tasks
-        # 2. loop is given and not running
-        #    - store loop
-        #    - add tasks
-        # 3. loop is NOT given
-        #    - create new loop
-        #    - store loop
-        #    - add tasks
-        # get a valid event loop
-        if loop is None:
-            loop = asyncio.new_event_loop()
-        elif not isinstance(loop, asyncio.AbstractEventLoop):
-            self.logger.warning(
-                "Given asyncio event is not valid.  Creating a new event loop to use."
-            )
-            loop = asyncio.new_event_loop()
-        self._loop = loop
-
-        # populate loop with tasks
-        task = self._loop.create_task(self._heartbeat())
-        self.tasks.append(task)
 
     def connect(self):
         """
@@ -887,7 +833,7 @@ class Motor(BaseActor):
                     #       and socket.timeout
                     raise error_
 
-        if self._loop is not None:
+        if self.loop is not None:
             self._get_motor_parameters()
             self._configure_motor()
 
@@ -924,22 +870,22 @@ class Motor(BaseActor):
             meth = getattr(self, command)
             return meth(*args)
 
-        elif not self._loop.is_running():
+        elif not self.loop.is_running():
             # event loop not running, just send commands directly
             return self._send_command(command, *args)
 
         elif threading.current_thread().ident == self._thread_id:
             # we are in the same thread as the running event loop, just
             # send the command directly
-            tk = self._loop.create_task(self._send_command_async(command, *args))
-            self._loop.run_until_complete(tk)
+            tk = self.loop.create_task(self._send_command_async(command, *args))
+            self.loop.run_until_complete(tk)
             return tk.result()
 
         # the event loop is running and the command is being sent from
         # outside the event loop thread
         future = asyncio.run_coroutine_threadsafe(
             self._send_command_async(command, *args),
-            self._loop
+            self.loop
         )
         return future.result(5)
 
@@ -1310,38 +1256,10 @@ class Motor(BaseActor):
             old_HR = heartrate
             await asyncio.sleep(heartrate)
 
-    def run(self):
-        """
-        Activate the `asyncio` `event loop`_.   If the event loop is
-        running, then nothing happens.  Otherwise, the event loop is
-        placed in a separate thread and set to
-        `~asyncio.loop.run_forever`.
-        """
-        if self._loop.is_running():
-            return
+    def terminate(self, delay_loop_stop=False):
+        super().terminate(delay_loop_stop=True)
 
-        self._thread = threading.Thread(target=self._loop.run_forever)
-        self._thread.start()
-
-    def stop_running(self, delay_loop_stop=False):
-        r"""
-        Stop the actor's `event loop`_\ .  All actor tasks will be
-        cancelled, the connection to the motor will be shutdown, and
-        the event loop will be stopped.
-
-        Parameters
-        ----------
-        delay_loop_stop: bool
-            If `True`, then do NOT stop the `event loop`_\ .  In this
-            case it is assumed the calling functionality is managing
-            additional tasks in the event loop, and it is up to that
-            functionality to stop the loop.  (DEFAULT: `False`)
-
-        """
         # TODO: add additional motor shutdown tasks (i.e. stop and disable)
-        for task in list(self.tasks):
-            task.cancel()
-            self.tasks.remove(task)
 
         try:
             self.socket.close()
@@ -1351,7 +1269,7 @@ class Motor(BaseActor):
         if delay_loop_stop:
             return
 
-        self._loop.call_soon_threadsafe(self._loop.stop)
+        self.loop.call_soon_threadsafe(self.loop.stop)
 
     def stop(self):
         """Stop motor movement."""
@@ -1451,15 +1369,15 @@ class Motor(BaseActor):
         delay: ~numbers.Real
             Number of seconds to sleep.
         """
-        if not self._loop.is_running():
+        if not self.loop.is_running():
             time.sleep(delay)
         elif threading.current_thread().ident == self._thread_id:
-            tk = self._loop.create_task(self._sleep_async(delay))
-            self._loop.run_until_complete(tk)
+            tk = self.loop.create_task(self._sleep_async(delay))
+            self.loop.run_until_complete(tk)
 
         future = asyncio.run_coroutine_threadsafe(
             self._sleep_async(delay),
-            self._loop
+            self.loop
         )
         future.result(5)
 

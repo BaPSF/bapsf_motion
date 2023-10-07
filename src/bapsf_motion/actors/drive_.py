@@ -8,15 +8,14 @@ __actors__ = ["Drive"]
 import astropy.units as u
 import asyncio
 import logging
-import threading
 
 from typing import Any, Dict, List, Optional, Tuple
 
-from bapsf_motion.actors.base import BaseActor
+from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.axis_ import Axis
 
 
-class Drive(BaseActor):
+class Drive(EventActor):
     """
     The `Drive` actor is the next level actor above the |Axis| actor.
     This actor is ignorant of how the probe drive is implemented in
@@ -79,10 +78,15 @@ class Drive(BaseActor):
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
     ):
-        super().__init__(logger=logger, name=name)
+        self._axes = None
 
-        self._init_instance_variables()
-        self.setup_event_loop(loop)
+        super().__init__(
+            name=name,
+            logger=logger,
+            loop=loop,
+            auto_run=False,
+        )
+
         axes = self._validate_axes(axes)
 
         axis_objs = []
@@ -92,14 +96,13 @@ class Drive(BaseActor):
 
         self._axes = tuple(axis_objs)
 
-        if auto_run:
-            self.run()
+        self.run(auto_run=auto_run)
 
-    def _init_instance_variables(self):
-        """Initialize the class instance attributes."""
-        self._axes = None
-        self._loop = None
-        self._thread = None
+    def _configure_before_run(self):
+        return
+
+    def _initialize_tasks(self):
+        return
 
     def _validate_axes(self, settings: List[Dict[str, Any]]) -> Tuple[Dict[str, Any]]:
         """
@@ -193,7 +196,7 @@ class Drive(BaseActor):
             _config["axes"][ii] = ax.config.copy()
 
         return _config
-    config.__doc__ = BaseActor.config.__doc__
+    config.__doc__ = EventActor.config.__doc__
 
     @property
     def is_moving(self) -> bool:
@@ -228,74 +231,11 @@ class Drive(BaseActor):
 
         return pos * self.axes[0].units
 
-    def run(self):
-        """
-        Activate the `asyncio` `event loop`_.   If the event loop is
-        running, then nothing happens.  Otherwise, the event loop is
-        placed in a separate thread and set to
-        `~asyncio.loop.run_forever`.
-        """
-        if self._loop.is_running():
-            return
-
-        self._thread = threading.Thread(target=self._loop.run_forever)
-        self._thread.start()
-
-    def stop_running(self, delay_loop_stop=False):
-        """
-        Stop the actor's `event loop`_\ .  All actor tasks will be
-        cancelled, the connection to the motor will be shutdown, and
-        the event loop will be stopped.
-
-        Parameters
-        ----------
-        delay_loop_stop: bool
-            If `True`, then do NOT stop the `event loop`_\ .  In this
-            case it is assumed the calling functionality is managing
-            additional tasks in the event loop, and it is up to that
-            functionality to stop the loop.  (DEFAULT: `False`)
-
-        """
+    def terminate(self, delay_loop_stop=False):
         for ax in self._axes:
-            ax.stop_running(delay_loop_stop=True)
+            ax.terminate(delay_loop_stop=True)
 
-        if delay_loop_stop:
-            return
-
-        self._loop.call_soon_threadsafe(self._loop.stop)
-
-    def setup_event_loop(self, loop):
-        """
-        Set up the `asyncio` `event loop`_.  If the given loop is not an
-        instance of `~asyncio.AbstractEventLoop`, then a new loop will
-        be created.  The `event loop`_ is, then populated with the
-        relevant actor tasks.
-
-        Parameters
-        ----------
-        loop: `asyncio.AbstractEventLoop`
-            `asyncio` `event loop`_ for the actor's tasks
-
-        """
-        # 1. loop is given and running
-        #    - store loop
-        #    - add tasks
-        # 2. loop is given and not running
-        #    - store loop
-        #    - add tasks
-        # 3. loop is NOT given
-        #    - create new loop
-        #    - store loop
-        #    - add tasks
-        # get a valid event loop
-        if loop is None:
-            loop = asyncio.new_event_loop()
-        elif not isinstance(loop, asyncio.events.AbstractEventLoop):
-            self.logger.warning(
-                "Given asyncio event is not valid.  Creating a new event loop to use."
-            )
-            loop = asyncio.new_event_loop()
-        self._loop = loop
+        super().terminate(delay_loop_stop=delay_loop_stop)
 
     def send_command(self, command, *args, axis: Optional[int] = None):
         """

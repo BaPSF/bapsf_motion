@@ -10,12 +10,12 @@ import logging
 
 from typing import Any, Dict
 
-from bapsf_motion.actors.base import BaseActor
+from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motor_ import Motor
 from bapsf_motion.utils import units as u
 
 
-class Axis(BaseActor):
+class Axis(EventActor):
     """
     The `Axis` actor is the next level actor above the |Motor| actor.
     This actor is ignorant of how it is situated in a probe drive, but
@@ -83,55 +83,37 @@ class Axis(BaseActor):
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
     ):
-        super().__init__(logger=logger, name=name)
+        # TODO: update units so inches can be used
+        self._motor = None
+        self._units = u.Unit(units)
+        self._units_per_rev = units_per_rev * self._units / u.rev
 
-        self._init_instance_attrs()
-        self.motor = Motor(
-            ip=ip,
-            name="motor",
-            logger=self.logger,
+        super().__init__(
+            name=name,
+            logger=logger,
             loop=loop,
             auto_run=False,
         )
 
-        # TODO: update units so inches can be used
-        self._units = u.Unit(units)
-        self._units_per_rev = units_per_rev * self._units / u.rev
+        self._motor = Motor(
+            ip=ip,
+            name="motor",
+            logger=self.logger,
+            loop=self.loop,
+            auto_run=False,
+        )
 
-        if auto_run:
-            self.run()
+        self.run(auto_run=auto_run)
 
-    def _init_instance_attrs(self):
-        """Initialize the class instance attributes."""
-        self.motor = None
-        self._units = None
-        self._units_per_rev = None
+    def _configure_before_run(self):
+        return
 
-    def run(self):
-        """
-        Activate the `asyncio` `event loop`_.   If the event loop is
-        running, then nothing happens.  Otherwise, the event loop is
-        placed in a separate thread and set to
-        `~asyncio.loop.run_forever`.
-        """
-        self.motor.run()
+    def _initialize_tasks(self):
+        return
 
-    def stop_running(self, delay_loop_stop=False):
-        r"""
-        Stop the actor's `event loop`_\ .  All actor tasks will be
-        cancelled, the connection to the motor will be shutdown, and
-        the event loop will be stopped.
-
-        Parameters
-        ----------
-        delay_loop_stop: bool
-            If `True`, then do NOT stop the `event loop`_\ .  In this
-            case it is assumed the calling functionality is managing
-            additional tasks in the event loop, and it is up to that
-            functionality to stop the loop.  (DEFAULT: `False`)
-
-        """
-        self.motor.stop_running(delay_loop_stop=delay_loop_stop)
+    def terminate(self, delay_loop_stop=False):
+        self.motor.terminate(delay_loop_stop=True)
+        super().terminate(delay_loop_stop=delay_loop_stop)
 
     @property
     def config(self) -> Dict[str, Any]:
@@ -142,7 +124,12 @@ class Axis(BaseActor):
             "units": str(self.units),
             "units_per_rev": self.units_per_rev.value.item()
         }
-    config.__doc__ = BaseActor.config.__doc__
+    config.__doc__ = EventActor.config.__doc__
+
+    @property
+    def motor(self) -> Motor:
+        """Instance of the |Motor| object that belongs to |Axis|."""
+        return self._motor
 
     @property
     def is_moving(self) -> bool:

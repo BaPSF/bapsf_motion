@@ -13,7 +13,7 @@ import numpy as np
 from collections import UserDict
 from typing import Any, Dict, Optional, Union
 
-from bapsf_motion.actors.base import BaseActor
+from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion import transform
@@ -536,7 +536,7 @@ class MotionGroupConfig(UserDict):
         self._transform = tr
 
 
-class MotionGroup(BaseActor):
+class MotionGroup(EventActor):
     r"""
     The `MotionGroup` actor brings together all the components that
     are needed to move a probe drive around the motion space.  These
@@ -591,11 +591,16 @@ class MotionGroup(BaseActor):
 
         config = MotionGroupConfig(config)
 
-        super().__init__(logger=logger, name=config["name"])
+        super().__init__(
+            name=config["name"],
+            logger=logger,
+            loop=loop,
+            auto_run=False,
+        )
 
-        self._drive = self._spawn_drive(config["drive"], loop)
+        self._drive = self._spawn_drive(config["drive"])
 
-        self._ml = self._setup_motion_builder(config["motion_builder"])
+        self._mb = self._setup_motion_builder(config["motion_builder"])
         self._ml_index = None
 
         self._transform = self._setup_transform(config["transform"])
@@ -605,11 +610,16 @@ class MotionGroup(BaseActor):
         self._config.link_motion_builder(self.mb)
         self._config.link_transform(self.transform)
 
-        if auto_run:
-            self.run()
+        self.run(auto_run=auto_run)
+
+    def _configure_before_run(self):
+        return
+
+    def _initialize_tasks(self):
+        return
 
     def _spawn_drive(
-        self, config: Dict[str, Any], loop: asyncio.AbstractEventLoop
+        self, config: Dict[str, Any]
     ) -> Drive:
         """
         Spawn and return the |Drive| instance for the motion group.
@@ -618,18 +628,14 @@ class MotionGroup(BaseActor):
         ----------
         config: `dict`
             Drive component of the motion group configuration.
-
-        loop:
-            Event loop for the |Drive| class to send motor commands
-            through.
         """
 
         dr = Drive(
-            logger=self.logger,
-            loop=loop,
-            auto_run=False,
-            name=config["name"],
             axes=list(config["axes"].values()),
+            name=config["name"],
+            logger=self.logger,
+            loop=self.loop,
+            auto_run=False,
         )
         return dr
 
@@ -663,40 +669,14 @@ class MotionGroup(BaseActor):
         tr_type = tr_config.pop("type")
         return transform.transform_factory(self.drive, tr_type=tr_type, **config)
 
-    def run(self):
-        """
-        Activate the `asyncio` `event loop`_ used by :attr:`drive`.  If
-        the event loop is running, then nothing happens.  Otherwise,
-        the event loop is placed in a separate thread and set to
-        `~asyncio.loop.run_forever`.
-        """
-        if self.drive is not None:
-            self.drive.run()
-
-    def stop_running(self, delay_loop_stop=False):
-        r"""
-        Stop the actor's `event loop`_\ .  All actor tasks will be
-        cancelled, the connection to the motor will be shutdown, and
-        the event loop will be stopped.
-
-        Parameters
-        ----------
-        delay_loop_stop: bool
-            If `True`, then do NOT stop the `event loop`_\ .  In this
-            case it is assumed the calling functionality is managing
-            additional tasks in the event loop, and it is up to that
-            functionality to stop the loop.  (DEFAULT: `False`)
-
-        """
-        if self.drive is None:
-            return
-
-        self.drive.stop_running(delay_loop_stop=delay_loop_stop)
+    def terminate(self, delay_loop_stop=False):
+        self.drive.terminate(delay_loop_stop=True)
+        super().terminate(delay_loop_stop=delay_loop_stop)
 
     @property
     def config(self):
         return self._config
-    config.__doc__ = BaseActor.config.__doc__
+    config.__doc__ = EventActor.config.__doc__
 
     @property
     def drive(self) -> Drive:
@@ -706,7 +686,7 @@ class MotionGroup(BaseActor):
     @property
     def mb(self) -> MotionBuilder:
         """Instance of |MotionBuilder| associated with the motion group."""
-        return self._ml
+        return self._mb
 
     @property
     def ml_index(self):
