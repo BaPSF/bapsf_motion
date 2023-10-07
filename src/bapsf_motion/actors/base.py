@@ -19,7 +19,7 @@ from typing import Any, Dict, List, Optional, Union
 
 class BaseActor(ABC):
     """
-    Base class for any Actor class.
+    Low-level base class for any Actor class.
 
     Parameters
     ----------
@@ -28,18 +28,6 @@ class BaseActor(ABC):
     logger : `~logging.Logger`, optional
         The instance of `~logging.Logger` that the Actor should record
         events and status updates.
-
-    Examples
-    --------
-
-    >>> ba = BaseActor(name="BoIt")
-    >>> ba.name
-    'DoIt'
-    >>> ba.logger
-    <Logger Actor.DoIt (WARNING)>
-    >>> ba.logger.warning("This is a warning")
-    This is a warning
-
     """
 
     def __init__(
