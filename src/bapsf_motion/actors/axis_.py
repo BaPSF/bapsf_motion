@@ -112,12 +112,6 @@ class Axis(EventActor):
         return
 
     def run(self, auto_run=True):
-        """
-        Activate the `asyncio` `event loop`_.   If the event loop is
-        running, then nothing happens.  Otherwise, the event loop is
-        placed in a separate thread and set to
-        `~asyncio.loop.run_forever`.
-        """
         if self.motor is not None:
             self.motor.run(auto_run=auto_run)
         super().run(auto_run=auto_run)
