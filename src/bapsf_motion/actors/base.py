@@ -224,6 +224,13 @@ class EventActor(BaseActor, ABC):
         running, then nothing happens.  Otherwise, the event loop is
         placed in a separate thread and set to
         `~asyncio.loop.run_forever`.
+
+        Parameters
+        ----------
+        auto_run: `bool`, optional
+            If `False`, then do NOT start the event loop.  This keyword
+            is only made available to help with subclassing.
+            (DEFAULT: `True`)
         """
         if self.loop is None or self.loop.is_running() or not auto_run:
             return
