@@ -111,11 +111,6 @@ class Axis(EventActor):
     def _initialize_tasks(self):
         return
 
-    def run(self, auto_run=True):
-        if self.motor is not None:
-            self.motor.run(auto_run=auto_run)
-        super().run(auto_run=auto_run)
-
     def terminate(self, delay_loop_stop=False):
         self.motor.terminate(delay_loop_stop=True)
         super().terminate(delay_loop_stop=delay_loop_stop)
