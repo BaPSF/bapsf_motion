@@ -173,18 +173,22 @@ class Motor(EventActor):
     ----------
     ip: `str`
         IPv4 address for the motor
+
     name: `str`, optional
         Name the motor.  If `None`, then the name will be automatically
         generated. (DEFAULT: `None`)
+
     logger: `~logging.Logger`, optional
         An instance of `~logging.Logger` that the Actor will record
         events and status updates to.  If `None`, then a logger will
         automatically be generated. (DEFUALT: `None`)
+
     loop: `asyncio.AbstractEventLoop`, optional
         Instance of an `asyncio` `event loop`_. Communication with the
         motor will happen primaritly through the evenet loop.  If
         `None`, then an `event loop`_ will be auto-generated.
         (DEFAULT: `None`)
+
     auto_run: bool, optional
         If `True`, then the `event loop`_ will be placed in a separate
         thread and started.  This is all done via the :meth:`run`
