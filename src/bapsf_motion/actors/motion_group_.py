@@ -599,7 +599,7 @@ class MotionGroup(BaseActor):
 
         self._drive = self._spawn_drive(config["drive"], loop)
 
-        self._ml = self._setup_motion_builder(config["motion_builder"])
+        self._mb = self._setup_motion_builder(config["motion_builder"])
         self._ml_index = None
 
         self._transform = self._setup_transform(config["transform"])
@@ -710,7 +710,7 @@ class MotionGroup(BaseActor):
     @property
     def mb(self) -> MotionBuilder:
         """Instance of |MotionBuilder| associated with the motion group."""
-        return self._ml
+        return self._mb
 
     @property
     def ml_index(self):
