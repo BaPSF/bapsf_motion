@@ -128,6 +128,7 @@ class Axis(EventActor):
 
     @property
     def motor(self) -> Motor:
+        """Instance of the |Motor| object that belongs to |Axis|."""
         return self._motor
 
     @property
