@@ -499,6 +499,7 @@ class Motor(EventActor):
 
     @property
     def _setup_defaults(self) -> Dict[str, Any]:
+        """Default values for :attr:`setup`."""
         return {
             "name": "",
             "logger": None,
@@ -515,6 +516,9 @@ class Motor(EventActor):
 
     @property
     def setup(self):
+        """
+        Dictionary of class setup parameters.
+        """
         _setup = {
             **self._setup,
             "name": self.name,
@@ -529,6 +533,7 @@ class Motor(EventActor):
 
     @property
     def _motor_defaults(self) -> Dict[str, Any]:
+        """Default values for :attr:`motor`."""
         return {
             "ip": None,
             "manufacturer": "Applied Motion Products",
@@ -551,11 +556,16 @@ class Motor(EventActor):
         }
 
     @property
-    def motor(self):
+    def motor(self) -> Dict[str, Any]:
+        """
+        Dictionary containing properties of the Applied Motion STM
+        motor.
+        """
         return self._motor
 
     @property
     def _status_defaults(self) -> Dict[str, Any]:
+        """Default values for :attr:`status`."""
         return {
             "connected": False,
             "position": None,
