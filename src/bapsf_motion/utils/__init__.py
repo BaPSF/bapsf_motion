@@ -11,7 +11,7 @@ import re
 
 from astropy import units
 
-from bapsf_motion.utils import toml
+from bapsf_motion.utils import exceptions, toml
 
 
 #: Regular expression pattern for parsing IPv4 addresses
