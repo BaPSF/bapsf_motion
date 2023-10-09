@@ -1,0 +1,27 @@
+[mg]
+name = "Bench Test"
+
+[mg.drive]
+name = "1-and-1"
+axes.0.name = "X"
+axes.0.ip = "192.168.6.103"
+axes.0.units = "cm"
+axes.0.units_per_rev = 0.254
+axes.1.name = "Y"
+axes.1.ip = "192.168.6.104"
+axes.1.units = "cm"
+axes.1.units_per_rev = 0.254
+
+[mg.motion_builder]
+space.0.label = "X"
+space.0.range = [-5, 5]
+space.0.num = 51
+space.1.label = "Y"
+space.1.range = [-5, 5]
+space.1.num = 51
+layers.0.type = "grid"
+layers.0.limits = [[-3, 3], [-3, 3]]
+layers.0.steps = [7, 7]
+
+[mg.transform]
+type = "identity"
