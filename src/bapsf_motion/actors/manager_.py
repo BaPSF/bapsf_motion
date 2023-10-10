@@ -244,4 +244,9 @@ class RunManager(EventActor):
         super().terminate(delay_loop_stop=delay_loop_stop)
 
     def _spawn_motion_group(self, config: Dict[str, Any]) -> MotionGroup:
-        ...
+        return MotionGroup(
+            config=config,
+            logger=self.logger,
+            loop=self.loop,
+            auto_run=False
+        )
