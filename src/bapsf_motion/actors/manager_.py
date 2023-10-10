@@ -12,7 +12,7 @@ import warnings
 
 from collections import UserDict
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motion_group_ import MotionGroup, MotionGroupConfig
@@ -63,7 +63,7 @@ class RunManagerConfig(UserDict):
 
         # validate config
         config = self._validate_config(config)
-        self._mgs = None
+        self._mgs = None  # type: Union[None, Dict[Union[str, int], MotionGroup]]
 
         super().__init__(config)
         self._data = self.data
@@ -75,7 +75,8 @@ class RunManagerConfig(UserDict):
         `RunManagerConfig`.
         """
         if self._mgs is not None:
-            self._data = {**self._data, "motion_group": self._mgs}
+            for key, mg in self._mgs.items():
+                self._data["motion_group"][key] = mg.config
 
         return self._data
 
@@ -189,7 +190,16 @@ class RunManagerConfig(UserDict):
         return MotionGroupConfig._handle_user_meta(config, req_meta)
 
     def link_motion_group(self, mg, key):
-        ...
+        if not isinstance(mg, MotionGroup):
+            raise TypeError(
+                f"For argument 'mg' expected type {MotionGroup}, but got "
+                f"type {type(mg)}."
+            )
+
+        if self._mgs is None:
+            self._mgs = {key: mg}
+        else:
+            self._mgs[key] = mg
 
 
 class RunManager(EventActor):
@@ -213,10 +223,10 @@ class RunManager(EventActor):
 
         self._config = config
 
-        # for mgc in mgcs:
-        #     mg = self._spawn_motion_group()
-        #     self.mgs.append(mg)
-        #     self._config.link_motion_group(self.mgs[-1])
+        for key, mgc in self._config["motion_group"].items():
+            mg = self._spawn_motion_group(mgc)
+            self.mgs[key] = mg
+            self._config.link_motion_group(self.mgs[key], key=key)
         
         self.run(auto_run=auto_run)
     
@@ -227,9 +237,9 @@ class RunManager(EventActor):
         return 
     
     @property
-    def mgs(self) -> List[MotionGroup]:
+    def mgs(self) -> Dict[Union[str, int], MotionGroup]:
         if self._mgs is None:
-            self._mgs = []
+            self._mgs = {}
         
         return self._mgs
 
@@ -239,7 +249,7 @@ class RunManager(EventActor):
     config.__doc__ = EventActor.config.__doc__
     
     def terminate(self, delay_loop_stop=False):
-        for mg in self.mgs:
+        for mg in self.mgs.values():
             mg.terminate(delay_loop_stop=True)
         super().terminate(delay_loop_stop=delay_loop_stop)
 
