@@ -19,22 +19,10 @@
 		<Property Name="server.vi.callsEnabled" Type="Bool">true</Property>
 		<Property Name="server.vi.propertiesEnabled" Type="Bool">true</Property>
 		<Property Name="specify.custom.address" Type="Bool">false</Property>
-		<Item Name="helpers" Type="Folder" URL="../helpers">
+		<Item Name="labview" Type="Folder" URL="..">
 			<Property Name="NI.DISK" Type="Bool">true</Property>
 		</Item>
-		<Item Name="requests" Type="Folder" URL="../requests">
-			<Property Name="NI.DISK" Type="Bool">true</Property>
-		</Item>
-		<Item Name="utils" Type="Folder" URL="../utils">
-			<Property Name="NI.DISK" Type="Bool">true</Property>
-		</Item>
-		<Item Name="bapsf_motion.vi" Type="VI" URL="../bapsf_motion.vi"/>
-		<Item Name="bapsf_motion_interface.py" Type="Document" URL="../bapsf_motion_interface.py"/>
-		<Item Name="initialize.vi" Type="VI" URL="../requests/initialize.vi"/>
-		<Item Name="Dependencies" Type="Dependencies">
-			<Item Name="bapsf_motion_lv.vi" Type="VI" URL="../bapsf_motion_lv.vi"/>
-			<Item Name="motor_initialize.vi" Type="VI" URL="../utils/modules/motor/motor_initialize.vi"/>
-		</Item>
+		<Item Name="Dependencies" Type="Dependencies"/>
 		<Item Name="Build Specifications" Type="Build"/>
 	</Item>
 </Project>
