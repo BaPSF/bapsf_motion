@@ -1,3 +1,5 @@
+
+import logging
 import time
 
 from typing import Union
@@ -16,6 +18,16 @@ except ModuleNotFoundError:
 
     from bapsf_motion.actors import RunManager
 
+_HERE = Path(__file__).resolve().parent
+_LOG_FILE = (_HERE / "run.log").resolve()
+logging.basicConfig(
+    filename=_LOG_FILE,
+    filemode="w",
+    format="%(asctime)s -[%(levelname)s] %(name)s  %(message)s",
+    datefmt="%H:%M:%S",
+    level=logging.DEBUG,
+    force=True,
+)
 
 MANAGER_NAME = "RM"
 _rm = None  # type: Union[RunManager, None]
