@@ -35,6 +35,12 @@ MANAGER_NAME = "RM"
 _rm = None  # type: Union[RunManager, None]
 
 
+# TODO:  create a decorator to catch Exceptions, record them to the log,
+#        and prevent them from being raised...LV can not communicate to
+#        the python session once an exception is raised
+# TODO:  Add logging entries when each of the interface request
+#        functions is called
+
 def _get_run_manager() -> RunManager:
     if _rm is None:
         raise ValueError
