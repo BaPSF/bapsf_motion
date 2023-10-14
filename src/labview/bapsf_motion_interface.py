@@ -2,6 +2,8 @@
 import logging
 import time
 
+from datetime import datetime, timedelta
+from pathlib import Path
 from typing import Union
 
 try:
@@ -63,6 +65,48 @@ def move_to(mg_key, pos) -> int:
     print(f"{MANAGER_NAME} stopped moving and is at position {position}.")
 
     return position
+
+
+def move_to_index(index):
+    rm = _get_run_manager()
+
+    for mg in rm.mgs.values():
+        try:
+            mg.move_ml(index)
+        except ValueError as err:
+            mg.logger.warning(
+                f"Motion list index {index} is out of range. NO MOTION DONE. [{err}]."
+            )
+            pass
+
+    wait_until = datetime.now() + timedelta(seconds=20)
+    timeout = False
+    time.sleep(.5)
+    while rm.is_moving or timeout:
+        time.sleep(.5)
+
+        if wait_until < datetime.now():
+            timeout = True
+
+    if timeout:
+        for mg in rm.mgs.values():
+            mg.stop()
+
+        raise RuntimeWarning(
+            "Probe movement did not complete within the timeout restrictions.  "
+            "Check drives and try again."
+        )
+
+
+def get_max_motion_list_size() -> int:
+    """Get the size of the largest motion list in the data run."""
+    rm = _get_run_manager()
+
+    ml_sizes = []
+    for mg in rm.mgs.values():
+        ml_sizes.append(mg.mb.motion_list.shape[0])
+
+    return max(ml_sizes)
 
 
 def cleanup():
