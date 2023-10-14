@@ -771,3 +771,7 @@ class MotionGroup(EventActor):
         pos = self.mb.motion_list.sel(index=index).to_numpy().tolist()
 
         return self.move_to(pos=pos)
+
+    @property
+    def is_moving(self):
+        return any([ax.is_moving for ax in self.drive.axes])

@@ -260,3 +260,7 @@ class RunManager(EventActor):
             loop=self.loop,
             auto_run=False
         )
+
+    @property
+    def is_moving(self):
+        return any([mg.is_moving for mg in self.mgs.values()])
