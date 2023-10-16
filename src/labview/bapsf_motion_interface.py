@@ -62,20 +62,6 @@ def load_config(config):
     globals()["_rm"] = rm
 
 
-def move_to(mg_key, pos) -> int:
-    rm = _get_run_manager()
-    rm.mgs[mg_key].move_to(pos)
-
-    time.sleep(0.2)
-    while rm.is_moving:
-        time.sleep(0.2)
-
-    position = rm.position
-    print(f"{MANAGER_NAME} stopped moving and is at position {position}.")
-
-    return position
-
-
 def move_to_index(index):
     logger.debug(f"Received 'move_to_index' ({index}) request.")
     rm = _get_run_manager()
