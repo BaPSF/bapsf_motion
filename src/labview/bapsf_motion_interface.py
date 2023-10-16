@@ -1,4 +1,5 @@
 
+import functools
 import logging
 import time
 
@@ -49,6 +50,21 @@ def _get_run_manager() -> RunManager:
     return _rm
 
 
+def catch_and_log(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+
+        except Warning as err:
+            logger.warning(f"Python threw the following warning: {err}.")
+        except Exception as err:
+            logger.error(f"Python threw the following exception: {err}.")
+
+    return wrapper
+
+
+@catch_and_log
 def get_config(filename):
     logger.debug("Received 'get_config' request.")
     from bapsf_motion.utils import load_example
@@ -56,12 +72,14 @@ def get_config(filename):
     return load_example(filename, as_string=True)
 
 
+@catch_and_log
 def load_config(config):
     logger.debug("Received 'load_config' request.")
     rm = RunManager(config, auto_run=True)
     globals()["_rm"] = rm
 
 
+@catch_and_log
 def move_to_index(index):
     logger.debug(f"Received 'move_to_index' ({index}) request.")
     rm = _get_run_manager()
@@ -94,6 +112,7 @@ def move_to_index(index):
         )
 
 
+@catch_and_log
 def get_max_motion_list_size() -> int:
     """Get the size of the largest motion list in the data run."""
     logger.debug(f"Received 'get_max_motion_list_size' request.")
@@ -106,6 +125,7 @@ def get_max_motion_list_size() -> int:
     return max(ml_sizes)
 
 
+@catch_and_log
 def cleanup():
     logger.debug(f"Received 'cleanup' request.")
     rm = _get_run_manager()
