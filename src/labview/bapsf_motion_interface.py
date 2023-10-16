@@ -25,11 +25,12 @@ _LOG_FILE = (_HERE / "run.log").resolve()
 logging.basicConfig(
     filename=_LOG_FILE,
     filemode="w",
-    format="%(asctime)s -[%(levelname)s] %(name)s  %(message)s",
+    format="%(asctime)s - [%(levelname)s] %(name)s  %(message)s",
     datefmt="%H:%M:%S",
     level=logging.DEBUG,
     force=True,
 )
+logger = logging.getLogger(":: Interface ::")
 
 MANAGER_NAME = "RM"
 _rm = None  # type: Union[RunManager, None]
@@ -49,12 +50,14 @@ def _get_run_manager() -> RunManager:
 
 
 def get_config(filename):
+    logger.debug("Received 'get_config' request.")
     from bapsf_motion.utils import load_example
 
     return load_example(filename, as_string=True)
 
 
 def load_config(config):
+    logger.debug("Received 'load_config' request.")
     rm = RunManager(config, auto_run=True)
     globals()["_rm"] = rm
 
@@ -74,6 +77,7 @@ def move_to(mg_key, pos) -> int:
 
 
 def move_to_index(index):
+    logger.debug(f"Received 'move_to_index' ({index}) request.")
     rm = _get_run_manager()
 
     for mg in rm.mgs.values():
@@ -106,6 +110,7 @@ def move_to_index(index):
 
 def get_max_motion_list_size() -> int:
     """Get the size of the largest motion list in the data run."""
+    logger.debug(f"Received 'get_max_motion_list_size' request.")
     rm = _get_run_manager()
 
     ml_sizes = []
@@ -116,6 +121,7 @@ def get_max_motion_list_size() -> int:
 
 
 def cleanup():
+    logger.debug(f"Received 'cleanup' request.")
     rm = _get_run_manager()
     rm.terminate()
     del globals()["_rm"]
