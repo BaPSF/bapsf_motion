@@ -131,3 +131,17 @@ def cleanup():
     rm = _get_run_manager()
     rm.terminate()
     del globals()["_rm"]
+
+
+def configure():
+    import labview.configure_ as config
+    import multiprocessing
+
+    q = multiprocessing.Queue()
+    p = multiprocessing.Process(target=config.run, args=(q,))
+    p.start()
+
+    _config = q.get(block=True)
+
+    p.terminate()
+    return _config
