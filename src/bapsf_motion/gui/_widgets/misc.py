@@ -1,8 +1,8 @@
+__all__ = ["IPv4Validator"]
+
 import logging
 
 from PySide6.QtGui import QValidator
-
-from __feature__ import snake_case  # noqa
 
 from bapsf_motion.utils import ipv4_pattern as _ipv4_pattern
 
@@ -22,9 +22,6 @@ class IPv4Validator(QValidator):
         match = self._pattern.fullmatch(string)
         if match is None:
             self._logger.warning(f"IP address is invalid, '{string}'.")
-            return QValidator.Intermediate
+            return QValidator.State.Intermediate
 
-        return QValidator.Acceptable
-
-
-
+        return QValidator.State.Acceptable
