@@ -30,41 +30,6 @@ class IPv4Validator(QValidator):
         return QValidator.Acceptable
 
 
-class QLogHandler(logging.Handler):
-    _log_widget = None  # type: QWidget
-
-    def __init__(self, widget=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.log_widget = widget
-
-    @property
-    def log_widget(self):
-        return self._log_widget
-
-    @log_widget.setter
-    def log_widget(self, value):
-        if value is None:
-            pass
-        elif not isinstance(value, (QTextEdit, QPlainTextEdit)):
-            raise TypeError(
-                f"Expected an instance of 'QTextEdit' or 'QPlainTextEdit', "
-                f"but received type {type(value)}."
-            )
-
-        self._log_widget = value
-
-    def emit(self, record: logging.LogRecord) -> None:
-        msg = self.format(record)
-        print(msg)
-        if isinstance(self.log_widget, QTextEdit):
-            self.log_widget.append(msg)
-        elif isinstance(self.log_widget, QPlainTextEdit):
-            self.log_widget.append_plain_text(msg)
-
-    def handle(self, record: logging.LogRecord) -> None:
-        self.emit(record)
-
-
 class LED(QPushButton):
     _aspect_ratio = 1.0
     _on_color = "0ed400"
