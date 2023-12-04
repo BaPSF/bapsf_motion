@@ -17,8 +17,6 @@ from PySide6.QtWidgets import (
     QPlainTextEdit,
 )
 
-from __feature__ import snake_case  # noqa
-
 from typing import Any, Dict
 
 from bapsf_motion.actors import Motor
@@ -53,9 +51,9 @@ class MotorGUI(QMainWindow):
         logging.basicConfig(level=logging.NOTSET)
         self.logger = logging.getLogger("MotorGUI")
 
-        self.set_window_title("Motor GUI")
+        self.setWindowTitle("Motor GUI")
         self.resize(1600, 900)
-        self.set_minimum_height(600)
+        self.setMinimumHeight(600)
 
         layout = QHBoxLayout()
 
@@ -63,26 +61,26 @@ class MotorGUI(QMainWindow):
         # control_widget.set_frame_style(QFrame.StyledPanel | QFrame.Plain)
         # control_widget.set_minimum_width(800)
         control_widget = QWidget()
-        control_widget.set_minimum_width(800)
-        control_widget.set_layout(self.control_layout)
-        layout.add_widget(control_widget, stretch=1100)
+        control_widget.setMinimumWidth(800)
+        control_widget.setLayout(self.control_layout)
+        layout.addWidget(control_widget, stretch=1100)
 
         vbar = QLabel()
-        vbar.set_frame_style(QFrame.VLine | QFrame.Plain)
-        vbar.set_line_width(2)
-        layout.add_widget(vbar)
+        vbar.setFrameStyle(QFrame.VLine | QFrame.Plain)
+        vbar.setLineWidth(2)
+        layout.addWidget(vbar)
 
         log_widget = QWidget()
-        log_widget.set_layout(self.log_layout)
-        log_widget.set_minimum_width(400)
-        log_widget.set_maximum_width(800)
-        log_widget.size_hint().set_width(600)
-        log_widget.set_size_policy(QSizePolicy.Preferred, QSizePolicy.Ignored)
-        layout.add_widget(log_widget, stretch=600)
+        log_widget.setLayout(self.log_layout)
+        log_widget.setMinimumWidth(400)
+        log_widget.setMaximumWidth(800)
+        log_widget.sizeHint().setWidth(600)
+        log_widget.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Ignored)
+        layout.addWidget(log_widget, stretch=600)
 
         widget = QWidget()
-        widget.set_layout(layout)
-        self.set_central_widget(widget)
+        widget.setLayout(layout)
+        self.setCentralWidget(widget)
 
         # this needs to be done after the GUI is set up
         self._configure_logger()
@@ -94,56 +92,56 @@ class MotorGUI(QMainWindow):
         # first row: Title
         label = QLabel("LOG")
         font = label.font()
-        font.set_point_size(14)
-        font.set_bold(True)
-        label.set_font(font)
-        layout.add_widget(label, alignment=Qt.AlignHCenter | Qt.AlignTop)
+        font.setPointSize(14)
+        font.setBold(True)
+        label.setFont(font)
+        layout.addWidget(label, alignment=Qt.AlignHCenter | Qt.AlignTop)
 
         # second row: verbosity setting
         row2_layout = QHBoxLayout()
 
         label = QLabel("Verbosity")
-        label.set_minimum_width(75)
+        label.setMinimumWidth(75)
         font = label.font()
-        font.set_point_size(12)
-        label.set_font(font)
-        row2_layout.add_widget(
+        font.setPointSize(12)
+        label.setFont(font)
+        row2_layout.addWidget(
             label,
             alignment=Qt.AlignCenter | Qt.AlignLeft,
         )
 
         slider = QSlider(Qt.Horizontal)
-        slider.set_minimum(1)
-        slider.set_maximum(4)
-        slider.set_tick_interval(1)
-        slider.set_single_step(1)
-        slider.set_tick_position(slider.TicksBelow)
-        slider.set_fixed_height(16)
-        slider.set_minimum_width(100)
+        slider.setMinimum(1)
+        slider.setMaximum(4)
+        slider.setTickInterval(1)
+        slider.setSingleStep(1)
+        slider.setTickPosition(slider.TickPosition.TicksBelow)
+        slider.setFixedHeight(16)
+        slider.setMinimumWidth(100)
         slider.valueChanged.connect(self.update_log_verbosity)
 
         label = QLabel(f"{self.log_verbosity}")
-        label.set_alignment(Qt.AlignCenter | Qt.AlignVCenter)
-        label.set_minimum_width(24)
+        label.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
+        label.setMinimumWidth(24)
         font = label.font()
-        font.set_point_size(12)
-        label.set_font(font)
+        font.setPointSize(12)
+        label.setFont(font)
         self._log["verbosity_label"] = label
 
-        row2_layout.add_widget(slider)
-        row2_layout.add_widget(label)
-        layout.add_layout(row2_layout)
+        row2_layout.addWidget(slider)
+        row2_layout.addWidget(label)
+        layout.addLayout(row2_layout)
 
         # third row: text box
         log_box = QTextEdit()
         font = log_box.font()
-        font.set_point_size(10)
-        font.set_family("Courier New")
-        log_box.set_font(font)
+        font.setPointSize(10)
+        font.setFamily("Courier New")
+        log_box.setFont(font)
         # log_box = QPlainTextEdit()
-        log_box.set_read_only(True)
+        log_box.setReadOnly(True)
         self._log["log_box"] = log_box
-        layout.add_widget(log_box)
+        layout.addWidget(log_box)
 
         return layout
 
@@ -154,19 +152,19 @@ class MotorGUI(QMainWindow):
         # row 1: Title
         label = QLabel("Motor Class Debugger GUI")
         font = label.font()
-        font.set_point_size(16)
-        font.set_bold(True)
-        label.set_font(font)
-        layout.add_widget(label, alignment=Qt.AlignHCenter | Qt.AlignTop)
+        font.setPointSize(16)
+        font.setBold(True)
+        label.setFont(font)
+        layout.addWidget(label, alignment=Qt.AlignHCenter | Qt.AlignTop)
 
         # row 2: STOP Button
         # stop_btn = QPushButton("STOP")
         stop_btn = StopButton("STOP")
-        stop_btn.set_fixed_height(72)
+        stop_btn.setFixedHeight(72)
         font = stop_btn.font()
-        font.set_point_size(36)
-        font.set_bold(True)
-        stop_btn.set_font(font)
+        font.setPointSize(36)
+        font.setBold(True)
+        stop_btn.setFont(font)
         # stop_btn.set_style_sheet("""
         # background-color: rgb(255,90,90);
         # border-radius: 6px;
@@ -176,47 +174,47 @@ class MotorGUI(QMainWindow):
         # """)
         # stop_btn.clicked.connect(self.stop_moving)
         self._controls["stop"] = stop_btn
-        layout.add_widget(stop_btn)
+        layout.addWidget(stop_btn)
 
         # row 3: Initial Controls/Indicators
         row2_layout = QHBoxLayout()
 
         label = QLabel("IP Address:")
         font = label.font()
-        font.set_point_size(14)
-        label.set_font(font)
-        row2_layout.add_widget(label, alignment=Qt.AlignTop)
+        font.setPointSize(14)
+        label.setFont(font)
+        row2_layout.addWidget(label, alignment=Qt.AlignTop)
 
         ip_widget = QLineEdit()
         font = ip_widget.font()
-        font.set_point_size(14)
-        font.set_family("Courier New")
-        ip_widget.set_font(font)
-        ip_widget.set_input_mask("009.009.009.009;_")
-        ip_widget.set_validator(IPv4Validator(logger=self.logger))
-        ip_widget.set_maximum_width(200)
-        ip_widget.set_size_policy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        font.setPointSize(14)
+        font.setFamily("Courier New")
+        ip_widget.setFont(font)
+        ip_widget.setInputMask("009.009.009.009;_")
+        ip_widget.setValidator(IPv4Validator(logger=self.logger))
+        ip_widget.setMaximumWidth(200)
+        ip_widget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         ip_widget.textEdited.connect(self.deactivate_motor)
         ip_widget.editingFinished.connect(self.process_new_ip)
         # ip_widget.inputRejected.connect(self.process_new_ip)
         self._controls["ip"] = ip_widget
-        row2_layout.add_spacing(4)
-        row2_layout.add_widget(ip_widget, alignment=Qt.AlignLeft)
+        row2_layout.addSpacing(4)
+        row2_layout.addWidget(ip_widget, alignment=Qt.AlignLeft)
 
         led = LED()
-        led.set_fixed_height(18)
-        led.set_checked(False)
+        led.setFixedHeight(18)
+        led.setChecked(False)
         self._indicators["valid_ip"] = led
-        row2_layout.add_spacing(4)
-        row2_layout.add_widget(led)
+        row2_layout.addSpacing(4)
+        row2_layout.addWidget(led)
 
-        row2_layout.add_layout(self.indicator_widget)
-        row2_layout.add_stretch()
+        row2_layout.addLayout(self.indicator_widget)
+        row2_layout.addStretch()
 
-        layout.add_layout(row2_layout)
+        layout.addLayout(row2_layout)
 
         # fill bottom with blank space
-        layout.add_stretch()
+        layout.addStretch()
 
         return layout
 
@@ -225,30 +223,30 @@ class MotorGUI(QMainWindow):
         layout = QGridLayout()
 
         font = QFont()
-        font.set_point_size(16)
+        font.setPointSize(16)
 
         # add Connected indicator
         label = QLabel("Connected")
-        label.set_font(font)
+        label.setFont(font)
         led = LED()
-        led.set_fixed_height(18)
-        led.set_checked(False)
+        led.setFixedHeight(18)
+        led.setChecked(False)
         self._indicators["connected"] = led
-        layout.add_widget(label, 0, 0)
-        layout.add_widget(led, 0, 1)
+        layout.addWidget(label, 0, 0)
+        layout.addWidget(led, 0, 1)
 
         # add Enabled indicator
         label = QLabel("Enabled")
-        label.set_font(font)
+        label.setFont(font)
         led = LED()
-        led.set_fixed_height(18)
-        led.set_checked(False)
+        led.setFixedHeight(18)
+        led.setChecked(False)
         self._indicators["enabled"] = led
-        layout.add_widget(label, 0, 2)
-        layout.add_widget(led, 0, 3)
+        layout.addWidget(label, 0, 2)
+        layout.addWidget(led, 0, 3)
 
-        widget = QWidget()
-        widget.set_layout()
+        # widget = QWidget()
+        # widget.setLayout(layout)
 
         return layout
 
@@ -271,7 +269,7 @@ class MotorGUI(QMainWindow):
 
     def update_log_verbosity(self, value):
         self.log_verbosity = value
-        self._log["verbosity_label"].set_text(f"{value}")
+        self._log["verbosity_label"].setText(f"{value}")
 
     def stop_moving(self):
         # send command to stop moving
