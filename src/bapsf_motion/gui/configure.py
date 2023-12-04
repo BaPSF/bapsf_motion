@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
 )
 from typing import Any, Dict
 
-from bapsf_motion.gui._widgets import QLogHandler
+from bapsf_motion.gui.widgets import QLogHandler
 
 
 class ConfigureGUI(QMainWindow):
