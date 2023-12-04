@@ -20,8 +20,8 @@ from PySide6.QtWidgets import (
 from typing import Any, Dict
 
 from bapsf_motion.actors import Motor
-from bapsf_motion.gui._widgets import QLogHandler
-from bapsf_motion.gui.widgets import LED, StopButton, IPv4Validator
+from bapsf_motion.gui._widgets import QLogHandler, LED, StopButton
+from bapsf_motion.gui.widgets import IPv4Validator
 
 
 class MotorGUI(QMainWindow):
