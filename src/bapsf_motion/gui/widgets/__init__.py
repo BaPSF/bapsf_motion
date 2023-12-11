@@ -1,5 +1,6 @@
 __all__ = [
     "QLogHandler",
+    "QLogger",
     "LED",
     "StopButton",
     "IPv4Validator",
