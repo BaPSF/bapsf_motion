@@ -67,7 +67,7 @@ class QLogger(QWidget):
         self._log_widget = None  # type: QTextEdit
         self._slider_widget = None  # type: QSlider
 
-        self.setLayout(self._logging_layout())
+        self.setLayout(self._define_layout())
 
         self._handler = self._setup_log_handler()  # type: QLogHandler
 
@@ -77,7 +77,7 @@ class QLogger(QWidget):
     def handler(self) -> QLogHandler:
         return self._handler
 
-    def _logging_layout(self):
+    def _define_layout(self):
         layout = QVBoxLayout()
 
         # first row: Title
