@@ -59,7 +59,6 @@ class QLogHandler(logging.Handler):
 
 class QLogger(QWidget):
     _verbosity = {
-        "NOTSET": logging.NOTSET,
         "DEBUG": logging.DEBUG,
         "INFO": logging.INFO,
         "WARNING": logging.WARNING,
@@ -99,7 +98,7 @@ class QLogger(QWidget):
 
         slider = QSlider(Qt.Horizontal)
         slider.setMinimum(1)
-        slider.setMaximum(5)
+        slider.setMaximum(4)
         slider.setTickInterval(1)
         slider.setSingleStep(1)
         slider.setTickPosition(slider.TickPosition.TicksBelow)
@@ -107,7 +106,6 @@ class QLogger(QWidget):
         slider.setMinimumWidth(100)
 
         self._slider_widget = slider
-        # slider.valueChanged.connect(self.update_log_verbosity())
 
         label_widgets = []
         for label in self._verbosity.keys():
@@ -121,7 +119,7 @@ class QLogger(QWidget):
 
             label_widgets.append(lw)
 
-        row2_layout.addWidget(slider, 0, 1, 1, 8)
+        row2_layout.addWidget(slider, 0, 1, 1, 6)
         for ii, lw in enumerate(label_widgets):
             row2_layout.addWidget(lw, 1, 2 * ii, 1, 2)
 
@@ -161,7 +159,7 @@ class QLogger(QWidget):
 
         self.handler.setLevel(self._verbosity[vkey])
 
-        self._logger.info(f"Changed log verbosity to {vkey}.")
+        self._logger.info(f"Changed log verbosity to {vkey} ({self._verbosity[vkey]}).")
 
 
 class DemoQLogger(QMainWindow):
