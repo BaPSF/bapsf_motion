@@ -79,10 +79,22 @@ class LED(QPushButton):
 
 
 class StyleButton(QPushButton):
+    _default_base_style = {
+            "border-radius": "6px",
+            "border": "0px",
+            "background-color": "rgb(95, 95, 95)",
+        }
+    _default_hover_style = {}
+    _default_pressed_style = {"background-color": "rgb(117, 117, 117)"}
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setStyleSheet(self._style)
+        self._base_style = {**self._default_base_style}
+        self._hover_style = {**self._default_hover_style}
+        self._pressed_style = {**self._default_pressed_style}
+
+        self._resetStyleSheet()
 
     @property
     def _style(self):
@@ -99,21 +111,41 @@ class StyleButton(QPushButton):
 
     @property
     def base_style(self):
-        return {
-            "border-radius": "6px",
-            "border": "0px",
-            "background-color": "rgb(95, 95, 95)",
-        }
+        return self._base_style
 
     @property
     def hover_style(self):
-        return {}
+        return self._hover_style
 
     @property
     def pressed_style(self):
-        return {
-            "background-color": "rgb(117, 117, 117)"
-        }
+        return self._pressed_style
+
+    def _resetStyleSheet(self):
+        self.setStyleSheet(self._style)
+
+    def update_style_sheet(self, styles, action="base", reset=False):
+
+        if action not in ("base", "hover", "pressed"):
+            return
+
+        if action == "base":
+            _style = self.base_style if not reset else {**self._default_base_style}
+        elif action == "hover":
+            _style = self.hover_style if not reset else {**self._default_hover_style}
+        else:  # action == "pressed":
+            _style = self.pressed_style if not reset else {**self._default_pressed_style}
+
+        new_style = {**_style, **styles}
+
+        if action == "base":
+            self._base_style = new_style
+        elif action == "hover":
+            self._hover_style = new_style
+        else:  # action == "pressed"
+            self._pressed_style = new_style
+
+        self._resetStyleSheet()
 
 
 class StopButton(QPushButton):
