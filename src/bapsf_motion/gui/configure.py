@@ -17,15 +17,30 @@ from PySide6.QtWidgets import (
 )
 from typing import Any, Dict
 
-from bapsf_motion.gui.widgets import QLogger
+from bapsf_motion.gui.widgets import QLogger, StyleButton
 
 
 class RunWidget(QWidget):
     def __init__(self):
         super().__init__()
 
-        self.done_btn = QPushButton("DONE")
-        self.quit_btn = QPushButton("Discard & Quit")
+        self.done_btn = StyleButton("DONE")
+        self.done_btn.setFixedWidth(200)
+        self.done_btn.setFixedHeight(48)
+        font = self.done_btn.font()
+        font.setPointSize(24)
+        self.done_btn.setFont(font)
+
+        self.quit_btn = StyleButton("Discard && Quit")
+        self.quit_btn.setFixedWidth(200)
+        self.quit_btn.setFixedHeight(48)
+        font = self.done_btn.font()
+        font.setPointSize(24)
+        font.setBold(True)
+        self.quit_btn.setFont(font)
+        self.quit_btn.update_style_sheet(
+            {"background-color": "rgb(255, 110, 110)"}
+        )
 
         self.import_btn = QPushButton("IMPORT")
         self.export_btn = QPushButton("EXPORT")
