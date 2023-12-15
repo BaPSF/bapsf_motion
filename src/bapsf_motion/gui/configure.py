@@ -80,7 +80,7 @@ class ConfigureGUI(QMainWindow):
 
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
-        self.resize(1600, 900)
+        self.resize(1760, 990)
         self.setMinimumHeight(600)
 
     def _define_layout(self):
@@ -94,8 +94,8 @@ class ConfigureGUI(QMainWindow):
         layout.addWidget(vline)
 
         self._log_widget.setMinimumWidth(400)
-        self._log_widget.setMaximumWidth(600)
-        self._log_widget.sizeHint().setWidth(500)
+        self._log_widget.setMaximumWidth(500)
+        self._log_widget.sizeHint().setWidth(450)
         self._log_widget.setSizePolicy(
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Ignored)
