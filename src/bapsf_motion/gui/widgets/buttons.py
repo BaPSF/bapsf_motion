@@ -80,9 +80,9 @@ class LED(QPushButton):
 
 class StyleButton(QPushButton):
     _default_base_style = {
-            "border-radius": "6px",
-            "border": "0px",
-            "background-color": "rgb(95, 95, 95)",
+            "border-radius": "4px",
+            "border": "2px solid rgb(95, 95, 95)",
+            "background-color": "rgb(73, 73, 73)",
         }
     _default_hover_style = {}
     _default_pressed_style = {"background-color": "rgb(117, 117, 117)"}
