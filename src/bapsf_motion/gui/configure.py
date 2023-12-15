@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QListWidget,
     QVBoxLayout,
+    QLineEdit,
 )
 from typing import Any, Dict
 
@@ -59,18 +60,15 @@ class RunWidget(QWidget):
         self.modify_mg_btn = QPushButton("Edit / Control")
 
         self.config_widget = QTextEdit()
+        self.run_name_widget = QLineEdit()
         self.mg_list_widget = QListWidget()
 
         self.setLayout(self._define_layout())
 
     def _define_layout(self):
-        main_layout = QVBoxLayout()
 
         # Create layout for top buttons
-        top_btn_layout = QHBoxLayout()
-        top_btn_layout.addWidget(self.quit_btn)
-        top_btn_layout.addStretch()
-        top_btn_layout.addWidget(self.done_btn)
+        banner_layout = self._define_banner_layout()
 
         # Create layout for toml window
         toml_widget = QWidget()
@@ -81,13 +79,14 @@ class RunWidget(QWidget):
 
         # Create layout for
 
-        # Construct layout below top buttons
+        # Construct layout below top banner
         layout = QHBoxLayout()
         layout.addWidget(toml_widget)
         layout.addStretch()
 
         # Populate the main layout
-        main_layout.addLayout(top_btn_layout)
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(banner_layout)
         main_layout.addLayout(layout)
 
         return main_layout
@@ -112,6 +111,15 @@ class RunWidget(QWidget):
         layout.addWidget(self.config_widget, 1, 0, 1, 2)
         layout.addWidget(self.import_btn, 2, 0, 1, 1)
         layout.addWidget(self.export_btn, 2, 1, 1, 1)
+
+        return layout
+
+    def _define_banner_layout(self):
+        layout = QHBoxLayout()
+
+        layout.addWidget(self.quit_btn)
+        layout.addStretch()
+        layout.addWidget(self.done_btn)
 
         return layout
 
