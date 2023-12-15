@@ -93,12 +93,15 @@ class ConfigureGUI(QMainWindow):
     def __init__(self):
         super().__init__()
 
+        # setup logger
         logging.config.dictConfig(self._logging_config_dict)
         self._logger = logging.getLogger(":: GUI ::")
 
-        self._log_widget = QLogger(self._logger)
-
         self._define_main_window()
+
+        # define "important" qt widgets
+        self._log_widget = QLogger(self._logger)
+        self._run_widget = RunWidget()
 
         layout = self._define_layout()
 
@@ -158,7 +161,8 @@ class ConfigureGUI(QMainWindow):
     def _define_layout(self):
         layout = QHBoxLayout()
 
-        layout.addWidget(self.dummy_widget())
+        # layout.addWidget(self.dummy_widget())
+        layout.addWidget(self._run_widget)
 
         vline = QFrame()
         vline.setFrameShape(QFrame.Shape.VLine)
