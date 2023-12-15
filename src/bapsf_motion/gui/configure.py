@@ -55,9 +55,23 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         self.export_btn.setFont(font)
 
-        self.add_mg_btn = QPushButton("ADD")
-        self.remove_mg_btn = QPushButton("REMOVE")
-        self.modify_mg_btn = QPushButton("Edit / Control")
+        self.add_mg_btn = StyleButton("ADD")
+        self.add_mg_btn.setFixedHeight(32)
+        font = self.add_mg_btn.font()
+        font.setPointSize(16)
+        self.add_mg_btn.setFont(font)
+
+        self.remove_mg_btn = StyleButton("REMOVE")
+        self.remove_mg_btn.setFixedHeight(32)
+        font = self.remove_mg_btn.font()
+        font.setPointSize(16)
+        self.remove_mg_btn.setFont(font)
+
+        self.modify_mg_btn = StyleButton("Edit / Control")
+        self.modify_mg_btn.setFixedHeight(32)
+        font = self.modify_mg_btn.font()
+        font.setPointSize(16)
+        self.modify_mg_btn.setFont(font)
 
         self.config_widget = QTextEdit()
         self.mg_list_widget = QListWidget()
