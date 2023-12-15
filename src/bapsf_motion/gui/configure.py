@@ -73,28 +73,8 @@ class RunWidget(QWidget):
         top_btn_layout.addWidget(self.done_btn)
 
         # Create layout for toml window
-        toml_layout = QGridLayout()
-        label = QLabel("Run Configuration")
-        label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
-        )
-        label.font().setPointSize(12)
-
-        self.config_widget.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-        )
-        self.config_widget.setReadOnly(True)
-        self.config_widget.font().setPointSize(14)
-        self.config_widget.font().setFamily("Courier New")
-
-        toml_layout.addWidget(label, 0, 0, 1, 2)
-        toml_layout.addWidget(self.config_widget, 1, 0, 1, 2)
-        toml_layout.addWidget(self.import_btn, 2, 0, 1, 1)
-        toml_layout.addWidget(self.export_btn, 2, 1, 1, 1)
-
         toml_widget = QWidget()
-        toml_widget.setLayout(toml_layout)
+        toml_widget.setLayout(self._define_toml_layout())
         toml_widget.setMinimumWidth(400)
         toml_widget.setMinimumWidth(500)
         toml_widget.sizeHint().setWidth(450)
@@ -111,6 +91,29 @@ class RunWidget(QWidget):
         main_layout.addLayout(layout)
 
         return main_layout
+
+    def _define_toml_layout(self):
+        layout = QGridLayout()
+        label = QLabel("Run Configuration")
+        label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
+        )
+        label.font().setPointSize(12)
+
+        self.config_widget.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        self.config_widget.setReadOnly(True)
+        self.config_widget.font().setPointSize(14)
+        self.config_widget.font().setFamily("Courier New")
+
+        layout.addWidget(label, 0, 0, 1, 2)
+        layout.addWidget(self.config_widget, 1, 0, 1, 2)
+        layout.addWidget(self.import_btn, 2, 0, 1, 1)
+        layout.addWidget(self.export_btn, 2, 1, 1, 1)
+
+        return layout
 
 
 class ConfigureGUI(QMainWindow):
