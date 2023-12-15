@@ -77,12 +77,14 @@ class RunWidget(QWidget):
         toml_widget.setMinimumWidth(500)
         toml_widget.sizeHint().setWidth(450)
 
-        # Create layout for
+        # Create layout for controls
+        control_widget = QWidget()
+        control_widget.setLayout(self._define_control_layout())
 
         # Construct layout below top banner
         layout = QHBoxLayout()
         layout.addWidget(toml_widget)
-        layout.addStretch()
+        layout.addWidget(control_widget)
 
         # Populate the main layout
         main_layout = QVBoxLayout()
@@ -120,6 +122,44 @@ class RunWidget(QWidget):
         layout.addWidget(self.quit_btn)
         layout.addStretch()
         layout.addWidget(self.done_btn)
+
+        return layout
+
+    def _define_control_layout(self):
+        layout = QVBoxLayout()
+
+        run_label = QLabel("Run Name:  ")
+        run_label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt. AlignmentFlag.AlignLeft
+        )
+        run_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = run_label.font()
+        font.setPointSize(16)
+        run_label.setFont(font)
+
+        mg_label = QLabel("Defined Motion Groups")
+        mg_label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
+        )
+        font = mg_label.font()
+        font.setPointSize(16)
+        mg_label.setFont(font)
+
+        sub_layout = QHBoxLayout()
+        sub_layout.addWidget(run_label)
+        sub_layout.addWidget(self.run_name_widget)
+        layout.addSpacing(18)
+        layout.addLayout(sub_layout)
+        layout.addSpacing(18)
+        layout.addWidget(mg_label)
+        layout.addWidget(self.mg_list_widget)
+
+        sub_layout = QHBoxLayout()
+        sub_layout.addWidget(self.add_mg_btn)
+        sub_layout.addWidget(self.remove_mg_btn)
+        layout.addLayout(sub_layout)
+
+        layout.addWidget(self.modify_mg_btn)
 
         return layout
 
