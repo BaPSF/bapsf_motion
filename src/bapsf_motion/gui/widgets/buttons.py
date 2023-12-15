@@ -1,4 +1,4 @@
-__all__ = ["LED", "StopButton"]
+__all__ = ["LED", "StopButton", "StyleButton"]
 
 import math
 
@@ -76,6 +76,44 @@ class LED(QPushButton):
                 stop:1 rgb(0,0,0)); 
         }}
         """
+
+
+class StyleButton(QPushButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setStyleSheet(self._style)
+
+    @property
+    def _style(self):
+        _base = "; ".join([f"{k}: {v}" for k, v in self.base_style.items()])
+        _hover = "; ".join([f"{k}: {v}" for k, v in self.hover_style.items()])
+        _pressed = "; ".join([f"{k}: {v}" for k, v in self.pressed_style.items()])
+        return f"""
+        StyleButton {{ {_base} }}
+        
+        StyleButton:hover {{ {_hover}  }}
+        
+        StyleButton:pressed {{ {_pressed} }}
+        """
+
+    @property
+    def base_style(self):
+        return {
+            "border-radius": "6px",
+            "border": "0px",
+            "background-color": "rgb(95, 95, 95)",
+        }
+
+    @property
+    def hover_style(self):
+        return {}
+
+    @property
+    def pressed_style(self):
+        return {
+            "background-color": "rgb(117, 117, 117)"
+        }
 
 
 class StopButton(QPushButton):
