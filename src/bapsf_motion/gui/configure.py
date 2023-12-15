@@ -42,8 +42,18 @@ class RunWidget(QWidget):
             {"background-color": "rgb(255, 110, 110)"}
         )
 
-        self.import_btn = QPushButton("IMPORT")
-        self.export_btn = QPushButton("EXPORT")
+        self.import_btn = StyleButton("IMPORT")
+        self.import_btn.setFixedHeight(28)
+        font = self.import_btn.font()
+        font.setPointSize(16)
+        self.import_btn.setFont(font)
+
+        self.export_btn = StyleButton("EXPORT")
+        self.export_btn.setFixedHeight(28)
+        font = self.export_btn.font()
+        font.setPointSize(16)
+        self.export_btn.setFont(font)
+
         self.add_mg_btn = QPushButton("ADD")
         self.remove_mg_btn = QPushButton("REMOVE")
         self.modify_mg_btn = QPushButton("Edit / Control")
