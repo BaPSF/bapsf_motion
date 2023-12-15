@@ -60,14 +60,18 @@ class RunWidget(QWidget):
         self.modify_mg_btn = QPushButton("Edit / Control")
 
         self.config_widget = QTextEdit()
-        self.run_name_widget = QLineEdit()
         self.mg_list_widget = QListWidget()
+
+        self.run_name_widget = QLineEdit()
+        font = self.run_name_widget.font()
+        font.setPointSize(16)
+        self.run_name_widget.setFont(font)
 
         self.setLayout(self._define_layout())
 
     def _define_layout(self):
 
-        # Create layout for top buttons
+        # Create layout for banner (top header)
         banner_layout = self._define_banner_layout()
 
         # Create layout for toml window
@@ -99,7 +103,9 @@ class RunWidget(QWidget):
         label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
         )
-        label.font().setPointSize(12)
+        font = label.font()
+        font.setPointSize(16)
+        label.setFont(font)
 
         self.config_widget.setSizePolicy(
             QSizePolicy.Policy.Preferred,
