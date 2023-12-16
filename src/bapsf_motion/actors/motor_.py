@@ -801,14 +801,14 @@ class Motor(EventActor):
         for _count in range(_allowed_attempts):
             try:
                 msg = f"Connecting to {self.ip}:{self.port} ..."
-                self.logger.debug(msg)
+                self.logger.info(msg)
 
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.settimeout(1)  # 1 second timeout
                 s.connect((self.ip, self.port))
 
                 msg = "...SUCCESS!!!"
-                self.logger.debug(msg)
+                self.logger.info(msg)
                 self.socket = s
                 self._update_status(connected=True)
 
