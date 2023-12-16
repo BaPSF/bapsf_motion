@@ -315,7 +315,9 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.import_btn.clicked.connect(self.import_file)
 
     def closeEvent(self, event: "QCloseEvent") -> None:
-        self.rm.terminate()
+        if self.rm is not None:
+            self.rm.terminate()
+
         event.accept()
 
     def replace_rm(self, config):
