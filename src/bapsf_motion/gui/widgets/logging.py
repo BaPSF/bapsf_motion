@@ -104,6 +104,7 @@ class QLogger(QWidget):
         slider.setTickPosition(slider.TickPosition.TicksBelow)
         slider.setFixedHeight(16)
         slider.setMinimumWidth(100)
+        slider.setValue(2)
 
         self._slider_widget = slider
 
