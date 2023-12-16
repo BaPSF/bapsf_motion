@@ -1,7 +1,9 @@
 import logging
 import logging.config
 
-from PySide6.QtCore import Qt
+from pathlib import Path
+from PySide6.QtCore import Qt, QDir
+from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
@@ -10,15 +12,17 @@ from PySide6.QtWidgets import (
     QWidget,
     QSizePolicy,
     QFrame,
-    QPushButton,
     QTextEdit,
     QListWidget,
     QVBoxLayout,
     QLineEdit,
+    QFileDialog,
 )
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
+from bapsf_motion.actors import RunManager
 from bapsf_motion.gui.widgets import QLogger, StyleButton
+from bapsf_motion.utils import toml
 
 
 class RunWidget(QWidget):
@@ -191,13 +195,17 @@ class RunWidget(QWidget):
 
 
 class ConfigureGUI(QMainWindow):
+    _OPENED_FILE = None # type: Union[Path, None]
 
     def __init__(self):
         super().__init__()
 
+        self._rm = None
+
         # setup logger
         logging.config.dictConfig(self._logging_config_dict)
         self._logger = logging.getLogger(":: GUI ::")
+        self._rm_logger = logging.getLogger("RM")
 
         self._define_main_window()
 
@@ -211,9 +219,26 @@ class ConfigureGUI(QMainWindow):
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
+        self._rm_logger.addHandler(self._log_widget.handler)
+
+        self._connect_signals()
+
     @property
     def logger(self) -> logging.Logger:
         return self._logger
+
+    @property
+    def rm(self) -> Union[RunManager, None]:
+        return self._rm
+
+    @rm.setter
+    def rm(self, new_rm):
+        if not isinstance(new_rm, RunManager):
+            return
+        elif isinstance(self._rm, RunManager):
+            self._rm.terminate()
+
+        self._rm = new_rm
 
     @property
     def _logging_config_dict(self):
@@ -252,6 +277,11 @@ class ConfigureGUI(QMainWindow):
                     "handlers": ["stderr"],
                     "propagate": True,
                 },
+                "RM": {
+                    "level": "DEBUG",
+                    "handlers": ["stderr"],
+                    "propagate": True,
+                },
             },
         }
 
@@ -281,17 +311,48 @@ class ConfigureGUI(QMainWindow):
 
         return layout
 
-    def dummy_layout(self):
-        layout = QGridLayout()
-        layout.addWidget(QLabel("Dummy Widget"), 0, 0)
+    def _connect_signals(self):
+        self._run_widget.import_btn.clicked.connect(self.import_file)
 
-        return layout
+    def closeEvent(self, event: "QCloseEvent") -> None:
+        self.rm.terminate()
+        event.accept()
 
-    def dummy_widget(self):
-        widget = QWidget()
-        widget.setLayout(self.dummy_layout())
+    def replace_rm(self, config):
+        if isinstance(self.rm, RunManager):
+            self.rm.terminate()
 
-        return widget
+        _rm = RunManager(config=config, logger=self._rm_logger, auto_run=True)
+        self.rm = _rm
+
+    def import_file(self):
+        path = QDir.currentPath() if self._OPENED_FILE is None \
+            else f"{self._OPENED_FILE.parent}"
+
+        file_name, _filter = QFileDialog.getOpenFileName(
+            self,
+            "Open file",
+            path,
+            "TOML file (*.toml)",
+        )
+        file_name = Path(file_name)
+
+        if not file_name.is_file():
+            # dialog was canceled
+            return
+
+        self.logger.info(f"Opening and reading file: {file_name} ...")
+
+        with open(file_name, "rb") as f:
+            run_config = toml.load(f)
+
+        self.replace_rm(run_config)
+
+        self._run_widget.config_widget.setText(self.rm.config.as_toml_string)
+
+        self._OPENED_FILE = file_name
+
+        self.logger.info(f"... Success!")
 
 
 if __name__ == "__main__":
