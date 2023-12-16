@@ -313,6 +313,8 @@ class ConfigureGUI(QMainWindow):
 
     def _connect_signals(self):
         self._run_widget.import_btn.clicked.connect(self.import_file)
+        self._run_widget.done_btn.clicked.connect(self.save_and_close)
+        self._run_widget.quit_btn.clicked.connect(self.close)
 
     def closeEvent(self, event: "QCloseEvent") -> None:
         if self.rm is not None:
