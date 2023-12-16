@@ -327,6 +327,12 @@ class ConfigureGUI(QMainWindow):
         _rm = RunManager(config=config, logger=self._rm_logger, auto_run=True)
         self.rm = _rm
 
+    def save_and_close(self):
+        # save the toml configuration
+        # TODO: write code to save current toml configuration to a tmp file
+
+        self.close()
+
     def import_file(self):
         path = QDir.currentPath() if self._OPENED_FILE is None \
             else f"{self._OPENED_FILE.parent}"
