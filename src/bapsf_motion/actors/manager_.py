@@ -261,7 +261,7 @@ class RunManager(EventActor):
         return self._mgs
 
     @property
-    def config(self):
+    def config(self) -> RunManagerConfig:
         return self._config
     config.__doc__ = EventActor.config.__doc__
     
