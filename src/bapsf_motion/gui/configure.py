@@ -99,9 +99,15 @@ class RunWidget(QWidget):
         control_widget = QWidget()
         control_widget.setLayout(self._define_control_layout())
 
+        vline = QFrame()
+        vline.setFrameShape(QFrame.Shape.VLine)
+        vline.setStyleSheet("color: rgb(95, 95, 95)")
+        vline.setLineWidth(10)
+
         # Construct layout below top banner
         layout = QHBoxLayout()
         layout.addWidget(toml_widget)
+        layout.addWidget(vline)
         layout.addWidget(control_widget)
 
         # Populate the main layout
