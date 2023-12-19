@@ -262,20 +262,33 @@ class RunManager(EventActor):
         self,
         config: Union[str, Dict[str, Any]],
         *,
-        logger: logging.Logger = None,
-        loop: asyncio.AbstractEventLoop = None,
+        # logger: logging.Logger = None,
+        # loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        build_mode: bool = False,
     ):
-        config = RunManagerConfig(config)
-        self._mgs = None
-
+        logger = logging.getLogger("RM")
         super().__init__(
-            name=config["name"],
             logger=logger,
-            loop=loop,
             auto_run=False,
         )
+        self.name = "RM"
 
+        try:
+            config = RunManagerConfig(config, logger=self.logger)
+        except (TypeError, ValueError) as err:
+            if not build_mode:
+                raise err
+
+            self.logger.error(f"{err.__class_.__name__}: {err}")
+
+            config = RunManagerConfig(
+                config={"name": "Run Build"},
+                logger=self.logger,
+            )
+            auto_run = False
+
+        self._mgs = None
         self._config = config
 
         for key, mgc in self._config["motion_group"].items():

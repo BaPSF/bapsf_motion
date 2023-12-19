@@ -326,7 +326,7 @@ class ConfigureGUI(QMainWindow):
         if isinstance(self.rm, RunManager):
             self.rm.terminate()
 
-        _rm = RunManager(config=config, logger=self._rm_logger, auto_run=True)
+        _rm = RunManager(config=config, auto_run=True, build_mode=True)
         self.rm = _rm
 
     def save_and_close(self):
