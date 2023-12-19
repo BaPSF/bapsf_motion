@@ -25,7 +25,12 @@ class RunManagerConfig(UserDict):
     _mg_names = MotionGroupConfig._mg_names
     _required_metadata = {"run", "name"}
 
-    def __init__(self, config: Union[str, Dict[str, Any]]):
+    def __init__(
+        self,
+        config: Union[str, Dict[str, Any]],
+        logger: logging.Logger = None,
+    ):
+        self.logger = logging.getLogger("RM_config") if logger is None else logger
 
         # Make sure config is the right type, and is a dict by the
         # end of ths code block
@@ -100,10 +105,13 @@ class RunManagerConfig(UserDict):
         # Are there motion groups
         mg_names_not_in_config = self._mg_names - set(config)
         if len(mg_names_not_in_config) == len(self._mg_names):
-            raise ValueError(
-                "The run configuration has no defined motion groups, "
+            self.logger.error(
+                "ValueError: The run configuration has no defined motion groups, "
                 "there needs to be at least one motion group."
             )
+            config["motion_group"] = {}
+
+            return config
 
         # collect possible motion group configurations
         mg_names_in_config = self._mg_names - mg_names_not_in_config
@@ -112,10 +120,11 @@ class RunManagerConfig(UserDict):
             mg_config = config.pop(mg_name)
 
             if not isinstance(mg_config, dict):
-                raise TypeError(
-                    "Expected a dictionary for the motion group configuration,"
-                    f" but got type {type(mg_config)}."
+                self.logger.error(
+                    f"TypeError: Expected a dictionary for the motion group "
+                    f"configuration, but got type {type(mg_config)}."
                 )
+                continue
 
             if "name" in mg_config:
                 # assume only one motion group is defined
@@ -126,10 +135,11 @@ class RunManagerConfig(UserDict):
             for mgc in mg_config.values():
 
                 if not isinstance(mgc, dict):
-                    raise TypeError(
-                        "Expected a dictionary for the motion group configuration,"
-                        f" but got type {type(mg_config)}."
+                    self.logger.error(
+                        f"TypeError: Expected a dictionary for the motion group "
+                        f"configuration, but got type {type(mg_config)}."
                     )
+                    continue
 
                 index = len(collected_mg_configs)
                 collected_mg_configs[index] = mgc
@@ -140,13 +150,12 @@ class RunManagerConfig(UserDict):
         for key, val in collected_mg_configs.items():
             config["motion_group"][key] = MotionGroupConfig(val)
 
-        self._validate_motion_group_names(config)
-        self._validate_drive_ips(config)
+        config = self._validate_motion_group_names(config)
+        config = self._validate_drive_ips(config)
 
         return config
 
-    @staticmethod
-    def _validate_motion_group_names(config: Dict[str, Any]):
+    def _validate_motion_group_names(self, config: Dict[str, Any]):
         mg_config_names = [val["name"] for val in config["motion_group"].values()]
         if len(set(mg_config_names)) != len(mg_config_names):
             duplicates = []
@@ -155,13 +164,24 @@ class RunManagerConfig(UserDict):
                 if count != 1:
                     duplicates.append(name)
 
-            raise ValueError(
-                "All configured motion groups must have unique names, found"
-                f" duplicates for {duplicates}."
+            self.logger.error(
+                f"ValueError: All configured motion groups must have unique names, "
+                f"found duplicates for {duplicates}.  Remove motion groups with "
+                f"duplicate names."
             )
 
-    @staticmethod
-    def _validate_drive_ips(config: Dict[str, Any]):
+            new_mg_config = {}
+            for key, val in config["motion_group"].items():
+                if val["name"] in duplicates:
+                    continue
+
+                new_mg_config[key] = val
+
+            config["motion_group"] = new_mg_config
+
+        return config
+
+    def _validate_drive_ips(self, config: Dict[str, Any]):
         drive_configs = [val["drive"] for val in config["motion_group"].values()]
         drive_ips = []
         for dr in drive_configs:
@@ -175,10 +195,28 @@ class RunManagerConfig(UserDict):
                 if count != 1:
                     duplicates.append(ip)
 
-            raise ValueError(
-                "All configured motion groups must have unique motor IP "
-                f"addresses, found  duplicates for {duplicates}."
+            self.logger.error(
+                f"ValueError: All configured motion groups must have unique motor IP "
+                f"addresses, found  duplicates for {duplicates}.  Removing "
+                f"motion groups with shared IPs."
             )
+
+            new_mg_configs = {}
+            for key, val in config["motion_group"].items():
+                dr = val["drive"]
+
+                remove = False
+                for ax in dr["axes"].values():
+                    if ax["ip"] in duplicates:
+                        remove = True
+                        break
+
+                if not remove:
+                    new_mg_configs[key] = val
+                else:
+                    remove = False
+
+        return config
 
     @staticmethod
     def _handle_user_meta(config: Dict[str, Any], req_meta: set) -> Dict[str, Any]:
