@@ -256,6 +256,15 @@ class RunManagerConfig(UserDict):
 
         return "[run]\n" + toml.dumps(convert_key_to_string(self))
 
+    def update_run_name(self, name: str):
+        if not isinstance(name, str):
+            self.logger.warning(
+                f"TypeError:  Attempted changing run name but got type "
+                f"{type(name)}, expected type string."
+            )
+
+        self["name"] = name
+
 
 class RunManager(EventActor):
     def __init__(
