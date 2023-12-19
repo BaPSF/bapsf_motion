@@ -64,18 +64,21 @@ class RunWidget(QWidget):
         font = self.add_mg_btn.font()
         font.setPointSize(16)
         self.add_mg_btn.setFont(font)
+        self.add_mg_btn.setEnabled(False)
 
         self.remove_mg_btn = StyleButton("REMOVE")
         self.remove_mg_btn.setFixedHeight(32)
         font = self.remove_mg_btn.font()
         font.setPointSize(16)
         self.remove_mg_btn.setFont(font)
+        self.remove_mg_btn.setEnabled(False)
 
         self.modify_mg_btn = StyleButton("Edit / Control")
         self.modify_mg_btn.setFixedHeight(32)
         font = self.modify_mg_btn.font()
         font.setPointSize(16)
         self.modify_mg_btn.setFont(font)
+        self.modify_mg_btn.setEnabled(False)
 
         self.config_widget = QTextEdit()
         self.mg_list_widget = QListWidget()
@@ -86,6 +89,8 @@ class RunWidget(QWidget):
         self.run_name_widget.setFont(font)
 
         self.setLayout(self._define_layout())
+
+        self._connect_signals()
 
     def _define_layout(self):
 
@@ -192,6 +197,14 @@ class RunWidget(QWidget):
         layout.addWidget(self.modify_mg_btn)
 
         return layout
+
+    def _connect_signals(self):
+        self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
+
+    def enable_mg_buttons(self):
+        self.add_mg_btn.setEnabled(True)
+        self.remove_mg_btn.setEnabled(True)
+        self.modify_mg_btn.setEnabled(True)
 
 
 class ConfigureGUI(QMainWindow):
