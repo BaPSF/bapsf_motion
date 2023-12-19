@@ -2,7 +2,7 @@ import logging
 import logging.config
 
 from pathlib import Path
-from PySide6.QtCore import Qt, QDir
+from PySide6.QtCore import Qt, QDir, Signal
 from PySide6.QtGui import QCloseEvent
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -196,6 +196,7 @@ class RunWidget(QWidget):
 
 class ConfigureGUI(QMainWindow):
     _OPENED_FILE = None # type: Union[Path, None]
+    configChanged = Signal()
 
     def __init__(self):
         super().__init__()
@@ -315,6 +316,7 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.import_btn.clicked.connect(self.import_file)
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.close)
+        self.configChanged.connect(self.update_config_widget_text)
 
     def closeEvent(self, event: "QCloseEvent") -> None:
         if self.rm is not None:
@@ -328,6 +330,7 @@ class ConfigureGUI(QMainWindow):
 
         _rm = RunManager(config=config, auto_run=True, build_mode=True)
         self.rm = _rm
+        self.configChanged.emit()
 
     def save_and_close(self):
         # save the toml configuration
@@ -357,12 +360,11 @@ class ConfigureGUI(QMainWindow):
             run_config = toml.load(f)
 
         self.replace_rm(run_config)
-
-        self._run_widget.config_widget.setText(self.rm.config.as_toml_string)
-
         self._OPENED_FILE = file_name
-
         self.logger.info(f"... Success!")
+
+    def update_config_widget_text(self):
+        self._run_widget.config_widget.setText(self.rm.config.as_toml_string)
 
 
 if __name__ == "__main__":
