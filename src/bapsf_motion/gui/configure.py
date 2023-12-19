@@ -329,7 +329,12 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.import_btn.clicked.connect(self.import_file)
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.close)
-        self.configChanged.connect(self.update_config_widget_text)
+
+        self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
+
+        self.configChanged.connect(self.update_display_config_text)
+        self.configChanged.connect(self.update_display_rm_name)
+        self.configChanged.connect(self.update_display_mg_list)
 
     def closeEvent(self, event: "QCloseEvent") -> None:
         if self.rm is not None:
@@ -376,8 +381,31 @@ class ConfigureGUI(QMainWindow):
         self._OPENED_FILE = file_name
         self.logger.info(f"... Success!")
 
-    def update_config_widget_text(self):
+    def update_display_config_text(self):
         self._run_widget.config_widget.setText(self.rm.config.as_toml_string)
+
+    def update_display_rm_name(self):
+        rm_name = self.rm.config["name"]
+        self._run_widget.run_name_widget.setText(rm_name)
+
+    def update_display_mg_list(self):
+        mg_labels = []
+
+        for key, val in self.rm.config._mgs.items():
+            label = f"[{key}] {val.config['name']}"
+            mg_labels.append(label)
+
+        self._run_widget.mg_list_widget.clear()
+        self._run_widget.mg_list_widget.addItems(mg_labels)
+
+    def change_run_name(self):
+        name = self._run_widget.run_name_widget.text()
+
+        if self.rm is None:
+            self.replace_rm({"name": name})
+        else:
+            self.rm.config.update_run_name(name)
+            self.configChanged.emit()
 
 
 if __name__ == "__main__":
