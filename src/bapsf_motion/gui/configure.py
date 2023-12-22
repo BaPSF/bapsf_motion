@@ -64,7 +64,7 @@ class RunWidget(QWidget):
         font = self.add_mg_btn.font()
         font.setPointSize(16)
         self.add_mg_btn.setFont(font)
-        self.add_mg_btn.setEnabled(False)
+        self.add_mg_btn.setEnabled(True)
 
         self.remove_mg_btn = StyleButton("REMOVE")
         self.remove_mg_btn.setFixedHeight(32)
