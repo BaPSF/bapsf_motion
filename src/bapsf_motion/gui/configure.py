@@ -237,6 +237,8 @@ class ConfigureGUI(QMainWindow):
 
         self._connect_signals()
 
+        self.replace_rm({"name": "A New Run"})
+
     @property
     def logger(self) -> logging.Logger:
         return self._logger
