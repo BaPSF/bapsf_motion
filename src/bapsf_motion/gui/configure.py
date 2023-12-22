@@ -39,7 +39,7 @@ class RunWidget(QWidget):
         self.quit_btn = StyleButton("Discard && Quit")
         self.quit_btn.setFixedWidth(200)
         self.quit_btn.setFixedHeight(48)
-        font = self.done_btn.font()
+        font = self.quit_btn.font()
         font.setPointSize(24)
         font.setBold(True)
         self.quit_btn.setFont(font)
