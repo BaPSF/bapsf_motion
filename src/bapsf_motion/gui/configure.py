@@ -286,7 +286,12 @@ class ConfigureGUI(QMainWindow):
 
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger)
-        self._run_widget = RunWidget()
+        self._run_widget = RunWidget(self)
+        self._mg_widget = MGWidget(self)
+        self._stacked_widget = QStackedWidget()
+        self._stacked_widget.addWidget(self._run_widget)
+        self._stacked_widget.addWidget(self._mg_widget)
+        self._stacked_widget.setCurrentWidget(self._mg_widget)
 
         layout = self._define_layout()
 
@@ -371,7 +376,8 @@ class ConfigureGUI(QMainWindow):
         layout = QHBoxLayout()
 
         # layout.addWidget(self.dummy_widget())
-        layout.addWidget(self._run_widget)
+        # layout.addWidget(self._run_widget)
+        layout.addWidget(self._stacked_widget)
 
         vline = QFrame()
         vline.setFrameShape(QFrame.Shape.VLine)
@@ -392,8 +398,12 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.import_btn.clicked.connect(self.import_file)
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.close)
+        self._run_widget.add_mg_btn.clicked.connect(self._switch_stack)
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
+
+        self._mg_widget.discard_btn.clicked.connect(self._switch_stack)
+        self._mg_widget.done_btn.clicked.connect(self._switch_stack)
 
         self.configChanged.connect(self.update_display_config_text)
         self.configChanged.connect(self.update_display_rm_name)
@@ -472,6 +482,11 @@ class ConfigureGUI(QMainWindow):
         else:
             self.rm.config.update_run_name(name)
             self.configChanged.emit()
+
+    def _switch_stack(self):
+        index = self._stacked_widget.currentIndex()
+        switch_to = 0 if index == 1 else 1
+        self._stacked_widget.setCurrentIndex(switch_to)
 
 
 if __name__ == "__main__":
