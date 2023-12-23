@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLineEdit,
     QFileDialog,
+    QStackedWidget,
 )
 from typing import Any, Dict, Union
 
@@ -26,8 +27,8 @@ from bapsf_motion.utils import toml
 
 
 class RunWidget(QWidget):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.done_btn = StyleButton("DONE")
         self.done_btn.setFixedWidth(200)
