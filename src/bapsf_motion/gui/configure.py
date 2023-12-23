@@ -454,6 +454,9 @@ class ConfigureGUI(QMainWindow):
     def update_display_mg_list(self):
         mg_labels = []
 
+        if self.rm.config._mgs is None:
+            return
+
         for key, val in self.rm.config._mgs.items():
             label = f"[{key}] {val.config['name']}"
             mg_labels.append(label)
