@@ -207,6 +207,67 @@ class RunWidget(QWidget):
         self.modify_mg_btn.setEnabled(True)
 
 
+class MGWidget(QWidget):
+    def __init__(self, parent: "ConfigureGUI"):
+        super().__init__(parent=parent)
+
+        _btn = StyleButton("Add to Run")
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
+        font.setPointSize(24)
+        _btn.setFont(font)
+        self.done_btn = _btn
+
+        _btn = StyleButton("Discard && Return to Run")
+        _btn.setFixedWidth(300)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
+        font.setPointSize(24)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 110, 110)"}
+        )
+        self.discard_btn = _btn
+
+        self.setLayout(self._define_layout())
+        self._connnect_signals()
+
+    def _define_layout(self):
+
+        hline = QFrame()
+        hline.setFrameShape(QFrame.Shape.HLine)
+        hline.setStyleSheet("color: rgb(95, 95, 95)")
+        hline.setLineWidth(10)
+
+        layout = QVBoxLayout()
+        layout.addLayout(self._define_banner_layout())
+        layout.addStretch(1)
+        layout.addWidget(hline)
+        layout.addStretch(1)
+
+        return layout
+
+    def _define_banner_layout(self):
+        layout = QHBoxLayout()
+
+        layout.addWidget(self.discard_btn)
+        layout.addStretch()
+        layout.addWidget(self.done_btn)
+
+        return layout
+
+    def _define_mg_builder_layout(self):
+        ...
+
+    def _def_mg_control_layout(self):
+        ...
+
+    def _connnect_signals(self):
+        ...
+
+
 class ConfigureGUI(QMainWindow):
     _OPENED_FILE = None # type: Union[Path, None]
     configChanged = Signal()
