@@ -246,7 +246,12 @@ class MotionGroupConfig(UserDict):
     #: allowable motion group header names
     _mg_names = {"motion_group", "mgroup", "mg"}
 
-    def __init__(self, config: Union[str, Dict[str, Any]]):
+    def __init__(
+            self,
+            config: Union[str, Dict[str, Any]],
+            logger: logging.Logger = None,
+    ):
+        self.logger = logging.getLogger("MG_config") if logger is None else logger
 
         # Make sure config is the right type, and is a dict by the
         # end of ths code block
@@ -330,15 +335,21 @@ class MotionGroupConfig(UserDict):
         # Check for root level required key-value pairs
         missing_meta = self._required_metadata["motion_group"] - set(config.keys())
         if missing_meta:
-            raise ValueError(
-                f"Supplied configuration is missing required root level "
+            self.logger.error(
+                f"ValueError: Supplied configuration is missing required root level "
                 f"keys {missing_meta}."
             )
+            # raise ValueError(
+            #     f"Supplied configuration is missing required root level "
+            #     f"keys {missing_meta}."
+            # )
 
-        config["name"] = str(config["name"])
-        config["drive"] = self._validate_drive(config["drive"])
-        config["transform"] = self._validate_transform(config["transform"])
-        config["motion_builder"] = self._validate_motion_builder(config["motion_builder"])
+        config["name"] = str(config.get("name", "New Motion Group"))
+        config["drive"] = self._validate_drive(config.get("drive", {}))
+        config["transform"] = self._validate_transform(config.get("transform", {}))
+        config["motion_builder"] = self._validate_motion_builder(
+            config.get("motion_builder", {})
+        )
 
         config = self._handle_user_meta(config, self._required_metadata["motion_group"])
 
@@ -367,10 +378,15 @@ class MotionGroupConfig(UserDict):
 
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
-            raise ValueError(
-                f"Supplied configuration for Drive is missing required "
-                f"keys {missing_meta}."
+            self.logger.error(
+                f"ValueError: Supplied configuration for Drive is missing "
+                f"required keys {missing_meta}."
             )
+            # raise ValueError(
+            #     f"Supplied configuration for Drive is missing required "
+            #     f"keys {missing_meta}."
+            # )
+            return {}
 
         config = self._handle_user_meta(config, req_meta)
 
@@ -383,7 +399,15 @@ class MotionGroupConfig(UserDict):
         for ax_id, ax_config in config["axes"].items():
             # TODO: is there a good way of enforcing ax_id to be an int
             #       starting at 0 and monotonically increasing
-            config["axes"][ax_id] = self._validate_axis(ax_config)
+            try:
+                config["axes"][ax_id] = self._validate_axis(ax_config)
+            except ValueError as err:
+                self.logger.error(f"{err.__class__.__name__}: {err}")
+                self.logger.error(
+                    "Drive axes are not configured properly, so discarding "
+                    "drive."
+                )
+                return {}
 
         # ensure all axis names and ips are unique
         naxes = len(config["axes"])
@@ -391,11 +415,17 @@ class MotionGroupConfig(UserDict):
             vals = [val[key] for val in config["axes"].values()]
 
             if len(set(vals)) != naxes:
-                raise ValueError(
-                    f"The axes of the configured probe drive do NOT have"
+                self.logger.error(
+                    f"ValueError: The axes of the configured probe drive do NOT have"
                     f" unique {key}s.  The drive has {naxes} and only "
                     f"{len(set(vals))} unique {key}s, {set(vals)}."
                 )
+                # raise ValueError(
+                #     f"The axes of the configured probe drive do NOT have"
+                #     f" unique {key}s.  The drive has {naxes} and only "
+                #     f"{len(set(vals))} unique {key}s, {set(vals)}."
+                # )
+                return {}
 
         return config
 
@@ -430,10 +460,15 @@ class MotionGroupConfig(UserDict):
 
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
-            raise ValueError(
-                f"Supplied configuration for MotionBuilder is missing required "
-                f"keys {missing_meta}."
+            self.logger.error(
+                f"ValueError: Supplied configuration for MotionBuilder is missing "
+                f"required keys {missing_meta}."
             )
+            # raise ValueError(
+            #     f"Supplied configuration for MotionBuilder is missing required "
+            #     f"keys {missing_meta}."
+            # )
+            return {}
 
         config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
@@ -446,10 +481,15 @@ class MotionGroupConfig(UserDict):
                 continue
 
             if not isinstance(sub_config, dict):
-                raise TypeError(
-                    f"Expected type dict for the motion_builder.{key} configuration,"
-                    f" got type {type(sub_config)}."
+                self.logger.error(
+                    f"TypeError: Expected type dict for the motion_builder.{key} "
+                    f"configuration, got type {type(sub_config)}."
                 )
+                # raise TypeError(
+                #     f"Expected type dict for the motion_builder.{key} configuration,"
+                #     f" got type {type(sub_config)}."
+                # )
+                return {}
 
             try:
                 rmeta = self._required_metadata[f"motion_builder.{key}"]
@@ -461,10 +501,15 @@ class MotionGroupConfig(UserDict):
 
                 missing_meta = rmeta - set(sub_config.keys())
                 if missing_meta:
-                    raise ValueError(
-                        f"Supplied configuration for motion_builder.{key} is "
+                    self.logger.error(
+                        f"ValueError: Supplied configuration for motion_builder.{key} is "
                         f"missing required  keys {missing_meta}."
                     )
+                    # raise ValueError(
+                    #     f"Supplied configuration for motion_builder.{key} is "
+                    #     f"missing required  keys {missing_meta}."
+                    # )
+                    return {}
 
                 config[key][0] = config.pop(key)
 
@@ -472,17 +517,28 @@ class MotionGroupConfig(UserDict):
 
             for sck, scv in sub_config.items():
                 if not isinstance(scv, dict):
-                    raise ValueError(
-                        f"Expected type dict for the motion_builder.{key}.{sck} "
-                        f"configuration, got type {type(sub_config)}."
+                    self.logger.error(
+                        f"ValueError: Expected type dict for the "
+                        f"motion_builder.{key}.{sck} configuration, got type "
+                        f"{type(sub_config)}."
                     )
+                    # raise ValueError(
+                    #     f"Expected type dict for the motion_builder.{key}.{sck} "
+                    #     f"configuration, got type {type(sub_config)}."
+                    # )
+                    return {}
 
                 missing_meta = rmeta - set(scv.keys())
                 if missing_meta:
-                    raise ValueError(
+                    self.logger.error(
                         f"Supplied configuration for motion_builder.{key}.{sck} is "
                         f"missing required  keys {missing_meta}."
                     )
+                    # raise ValueError(
+                    #     f"Supplied configuration for motion_builder.{key}.{sck} is "
+                    #     f"missing required  keys {missing_meta}."
+                    # )
+                    return {}
 
         return config
 
@@ -495,42 +551,27 @@ class MotionGroupConfig(UserDict):
 
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
-            raise ValueError(
-                f"Supplied configuration for Transformer is missing required "
+            self.logger.error(
+                f"ValueError: Supplied configuration for Transformer is missing required "
                 f"keys {missing_meta}."
             )
+            # raise ValueError(
+            #     f"Supplied configuration for Transformer is missing required "
+            #     f"keys {missing_meta}."
+            # )
+            return {}
+
         return config
 
-    @staticmethod
-    def _handle_user_meta(config: Dict[str, Any], req_meta: set) -> Dict[str, Any]:
+    def _handle_user_meta(self, config: Dict[str, Any], req_meta: set) -> Dict[str, Any]:
         """
         If a user specifies metadata that is not required by a specific
         configuration component, then collect all the metadata and
         store it under the 'user' key.  Return the modified dictionary.
         """
-        user_meta = set(config.keys()) - req_meta
-
-        if len(user_meta) == 0:
-            return config
-
-        if "user" in user_meta:
-            user_meta.remove("user")
-
-            if not isinstance(config["user"], dict):
-                raise ValueError(
-                    "The 'user' metadate field `config['user']` must be a dict,"
-                    f" got type {type(config['user'])}."
-                )
-        else:
-            config["user"] = dict()
-
-        for key in user_meta:
-            config["user"][key] = config.pop(key)
-
-        if len(config["user"]) == 0:
-            del config["user"]
-
-        return config
+        return handle_user_metadata(
+            config=config, req_meta=req_meta, logger=self.logger
+        )
 
     def link_motion_builder(self, mb: MotionBuilder):
         """
@@ -540,10 +581,15 @@ class MotionGroupConfig(UserDict):
         |MotionBuilder|.
         """
         if not isinstance(mb, MotionBuilder):
-            raise TypeError(
-                f"For argument 'mb' expected type {MotionBuilder}, but got "
-                f"type {type(mb)}."
+            self.logger.error(
+                f"TypeError: For argument 'mb' expected type {MotionBuilder}, but got "
+                f"type {type(mb)}.  Not linking motion builder."
             )
+            # raise TypeError(
+            #     f"For argument 'mb' expected type {MotionBuilder}, but got "
+            #     f"type {type(mb)}."
+            # )
+            return
 
         self._motion_builder = mb
 
@@ -554,10 +600,15 @@ class MotionGroupConfig(UserDict):
         pulled from the :attr:`config` property of |Drive|.
         """
         if not isinstance(drive, Drive):
-            raise TypeError(
-                f"For argument 'drive' expected type {Drive}, but got "
-                f"type {type(drive)}."
+            self.logger.error(
+                f"TypeError: For argument 'drive' expected type {Drive}, but got "
+                f"type {type(drive)}.  Not linking drive."
             )
+            # raise TypeError(
+            #     f"For argument 'drive' expected type {Drive}, but got "
+            #     f"type {type(drive)}."
+            # )
+            return
 
         self._drive = drive
 
@@ -570,10 +621,16 @@ class MotionGroupConfig(UserDict):
         instance.
         """
         if not isinstance(tr, transform.BaseTransform):
-            raise TypeError(
-                f"For argument 'tr' expected a subclass of "
-                f"{transform.BaseTransform}, but got type {type(tr)}."
+            self.logger.error(
+                f"TypeError: For argument 'tr' expected a subclass of "
+                f"{transform.BaseTransform}, but got type {type(tr)}.  Not linking "
+                f"transform."
             )
+            # raise TypeError(
+            #     f"For argument 'tr' expected a subclass of "
+            #     f"{transform.BaseTransform}, but got type {type(tr)}."
+            # )
+            return
 
         self._transform = tr
 
