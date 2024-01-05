@@ -2,7 +2,7 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.motion_group_.MotionGroup` actor class.
 """
-__all__ = ["MotionGroup", "MotionGroupConfig"]
+__all__ = ["MotionGroup", "MotionGroupConfig", "handle_user_metadata"]
 __actors__ = ["MotionGroup"]
 
 import astropy.units as u
@@ -18,6 +18,48 @@ from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion import transform
 from bapsf_motion.utils import toml
+
+
+def handle_user_metadata(
+    config: Dict[str, Any],
+    req_meta: set,
+    logger: logging.Logger = None,
+) -> Dict[str, Any]:
+    """
+    If a user specifies metadata that is not required by a specific
+    configuration component, then collect all the metadata and
+    store it under the 'user' key.  Return the modified dictionary.
+    """
+    user_meta = set(config.keys()) - req_meta
+
+    if len(user_meta) == 0:
+        return config
+
+    if "user" in user_meta:
+        user_meta.remove("user")
+
+        if not isinstance(config["user"], dict):
+            msg = (
+                f"The 'user' metadata field `config['user']` must be a dict, "
+                f"got type {type(config['user'])}."
+            )
+
+            if logger is None:
+                raise ValueError(msg)
+
+            logger.error(f"ValueError: {msg}.")
+            val = config.pop("user")
+            config["user"] = {"key0": val}
+    else:
+        config["user"] = dict()
+
+    for key in user_meta:
+        config["user"][key] = config.pop(key)
+
+    if len(config["user"]) == 0:
+        del config["user"]
+
+    return config
 
 
 class MotionGroupConfig(UserDict):
