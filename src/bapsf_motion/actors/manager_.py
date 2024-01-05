@@ -15,9 +15,12 @@ from datetime import datetime, timezone
 from typing import Any, Dict, Union
 
 from bapsf_motion.actors.base import EventActor
-from bapsf_motion.actors.motion_group_ import MotionGroup, MotionGroupConfig
+from bapsf_motion.actors.motion_group_ import (
+    MotionGroup,
+    MotionGroupConfig,
+    handle_user_metadata
+)
 from bapsf_motion.utils import toml
-from bapsf_motion.utils.exceptions import ConfigurationWarning
 
 
 class RunManagerConfig(UserDict):
@@ -218,14 +221,14 @@ class RunManagerConfig(UserDict):
 
         return config
 
-    @staticmethod
-    def _handle_user_meta(config: Dict[str, Any], req_meta: set) -> Dict[str, Any]:
+    def _handle_user_meta(self, config: Dict[str, Any], req_meta: set) -> Dict[str, Any]:
         """
         If a user specifies metadata that is not required by a specific
         configuration component, then collect all the metadata and
         store it under the 'user' key.  Return the modified dictionary.
         """
-        return MotionGroupConfig._handle_user_meta(config, req_meta)
+        return handle_user_metadata(
+            config=config, req_meta=req_meta, logger=self.logger)
 
     def link_motion_group(self, mg, key):
         if not isinstance(mg, MotionGroup):
