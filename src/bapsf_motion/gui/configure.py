@@ -243,7 +243,7 @@ class MGWidget(QWidget):
         self.discard_btn = _btn
 
         self.setLayout(self._define_layout())
-        self._connnect_signals()
+        self._connect_signals()
 
     def _define_layout(self):
 
@@ -276,11 +276,12 @@ class MGWidget(QWidget):
         ...
 
     def _connnect_signals(self):
+    def _connect_signals(self):
         ...
 
 
 class ConfigureGUI(QMainWindow):
-    _OPENED_FILE = None # type: Union[Path, None]
+    _OPENED_FILE = None  # type: Union[Path, None]
     configChanged = Signal()
 
     def __init__(self):
