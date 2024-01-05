@@ -686,16 +686,31 @@ class MotionGroup(EventActor):
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        build_mode: bool = False,
     ):
 
-        config = MotionGroupConfig(config)
-
+        if logger is None:
+            logger = logging.getLogger("MG")
         super().__init__(
-            name=config["name"],
             logger=logger,
             loop=loop,
             auto_run=False,
         )
+        self.name = "MG"
+
+        try:
+            config = MotionGroupConfig(config)
+        except (TypeError, ValueError) as err:
+            if not build_mode:
+                raise err
+
+            self.logger.error(f"{err.__class_.__name__}: {err}")
+
+            config = MotionGroupConfig(
+                config={"name": "A Motion Group"},
+                logger=self.logger
+            )
+            auto_run = False
 
         self._drive = self._spawn_drive(config["drive"])
 
