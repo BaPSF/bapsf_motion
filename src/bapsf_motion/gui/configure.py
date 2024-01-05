@@ -27,67 +27,77 @@ from bapsf_motion.utils import toml
 
 
 class RunWidget(QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, parent: "ConfigureGUI"):
+        super().__init__(parent=parent)
 
-        self.done_btn = StyleButton("DONE")
-        self.done_btn.setFixedWidth(200)
-        self.done_btn.setFixedHeight(48)
-        font = self.done_btn.font()
+        # Define BUTTONS
+
+        _btn = StyleButton("DONE")
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
         font.setPointSize(24)
-        self.done_btn.setFont(font)
+        _btn.setFont(font)
+        self.done_btn = _btn
 
-        self.quit_btn = StyleButton("Discard && Quit")
-        self.quit_btn.setFixedWidth(200)
-        self.quit_btn.setFixedHeight(48)
-        font = self.quit_btn.font()
+        _btn = StyleButton("Discard && Quit")
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
         font.setPointSize(24)
         font.setBold(True)
-        self.quit_btn.setFont(font)
-        self.quit_btn.update_style_sheet(
-            {"background-color": "rgb(255, 110, 110)"}
-        )
+        _btn.setFont(font)
+        _btn.update_style_sheet({"background-color": "rgb(255, 110, 110)"})
+        self.quit_btn = _btn
 
-        self.import_btn = StyleButton("IMPORT")
-        self.import_btn.setFixedHeight(28)
-        font = self.import_btn.font()
+        _btn = StyleButton("IMPORT")
+        _btn.setFixedHeight(28)
+        font = _btn.font()
         font.setPointSize(16)
-        self.import_btn.setFont(font)
+        _btn.setFont(font)
+        self.import_btn = _btn
 
-        self.export_btn = StyleButton("EXPORT")
-        self.export_btn.setFixedHeight(28)
-        font = self.export_btn.font()
+        _btn = StyleButton("EXPORT")
+        _btn.setFixedHeight(28)
+        font = _btn.font()
         font.setPointSize(16)
-        self.export_btn.setFont(font)
+        _btn.setFont(font)
+        self.export_btn = _btn
 
-        self.add_mg_btn = StyleButton("ADD")
-        self.add_mg_btn.setFixedHeight(32)
-        font = self.add_mg_btn.font()
+        _btn = StyleButton("ADD")
+        _btn.setFixedHeight(32)
+        font = _btn.font()
         font.setPointSize(16)
-        self.add_mg_btn.setFont(font)
-        self.add_mg_btn.setEnabled(True)
+        _btn.setFont(font)
+        _btn.setEnabled(True)
+        self.add_mg_btn = _btn
 
-        self.remove_mg_btn = StyleButton("REMOVE")
-        self.remove_mg_btn.setFixedHeight(32)
-        font = self.remove_mg_btn.font()
+        _btn = StyleButton("REMOVE")
+        _btn.setFixedHeight(32)
+        font = _btn.font()
         font.setPointSize(16)
-        self.remove_mg_btn.setFont(font)
-        self.remove_mg_btn.setEnabled(False)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        self.remove_mg_btn = _btn
 
-        self.modify_mg_btn = StyleButton("Edit / Control")
-        self.modify_mg_btn.setFixedHeight(32)
-        font = self.modify_mg_btn.font()
+        _btn = StyleButton("Edit / Control")
+        _btn.setFixedHeight(32)
+        font = _btn.font()
         font.setPointSize(16)
-        self.modify_mg_btn.setFont(font)
-        self.modify_mg_btn.setEnabled(False)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        self.modify_mg_btn = _btn
+
+        # Define TEXT WIDGETS
 
         self.config_widget = QTextEdit()
         self.mg_list_widget = QListWidget()
 
-        self.run_name_widget = QLineEdit()
-        font = self.run_name_widget.font()
+        _txt_widget = QLineEdit()
+        font = _txt_widget.font()
         font.setPointSize(16)
-        self.run_name_widget.setFont(font)
+        _txt_widget.setFont(font)
+        self.run_name_widget = _txt_widget
 
         self.setLayout(self._define_layout())
 
