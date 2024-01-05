@@ -242,6 +242,43 @@ class MGWidget(QWidget):
         )
         self.discard_btn = _btn
 
+        _btn = StyleButton("Quick Motion Group")
+        _btn.setFixedWidth(250)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(20)
+        _btn.setFont(font)
+        _btn.setEnabled(True)
+        self.quick_mg_btn = _btn
+
+        _btn = StyleButton("Configure DRIVE")
+        self.drive_btn = _btn
+
+        _btn = StyleButton("Motion Builder")
+        self.mb_btn = _btn
+
+        _btn = StyleButton("Set Transformer")
+        self.transform_btn = _btn
+
+        # Define TEXT WIDGETS
+        _widget = QTextEdit()
+        _widget.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        _widget.setReadOnly(True)
+        _widget.font().setPointSize(14)
+        _widget.font().setFamily("Courier New")
+        self.toml_widget = _widget
+
+        _widget = QLineEdit()
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        self.mg_name_widget = _widget
+
+        # Define ADVANCED WIDGETS
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
