@@ -96,11 +96,15 @@ class RunManagerConfig(UserDict):
         date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M %Z')
         if "name" not in config:
             rname = f"run [{date}]"
-            warnings.warn(
+            self.logger.warning(
                 "Run configuration is missing a unique name for the run, "
-                f"naming the configuration '{rname}'",
-                ConfigurationWarning,
+                f"naming the configuration '{rname}'."
             )
+            # warnings.warn(
+            #     "Run configuration is missing a unique name for the run, "
+            #     f"naming the configuration '{rname}'",
+            #     ConfigurationWarning,
+            # )
             config["name"] = rname
 
         config["date"] = date
