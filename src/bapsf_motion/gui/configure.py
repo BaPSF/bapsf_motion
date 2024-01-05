@@ -284,15 +284,23 @@ class MGWidget(QWidget):
 
     def _define_layout(self):
 
-        hline = QFrame()
-        hline.setFrameShape(QFrame.Shape.HLine)
-        hline.setStyleSheet("color: rgb(95, 95, 95)")
-        hline.setLineWidth(10)
+        _hline = QFrame()
+        _hline.setFrameShape(QFrame.Shape.HLine)
+        _hline.setStyleSheet("color: rgb(95, 95, 95)")
+        _hline.setLineWidth(10)
+        hline1 = _hline
+
+        _hline = QFrame()
+        _hline.setFrameShape(QFrame.Shape.HLine)
+        _hline.setStyleSheet("color: rgb(95, 95, 95)")
+        _hline.setLineWidth(10)
+        hline2 = _hline
 
         layout = QVBoxLayout()
         layout.addLayout(self._define_banner_layout())
-        layout.addStretch(1)
-        layout.addWidget(hline)
+        layout.addWidget(hline1)
+        layout.addLayout(self._define_mg_builder_layout(), 2)
+        layout.addWidget(hline2)
         layout.addStretch(1)
 
         return layout
@@ -302,17 +310,38 @@ class MGWidget(QWidget):
 
         layout.addWidget(self.discard_btn)
         layout.addStretch()
+        layout.addWidget(self.quick_mg_btn)
+        layout.addStretch()
         layout.addWidget(self.done_btn)
 
         return layout
 
     def _define_mg_builder_layout(self):
-        ...
+        layout = QHBoxLayout()
+        layout.addLayout(self._define_toml_layout())
+        layout.addStretch(1)
+        layout.addStretch(1)
+
+        return layout
 
     def _def_mg_control_layout(self):
         ...
 
-    def _connnect_signals(self):
+    def _define_toml_layout(self):
+        label = QLabel("Motion Group Configuration")
+        label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
+        )
+        font = label.font()
+        font.setPointSize(16)
+        label.setFont(font)
+
+        layout = QVBoxLayout()
+        layout.addWidget(label)
+        layout.addWidget(self.toml_widget)
+
+        return layout
+
     def _connect_signals(self):
         ...
 
