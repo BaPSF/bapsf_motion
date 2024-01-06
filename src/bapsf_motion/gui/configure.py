@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
 )
 from typing import Any, Dict, Union
 
-from bapsf_motion.actors import RunManager
+from bapsf_motion.actors import RunManager, MotionGroup
 from bapsf_motion.gui.widgets import QLogger, StyleButton
 from bapsf_motion.utils import toml
 
@@ -313,6 +313,10 @@ class MGWidget(QWidget):
     def __init__(self, parent: "ConfigureGUI"):
         super().__init__(parent=parent)
 
+        self._mg = None
+
+        # Define BUTTONS
+
         _btn = StyleButton("Add to Run")
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(48)
@@ -385,6 +389,8 @@ class MGWidget(QWidget):
         self.mg_name_widget = _widget
 
         # Define ADVANCED WIDGETS
+        self._overlay_widget = None  # type: Union[_OverlayWidget, None]
+        self._overlay_shown = False
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -482,6 +488,36 @@ class MGWidget(QWidget):
         ...
 
     def _connect_signals(self):
+        self.drive_btn.clicked.connect(self._popup_drive_configuration)
+
+    def _popup_drive_configuration(self):
+        _overlay = DriveConfigOverlay(self)
+        _overlay.move(0, 0)
+        _overlay.resize(self.width(), self.height())
+        _overlay.closing.connect(self._overlay_close)
+        self._overlay_widget = _overlay
+        self._overlay_widget.show()
+        self._overlay_shown = True
+
+    def _overlay_close(self):
+        self._overlay_shown = False
+
+    def resizeEvent(self, event):
+        if self._overlay_shown:
+            self._overlay_widget.resize(event.size())
+        super().resizeEvent(event)
+
+    @property
+    def mg(self) -> "MotionGroup":
+        """Current working Motion Group"""
+        return self._mg
+
+    @mg.setter
+    def mg(self, val: "MotionGroup"):
+        if isinstance(val, MotionGroup):
+            self._mg = MotionGroup
+
+    def set_working_mg(self, config: Dict[str, Any]):
         ...
 
 
