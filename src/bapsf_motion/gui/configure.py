@@ -253,6 +253,7 @@ class DriveConfigOverlay(_OverlayWidget):
         self.dr_name_widget = _widget
 
         # Define ADVANCED WIDGETS
+        self.axis_widgets = {}
 
         self.setLayout(self._define_layout())
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -271,6 +272,9 @@ class DriveConfigOverlay(_OverlayWidget):
         layout.addLayout(self._define_banner_layout())
         layout.addWidget(hline)
         layout.addLayout(self._define_second_row_layout())
+        layout.addSpacing(24)
+        layout.addWidget(self._init_axis_widget("X"))
+        layout.addWidget(self._init_axis_widget("Y"))
         layout.addStretch(1)
 
         return layout
@@ -309,6 +313,27 @@ class DriveConfigOverlay(_OverlayWidget):
         layout.addSpacing(18)
 
         return layout
+
+    def _init_axis_widget(self, name):
+        _frame = QFrame()
+        _frame.setLayout(QVBoxLayout())
+
+        _widget = AxisConfigWidget(name)
+        # _widget.setStyleSheet(
+        #     "border: 3px solid rgb(95, 95, 95);"
+        #     "border-radius: 5px;"
+        # )
+
+        self.axis_widgets[name] = _widget
+
+        _frame.layout().addWidget(_widget)
+        _frame.setStyleSheet(
+            "border: 3px solid rgb(95, 95, 95);"
+            "border-radius: 5px;"
+            "padding: 6px;"
+        )
+
+        return _frame
 
     def _connect_signals(self):
         self.done_btn.clicked.connect(self.close)
