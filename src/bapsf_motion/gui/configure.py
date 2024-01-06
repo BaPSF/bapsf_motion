@@ -89,6 +89,103 @@ class _OverlayWidget(QWidget):
         event.accept()
 
 
+class AxisConfigWidget(QWidget):
+    def __init__(self, name, parent=None):
+        super().__init__(parent=parent)
+
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Preferred,
+        )
+
+        # Define BUTTONS
+        _btn = LED()
+        _btn.set_fixed_height(24)
+        self.online_led = _btn
+
+        _btn = StyleButton("PING")
+        _btn.setFixedWidth(80)
+        _btn.setFixedHeight(32)
+        font = _btn.font()
+        font.setPointSize(18)
+        _btn.setFont(font)
+        self.ping_btn = _btn
+
+        # Define TEXT WIDGETS
+        _widget = QLabel(name, parent=self)
+        font = _widget.font()
+        font.setPointSize(32)
+        _widget.setFont(font)
+        _widget.setFixedWidth(30)
+        self.ax_name_widget = _widget
+
+        _widget = QLineEdit()
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setMinimumWidth(220)
+        self.ip_widget = _widget
+
+        _widget = QLineEdit()
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setFixedWidth(120)
+        self.cm_per_rev_widget = _widget
+
+        # Define ADVANCED WIDGETS
+
+        self.setStyleSheet(
+            """
+            AxisConfigWidget QLabel {
+                border: 0px;
+            }
+            
+            QLabel {padding: 0px}
+            """
+        )
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _define_layout(self):
+        _label = QLabel("IP:  ")
+        _label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+        )
+        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _label.font()
+        font.setPointSize(16)
+        _label.setFont(font)
+        ip_label = _label
+
+        _label = QLabel("cm / rev")
+        _label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+        )
+        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _label.font()
+        font.setPointSize(16)
+        _label.setFont(font)
+        cm_per_rev_label = _label
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.ax_name_widget)
+        layout.addSpacing(12)
+        layout.addWidget(ip_label)
+        layout.addWidget(self.ip_widget)
+        layout.addSpacing(32)
+        layout.addWidget(self.cm_per_rev_widget)
+        layout.addWidget(cm_per_rev_label)
+        layout.addStretch()
+        layout.addWidget(self.online_led)
+        layout.addWidget(self.ping_btn)
+        return layout
+
+    def _connect_signals(self):
+        ...
+
+
 class DriveConfigOverlay(_OverlayWidget):
 
     def __init__(self, parent: "MGWidget" = None):
