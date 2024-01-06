@@ -333,22 +333,36 @@ class MGWidget(QWidget):
         )
         self.discard_btn = _btn
 
-        _btn = StyleButton("Quick Motion Group")
+        _btn = StyleButton("Load a Default")
         _btn.setFixedWidth(250)
         _btn.setFixedHeight(36)
         font = _btn.font()
         font.setPointSize(20)
         _btn.setFont(font)
-        _btn.setEnabled(True)
+        _btn.setEnabled(False)
         self.quick_mg_btn = _btn
 
         _btn = StyleButton("Configure DRIVE")
+        _btn.setFixedHeight(32)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
         self.drive_btn = _btn
 
         _btn = StyleButton("Motion Builder")
+        _btn.setFixedHeight(32)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
         self.mb_btn = _btn
 
         _btn = StyleButton("Set Transformer")
+        _btn.setFixedHeight(32)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
         self.transform_btn = _btn
 
         # Define TEXT WIDGETS
@@ -360,12 +374,14 @@ class MGWidget(QWidget):
         _widget.setReadOnly(True)
         _widget.font().setPointSize(14)
         _widget.font().setFamily("Courier New")
+        _widget.setMinimumWidth(350)
         self.toml_widget = _widget
 
         _widget = QLineEdit()
         font = _widget.font()
         font.setPointSize(16)
         _widget.setFont(font)
+        _widget.setMinimumWidth(220)
         self.mg_name_widget = _widget
 
         # Define ADVANCED WIDGETS
@@ -410,7 +426,9 @@ class MGWidget(QWidget):
     def _define_mg_builder_layout(self):
         layout = QHBoxLayout()
         layout.addLayout(self._define_toml_layout())
-        layout.addStretch(1)
+        layout.addSpacing(12)
+        layout.addLayout(self._define_central_builder_layout())
+        layout.addSpacing(12)
         layout.addStretch(1)
 
         return layout
@@ -432,6 +450,36 @@ class MGWidget(QWidget):
         layout.addWidget(self.toml_widget)
 
         return layout
+
+    def _define_central_builder_layout(self):
+
+        _label = QLabel("Name:  ")
+        _label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt. AlignmentFlag.AlignLeft
+        )
+        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _label.font()
+        font.setPointSize(16)
+        _label.setFont(font)
+        name_label = _label
+
+        sub_layout = QHBoxLayout()
+        sub_layout.addWidget(name_label)
+        sub_layout.addWidget(self.mg_name_widget)
+
+        layout = QVBoxLayout()
+        layout.addSpacing(18)
+        layout.addLayout(sub_layout)
+        layout.addSpacing(18)
+        layout.addWidget(self.drive_btn)
+        layout.addWidget(self.mb_btn)
+        layout.addWidget(self.transform_btn)
+        layout.addStretch()
+
+        return layout
+
+    def _define_mspace_display_layout(self):
+        ...
 
     def _connect_signals(self):
         ...
