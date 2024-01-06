@@ -22,7 +22,7 @@ from PySide6.QtWidgets import (
 from typing import Any, Dict, Union
 
 from bapsf_motion.actors import RunManager, MotionGroup
-from bapsf_motion.gui.widgets import QLogger, StyleButton
+from bapsf_motion.gui.widgets import QLogger, StyleButton, LED
 from bapsf_motion.utils import toml
 
 
@@ -94,27 +94,128 @@ class DriveConfigOverlay(_OverlayWidget):
     def __init__(self, parent: "MGWidget" = None):
         super().__init__(parent)
 
-        _btn = StyleButton(parent=self)
-        _btn.setText("X")
+        # Define BUTTONS
+
+        _btn = StyleButton("Save to MG")
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(48)
         font = _btn.font()
-        font.setPixelSize(18)
+        font.setPointSize(24)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        self.done_btn = _btn
+
+        _btn = StyleButton("Discard && Return")
+        _btn.setFixedWidth(250)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
+        font.setPointSize(24)
         font.setBold(True)
         _btn.setFont(font)
-        # _btn.setStyleSheet("background-color: rgb(0, 0, 0, 0)")
-        _btn.setFixedSize(30, 30)
-        self.close_btn = _btn
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 110, 110)"}
+        )
+        self.discard_btn = _btn
+
+        _btn = StyleButton("Load a Default")
+        _btn.setFixedWidth(250)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(20)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        self.load_default_btn = _btn
+
+        _btn = StyleButton("Add Axis")
+        _btn.setFixedWidth(120)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(20)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        self.add_axis_btn = _btn
+
+        _btn = StyleButton("Validate")
+        _btn.setFixedWidth(120)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(20)
+        _btn.setFont(font)
+        self.validate_btn = _btn
+
+        _btn = LED()
+        _btn.set_fixed_height(32)
+        self.validate_led = _btn
+
+        # Define TEXT WIDGETS
+        _widget = QLineEdit()
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setMinimumWidth(220)
+        self.dr_name_widget = _widget
+
+        # Define ADVANCED WIDGETS
 
         self.setLayout(self._define_layout())
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._connect_signals()
 
     def _define_layout(self):
+        _hline = QFrame()
+        _hline.setFrameShape(QFrame.Shape.HLine)
+        _hline.setFrameShadow(QFrame.Shadow.Plain)
+        _hline.setLineWidth(3)
+        _hline.setMidLineWidth(3)
+        _hline.setStyleSheet("border-color: rgb(95, 95, 95)")
+        hline = _hline
+
         layout = QVBoxLayout()
-        layout.addWidget(self.close_btn)
+        layout.addLayout(self._define_banner_layout())
+        layout.addWidget(hline)
+        layout.addLayout(self._define_second_row_layout())
+        layout.addStretch(1)
+
+        return layout
+
+    def _define_banner_layout(self):
+
+        layout = QHBoxLayout()
+        layout.addWidget(self.discard_btn)
+        layout.addStretch()
+        layout.addWidget(self.load_default_btn)
+        layout.addStretch()
+        layout.addWidget(self.done_btn)
+        return layout
+
+    def _define_second_row_layout(self):
+        _label = QLabel("Drive Name:  ")
+        _label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+        )
+        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _label.font()
+        font.setPointSize(16)
+        _label.setFont(font)
+        _label.setStyleSheet("border: 0px")
+        name_label = _label
+
+        layout = QHBoxLayout()
+        layout.addSpacing(18)
+        layout.addWidget(name_label)
+        layout.addWidget(self.dr_name_widget)
+        layout.addStretch()
+        layout.addWidget(self.add_axis_btn)
+        layout.addStretch()
+        layout.addWidget(self.validate_btn)
+        layout.addWidget(self.validate_led)
+        layout.addSpacing(18)
+
         return layout
 
     def _connect_signals(self):
-        self.close_btn.clicked.connect(self.close)
+        self.done_btn.clicked.connect(self.close)
+        self.discard_btn.clicked.connect(self.close)
 
 
 class RunWidget(QWidget):
@@ -307,6 +408,22 @@ class RunWidget(QWidget):
         self.add_mg_btn.setEnabled(True)
         self.remove_mg_btn.setEnabled(True)
         self.modify_mg_btn.setEnabled(True)
+
+    @property
+    def logger(self) -> logging.Logger:
+        parent = self.parent()  # type: "ConfigureGUI"
+        try:
+            return parent.logger
+        except AttributeError:
+            return logging.getLogger(self.__class__.__name__)
+
+    @property
+    def rm(self) -> Union[RunManager, None]:
+        parent = self.parent()  # type: "ConfigureGUI"
+        try:
+            return parent.rm
+        except AttributeError:
+            return None
 
 
 class MGWidget(QWidget):
