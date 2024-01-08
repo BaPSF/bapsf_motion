@@ -244,6 +244,13 @@ class RunManagerConfig(UserDict):
         else:
             self._mgs[key] = mg
 
+    def unlink_motion_group(self, key):
+        """Unlink and remove motion group from the configuration."""
+        self._mgs.pop(key, None)
+
+        if key in self["motion_group"]:
+            del self["motion_group"][key]
+
     @property
     def as_toml_string(self):
         def convert_key_to_string(_d):
