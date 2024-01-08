@@ -352,6 +352,33 @@ class RunManager(EventActor):
     def is_moving(self):
         return any([mg.is_moving for mg in self.mgs.values()])
 
+    def validate_motion_group(
+        self,
+        mg_config: Union[Dict[str, Any], MotionGroup, MotionGroupConfig],
+        identifier: Union[str, int] = None,
+    ) -> bool:
+
+        if isinstance(mg_config, MotionGroup):
+            mg = mg_config
+            mg_config = mg.config
+        elif isinstance(mg_config, MotionGroupConfig):
+            pass
+        else:
+            try:
+                mg_config = MotionGroupConfig(mg_config)
+            except (ValueError, TypeError):
+                return False
+
+        if identifier is None:
+            identifier = len(self.mgs) - 1
+
+        new_rm_config = self.config.copy()
+        new_rm_config["motion_group"][identifier] = mg_config
+
+        new_rm_config = RunManagerConfig(new_rm_config)
+
+        return True if identifier in new_rm_config["motion_group"] else False
+
     def _raw_add_motion_group(self, config, identifier):
         """A direct add of the motion group without any validation."""
         if isinstance(config, MotionGroup):
