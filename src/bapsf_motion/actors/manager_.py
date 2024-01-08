@@ -28,7 +28,7 @@ class RunManagerConfig(UserDict):
 
     def __init__(
         self,
-        config: Union[str, Dict[str, Any]],
+        config: Union[str, Dict[str, Any], "RunManagerConfig"],
         logger: logging.Logger = None,
     ):
         self.logger = logging.getLogger("RM_config") if logger is None else logger
