@@ -313,9 +313,7 @@ class RunManager(EventActor):
         self._config = config
 
         for key, mgc in self._config["motion_group"].items():
-            mg = self._spawn_motion_group(mgc)
-            self.mgs[key] = mg
-            self._config.link_motion_group(self.mgs[key], key=key)
+            self._raw_add_motion_group(mgc, key)
         
         self.run(auto_run=auto_run)
     
@@ -353,3 +351,14 @@ class RunManager(EventActor):
     @property
     def is_moving(self):
         return any([mg.is_moving for mg in self.mgs.values()])
+
+    def _raw_add_motion_group(self, config, identifier):
+        """A direct add of the motion group without any validation."""
+        if isinstance(config, MotionGroup):
+            mg_config = config.config
+            config.terminate(delay_loop_stop=True)
+            config = mg_config
+
+        mg = self._spawn_motion_group(config)
+        self.mgs[identifier] = mg
+        self.config.link_motion_group(mg, identifier)
