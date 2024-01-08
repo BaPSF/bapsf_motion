@@ -389,3 +389,33 @@ class RunManager(EventActor):
         mg = self._spawn_motion_group(config)
         self.mgs[identifier] = mg
         self.config.link_motion_group(mg, identifier)
+
+    def add_motion_group(
+        self,
+        config: Union[Dict[str, Any], MotionGroupConfig, MotionGroup],
+        identifier: Union[str, int] = None,
+    ):
+        if identifier is None:
+            identifier = len(self.mgs) - 1
+
+        valid = self.validate_motion_group(config, identifier)
+
+        if valid:
+            self.remove_motion_group(identifier)
+            self._raw_add_motion_group(config, identifier)
+
+    def remove_motion_group(self, identifier: Union[str, int]):
+        self.config.unlink_motion_group(identifier)
+
+        if identifier in self.mgs:
+            self.mgs[identifier].terminate(delay_loop_stop=True)
+            del self.mgs[identifier]
+
+    def get_motion_group(self, identifier: Union[str, int]):
+        return self.mgs[identifier]
+
+    def pop_motion_group(self, identifier: Union[str, int]):
+        mg = self.mgs.pop(identifier, None)
+        self.config.unlink_motion_group(identifier)
+
+        return mg
