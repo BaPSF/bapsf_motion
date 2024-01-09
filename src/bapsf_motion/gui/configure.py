@@ -550,6 +550,8 @@ class RunWidget(QWidget):
 
 
 class MGWidget(QWidget):
+    configChanged = Signal()
+
     def __init__(self, parent: "ConfigureGUI"):
         super().__init__(parent=parent)
 
