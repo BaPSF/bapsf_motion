@@ -716,7 +716,7 @@ class MotionGroup(EventActor):
         self.name = "MG"
 
         try:
-            config = MotionGroupConfig(config)
+            config = MotionGroupConfig(config, logger=self.logger)
         except (TypeError, ValueError) as err:
             if not build_mode:
                 raise err
