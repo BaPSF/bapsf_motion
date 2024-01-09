@@ -556,6 +556,7 @@ class MGWidget(QWidget):
         super().__init__(parent=parent)
 
         self._mg = None
+        self._mg_index = None
 
         # Define BUTTONS
 
@@ -751,6 +752,13 @@ class MGWidget(QWidget):
         super().resizeEvent(event)
 
     @property
+    def mg_index(self):
+        return self._mg_index
+
+    @mg_index.setter
+    def mg_index(self, val):
+        self._mg_index = val
+
     def mg(self) -> "MotionGroup":
         """Current working Motion Group"""
         return self._mg
@@ -758,7 +766,9 @@ class MGWidget(QWidget):
     @mg.setter
     def mg(self, val: "MotionGroup"):
         if isinstance(val, MotionGroup):
-            self._mg = MotionGroup
+            self._mg = val
+
+            self.configChanged.emit()
 
     def set_working_mg(self, config: Dict[str, Any]):
         ...
