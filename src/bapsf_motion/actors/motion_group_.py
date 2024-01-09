@@ -788,7 +788,7 @@ class MotionGroup(EventActor):
         super().terminate(delay_loop_stop=delay_loop_stop)
 
     @property
-    def config(self):
+    def config(self) -> "MotionGroupConfig":
         return self._config
     config.__doc__ = EventActor.config.__doc__
 
