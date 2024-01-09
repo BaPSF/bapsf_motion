@@ -634,6 +634,23 @@ class MotionGroupConfig(UserDict):
 
         self._transform = tr
 
+    @property
+    def as_toml_string(self) -> str:
+        def convert_key_to_string(_d):
+            _config = {}
+            for key, value in _d.items():
+                if isinstance(value, (dict, UserDict)):
+                    value = convert_key_to_string(value)
+
+                if not isinstance(key, str):
+                    key = f"{key}"
+
+                _config[key] = value
+
+            return _config
+
+        return "[motion_group]\n" + toml.dumps(convert_key_to_string(self))
+
 
 class MotionGroup(EventActor):
     r"""
