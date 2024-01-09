@@ -734,6 +734,11 @@ class MGWidget(QWidget):
     def _connect_signals(self):
         self.drive_btn.clicked.connect(self._popup_drive_configuration)
 
+        self.mg_name_widget.editingFinished.connect(self._rename_motion_group)
+
+        self.configChanged.connect(self._update_toml_widget)
+        self.configChanged.connect(self._update_mg_name_widget)
+
     def _popup_drive_configuration(self):
         _overlay = DriveConfigOverlay(self)
         _overlay.move(0, 0)
@@ -759,6 +764,7 @@ class MGWidget(QWidget):
     def mg_index(self, val):
         self._mg_index = val
 
+    @property
     def mg(self) -> "MotionGroup":
         """Current working Motion Group"""
         return self._mg
@@ -770,8 +776,15 @@ class MGWidget(QWidget):
 
             self.configChanged.emit()
 
-    def set_working_mg(self, config: Dict[str, Any]):
-        ...
+    def _update_toml_widget(self):
+        self.toml_widget.setText(self.mg.config.as_toml_string)
+
+    def _update_mg_name_widget(self):
+        self.mg_name_widget.setText(self.mg.config["name"])
+
+    def _rename_motion_group(self):
+        self.mg.config["name"] = self.mg_name_widget.text()
+        self.configChanged.emit()
 
 
 class ConfigureGUI(QMainWindow):
