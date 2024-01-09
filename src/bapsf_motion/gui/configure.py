@@ -563,6 +563,7 @@ class MGWidget(QWidget):
         font = _btn.font()
         font.setPointSize(24)
         _btn.setFont(font)
+        _btn.setEnabled(False)
         self.done_btn = _btn
 
         _btn = StyleButton("Discard && Return to Run")
