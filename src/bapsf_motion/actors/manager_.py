@@ -252,7 +252,7 @@ class RunManagerConfig(UserDict):
             del self["motion_group"][key]
 
     @property
-    def as_toml_string(self):
+    def as_toml_string(self) -> str:
         def convert_key_to_string(_d):
             _config = {}
             for key, value in _d.items():
