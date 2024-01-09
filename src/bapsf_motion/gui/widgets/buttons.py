@@ -8,11 +8,12 @@ from PySide6.QtCore import QSize
 
 class LED(QPushButton):
     _aspect_ratio = 1.0
-    _on_color = "0ed400"
-    _off_color = "0d5800"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self._on_color = "0ed400"  # rgb(14, 212, 0)
+        self._off_color = "0d5800"  # rgb(13, 88, 0)
 
         self.setEnabled(False)
         self.setCheckable(True)
@@ -38,6 +39,24 @@ class LED(QPushButton):
             "This method is not available, use 'set_fixed_width' or "
             "'set_fixed_height' instead. "
         )
+
+    @property
+    def on_color(self):
+        return self._on_color
+
+    @on_color.setter
+    def on_color(self, color: str):
+        self._on_color = color
+        self.update_style_sheet()
+
+    @property
+    def off_color(self):
+        return self._off_color
+
+    @off_color.setter
+    def off_color(self, color: str):
+        self._off_color = color
+        self.update_style_sheet()
 
     @property
     def css(self):
