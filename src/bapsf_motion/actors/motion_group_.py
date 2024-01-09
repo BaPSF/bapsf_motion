@@ -729,12 +729,12 @@ class MotionGroup(EventActor):
             )
             auto_run = False
 
-        self._drive = self._spawn_drive(config["drive"])
+        self._drive = self._spawn_drive(config.get("drive", None))
 
-        self._mb = self._setup_motion_builder(config["motion_builder"])
+        self._mb = self._setup_motion_builder(config.get("motion_builder", None))
         self._ml_index = None
 
-        self._transform = self._setup_transform(config["transform"])
+        self._transform = self._setup_transform(config.get("transform", None))
 
         self._config = config
         self._config.link_drive(self.drive)
@@ -751,7 +751,7 @@ class MotionGroup(EventActor):
 
     def _spawn_drive(
         self, config: Dict[str, Any]
-    ) -> Drive:
+    ) -> Union[Drive, None]:
         """
         Spawn and return the |Drive| instance for the motion group.
 
@@ -760,6 +760,8 @@ class MotionGroup(EventActor):
         config: `dict`
             Drive component of the motion group configuration.
         """
+        if config is None or not config:
+            return
 
         dr = Drive(
             axes=list(config["axes"].values()),
@@ -771,10 +773,12 @@ class MotionGroup(EventActor):
         return dr
 
     @staticmethod
-    def _setup_motion_builder(config: Dict[str, Any]) -> MotionBuilder:
+    def _setup_motion_builder(config: Dict[str, Any]) -> Union[MotionBuilder, None]:
         """Return an instance of |MotionBuilder|."""
-        # initialize the motion builder object
+        if config is None or not config:
+            return None
 
+        # initialize the motion builder object
         ml_config = config.copy()
 
         for key in {"name", "user"}:
@@ -792,8 +796,12 @@ class MotionGroup(EventActor):
         _ml = MotionBuilder(**ml_config)
         return _ml
 
-    def _setup_transform(self, config: Dict[str, Any]) -> transform.BaseTransform:
+    def _setup_transform(
+            self, config: Dict[str, Any]
+    ) -> Union[transform.BaseTransform, None]:
         """Return an instance of the :term:`transformer`."""
+        if config is None or not config:
+            return
 
         tr_config = config.copy()
 
