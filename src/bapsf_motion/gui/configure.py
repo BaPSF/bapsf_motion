@@ -242,6 +242,7 @@ class DriveConfigOverlay(_OverlayWidget):
 
         _btn = LED()
         _btn.set_fixed_height(32)
+        _btn.off_color = "d43729"
         self.validate_led = _btn
 
         # Define TEXT WIDGETS
