@@ -930,6 +930,7 @@ class Motor(EventActor):
 
                 # resend original command after buffer was cleared
                 _rtn = self._send_command(command, *args)
+                self.logger.info("Connection re-established.")
             else:
                 _rtn = self._process_command_return(command, recv_str)
         except (ConnectionError, TimeoutError) as err:
