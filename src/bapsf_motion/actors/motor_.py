@@ -34,6 +34,12 @@ class AckFlags(Enum):
     LOST_CONNECTION = 4
 
 
+class _HeartRate(NamedTuple):
+    BASE = 2.0  # seconds
+    ACTIVE = 0.2
+    SEARCHING = 1.0
+
+
 class CommandEntry(UserDict):
     r"""
     A `dict` containing all the necessary information to define a
@@ -522,9 +528,7 @@ class Motor(EventActor):
             "socket": None,
             "tasks": None,
             "max_connection_attempts": 3,
-            "heartrate": namedtuple("HR", ["base", "active"])(
-                base=2.0, active=0.2
-            ),  # in seconds
+            "heartrate": _HeartRate(),  # in seconds
             "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
         }
 
@@ -722,7 +726,7 @@ class Motor(EventActor):
     config.__doc__ = EventActor.config.__doc__
 
     @property
-    def heartrate(self) -> NamedTuple:
+    def heartrate(self) -> _HeartRate:
         """
         Heartrate of the motor monitor, or the time (in sec) between
         motor checks.  There are two different heartrates:
@@ -1266,10 +1270,15 @@ class Motor(EventActor):
         --------
         retrieve_motor_status
         """
-        old_HR = self.heartrate.base
+        old_HR = self.heartrate.BASE
         beats = 0
         while True:
-            heartrate = self.heartrate.active if self.is_moving else self.heartrate.base
+            if not self.status["connected"]:
+                heartrate = self.heartrate.SEARCHING
+            elif self.is_moving:
+                heartrate = self.heartrate.ACTIVE
+            else:
+                heartrate = self.heartrate.BASE
 
             if heartrate != old_HR:
                 self.logger.info(
