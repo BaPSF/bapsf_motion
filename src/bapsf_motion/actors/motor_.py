@@ -38,6 +38,7 @@ class _HeartRate(NamedTuple):
     BASE = 2.0  # seconds
     ACTIVE = 0.2
     SEARCHING = 1.0
+    PAUSE = 5.0
 
 
 class CommandEntry(UserDict):
@@ -519,6 +520,8 @@ class Motor(EventActor):
         self.movement_finished = SimpleSignal()
 
         self.ip = ip
+
+        self._pause_heartbeat = False
 
         super().__init__(
             name=name,
@@ -1285,7 +1288,10 @@ class Motor(EventActor):
         old_HR = self.heartrate.BASE
         beats = 0
         while True:
-            if not self.status["connected"]:
+            if self._pause_heartbeat:
+                await asyncio.sleep(self.heartrate.PAUSE)
+                continue
+            elif not self.status["connected"]:
                 heartrate = self.heartrate.SEARCHING
             elif self.is_moving:
                 heartrate = self.heartrate.ACTIVE
