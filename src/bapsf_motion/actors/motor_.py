@@ -862,6 +862,7 @@ class Motor(EventActor):
                 msg = f"Connecting to {self.ip}:{self.port} ..."
                 self.logger.info(msg)
 
+                socket.setdefaulttimeout(3)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.settimeout(1)  # 1 second timeout
                 s.connect((self.ip, self.port))
