@@ -1106,7 +1106,9 @@ class Motor(EventActor):
         while True:
             data = self.socket.recv(16)
 
-            if not msg and _header in data:
+            if not data:
+                break
+            elif not msg and _header in data:
                 msg = data.split(_header)[1]
             else:
                 msg += data
