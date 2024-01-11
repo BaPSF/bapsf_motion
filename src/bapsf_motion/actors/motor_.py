@@ -1304,6 +1304,7 @@ class Motor(EventActor):
             await asyncio.sleep(heartrate)
 
     def terminate(self, delay_loop_stop=False):
+        self.logger.info("Terminating motor")
         super().terminate(delay_loop_stop=True)
 
         # TODO: add additional motor shutdown tasks (i.e. stop and disable)
