@@ -14,6 +14,7 @@ import threading
 import time
 
 from collections import namedtuple, UserDict
+from enum import Enum
 from typing import Any, AnyStr, Callable, Dict, List, NamedTuple, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
@@ -24,6 +25,13 @@ from bapsf_motion.utils import units as u
 def do_nothing(x):
     """Return argument ``x`` unchanged."""
     return x
+
+
+class AckFlags(Enum):
+    ACK = 1
+    ACK_QUEUED = 2
+    NACK = 3
+    LOST_CONNECTION = 4
 
 
 class CommandEntry(UserDict):
@@ -442,6 +450,8 @@ class Motor(EventActor):
             "(Flex I/O drives only)",
     }
 
+    ack_flags = AckFlags
+
     # TODO: determine why heartbeat is not beating during a move
     #       - above statement is not true, but the heartbeat seems
     #         slower than the specified HR
@@ -758,8 +768,9 @@ class Motor(EventActor):
         `~bapsf_motion.utils.steps`.
         """
         pos = self.send_command("get_position")
-        self._update_status(position=pos)
-        return pos
+        if not isinstance(pos, self.ack_flags):
+            self._update_status(position=pos)
+            return pos
 
     def _configure_before_run(self):
         # actions to be done during object instantiation, but before
@@ -977,10 +988,10 @@ class Motor(EventActor):
 
         if "%" in rtn_str:
             # Motor acknowledge and executed command.
-            return rtn_str
+            return self.ack_flags.ACK
         elif "*" in rtn_str:
             # Motor acknowledged command and buffered it into the queue
-            return rtn_str
+            return self.ack_flags.ACK_QUEUED
         elif "?" in rtn_str:
             # Motor negatively acknowledge command, error in command
             err_code = re.compile(
@@ -991,7 +1002,7 @@ class Motor(EventActor):
             self.logger.error(
                 f"Motor returned Nack from command {command} with error: {err_msg}."
             )
-            return rtn_str
+            return self.ack_flags.NACK
 
         recv_pattern = self._commands[command]["recv"]
         if recv_pattern is not None:
@@ -1107,18 +1118,25 @@ class Motor(EventActor):
         send_command = self._send_command if direct_send else self.send_command
 
         _rtn = send_command("request_status")
-        _status = {
-            "alarm": False,
-            "enabled": False,
-            "fault": False,
-            "moving": False,
-            "homing": False,
-            "jogging": False,
-            "motion_in_progress": False,
-            "in_position": False,
-            "stopping": False,
-            "waiting": False,
-        }  # null status
+        if isinstance(_rtn, self.ack_flags):
+            if _rtn == self.ack_flags.LOST_CONNECTION:
+                return
+
+            _rtn = ""
+            _status = {}
+        else:
+            _status = {
+                "alarm": False,
+                "enabled": False,
+                "fault": False,
+                "moving": False,
+                "homing": False,
+                "jogging": False,
+                "motion_in_progress": False,
+                "in_position": False,
+                "stopping": False,
+                "waiting": False,
+            }  # null status
         for letter in _rtn:
             if letter == "A":
                 _status["alarm"] = True
@@ -1142,15 +1160,23 @@ class Motor(EventActor):
                 _status["waiting"] = True
 
         pos = send_command("get_position")
-        _status["position"] = pos
+        if not isinstance(pos, self.ack_flags):
+            _status["position"] = pos
+        elif pos == self.ack_flags.LOST_CONNECTION:
+            return
 
         alarm_status = self.retrieve_motor_alarm(
             defer_status_update=True,
             direct_send=True,
         )
-        _status.update(alarm_status)
+        if not isinstance(alarm_status, self.ack_flags):
+            _status.update(alarm_status)
+        elif alarm_status == self.ack_flags.LOST_CONNECTION:
+            return
 
-        if _status["moving"] and not self._status["moving"]:
+        if "moving" not in _status:
+            pass
+        elif _status["moving"] and not self._status["moving"]:
             self.movement_started.emit(True)
         elif not _status["moving"] and self._status["moving"]:
             self.movement_finished.emit(True)
@@ -1159,7 +1185,7 @@ class Motor(EventActor):
 
     def retrieve_motor_alarm(
             self, defer_status_update=False, direct_send=False
-    ) -> Dict[str, Any]:
+    ) -> Union[Dict[str, Any], "AckFlags"]:
         """
         Retrieve [if any] motor alarm codes.
 
@@ -1185,6 +1211,8 @@ class Motor(EventActor):
         send_command = self._send_command if direct_send else self.send_command
 
         rtn = send_command("alarm")
+        if isinstance(rtn, self.ack_flags):
+            return rtn
 
         codes = []
         for i, digit in enumerate(rtn):
