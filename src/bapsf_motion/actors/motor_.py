@@ -510,6 +510,8 @@ class Motor(EventActor):
         auto_run: bool = False,
     ):
 
+        self._heartbeat_task = None
+
         self._setup = self._setup_defaults.copy()
         self._motor = self._motor_defaults.copy()
         self._status = self._status_defaults.copy()
@@ -789,18 +791,26 @@ class Motor(EventActor):
             self._update_status(position=pos)
             return pos
 
-    def _configure_before_run(self):
-        # actions to be done during object instantiation, but before
-        # the asyncio event loop starts running.
+    @property
+    def heartbeat_task(self) -> asyncio.Task:
+        """The `asyncio.Task` associated with the motor's heartbeat."""
+        return self._heartbeat_task
 
-        self.connect()
-        self._configure_motor()
-        self._get_motor_parameters()
-        self.send_command("retrieve_motor_status")
+    @heartbeat_task.setter
+    def heartbeat_task(self, val):
+        if not isinstance(val, asyncio.Task):
+            return
+        elif self.heartbeat_task is None:
+            pass
+        elif self.heartbeat_task.done():
+            # remove task from task list
+            self.tasks.remove(self._heartbeat_task)
 
     def _initialize_tasks(self):
         tk = self.loop.create_task(self._heartbeat())
         self.tasks.append(tk)
+        self._heartbeat_task = val
+        self.tasks.append(self._heartbeat_task)
 
     def _update_status(self, **values):
         """
