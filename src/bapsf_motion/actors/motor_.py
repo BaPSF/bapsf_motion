@@ -812,6 +812,10 @@ class Motor(EventActor):
         self._heartbeat_task = val
         self.tasks.append(self._heartbeat_task)
 
+    def start_heartbeat(self):
+        if self.heartbeat_task is None or self.heartbeat_task.done():
+            self.heartbeat_task = self.loop.create_task(self._heartbeat())
+
     def _update_status(self, **values):
         """
         Update ``self._status` dictionary with the given arguments ``**values``.
