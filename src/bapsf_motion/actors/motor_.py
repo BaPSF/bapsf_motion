@@ -872,8 +872,6 @@ class Motor(EventActor):
                 self.socket = s
                 self._update_status(connected=True)
 
-                # TODO: if the connection as lost then the heart beat stopped
-                #       need to restart heartbeat
                 return
             except (
                 TimeoutError,
@@ -905,6 +903,9 @@ class Motor(EventActor):
         cmd_str = self._process_command(command, *args)
         recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
         return self._process_command_return(command, recv_str)
+        if self.start_heartbeat() is None or self.heartbeat_task.done():
+            self.start_heartbeat()
+
 
     async def _send_command_async(self, command: str, *args):
         """A coroutine_ version of :meth:`_send_command`."""
