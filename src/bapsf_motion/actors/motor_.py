@@ -1296,8 +1296,14 @@ class Motor(EventActor):
                 )
                 beats = 0
 
-            self.retrieve_motor_status(direct_send=True)
-            # self.logger.debug("Beat status.")
+            if self.status["connected"]:
+                self.retrieve_motor_status(direct_send=True)
+            else:
+                self.logger.info("Motor connection lost...trying to reconnect.")
+                # Keep sending kill until the motor comes back online.  This will
+                # ensure the motor is stopped and the buffer (queue) is empty, so
+                # we can continue "safely" with new commands.
+                self._send_command("kill")
 
             beats += 1
             old_HR = heartrate
