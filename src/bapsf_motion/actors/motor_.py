@@ -836,6 +836,7 @@ class Motor(EventActor):
         self.tasks.append(self._heartbeat_task)
 
     def start_heartbeat(self):
+        """Start or restart the heartbeat `asyncio.Task`."""
         if self.heartbeat_task is None or self.heartbeat_task.done():
             self.heartbeat_task = self.loop.create_task(self._heartbeat())
 
