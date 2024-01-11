@@ -532,6 +532,26 @@ class Motor(EventActor):
             auto_run=auto_run,
         )
 
+    def _configure_before_run(self):
+        # actions to be done during object instantiation, but before
+        # the asyncio event loop starts running.
+
+        self.connect()
+
+        self.start_heartbeat()
+        self._pause_heartbeat = True
+
+        self._configure_motor()
+        self._get_motor_parameters()
+        self.send_command("retrieve_motor_status")
+
+        self._pause_heartbeat = False
+
+    def _initialize_tasks(self):
+        # The heartbeat task was initialized in _configure_before_run
+        # self.start_heartbeat()
+        return
+
     @property
     def _setup_defaults(self) -> Dict[str, Any]:
         """Default values for :attr:`setup`."""
@@ -806,9 +826,6 @@ class Motor(EventActor):
             # remove task from task list
             self.tasks.remove(self._heartbeat_task)
 
-    def _initialize_tasks(self):
-        tk = self.loop.create_task(self._heartbeat())
-        self.tasks.append(tk)
         self._heartbeat_task = val
         self.tasks.append(self._heartbeat_task)
 
