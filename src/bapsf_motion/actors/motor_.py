@@ -260,6 +260,12 @@ class Motor(EventActor):
             "alarm_reset",
             send="AR"
         ),
+        "buffer_size": CommandEntry(
+            "buffer_size",
+            send="BS",
+            recv=re.compile(r"BS=(?P<return>[0-9]\.?[0-9]?)"),
+            recv_processor=int,
+        ),
         "current": CommandEntry(
             "change_current",
             send="CC",
@@ -325,6 +331,10 @@ class Motor(EventActor):
             recv=re.compile(r"CI=(?P<return>[0-9]\.?[0-9]?)"),
             recv_processor=float,
             two_way=True,
+        ),
+        "kill": CommandEntry(
+            "stop_and_kill",  # immediately stop moving and erase queue
+            send="SK",
         ),
         "move_off_limit": CommandEntry(
             "move_off_limit",
