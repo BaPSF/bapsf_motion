@@ -875,7 +875,7 @@ class Motor(EventActor):
         """A coroutine_ version of :meth:`_send_command`."""
         return self._send_command(command, *args)
 
-    def send_command(self, command: str, *args):
+    def send_command(self, command: str, *args, thread_id=None):
         """
         Send ``command`` to the motor, and receive its response.  If the
         `event loop`_ is running, then the command will be sent as
@@ -889,6 +889,8 @@ class Motor(EventActor):
         *args:
             Any arguments to the ``command`` that will be sent with the
             motor command.
+        thread_id: int
+            ID of the thread the calling functionality is operating in.
         """
         if self._commands[command]["method_command"]:
             # execute respectively named method
