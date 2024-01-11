@@ -1114,11 +1114,27 @@ class Motor(EventActor):
 
         cmd_str = _header + bytes(cmd.encode("ASCII")) + _eom
         try:
-            self.socket.send(cmd_str)
-        except ConnectionError:
+            self.socket.sendall(cmd_str)
+        except ConnectionError as err:
+            self.logger.error(f"{err.__class__.__name__}: {err}")
+            if err.errno == errno.EPIPE:
+                self.logger.error(
+                    "It appears the server (motor) has closed the connection."
+                )
+                self.socket.close()
+            elif err.errno == errno.ESHUTDOWN:
+                self.logger.error(
+                    "It appears the socket has been closed."
+                )
+
+            self.logger.info(
+                "Attempting to re-establish connection and send the command "
+                "again."
+            )
+
             self._update_status(connected=False)
             self.connect()
-            self.socket.send(cmd_str)
+            self.socket.sendall(cmd_str)
 
     def _recv(self) -> AnyStr:
         """
