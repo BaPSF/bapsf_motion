@@ -901,12 +901,39 @@ class Motor(EventActor):
         A low level method for sending commands to the motor, and
         receiving the response.
         """
-        cmd_str = self._process_command(command, *args)
-        recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
-        return self._process_command_return(command, recv_str)
         if self.start_heartbeat() is None or self.heartbeat_task.done():
             self.start_heartbeat()
 
+        try:
+            cmd_str = self._process_command(command, *args)
+            recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
+
+            if not self.status["connected"]:
+                # connection reestablished ... the motor buffer my have old
+                # commands in it, so we need to empty the buffer so new sent
+                # and received commands are synced
+                self._update_status(connected=True)
+
+                _ack = self._send_raw_command("SK")  # kill
+                _bs = self._send_raw_command("BS")  # check contents of buffer
+                while "BS" not in _bs:
+                    # Note:  this will not be an infinite loop, if the buffer
+                    #        size is zero and we missed the response, then
+                    #        self._recv will issue a TimeoutError
+                    _bs = self._recv().decode("ASCII")
+
+                # resend original command after buffer was cleared
+                _rtn = self._send_command(command, *args)
+            else:
+                _rtn = self._process_command_return(command, recv_str)
+        except (ConnectionError, TimeoutError) as err:
+            self.logger.error(f"{err.__class__.__name__}: {err}")
+            self.logger.error(f"Last command '{command}' was not executed.")
+
+            _rtn = self.ack_flags.LOST_CONNECTION
+            self._update_status(connected=False)
+
+        return _rtn
 
     async def _send_command_async(self, command: str, *args):
         """A coroutine_ version of :meth:`_send_command`."""
