@@ -694,6 +694,8 @@ class Motor(EventActor):
         bit 8 =Full Duplex in RS-422
         """
         rtn = self.send_command("protocol")
+        if self._lost_connection(rtn):
+            return
         _bits = f"{rtn:09b}"
 
         if _bits[-3] == "0":
@@ -703,14 +705,16 @@ class Motor(EventActor):
             _bits[-3] = "1"  # sets always ack/nack
             _bits = "".join(_bits)
             _bits = int(_bits, 2)
-            try:
-                self.send_command("protocol", _bits)
-            except TimeoutError:
-                # if Ack/Nack was not set to begin with, then this command will
-                # not receive an Ack/Nack and a TimeoutError will occur
-                pass
 
+            self.send_command("protocol", _bits)
+
+            # if Ack/Nack was not set to begin with, then the first protocol
+            # setting will not have an Ack/Nack return.  Thus, lets retrieve
+            # the protocol again.
+            #
             rtn = self.send_command("protocol")
+            if self._lost_connection(rtn):
+                return
             _bits = f"{rtn:09b}"
 
         self._motor["protocol_settings"] = []
@@ -1443,9 +1447,10 @@ class Motor(EventActor):
             self.send_command("alarm_reset")
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
 
-            if alarm_msg["alarm_message"]:
+            if self._lost_connection(alarm_msg) or alarm_msg["alarm_message"]:
                 self.logger.error(
-                    f"Motor alarm could not be reset. -- {alarm_msg}")
+                    f"Motor alarm could not be reset. -- {alarm_msg}"
+                )
                 return
 
         # Note:  The Applied Motion Command Reference pdf states for
@@ -1482,7 +1487,12 @@ class Motor(EventActor):
         on_limits = any(self.status["limits"].values())
         while on_limits:
 
-            pos = self.send_command("get_position").value
+            pos = self.send_command("get_position")  # type: Union[u.Quantity, AckFlags]
+            if self._lost_connection(pos):
+                self.logger.error("Unable to move off limit due to a lost connection.")
+                break
+
+            pos = pos.value
             move_to_pos = pos + off_direction * 0.5 * self.steps_per_rev.value
 
             # disable limit alarm so the motor can be moved
@@ -1497,6 +1507,9 @@ class Motor(EventActor):
             self.sleep(4 * self.heartrate.active)
 
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
+            if self._lost_connection(alarm_msg):
+                self.logger.error("Unable to move off limit due to a lost connection.")
+                break
             on_limits = any(alarm_msg["limits"].values())
 
             if counts > 10:
@@ -1571,6 +1584,9 @@ class Motor(EventActor):
         new_cur = percent * self._motor["DEFAULTS"]["max_current"]
 
         ic = self.send_command("idle_current")
+        if self._lost_connection(ic):
+            self.logger.error("Unable to set current due to a lost connection.")
+            return
         new_ic = np.min(
             [self._motor["DEFAULTS"]["max_idle_current"] * new_cur, ic],
         )
@@ -1607,6 +1623,9 @@ class Motor(EventActor):
             percent = max_idle
 
         curr = self.send_command("current")
+        if self._lost_connection(curr):
+            self.logger.error("Unable to set idle current due to a lost connection.")
+            return
         new_ic = percent * curr
         self.send_command("idle_current", new_ic)
 
@@ -1638,7 +1657,13 @@ class Motor(EventActor):
 
         # set high torque
         ic = self.send_command("idle_current")
+        if self._lost_connection(ic):
+            self.logger.error("Unable to set position due to a lost connection.")
+            return
         curr = self.send_command("current")
+        if self._lost_connection(curr):
+            self.logger.error("Unable to set position due to a lost connection.")
+            return
         self.set_current(1)
         self.set_idle_current(self._motor["DEFAULTS"]["max_idle_current"])
 
