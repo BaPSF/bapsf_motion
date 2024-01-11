@@ -904,7 +904,10 @@ class Motor(EventActor):
             # event loop not running, just send commands directly
             return self._send_command(command, *args)
 
-        elif threading.current_thread().ident == self._thread_id:
+        elif (
+            (thread_id is not None and threading.current_thread().ident == thread_id)
+            or (threading.current_thread().ident == self._thread_id)
+        ):
             # we are in the same thread as the running event loop, just
             # send the command directly
             tk = self.loop.create_task(self._send_command_async(command, *args))
