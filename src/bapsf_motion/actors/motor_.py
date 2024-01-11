@@ -6,6 +6,7 @@ __all__ = ["do_nothing", "CommandEntry", "Motor"]
 __actors__ = ["Motor"]
 
 import asyncio
+import errno
 import logging
 import numpy as np
 import re
