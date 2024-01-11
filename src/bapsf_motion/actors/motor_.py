@@ -639,6 +639,17 @@ class Motor(EventActor):
         # TODO: dictionary keys and explanations to the docstring
         return self._status
 
+    def _lost_connection(self, rtn: Any = None):
+        """
+        Check if the motor connection as lost by examining the return
+        value from send_command.
+        """
+        if rtn in None:
+            return not self._status["connected"]
+        elif isinstance(rtn, self.ack_flags) and rtn == self.ack_flags.LOST_CONNECTION:
+            return True
+        return False
+
     def _configure_motor(self):
         """
         Configure motor behavior for suitable operation with the actor.
