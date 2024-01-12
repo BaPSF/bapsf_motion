@@ -25,6 +25,8 @@ from bapsf_motion.actors import RunManager, MotionGroup
 from bapsf_motion.gui.widgets import QLogger, StyleButton, LED
 from bapsf_motion.utils import toml
 
+_logger = logging.getLogger(":: GUI ::")
+
 
 class _OverlayWidget(QWidget):
     closing = Signal()
@@ -93,6 +95,8 @@ class AxisConfigWidget(QWidget):
     def __init__(self, name, parent=None):
         super().__init__(parent=parent)
 
+        self._logger = _logger
+
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding,
             QSizePolicy.Policy.Preferred,
@@ -148,6 +152,10 @@ class AxisConfigWidget(QWidget):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
+    @property
+    def logger(self):
+        return self._logger
+
     def _define_layout(self):
         _label = QLabel("IP:  ")
         _label.setAlignment(
@@ -190,6 +198,8 @@ class DriveConfigOverlay(_OverlayWidget):
 
     def __init__(self, parent: "MGWidget" = None):
         super().__init__(parent)
+
+        self._logger = _logger
 
         # Define BUTTONS
 
@@ -259,6 +269,10 @@ class DriveConfigOverlay(_OverlayWidget):
         self.setLayout(self._define_layout())
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._connect_signals()
+
+    @property
+    def logger(self):
+        return self._logger
 
     def _define_layout(self):
         _hline = QFrame()
@@ -344,6 +358,8 @@ class DriveConfigOverlay(_OverlayWidget):
 class RunWidget(QWidget):
     def __init__(self, parent: "ConfigureGUI"):
         super().__init__(parent=parent)
+
+        self._logger = _logger
 
         # Define BUTTONS
 
@@ -534,11 +550,7 @@ class RunWidget(QWidget):
 
     @property
     def logger(self) -> logging.Logger:
-        parent = self.parent()  # type: "ConfigureGUI"
-        try:
-            return parent.logger
-        except AttributeError:
-            return logging.getLogger(self.__class__.__name__)
+        return self._logger
 
     @property
     def rm(self) -> Union[RunManager, None]:
@@ -554,6 +566,8 @@ class MGWidget(QWidget):
 
     def __init__(self, parent: "ConfigureGUI"):
         super().__init__(parent=parent)
+
+        self._logger = _logger
 
         self._mg = None
         self._mg_index = None
@@ -757,6 +771,10 @@ class MGWidget(QWidget):
         super().resizeEvent(event)
 
     @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
     def mg_index(self):
         return self._mg_index
 
@@ -804,7 +822,7 @@ class ConfigureGUI(QMainWindow):
 
         # setup logger
         logging.config.dictConfig(self._logging_config_dict)
-        self._logger = logging.getLogger(":: GUI ::")
+        self._logger = _logger
         self._rm_logger = logging.getLogger("RM")
 
         self._define_main_window()
