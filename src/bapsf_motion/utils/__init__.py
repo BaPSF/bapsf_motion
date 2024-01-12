@@ -53,9 +53,9 @@ class SimpleSignal:
         except ValueError:
             pass
 
-    def emit(self, payload):
+    def emit(self):
         for handler in self.handlers:
-            handler(payload)
+            handler()
 
 
 def load_example(filename: str, as_string=False):

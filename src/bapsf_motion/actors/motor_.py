@@ -856,10 +856,9 @@ class Motor(EventActor):
                 changed[key] = value
 
         if changed:
+            self._status = new_status
             self.logger.debug(f"Motor status changed, new values are {changed}.")
-            self.status_changed.emit(True)
-
-        self._status = new_status
+            self.status_changed.emit()
 
     def connect(self):
         """
@@ -1293,9 +1292,9 @@ class Motor(EventActor):
         if "moving" not in _status:
             pass
         elif _status["moving"] and not self._status["moving"]:
-            self.movement_started.emit(True)
+            self.movement_started.emit()
         elif not _status["moving"] and self._status["moving"]:
-            self.movement_finished.emit(True)
+            self.movement_finished.emit()
 
         self._update_status(**_status)
 
