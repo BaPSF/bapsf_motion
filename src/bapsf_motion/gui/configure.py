@@ -786,6 +786,12 @@ class MGWidget(QWidget):
         self.mg.config["name"] = self.mg_name_widget.text()
         self.configChanged.emit()
 
+    def closeEvent(self, event):
+        self.logger.info("Closing MGWidget")
+        if self._overlay_widget is not None:
+            self._overlay_widget.close()
+        event.accept()
+
 
 class ConfigureGUI(QMainWindow):
     _OPENED_FILE = None  # type: Union[Path, None]
@@ -929,6 +935,10 @@ class ConfigureGUI(QMainWindow):
         self.configChanged.connect(self.update_display_mg_list)
 
     def closeEvent(self, event: "QCloseEvent") -> None:
+        self.logger.info("Closing ConfigureGUI")
+        self._run_widget.close()
+        self._mg_widget.close()
+
         if self.rm is not None:
             self.rm.terminate()
 
