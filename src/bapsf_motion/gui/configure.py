@@ -19,11 +19,11 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QStackedWidget,
 )
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
-from bapsf_motion.actors import RunManager, MotionGroup
+from bapsf_motion.actors import RunManager, MotionGroup, Drive, Axis, Motor
 from bapsf_motion.gui.widgets import QLogger, StyleButton, LED
-from bapsf_motion.utils import toml
+from bapsf_motion.utils import toml, ipv4_pattern
 
 _logger = logging.getLogger(":: GUI ::")
 
@@ -92,10 +92,22 @@ class _OverlayWidget(QWidget):
 
 
 class AxisConfigWidget(QWidget):
+    configChanged = Signal()
+    axisStatusChanged = Signal()
+
     def __init__(self, name, parent=None):
         super().__init__(parent=parent)
 
         self._logger = _logger
+        self._ip_handlers = []
+
+        self._axis_config = {
+            "name": name,
+            "units": "cm",
+            "ip": "",
+            "units_per_rev": "",
+        }
+        self._axis = None
 
         self.setSizePolicy(
             QSizePolicy.Policy.Expanding,
@@ -106,14 +118,6 @@ class AxisConfigWidget(QWidget):
         _btn = LED()
         _btn.set_fixed_height(24)
         self.online_led = _btn
-
-        _btn = StyleButton("PING")
-        _btn.setFixedWidth(80)
-        _btn.setFixedHeight(32)
-        font = _btn.font()
-        font.setPointSize(18)
-        _btn.setFont(font)
-        self.ping_btn = _btn
 
         # Define TEXT WIDGETS
         _widget = QLabel(name, parent=self)
@@ -156,6 +160,34 @@ class AxisConfigWidget(QWidget):
     def logger(self):
         return self._logger
 
+    @property
+    def axis(self) -> Union[Axis, None]:
+        return self._axis
+
+    @axis.setter
+    def axis(self, ax: Union[Axis, None]):
+        if not (isinstance(ax, Axis) or ax is None):
+            return
+
+        self._axis = ax
+        self.configChanged.emit()
+
+    @property
+    def axis_config(self):
+        if isinstance(self.axis, Axis):
+            self._axis_config = self.axis.config.copy()
+        return self._axis_config
+
+    def _connect_signals(self):
+        self.ip_widget.editingFinished.connect(self._change_ip_address)
+        self.cm_per_rev_widget.editingFinished.connect(self._change_cm_per_rev)
+
+        self.configChanged.connect(self._update_ip_widget)
+        self.configChanged.connect(self._update_cm_per_rev_widget)
+        self.configChanged.connect(self._update_online_led)
+
+        self.axisStatusChanged.connect(self._update_online_led)
+
     def _define_layout(self):
         _label = QLabel("IP:  ")
         _label.setAlignment(
@@ -177,6 +209,20 @@ class AxisConfigWidget(QWidget):
         _label.setFont(font)
         cm_per_rev_label = _label
 
+        _label = QLabel("online")
+        _label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
+        )
+        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _label.font()
+        font.setPointSize(12)
+        _label.setFont(font)
+        online_label = _label
+
+        sub_layout = QVBoxLayout()
+        sub_layout.addWidget(online_label, alignment=Qt.AlignmentFlag.AlignBottom)
+        sub_layout.addWidget(self.online_led, alignment=Qt.AlignmentFlag.AlignCenter)
+
         layout = QHBoxLayout()
         layout.addWidget(self.ax_name_widget)
         layout.addSpacing(12)
@@ -186,12 +232,116 @@ class AxisConfigWidget(QWidget):
         layout.addWidget(self.cm_per_rev_widget)
         layout.addWidget(cm_per_rev_label)
         layout.addStretch()
-        layout.addWidget(self.online_led)
-        layout.addWidget(self.ping_btn)
+        layout.addLayout(sub_layout)
         return layout
 
-    def _connect_signals(self):
-        ...
+    def _change_cm_per_rev(self):
+        try:
+            new_cpr = float(self.cm_per_rev_widget.text())
+        except ValueError as err:
+            self.logger.error(f"{err.__class__.__name__}: {err}")
+            self.logger.error(f"Given cm / rev conversion must be a number.")
+            self.configChanged.emit()
+            return
+
+        if self.axis is not None:
+            self.axis.units_per_rev = new_cpr
+        else:
+            self.axis_config["units_per_rev"] = new_cpr
+
+        self.configChanged.emit()
+        self._check_axis_completeness()
+
+    def _change_ip_address(self):
+        new_ip = self.ip_widget.text()
+        new_ip = self._validate_ip(new_ip)
+        if new_ip is None:
+            self.configChanged.emit()
+            return
+
+        if self.axis is not None:
+            config = self.axis_config
+            self.axis.terminate()
+            config["ip"] = new_ip
+            self._axis_config = config
+            self.axis = None
+
+            # self.axis.ip = new_ip
+        else:
+            self.axis_config["ip"] = new_ip
+
+        self.configChanged.emit()
+        self._check_axis_completeness()
+
+    def _update_cm_per_rev_widget(self):
+        self.cm_per_rev_widget.setText(f"{self.axis_config['units_per_rev']}")
+
+    def _update_ip_widget(self):
+        self.logger.info(f"Updating IP widget with {self.axis_config['ip']}")
+        self.ip_widget.setText(self.axis_config["ip"])
+
+    def _update_online_led(self):
+        online = False
+
+        if isinstance(self.axis, Axis):
+            online = self.axis.motor.status["connected"]
+
+        self.online_led.setChecked(online)
+
+    def set_ip_handler(self, handler: callable):
+        self._ip_handlers.append(handler)
+
+    def _validate_ip(self, ip):
+        if ipv4_pattern.fullmatch(ip) is None:
+            self.logger.error(
+                f"Supplied IP address ({ip}) is not a valid IPv4."
+            )
+            return
+
+        for handler in self._ip_handlers:
+            ip = handler(ip)
+
+            if ip is None or ip == "":
+                return
+
+        return ip
+
+    def _check_axis_completeness(self):
+        if isinstance(self.axis, Axis):
+            return False
+
+        _completeness = {"name", "ip", "units", "units_per_rev"}
+        if _completeness - set(self.axis_config.keys()):
+            return False
+        elif any([self.axis_config[key] == "" for key in _completeness]):
+            return False
+
+        self._spawn_axis()
+        return True
+
+    def _spawn_axis(self):
+        self.logger.info("Spawning Axis.")
+        if isinstance(self.axis, Axis):
+            self.axis.terminate()
+
+        try:
+            self.axis = Axis(
+                **self.axis_config,
+                logger=_logger,
+                auto_run=True,
+            )
+
+            self.axis.motor.status_changed.connect(self._update_online_led)
+        except ConnectionError:
+            self.axis = None
+
+    def closeEvent(self, event):
+        self.logger.info("Closing AxisConfigWidget")
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate()
+
+        event.accept()
 
 
 class DriveConfigOverlay(_OverlayWidget):
