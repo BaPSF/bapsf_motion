@@ -873,6 +873,22 @@ class Motor(EventActor):
         reconnection attempts before an exception is raised is defined
         by ``self._setup["max_connection_attempts"]``.
         """
+        if not isinstance(self.socket, socket.socket):
+            # socket has not been created yet, self.socket is likely None
+            pass
+        else:
+            socket_ip, socket_port = self.socket.getpeername()
+            if self.ip != socket_ip or self.port != socket_port:
+                self.logger.error(
+                    f"Socket IPv4 address {socket_ip}:{socket_port} does"
+                    f" NOT match assigned IPv4 address {self.ip}:{self.port}.  "
+                    f"Suspect improper re-assignment of address."
+                )
+                return
+            elif self.socket.fileno() != -1:
+                # socket is created and running
+                return
+
         _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
             try:
