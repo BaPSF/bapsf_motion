@@ -905,7 +905,8 @@ class Motor(EventActor):
                 self.socket = s
                 self._update_status(connected=True)
 
-                return
+                # connection established, break for-loop
+                break
             except (
                 TimeoutError,
                 InterruptedError,
