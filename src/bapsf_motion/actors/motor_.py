@@ -757,6 +757,13 @@ class Motor(EventActor):
     def ip(self, value):
         # TODO: update ipv4_pattern so the port number can be passed with the
         #       ip argument
+        if self._motor["ip"] is not None:
+            self.logger.warning(
+                "The motor's IP address can only be defined at object"
+                " instantiation."
+            )
+            return
+
         if ipv4_pattern.fullmatch(value) is None:
             raise ValueError(f"Supplied IP address ({value}) is not a valid IPv4.")
 
