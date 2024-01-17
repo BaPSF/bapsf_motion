@@ -132,6 +132,11 @@ class Axis(EventActor):
         return self._motor
 
     @property
+    def ip(self):
+        """IPv4 address for the Axis' motor"""
+        return self.motor.ip
+
+    @property
     def is_moving(self) -> bool:
         """
         `True` or `False` indicating if the axis is currently moving.
