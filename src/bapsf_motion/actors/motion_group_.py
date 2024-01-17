@@ -634,6 +634,15 @@ class MotionGroupConfig(UserDict):
 
         self._transform = tr
 
+    def unlink_drive(self):
+        """
+        Unlink the 'drive' configuration component from the linked
+        instance of |Drive|.  The configuration component is now an
+        empty `dict`.
+        """
+        self._drive = None
+        self._data["drive"] = {}
+
     @property
     def as_toml_string(self) -> str:
         def convert_key_to_string(_d):
