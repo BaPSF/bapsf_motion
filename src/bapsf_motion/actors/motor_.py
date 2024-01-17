@@ -925,11 +925,14 @@ class Motor(EventActor):
                     #       appropriately...the exception should likely inherit
                     #       from TimeoutError, InterruptedError, ConnectionRefusedError,
                     #       and socket.timeout
-                    raise error_
+                    self._update_status(connected=False)
+                    raise ConnectionError(
+                        "Connection to motor could not be established."
+                    )
 
         if self.loop is not None:
-            self._get_motor_parameters()
             self._configure_motor()
+            self._get_motor_parameters()
 
     def _send_command(self, command, *args):
         """
