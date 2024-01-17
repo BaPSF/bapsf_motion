@@ -1186,7 +1186,7 @@ class Motor(EventActor):
         cmd_str = _header + bytes(cmd.encode("ASCII")) + _eom
         try:
             self.socket.sendall(cmd_str)
-        except ConnectionError as err:
+        except (ConnectionError, OSError) as err:
             self.logger.error(f"{err.__class__.__name__}: {err}")
             if err.errno == errno.EPIPE:
                 self.logger.error(
@@ -1196,6 +1196,10 @@ class Motor(EventActor):
             elif err.errno == errno.ESHUTDOWN:
                 self.logger.error(
                     "It appears the socket has been closed."
+                )
+            elif err.errno == errno.EBADF:
+                self.logger.error(
+                    "The socket likely has not been created."
                 )
 
             self.logger.info(
