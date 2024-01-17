@@ -965,7 +965,7 @@ class Motor(EventActor):
                 self.logger.info("Connection re-established.")
             else:
                 _rtn = self._process_command_return(command, recv_str)
-        except (ConnectionError, TimeoutError) as err:
+        except (ConnectionError, TimeoutError, OSError) as err:
             # Note: if the Ack/Nack protocol is not properly set (see method
             #       read_and_set_protocol(), then TimeoutErrors can occur
             #       even if the connection is still established.
