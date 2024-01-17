@@ -265,7 +265,7 @@ class EventActor(BaseActor, ABC):
             functionality to stop the loop.  (DEFAULT: `False`)
         """
         for task in list(self.tasks):
-            task.cancel()
+            self.loop.call_soon_threadsafe(task.cancel)
             self.tasks.remove(task)
 
         if delay_loop_stop:
