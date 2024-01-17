@@ -8,7 +8,7 @@ __actors__ = ["Axis"]
 import asyncio
 import logging
 
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motor_ import Motor
@@ -181,6 +181,21 @@ class Axis(EventActor):
         revolution of the motor (:attr:`motor`).
         """
         return self._units_per_rev
+
+    @units_per_rev.setter
+    def units_per_rev(self, value: Union[float, u.Quantity]):
+        """
+        Update the number of units translated per full revolution of the
+        motor.
+        """
+        if isinstance(value, float) and value > 0.0:
+            self._units_per_rev = value * self.units / u.rev
+        elif (
+            isinstance(value, u.Quantity)
+            and value.unit == self.units / u.rev
+            and value > 0.0
+        ):
+            self._units_per_rev = value
 
     @property
     def equivalencies(self):
