@@ -186,8 +186,6 @@ class AxisConfigWidget(QWidget):
         self.configChanged.connect(self._update_cm_per_rev_widget)
         self.configChanged.connect(self._update_online_led)
 
-        self.axisStatusChanged.connect(self._update_online_led)
-
     def _define_layout(self):
         _label = QLabel("IP:  ")
         _label.setAlignment(
