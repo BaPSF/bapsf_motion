@@ -320,22 +320,25 @@ class AxisConfigWidget(QWidget):
         self._spawn_axis()
         return True
 
-    def _spawn_axis(self):
+    def _spawn_axis(self) -> Union[Axis, None]:
         self.logger.info("Spawning Axis.")
         if isinstance(self.axis, Axis):
             self.axis.terminate(delay_loop_stop=True)
 
         try:
-            self.axis = Axis(
+            axis = Axis(
                 **self.axis_config,
                 logger=self.logger,
                 loop=self.axis_loop,
                 auto_run=True,
             )
 
-            self.axis.motor.status_changed.connect(self._update_online_led)
+            axis.motor.status_changed.connect(self._update_online_led)
         except ConnectionError:
-            self.axis = None
+            axis = None
+
+        self.axis = axis
+        return axis
 
     def closeEvent(self, event):
         self.logger.info("Closing AxisConfigWidget")
