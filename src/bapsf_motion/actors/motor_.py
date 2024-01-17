@@ -911,13 +911,15 @@ class Motor(EventActor):
                 TimeoutError,
                 InterruptedError,
                 ConnectionRefusedError,
+                OSError,
                 socket.timeout,
-            ) as error_:
+            ) as err:
                 msg = f"...attempt {_count+1} of {_allowed_attempts} failed"
                 if _count+1 < _allowed_attempts:
                     self.logger.warning(msg)
                 else:
                     self.logger.error(msg)
+                    self.logger.error(f"{err.__class__.__name__}: {err}")
                     # TODO: make this a custom exception (e.g. MotorConnectionError)
                     #       so other bapsfdaq_motion functionality can respond
                     #       appropriately...the exception should likely inherit
