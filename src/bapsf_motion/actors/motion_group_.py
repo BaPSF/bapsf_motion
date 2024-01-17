@@ -923,3 +923,44 @@ class MotionGroup(EventActor):
     @property
     def is_moving(self):
         return any([ax.is_moving for ax in self.drive.axes])
+
+    def replace_drive(self, drive: Union[Drive, Dict[str, Any]]):
+        """
+        Replace the |Drive| instance associated with the motion group.
+        If the new drive is not valid, then no replacement will be
+        performed.
+
+        Parameters
+        ----------
+        drive: Union[Drive, Dict[str, Any]]
+            The new drive to replace this existing drive.  This can
+            either be an instance of |Drive| or a valid dictionary
+            configuration for a drive.
+
+        Notes
+        -----
+
+        If the given `drive` is running, then it will be terminated and
+        respawned using the event loop :meth:`loop` associated with the
+        motion group.
+        """
+        if isinstance(drive, Drive):
+            config = drive.config
+            drive.terminate()
+        elif isinstance(drive, dict):
+            config = self.config._validate_drive(drive)
+        else:
+            return
+
+        # instantiate new drive
+        drive = self._spawn_drive(config)
+
+        # unlink and terminate old drive
+        self.config.unlink_drive()
+        if isinstance(self.drive, Drive):
+            self.drive.terminate(delay_loop_stop=True)
+
+        # link and add new drive
+        self._drive = drive
+        self.config.link_drive(self.drive)
+
