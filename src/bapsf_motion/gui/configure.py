@@ -93,7 +93,7 @@ class _OverlayWidget(QWidget):
 
 class AxisConfigWidget(QWidget):
     configChanged = Signal()
-    axisStatusChanged = Signal()
+    axis_loop = asyncio.new_event_loop()
 
     def __init__(self, name, parent=None):
         super().__init__(parent=parent)
@@ -261,8 +261,10 @@ class AxisConfigWidget(QWidget):
 
         if self.axis is not None:
             config = self.axis_config
-            self.axis.terminate()
             config["ip"] = new_ip
+
+            self.axis.terminate(delay_loop_stop=True)
+
             self._axis_config = config
             self.axis = None
 
@@ -322,12 +324,13 @@ class AxisConfigWidget(QWidget):
     def _spawn_axis(self):
         self.logger.info("Spawning Axis.")
         if isinstance(self.axis, Axis):
-            self.axis.terminate()
+            self.axis.terminate(delay_loop_stop=True)
 
         try:
             self.axis = Axis(
                 **self.axis_config,
-                logger=_logger,
+                logger=self.logger,
+                loop=self.axis_loop,
                 auto_run=True,
             )
 
@@ -339,7 +342,9 @@ class AxisConfigWidget(QWidget):
         self.logger.info("Closing AxisConfigWidget")
 
         if isinstance(self.axis, Axis):
-            self.axis.terminate()
+            self.axis.terminate(delay_loop_stop=True)
+
+        self.axis_loop.call_soon_threadsafe(self.axis_loop.stop)
 
         event.accept()
 
