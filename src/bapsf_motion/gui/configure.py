@@ -342,6 +342,21 @@ class AxisConfigWidget(QWidget):
         self.axis = axis
         return axis
 
+    def link_external_axis(self, axis):
+        if not isinstance(axis, Axis):
+            self.logger.warning(
+                "NOT linking external axis, supplied axis is not an Axis object."
+            )
+            return
+
+        self.logger.info(f"Linking external axis {axis.name}.")
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+
+        axis.motor.status_changed.connect(self._update_online_led)
+        self.axis = axis
+
     def closeEvent(self, event):
         self.logger.info("Closing AxisConfigWidget")
 
