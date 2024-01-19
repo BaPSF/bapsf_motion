@@ -255,6 +255,7 @@ class AxisConfigWidget(QWidget):
         new_ip = self.ip_widget.text()
         new_ip = self._validate_ip(new_ip)
         if new_ip is None:
+            # ip was not valid
             self.configChanged.emit()
             return
 
