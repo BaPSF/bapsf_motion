@@ -173,6 +173,8 @@ class EventActor(BaseActor, ABC):
         if self.loop is None or not self.loop.is_running():
             # no loop has been created or loop is not running
             return None
+        elif self._thread is not None:
+            return self._thread.ident
 
         # get thread id from inside the event loop
         future = asyncio.run_coroutine_threadsafe(
