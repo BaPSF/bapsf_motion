@@ -179,6 +179,17 @@ class AxisConfigWidget(QWidget):
             self._axis_config = self.axis.config.copy()
         return self._axis_config
 
+    @axis_config.setter
+    def axis_config(self, config):
+        # TODO: this needs to be more robust
+        axis_config = self.axis_config.copy()
+        axis_config["ip"] = config["ip"]
+        axis_config["units_per_rev"] = config["units_per_rev"]
+        self._axis_config = axis_config
+
+        self.configChanged.emit()
+        self._check_axis_completeness()
+
     def _connect_signals(self):
         self.ip_widget.editingFinished.connect(self._change_ip_address)
         self.cm_per_rev_widget.editingFinished.connect(self._change_cm_per_rev)
