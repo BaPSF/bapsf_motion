@@ -292,7 +292,10 @@ class AxisConfigWidget(QWidget):
         self._ip_handlers.append(handler)
 
     def _validate_ip(self, ip):
-        if ipv4_pattern.fullmatch(ip) is None:
+        if ip == self.axis_config["ip"]:
+            # ip did not change
+            return ip
+        elif ipv4_pattern.fullmatch(ip) is None:
             self.logger.error(
                 f"Supplied IP address ({ip}) is not a valid IPv4."
             )
