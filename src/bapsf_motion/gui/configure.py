@@ -479,10 +479,6 @@ class DriveConfigOverlay(_OverlayWidget):
 
         self.dr_name_widget.editingFinished.connect(self._change_drive_name)
 
-    @property
-    def logger(self):
-        return self._logger
-
     def _define_layout(self):
         _hline = QFrame()
         _hline.setFrameShape(QFrame.Shape.HLine)
@@ -537,6 +533,10 @@ class DriveConfigOverlay(_OverlayWidget):
         layout.addSpacing(18)
 
         return layout
+
+    @property
+    def logger(self):
+        return self._logger
 
     @property
     def drive(self) -> Union[Drive, None]:
