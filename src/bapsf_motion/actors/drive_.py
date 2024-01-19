@@ -160,8 +160,10 @@ class Drive(EventActor):
 
         for key, value in required_parameters.items():
             if not isinstance(settings[key], value):
+        for key, _type in required_parameters.items():
+            if not isinstance(settings[key], _type):
                 raise ValueError(
-                    f"For axis setting '{key}' expected type {value}, got "
+                    f"For axis setting '{key}' expected type {_type}, got "
                     f"type {type(settings[key])}."
                 )
 
