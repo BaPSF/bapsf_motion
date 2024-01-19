@@ -3,7 +3,7 @@ import logging
 import logging.config
 
 from pathlib import Path
-from PySide6.QtCore import Qt, QDir, Signal
+from PySide6.QtCore import Qt, QDir, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QColor, QPainter
 from PySide6.QtWidgets import (
     QMainWindow,
@@ -387,11 +387,20 @@ class AxisConfigWidget(QWidget):
 
 
 class DriveConfigOverlay(_OverlayWidget):
+    configChanged = Signal()
+    returnDriveConfig = Signal(object)
+
+    drive_loop = asyncio.new_event_loop()
 
     def __init__(self, parent: "MGWidget" = None):
         super().__init__(parent)
 
         self._logger = _logger
+        self._drive_handlers = []
+
+        self._drive = None
+        self._drive_config = None
+        self._axis_widgets = None
 
         # Define BUTTONS
 
@@ -456,11 +465,19 @@ class DriveConfigOverlay(_OverlayWidget):
         self.dr_name_widget = _widget
 
         # Define ADVANCED WIDGETS
-        self.axis_widgets = {}
 
         self.setLayout(self._define_layout())
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._connect_signals()
+
+    def _connect_signals(self):
+        self.discard_btn.clicked.connect(self.close)
+        self.done_btn.clicked.connect(self.return_and_close)
+        self.validate_btn.clicked.connect(self._validate_drive)
+
+        self.configChanged.connect(self._update_dr_name_widget)
+
+        self.dr_name_widget.editingFinished.connect(self._change_drive_name)
 
     @property
     def logger(self):
@@ -480,8 +497,8 @@ class DriveConfigOverlay(_OverlayWidget):
         layout.addWidget(hline)
         layout.addLayout(self._define_second_row_layout())
         layout.addSpacing(24)
-        layout.addWidget(self._init_axis_widget("X"))
-        layout.addWidget(self._init_axis_widget("Y"))
+        layout.addWidget(self._spawn_axis_widget("X"))
+        layout.addWidget(self._spawn_axis_widget("Y"))
         layout.addStretch(1)
 
         return layout
@@ -521,17 +538,171 @@ class DriveConfigOverlay(_OverlayWidget):
 
         return layout
 
-    def _init_axis_widget(self, name):
+    @property
+    def drive(self) -> Union[Drive, None]:
+        return self._drive
+
+    def _set_drive(self, dr: Union[Drive, None]):
+        if not (isinstance(dr, Drive) or dr is None):
+            return
+
+        self._drive = dr
+        self.configChanged.emit()
+
+    @property
+    def drive_config(self) -> Dict[str, Any]:
+        if isinstance(self.drive, Drive):
+            self._drive_config = self.drive.config.copy()
+            return self._drive_config
+        elif self._drive_config is None:
+            name = self.dr_name_widget.text()
+            name = "A New Drive" if name == "" else name
+            self._drive_config = {"name": name}
+
+        self._drive_config["axes"] = {}
+        for ii, axw in enumerate(self.axis_widgets):
+            self._drive_config["axes"][ii] = axw.axis_config
+
+        return self._drive_config
+
+    @drive_config.setter
+    def drive_config(self, config):
+        # TODO: this needs to be more robust...actually validate the config
+        if config is None or not config:
+            self._drive_config = None
+            self.configChanged.emit()
+            return
+        # elif "name" not in config:
+        #     self.logger.warning("Drive configuration does not supply a name.")
+        #     return
+        # elif "axes" not in config:
+        #     self.logger.warning("Drive configuration does not define axes.")
+        #     return
+        # elif len(config["axes"]) != 2:
+        #     self.logger.warning("Drive can only have 2 axes!!")
+        # elif all(["ip" in ax_config for ax_config in config.values()]):
+        #     ...
+
+        try:
+            self._spawn_drive(config)
+        except (TypeError, ValueError, KeyError) as err:
+            # self.logger.warning(f"{err.__class_.__name__}: {err}")
+            self.logger.warning(f"{type(err).__name__}: {err}")
+            self.logger.warning(
+                f"Given drive configuration is not valid, so doing nothing."
+            )
+            self._drive_config = (
+                None if "name" not in config else {"name": config["name"]}
+            )
+            self.configChanged.emit()
+
+    @property
+    def axis_widgets(self) -> List[AxisConfigWidget]:
+        if self._axis_widgets is None:
+            self._axis_widgets = []
+
+        return self._axis_widgets
+
+    @property
+    def axis_ips(self):
+        if len(self.axis_widgets) == 0:
+            return []
+
+        return [axw.axis_config["ip"] for axw in self.axis_widgets]
+
+    def _change_drive_name(self):
+        self.logger.info("Renaming drive...")
+        new_name = self.dr_name_widget.text()
+        if isinstance(self.drive, Drive):
+            self.drive.name = new_name
+        else:
+            self.drive_config["name"] = new_name
+
+        self.configChanged.emit()
+
+    def _change_validation_state(self, validate=False):
+        self.logger.info(f"Changing validation state to {validate}.")
+        self.validate_led.setChecked(validate)
+        self.done_btn.setEnabled(validate)
+
+        if isinstance(self.drive, Drive) and not validate:
+            config = {"name": self.drive.config.pop("name")}
+
+            self.drive.terminate(delay_loop_stop=True)
+            self._set_drive(None)
+
+            self.drive_config = config
+
+    def _update_dr_name_widget(self):
+        self.dr_name_widget.setText(self.drive_config["name"])
+
+    def set_drive_handler(self, handler: callable):
+        ...
+
+    def _validate_ip(self, ip):
+        existing_ips = self.axis_ips
+        if ip in existing_ips:
+            self.logger.error(
+                f"Supplied IP ({ip}) already exists amongst instantiated axes."
+            )
+            return
+
+        return ip
+
+    def _validate_drive(self):
+        # What to validate?
+        # 1. All axis widgets have an instantiated axis.
+        # 2. All instantiated axes are online.
+        # 3. The drive has a name
+        # 4. The current axis IPs do not overlap with IP in other
+        #    motion groups in the run
+        # 5. The drive is instantiable Drive()
+        self.logger.info("Validating drive.")
+
+        if not all([isinstance(axw.axis, Axis) for axw in self.axis_widgets]):
+            self.logger.warning(
+                "Drive is not valid since not all axes are configured."
+            )
+            return
+        elif not all([axw.online_led.isChecked() for axw in self.axis_widgets]):
+            self.logger.warning(
+                "Drive is not valid since not all axes are online."
+            )
+            return
+        elif self.dr_name_widget.text() == "":
+            self.logger.warning(
+                "Drive is not valid, it needs a name."
+            )
+            return
+
+        # TODO: NEED AN HANDLER THAT ENSURES NO OTHER MOTION GROUP USES
+        #       A DRIVE WITH THE SAME IPs
+        # for handler in self._drive_handlers:
+        #     rtn = handler(self.drive_config)
+        #     if not rtn:
+        #         self.logger.info("Drive configuration is NOT valid.")
+        #         return
+
+        self._spawn_drive()
+
+        self.logger.info("Drive configuration is valid.")
+
+        self._change_validation_state(True)
+
+    def _spawn_axis_widget(self, name):
         _frame = QFrame()
         _frame.setLayout(QVBoxLayout())
 
-        _widget = AxisConfigWidget(name)
+        _widget = AxisConfigWidget(name, parent=self)
+        _widget.set_ip_handler(self._validate_ip)
+        _widget.configChanged.connect(self._change_validation_state)
+        _widget.configChanged.connect(self._terminate_drive)
         # _widget.setStyleSheet(
         #     "border: 3px solid rgb(95, 95, 95);"
         #     "border-radius: 5px;"
         # )
 
-        self.axis_widgets[name] = _widget
+        self.axis_widgets.append(_widget)
 
         _frame.layout().addWidget(_widget)
         _frame.setStyleSheet(
@@ -542,9 +713,67 @@ class DriveConfigOverlay(_OverlayWidget):
 
         return _frame
 
-    def _connect_signals(self):
-        self.done_btn.clicked.connect(self.close)
-        self.discard_btn.clicked.connect(self.close)
+    def _spawn_drive(self, config=None):
+        self.logger.info(f"Spawning Drive. {self.drive_config}")
+        if isinstance(self.drive, Drive):
+            self.drive.terminate(delay_loop_stop=True)
+            self._set_drive(None)
+
+        for axw in self.axis_widgets:
+            if axw.axis is None:
+                continue
+            axw.axis.terminate(delay_loop_stop=True)
+
+        config = config if config is not None else self.drive_config
+        try:
+            drive = Drive(
+                name=config["name"],
+                axes=list(config["axes"].values()),
+                logger=self.logger,
+                loop=self.drive_loop,
+                auto_run=False,
+            )
+
+            for ii, ax in enumerate(drive.axes):
+                self.axis_widgets[ii].link_external_axis(ax)
+
+        except (ConnectionError, TimeoutError):
+            self.logger.warning("Not able to instantiate Drive.")
+            drive = None
+
+            for axw in self.axis_widgets:
+                axw.axis.run()
+
+        self._set_drive(drive)
+
+        return drive
+
+    def _terminate_drive(self):
+        if not isinstance(self.drive, Drive):
+            return
+
+        config = {"name": self.drive.config.pop("name")}
+
+        self.drive.terminate(delay_loop_stop=True)
+        self._set_drive(None)
+
+        self.drive_config = config
+
+    def return_and_close(self):
+        self.returnDriveConfig.emit(self.drive_config)
+        self.close()
+
+    def closeEvent(self, event):
+        self.logger.info("Closing DriveConfigOverlay")
+        for axw in self.axis_widgets:
+            axw.close()
+
+        if isinstance(self.drive, Drive):
+            self.drive.terminate(delay_loop_stop=True)
+
+        self.drive_loop.call_soon_threadsafe(self.drive_loop.stop)
+
+        event.accept()
 
 
 class RunWidget(QWidget):
