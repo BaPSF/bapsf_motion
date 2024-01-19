@@ -22,7 +22,14 @@ from PySide6.QtWidgets import (
 )
 from typing import Any, Dict, List, Union
 
-from bapsf_motion.actors import RunManager, MotionGroup, Drive, Axis, Motor
+from bapsf_motion.actors import (
+    RunManager,
+    RunManagerConfig,
+    MotionGroup,
+    MotionGroupConfig,
+    Drive,
+    Axis,
+)
 from bapsf_motion.gui.widgets import QLogger, StyleButton, LED
 from bapsf_motion.utils import toml, ipv4_pattern
 
