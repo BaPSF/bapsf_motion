@@ -267,8 +267,6 @@ class AxisConfigWidget(QWidget):
 
             self._axis_config = config
             self.axis = None
-
-            # self.axis.ip = new_ip
         else:
             self.axis_config["ip"] = new_ip
 
