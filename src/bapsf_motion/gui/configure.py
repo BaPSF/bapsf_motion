@@ -1330,7 +1330,7 @@ class ConfigureGUI(QMainWindow):
         self._stacked_widget = QStackedWidget()
         self._stacked_widget.addWidget(self._run_widget)
         self._stacked_widget.addWidget(self._mg_widget)
-        self._stacked_widget.setCurrentWidget(self._mg_widget)
+        self._stacked_widget.setCurrentWidget(self._run_widget)
 
         layout = self._define_layout()
 
@@ -1343,6 +1343,50 @@ class ConfigureGUI(QMainWindow):
         self._connect_signals()
 
         self.replace_rm({"name": "A New Run"})
+
+    def _connect_signals(self):
+        self._run_widget.import_btn.clicked.connect(self.import_file)
+        self._run_widget.done_btn.clicked.connect(self.save_and_close)
+        self._run_widget.quit_btn.clicked.connect(self.close)
+
+        # self._run_widget.add_mg_btn.clicked.connect(self._switch_stack)
+        self._run_widget.add_mg_btn.clicked.connect(self._init_add_new_motion_group)
+
+        self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
+
+        self._mg_widget.discard_btn.clicked.connect(self._switch_stack)
+        self._mg_widget.done_btn.clicked.connect(self._switch_stack)
+
+        self.configChanged.connect(self.update_display_config_text)
+        self.configChanged.connect(self.update_display_rm_name)
+        self.configChanged.connect(self.update_display_mg_list)
+
+    def _define_main_window(self):
+        self.setWindowTitle("Run Configuration")
+        self.resize(1760, 990)
+        self.setMinimumHeight(600)
+
+    def _define_layout(self):
+        layout = QHBoxLayout()
+
+        # layout.addWidget(self.dummy_widget())
+        # layout.addWidget(self._run_widget)
+        layout.addWidget(self._stacked_widget)
+
+        vline = QFrame()
+        vline.setFrameShape(QFrame.Shape.VLine)
+        vline.setMidLineWidth(3)
+        layout.addWidget(vline)
+
+        self._log_widget.setMinimumWidth(400)
+        self._log_widget.setMaximumWidth(500)
+        self._log_widget.sizeHint().setWidth(450)
+        self._log_widget.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Ignored)
+        layout.addWidget(self._log_widget)
+
+        return layout
 
     @property
     def logger(self) -> logging.Logger:
@@ -1405,58 +1449,6 @@ class ConfigureGUI(QMainWindow):
                 },
             },
         }
-
-    def _define_main_window(self):
-        self.setWindowTitle("Run Configuration")
-        self.resize(1760, 990)
-        self.setMinimumHeight(600)
-
-    def _define_layout(self):
-        layout = QHBoxLayout()
-
-        # layout.addWidget(self.dummy_widget())
-        # layout.addWidget(self._run_widget)
-        layout.addWidget(self._stacked_widget)
-
-        vline = QFrame()
-        vline.setFrameShape(QFrame.Shape.VLine)
-        vline.setMidLineWidth(3)
-        layout.addWidget(vline)
-
-        self._log_widget.setMinimumWidth(400)
-        self._log_widget.setMaximumWidth(500)
-        self._log_widget.sizeHint().setWidth(450)
-        self._log_widget.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Ignored)
-        layout.addWidget(self._log_widget)
-
-        return layout
-
-    def _connect_signals(self):
-        self._run_widget.import_btn.clicked.connect(self.import_file)
-        self._run_widget.done_btn.clicked.connect(self.save_and_close)
-        self._run_widget.quit_btn.clicked.connect(self.close)
-        self._run_widget.add_mg_btn.clicked.connect(self._switch_stack)
-
-        self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
-
-        self._mg_widget.discard_btn.clicked.connect(self._switch_stack)
-        self._mg_widget.done_btn.clicked.connect(self._switch_stack)
-
-        self.configChanged.connect(self.update_display_config_text)
-        self.configChanged.connect(self.update_display_rm_name)
-        self.configChanged.connect(self.update_display_mg_list)
-
-    def closeEvent(self, event: "QCloseEvent") -> None:
-        self.logger.info("Closing ConfigureGUI")
-        self._run_widget.close()
-        self._mg_widget.close()
-
-        if self.rm is not None:
-            self.rm.terminate()
-
-        event.accept()
 
     def replace_rm(self, config):
         if isinstance(self.rm, RunManager):
@@ -1526,10 +1518,36 @@ class ConfigureGUI(QMainWindow):
             self.rm.config.update_run_name(name)
             self.configChanged.emit()
 
+    def _init_add_new_motion_group(self):
+        index = len(self.rm.mgs)
+        # mg = MotionGroup(
+        #     config={"name": "A New MG"},
+        #     logger=self.rm.logger,
+        #     loop=self.rm.loop,
+        #     auto_run=False,
+        #     build_mode=True,
+        # )
+
+        self._mg_widget.mg_index = index
+        # self._mg_widget._set_mg(None)
+        # self._mg_widget.mg = mg
+
+        self._switch_stack()
+
     def _switch_stack(self):
         index = self._stacked_widget.currentIndex()
         switch_to = 0 if index == 1 else 1
         self._stacked_widget.setCurrentIndex(switch_to)
+
+    def closeEvent(self, event: "QCloseEvent") -> None:
+        self.logger.info("Closing ConfigureGUI")
+        self._run_widget.close()
+        self._mg_widget.close()
+
+        if self.rm is not None:
+            self.rm.terminate()
+
+        event.accept()
 
 
 if __name__ == "__main__":
