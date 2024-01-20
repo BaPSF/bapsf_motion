@@ -32,8 +32,13 @@ class BaseTransform(ABC):
         if isinstance(drive, Drive):
             self._drive = drive
             self._axes = list(range(drive.naxes))
-        elif isinstance(drive, (list, tuple)) and all(isinstance(dr, (int, str)) for dr in drive):
+        elif (
+                isinstance(drive, (list, tuple))
+                and all(isinstance(dr, (int, str)) for dr in drive)
+        ):
             # hidden mode for debugging purposes
+            # - In this case drive is a list or tuple of int or str values
+            #   that correspond to the axes' names.
 
             # TODO: ADD A WARNING HERE THAT WE ARE IN A DEBUG MODE
 
