@@ -967,17 +967,23 @@ class MotionGroup(EventActor):
         else:
             return
 
-        # instantiate new drive
-        drive = self._spawn_drive(config)
-
-        # unlink and terminate old drive
-        self.config.unlink_drive()
         if isinstance(self.drive, Drive):
             self.drive.terminate(delay_loop_stop=True)
 
-        # link and add new drive
-        self._drive = drive
+        self.config.unlink_drive()
+        self._spawn_drive(config)
         self.config.link_drive(self.drive)
+
+        if self.drive is None:
+            self.replace_transform({})
+            self.replace_motion_builder({})
+            return
+
+        if self.mb is not None and self.mb.mspace_ndims != self.drive.naxes:
+            self.replace_motion_builder({})
+
+        if self.transform is not None and self.transform not in (-1, self.drive.naxes):
+            self.replace_transform({})
 
     def replace_motion_builder(self, mb: Union[MotionBuilder, Dict[str, Any]]):
         if self.drive is None:
