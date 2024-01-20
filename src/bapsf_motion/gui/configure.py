@@ -985,12 +985,15 @@ class RunWidget(QWidget):
 class MGWidget(QWidget):
     configChanged = Signal()
 
+    mg_loop = asyncio.new_event_loop()
+
     def __init__(self, parent: "ConfigureGUI"):
         super().__init__(parent=parent)
 
         self._logger = _logger
 
         self._mg = None
+        self._mg_config = None
         self._mg_index = None
 
         # Define BUTTONS
@@ -1073,6 +1076,16 @@ class MGWidget(QWidget):
 
         self.setLayout(self._define_layout())
         self._connect_signals()
+
+        self._spawn_motion_group()
+
+    def _connect_signals(self):
+        self.drive_btn.clicked.connect(self._popup_drive_configuration)
+
+        self.mg_name_widget.editingFinished.connect(self._rename_motion_group)
+
+        self.configChanged.connect(self._update_toml_widget)
+        self.configChanged.connect(self._update_mg_name_widget)
 
     def _define_layout(self):
 
@@ -1166,20 +1179,25 @@ class MGWidget(QWidget):
     def _define_mspace_display_layout(self):
         ...
 
-    def _connect_signals(self):
-        self.drive_btn.clicked.connect(self._popup_drive_configuration)
-
-        self.mg_name_widget.editingFinished.connect(self._rename_motion_group)
-
-        self.configChanged.connect(self._update_toml_widget)
-        self.configChanged.connect(self._update_mg_name_widget)
-
     def _popup_drive_configuration(self):
         _overlay = DriveConfigOverlay(self)
         _overlay.move(0, 0)
         _overlay.resize(self.width(), self.height())
+
+        # overlay signals
+        _overlay.returnDriveConfig.connect(self._change_drive)
+        _overlay.discard_btn.clicked.connect(self._rerun_drive)
         _overlay.closing.connect(self._overlay_close)
+
         self._overlay_widget = _overlay
+
+        # initialize drive overlay with current drive configuration
+        drive_config = self.mg_config.get("drive", None)
+        drive_config = None if not drive_config else drive_config
+        if drive_config is not None and self.mg.drive is not None:
+            self.mg.drive.terminate(delay_loop_stop=True)
+        self._overlay_widget.drive_config = drive_config
+
         self._overlay_widget.show()
         self._overlay_shown = True
 
@@ -1208,22 +1226,79 @@ class MGWidget(QWidget):
         """Current working Motion Group"""
         return self._mg
 
-    @mg.setter
-    def mg(self, val: "MotionGroup"):
-        if isinstance(val, MotionGroup):
-            self._mg = val
+    def _set_mg(self, mg: Union[MotionGroup, None]):
+        if not (isinstance(mg, MotionGroup) or mg is None):
+            return
 
-            self.configChanged.emit()
+        self._mg = mg
+        self.configChanged.emit()
+
+    @property
+    def mg_config(self) -> Union[Dict[str, Any], "MotionGroupConfig"]:
+        if isinstance(self.mg, MotionGroup):
+            self._mg_config = self.mg.config
+            return self._mg_config
+        elif self._mg_config is None:
+            name = self.mg_name_widget.text()
+            name = "A New MG" if name == "" else name
+            self._mg_config = {"name": name}
+
+        return self._mg_config
+
+    @Slot(object)
+    def _change_drive(self, config):
+        self.logger.info("Replacing the motion group's drive.")
+        self.mg.replace_drive(config)
+
+        self.mb_btn.setEnabled(True)
+        self.transform_btn.setEnabled(True)
+
+        if self.mg.transform is None:
+            self.mg.replace_transform({"type": "identity"})
+
+        self.configChanged.emit()
+
+    def _rerun_drive(self):
+        self.logger.info("Restarting the motion group's drive")
+
+        if self.mg.drive is None:
+            return
+
+        config = self.mg.drive.config
+        self.mg.replace_drive(config)
+        self.configChanged.emit()
 
     def _update_toml_widget(self):
-        self.toml_widget.setText(self.mg.config.as_toml_string)
+        self.toml_widget.setText(self.mg_config.as_toml_string)
 
     def _update_mg_name_widget(self):
-        self.mg_name_widget.setText(self.mg.config["name"])
+        self.mg_name_widget.setText(self.mg_config["name"])
 
     def _rename_motion_group(self):
         self.mg.config["name"] = self.mg_name_widget.text()
         self.configChanged.emit()
+
+    def _spawn_motion_group(self):
+        self.logger.info("Spawning Motion Group")
+
+        if isinstance(self.mg, MotionGroup):
+            self.mg.terminate(delay_loop_stop=True)
+            self._set_mg(None)
+
+        try:
+            mg = MotionGroup(
+                config=self.mg_config,
+                logger=self.logger,
+                loop=self.mg_loop,
+                auto_run=False,
+            )
+        except (ConnectionError, TimeoutError, ValueError, TypeError):
+            self.logger.warning("Not able to instantiate MotionGroup.")
+            mg = None
+
+        self._set_mg(mg)
+
+        return mg
 
     def closeEvent(self, event):
         self.logger.info("Closing MGWidget")
