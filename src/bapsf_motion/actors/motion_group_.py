@@ -778,16 +778,23 @@ class MotionGroup(EventActor):
             Drive component of the motion group configuration.
         """
         if config is None or not config:
-            return
+            self._drive = None
+            return self._drive
 
-        dr = Drive(
-            axes=list(config["axes"].values()),
-            name=config["name"],
-            logger=self.logger,
-            loop=self.loop,
-            auto_run=False,
-        )
-        return dr
+        try:
+            dr = Drive(
+                axes=list(config["axes"].values()),
+                name=config["name"],
+                logger=self.logger,
+                loop=self.loop,
+                auto_run=False,
+            )
+            self._drive = dr
+            return self._drive
+        except (TypeError, ValueError) as err:
+            self.logger.warning(f"{type(err).__name__}: {err}")
+            self.logger.warning("Unable to instantiate drive.")
+            return
 
     def _spawn_motion_builder(self, config: Dict[str, Any]) -> Union[MotionBuilder, None]:
         """Return an instance of |MotionBuilder|."""
