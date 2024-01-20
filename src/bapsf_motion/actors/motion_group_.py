@@ -792,25 +792,23 @@ class MotionGroup(EventActor):
     def _spawn_motion_builder(self, config: Dict[str, Any]) -> Union[MotionBuilder, None]:
         """Return an instance of |MotionBuilder|."""
         if config is None or not config:
-            return None
+            self._mb = None
+            return self._mb
 
         # initialize the motion builder object
-        ml_config = config.copy()
+        mb_config = config.copy()
 
         for key in {"name", "user"}:
-            try:
-                ml_config.pop(key)
-            except KeyError:
-                pass
+            mb_config.pop(key, None)
 
         for key in {"space", "layers", "exclusions"}:
             try:
-                ml_config[key] = list(ml_config.pop(key).values())
+                mb_config[key] = list(mb_config.pop(key).values())
             except KeyError:
                 continue
 
-        _ml = MotionBuilder(**ml_config)
-        return _ml
+        self._mb = MotionBuilder(**mb_config)
+        return self._mb
 
     def _spawn_transform(
             self, config: Dict[str, Any]
