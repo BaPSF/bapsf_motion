@@ -748,7 +748,7 @@ class MotionGroup(EventActor):
 
         self._drive = self._spawn_drive(config.get("drive", None))
 
-        self._mb = self._setup_motion_builder(config.get("motion_builder", None))
+        self._mb = self._spawn_motion_builder(config.get("motion_builder", None))
         self._ml_index = None
 
         self._transform = self._spawn_transform(config.get("transform", None))
@@ -789,8 +789,7 @@ class MotionGroup(EventActor):
         )
         return dr
 
-    @staticmethod
-    def _setup_motion_builder(config: Dict[str, Any]) -> Union[MotionBuilder, None]:
+    def _spawn_motion_builder(self, config: Dict[str, Any]) -> Union[MotionBuilder, None]:
         """Return an instance of |MotionBuilder|."""
         if config is None or not config:
             return None
