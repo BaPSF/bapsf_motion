@@ -743,7 +743,7 @@ class MotionGroup(EventActor):
         self._mb = self._setup_motion_builder(config.get("motion_builder", None))
         self._ml_index = None
 
-        self._transform = self._setup_transform(config.get("transform", None))
+        self._transform = self._spawn_transform(config.get("transform", None))
 
         self._config = config
         self._config.link_drive(self.drive)
@@ -805,7 +805,7 @@ class MotionGroup(EventActor):
         _ml = MotionBuilder(**ml_config)
         return _ml
 
-    def _setup_transform(
+    def _spawn_transform(
             self, config: Dict[str, Any]
     ) -> Union[transform.BaseTransform, None]:
         """Return an instance of the :term:`transformer`."""
