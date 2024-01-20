@@ -61,7 +61,7 @@ class LaPDXYTransform(base.BaseTransform):
         movement.  (DEFAULT: ``(-1, 1)``)
 
     Examples
-    -------
+    --------
 
     Let's set up a :term:`transformer` for a probe drive mounted on
     an east port.  In this case the vertical axis motor is mounted
