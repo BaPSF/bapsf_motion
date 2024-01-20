@@ -23,6 +23,7 @@ class BaseTransform(ABC):
         Keyword arguments that are specific to the subclass.
     """
     _transform_type = NotImplemented  # type: str
+    _dimensionality = NotImplemented  # type: int
 
     # TODO: add method illustrate_transform() to plot and show how the
     #       space in transformed
@@ -66,6 +67,12 @@ class BaseTransform(ABC):
             # larger than the number axes the matrix transforms...the last
             # dimensions allows for shift translations
             raise ValueError(f"matrix.shape = {matrix.shape}")
+        elif self._dimensionality > 0 and self._dimensionality != len(self._axes):
+            raise ValueError(
+                f"The transform was design for probe drives with "
+                f"{self._dimensionality} axes, but was given a probe drive "
+                f"with {len(self._axes)} axes."
+            )
 
     def __call__(self, points, to_coords="drive"):
         r"""
@@ -163,8 +170,18 @@ class BaseTransform(ABC):
     def transform_type(self) -> str:
         """
         String naming the coordinate transformation type.  This is
-        unique among all subclasses of `BaseTransform`."""
+        unique among all subclasses of `BaseTransform`.
+        """
         return self._transform_type
+
+    @property
+    def dimensionality(self) -> int:
+        """
+        The designed dimensionality of the transform.  If ``-1``, then
+        the transform does not have a fixed dimensionality, and it can
+        morph to the associated |Drive|.
+        """
+        return self._dimensionality
 
     @property
     def config(self) -> Dict[str, Any]:

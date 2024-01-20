@@ -54,6 +54,7 @@ class IdentityTransform(base.BaseTransform):
           config["transform"] = {"type": "identity"}
     """
     _transform_type = "identity"
+    _dimensionality = -1
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         return dict()
