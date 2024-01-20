@@ -822,12 +822,15 @@ class MotionGroup(EventActor):
     ) -> Union[transform.BaseTransform, None]:
         """Return an instance of the :term:`transformer`."""
         if config is None or not config:
-            return
+            self._transform = None
+            return self._transform
 
         tr_config = config.copy()
-
         tr_type = tr_config.pop("type")
-        return transform.transform_factory(self.drive, tr_type=tr_type, **config)
+        self._transform = transform.transform_factory(
+            self.drive, tr_type=tr_type, **config
+        )
+        return self._transform
 
     def terminate(self, delay_loop_stop=False):
         self.drive.terminate(delay_loop_stop=True)
