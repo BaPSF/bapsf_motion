@@ -979,3 +979,56 @@ class MotionGroup(EventActor):
         self._drive = drive
         self.config.link_drive(self.drive)
 
+    def replace_motion_builder(self, mb: Union[MotionBuilder, Dict[str, Any]]):
+        if self.drive is None:
+            self.logger.warning(
+                "The motion group's drive is not defined.  The drive must be "
+                "defined before the motion builder."
+            )
+            self._mb = None
+            return
+        elif isinstance(mb, MotionBuilder):
+            if mb.mspace_ndims in (-1, self.drive.naxes):
+                config = mb.config.copy()
+            else:
+                self.logger.warning(
+                    f"The given motion builder does not have the correct "
+                    f"dimensionality for the motion group's drive, "
+                    f"{mb.mspace_ndims} and {self.drive.naxes} respectively."
+                )
+                return
+        elif not isinstance(mb, dict):
+            return
+        else:
+            config = self.config._validate_motion_builder(mb)
+
+        self.config.unlink_motion_builder()
+        self._spawn_motion_builder(config)
+        self.config.link_motion_builder(self.mb)
+
+    def replace_transform(self, tr: Union["transform.BaseTransform", Dict[str, Any]]):
+        if self.drive is None:
+            self.logger.warning(
+                "The motion group's drive is not defined.  The drive must be "
+                "defined before the transform."
+            )
+            self._transform = None
+            return
+        elif isinstance(tr, transform.BaseTransform):
+            if tr.dimensionality in (-1, self.drive.naxes):
+                config = tr.config.copy()
+            else:
+                self.logger.warning(
+                    "The given transform does not have the correct dimensionality "
+                    f"for the motion group's drive, {tr.dimensionality} and "
+                    f"{self.drive.naxes} respectively."
+                )
+                return
+        elif not isinstance(tr, dict):
+            return
+        else:
+            config = self.config._validate_transform(tr)
+
+        self.config.unlink_transform()
+        self._spawn_transform(config)
+        self.config.link_transform(self.transform)
