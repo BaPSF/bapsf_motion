@@ -643,6 +643,14 @@ class MotionGroupConfig(UserDict):
         self._drive = None
         self._data["drive"] = {}
 
+    def unlink_motion_builder(self):
+        self._motion_builder = None
+        self._data["motion_builder"] = {}
+
+    def unlink_transform(self):
+        self._transform = None
+        self._data["transform"] = {}
+
     @property
     def as_toml_string(self) -> str:
         def convert_key_to_string(_d):
