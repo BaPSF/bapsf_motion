@@ -105,6 +105,7 @@ class StyleButton(QPushButton):
         }
     _default_hover_style = {}
     _default_pressed_style = {"background-color": "rgb(117, 117, 117)"}
+    _default_checked_style = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -112,6 +113,7 @@ class StyleButton(QPushButton):
         self._base_style = {**self._default_base_style}
         self._hover_style = {**self._default_hover_style}
         self._pressed_style = {**self._default_pressed_style}
+        self._checked_style = {**self._default_checked_style}
 
         self._resetStyleSheet()
 
@@ -120,12 +122,15 @@ class StyleButton(QPushButton):
         _base = "; ".join([f"{k}: {v}" for k, v in self.base_style.items()])
         _hover = "; ".join([f"{k}: {v}" for k, v in self.hover_style.items()])
         _pressed = "; ".join([f"{k}: {v}" for k, v in self.pressed_style.items()])
+        _checked = "; ".join([f"{k}: {v}" for k, v in self.checked_style.items()])
         return f"""
         StyleButton {{ {_base} }}
         
         StyleButton:hover {{ {_hover}  }}
         
         StyleButton:pressed {{ {_pressed} }}
+        
+        StyleButton:checked {{ {_checked} }}
         """
 
     @property
@@ -140,20 +145,26 @@ class StyleButton(QPushButton):
     def pressed_style(self):
         return self._pressed_style
 
+    @property
+    def checked_style(self):
+        return self._checked_style
+
     def _resetStyleSheet(self):
         self.setStyleSheet(self._style)
 
     def update_style_sheet(self, styles, action="base", reset=False):
 
-        if action not in ("base", "hover", "pressed"):
+        if action not in ("base", "hover", "pressed", "checked"):
             return
 
         if action == "base":
             _style = self.base_style if not reset else {**self._default_base_style}
         elif action == "hover":
             _style = self.hover_style if not reset else {**self._default_hover_style}
-        else:  # action == "pressed":
+        elif action == "pressed":
             _style = self.pressed_style if not reset else {**self._default_pressed_style}
+        else: # action == "checked":
+            _style = self.pressed_style if not reset else {**self._default_checked_style}
 
         new_style = {**_style, **styles}
 
@@ -161,8 +172,10 @@ class StyleButton(QPushButton):
             self._base_style = new_style
         elif action == "hover":
             self._hover_style = new_style
-        else:  # action == "pressed"
+        elif action == "pressed":
             self._pressed_style = new_style
+        else:  # action == "pressed"
+            self._checked_style = new_style
 
         self._resetStyleSheet()
 
