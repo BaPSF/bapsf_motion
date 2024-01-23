@@ -378,6 +378,12 @@ class AxisConfigWidget(QWidget):
     def closeEvent(self, event):
         self.logger.info("Closing AxisConfigWidget")
 
+        try:
+            self.configChanged.disconnect()
+        except RuntimeError:
+            # everything already disconnected
+            pass
+
         if isinstance(self.axis, Axis):
             self.axis.terminate(delay_loop_stop=True)
 
@@ -760,11 +766,33 @@ class DriveConfigOverlay(_OverlayWidget):
         self.drive_config = config
 
     def return_and_close(self):
-        self.returnDriveConfig.emit(self.drive_config)
+        config = self.drive_config
+
+        self.configChanged.disconnect()
+        self.drive.terminate(delay_loop_stop=True)
+        self._set_drive(None)
+
+        for axw in self.axis_widgets:
+            axw.configChanged.disconnect()
+            axw.axis.terminate(delay_loop_stop=True)
+            axw.axis = None
+            axw.close()
+
+        self.logger.info(
+            f"Drive has been validated and is being returned so it can be"
+            f" added to the motion group.  Drive config is {config}."
+        )
+        self.returnDriveConfig.emit(config)
         self.close()
 
     def closeEvent(self, event):
         self.logger.info("Closing DriveConfigOverlay")
+        try:
+            self.configChanged.disconnect()
+        except RuntimeError:
+            # everything already disconnected
+            pass
+
         for axw in self.axis_widgets:
             axw.close()
 
