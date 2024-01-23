@@ -823,6 +823,13 @@ class Motor(EventActor):
         Current position of the motor, in motor units
         `~bapsf_motion.utils.steps`.
         """
+        if (
+            self.loop.is_running()
+            and not self.heartbeat_task.done()
+            and not self.heartbeat_task.cancelled()
+        ):
+            return self.status["position"]
+
         pos = self.send_command("get_position")
         if not isinstance(pos, self.ack_flags):
             self._update_status(position=pos)
