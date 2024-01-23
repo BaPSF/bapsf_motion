@@ -47,7 +47,11 @@ class SimpleSignal:
         if func not in self.handlers:
             self.handlers.append(func)
 
-    def disconnect(self, func):
+    def disconnect(self, func=None):
+        if func is None:
+            self._handlers = None
+            return
+
         try:
             self.handlers.remove(func)
         except ValueError:
