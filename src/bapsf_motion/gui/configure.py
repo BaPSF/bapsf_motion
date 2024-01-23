@@ -3,8 +3,8 @@ import logging
 import logging.config
 
 from pathlib import Path
-from PySide6.QtCore import Qt, QDir, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QColor, QPainter
+from PySide6.QtCore import Qt, QDir, Signal, Slot, QSize
+from PySide6.QtGui import QCloseEvent, QColor, QPainter, QIcon
 from PySide6.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
@@ -22,6 +22,10 @@ from PySide6.QtWidgets import (
 )
 from typing import Any, Dict, List, Union
 
+# noqa
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta
+
 from bapsf_motion.actors import (
     RunManager,
     RunManagerConfig,
@@ -32,6 +36,7 @@ from bapsf_motion.actors import (
 )
 from bapsf_motion.gui.widgets import QLogger, StyleButton, LED
 from bapsf_motion.utils import toml, ipv4_pattern
+from bapsf_motion.utils import units as u
 
 _logger = logging.getLogger(":: GUI ::")
 
@@ -804,6 +809,488 @@ class DriveConfigOverlay(_OverlayWidget):
         event.accept()
 
 
+class AxisControlWidget(QWidget):
+    axisLinked = Signal()
+    axisUnlinked = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self._logger = _logger
+
+        self._mg = None
+        self._axis_index = None
+
+        self.setFixedWidth(120)
+        # self.setEnabled(True)
+
+        # Define BUTTONS
+        _btn = StyleButton(qta.icon("fa.arrow-up"), "")
+        _btn.setIconSize(QSize(48, 48))
+        self.jog_forward_btn = _btn
+
+        _btn = StyleButton(qta.icon("fa.arrow-down"), "")
+        _btn.setIconSize(QSize(48, 48))
+        self.jog_backward_btn = _btn
+
+        _btn = StyleButton("FWD LIMIT")
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 95, 95)"},
+            action="checked"
+        )
+        _btn.setCheckable(True)
+        self.limit_fwd_btn = _btn
+
+        _btn = StyleButton("BWD LIMIT")
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 95, 95)"},
+            action="checked"
+        )
+        _btn.setCheckable(True)
+        self.limit_bwd_btn = _btn
+
+        _btn = StyleButton("HOME")
+        _btn.setEnabled(False)
+        self.home_btn = _btn
+
+        _btn = StyleButton("ZERO")
+        _btn.setEnabled(False)
+        self.zero_btn = _btn
+
+        # Define TEXT WIDGETS
+        _txt = QLabel("Name")
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setFixedHeight(18)
+        self.axis_name_label = _txt
+
+        _txt = QLineEdit("")
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setReadOnly(True)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        self.position_label = _txt
+
+        _txt = QLineEdit("")
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        self.target_position_label = _txt
+
+        _txt = QLineEdit("0")
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        self.jog_delta_label = _txt
+
+        # Define ADVANCED WIDGETS
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.jog_forward_btn.clicked.connect(self._jog_forward)
+        self.jog_backward_btn.clicked.connect(self._jog_backward)
+
+    def _define_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+
+        # layout.addStretch(1)
+        layout.addWidget(
+            self.axis_name_label,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addWidget(
+            self.position_label,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addWidget(
+            self.target_position_label,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        # layout.addStretch(1)
+        layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
+        layout.addWidget(self.jog_forward_btn)
+        layout.addStretch(1)
+        layout.addWidget(self.jog_delta_label)
+        layout.addWidget(self.home_btn)
+        layout.addStretch(1)
+        layout.addWidget(self.jog_backward_btn, alignment=Qt.AlignmentFlag.AlignBottom)
+        layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
+        # layout.addStretch(1)
+        layout.addWidget(self.zero_btn, alignment=Qt.AlignmentFlag.AlignBottom)
+        # layout.addStretch(1)
+        return layout
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def mg(self) -> Union[MotionGroup, None]:
+        return self._mg
+
+    @property
+    def axis_index(self) -> int:
+        return self._axis_index
+
+    @property
+    def axis(self) -> Union[Axis, None]:
+        if self.mg is None or self.axis_index is None:
+            return
+
+        return self.mg.drive.axes[self.axis_index]
+
+    @property
+    def position(self) -> u.Quantity:
+        position = self.mg.position
+        val = position.value[self.axis_index][0]
+        unit = position.unit
+        return val * unit
+
+    def link_axis(self, mg: MotionGroup, ax_index: int):
+        if (
+            not isinstance(ax_index, int)
+            or ax_index < 0
+            or ax_index >= len(mg.drive.axes)
+        ):
+            self.unlink_axis()
+            return
+
+        axis = mg.drive.axes[ax_index]
+        if self.axis is not None and self.axis is axis:
+            pass
+        else:
+            self.unlink_axis()
+
+        self._mg = mg
+        self._axis_index = ax_index
+
+        self.axis_name_label.setText(self.axis.name)
+        self.axis.motor.status_changed.connect(self._update_display_of_axis_status)
+        self._update_display_of_axis_status()
+
+        self.axisLinked.emit()
+
+    def unlink_axis(self):
+        if self.axis is not None:
+            # self.axis.terminate(delay_loop_stop=True)
+            self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+
+        self._mg = None
+        self._axis_index = None
+        self.axisUnlinked.emit()
+
+    # def link_axis(self, axis):
+    #     if not isinstance(axis, Axis):
+    #         self.logger.warning(
+    #             f"Expect type {Axis} for axis, but got type {type(axis)}."
+    #         )
+    #
+    #     if self.axis is not None and self.axis is axis:
+    #         pass
+    #     else:
+    #         self.unlink_axis()
+    #         self._axis = axis
+    #
+    #     self.axis_name_label.setText(self.axis.name)
+    #     self.axis.motor.status_changed.connect(self._update_display_of_axis_status)
+    #     self._update_display_of_axis_status()
+    #
+    #     self.axisLinked.emit()
+    #
+    # def unlink_axis(self):
+    #     if self.axis is not None:
+    #         self.axis.terminate(delay_loop_stop=True)
+    #         self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+    #
+    #     self._axis = None
+    #     self.axisUnlinked.emit()
+
+    def _update_display_of_axis_status(self):
+        # pos = self.axis.motor.status["position"]
+        pos = self.position
+        self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
+
+        limits = self.axis.motor.status["limits"]
+        self.logger.info(f"The axis limits are {limits}")
+        self.limit_fwd_btn.setChecked(limits["CW"])
+        self.limit_bwd_btn.setChecked(limits["CCW"])
+
+    def _get_jog_delta(self):
+        delta_str = self.jog_delta_label.text()
+        return float(delta_str)
+
+    def _jog_forward(self):
+        pos = self.position.value + self._get_jog_delta()
+        self._move_to(pos)
+
+    def _jog_backward(self):
+        pos = self.position.value - self._get_jog_delta()
+        self._move_to(pos)
+
+    def _move_to(self, target_ax_pos):
+        if self.mg.drive.is_moving:
+            return
+
+        position = self.mg.position.value
+        position[self.axis_index] = target_ax_pos
+
+        self.mg.move_to(position)
+
+
+class DriveControlWidget(QWidget):
+    driveLinked = Signal()
+    driveUnlinked = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self._logger = _logger
+
+        self._mg = None
+        self._axis_control_widgets = []  # type: List[AxisControlWidget]
+
+        self.setEnabled(True)
+
+        # Define BUTTONS
+
+        _btn = StyleButton("STOP")
+        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        _btn.setFixedWidth(200)
+        _btn.setMinimumHeight(400)
+        font = _btn.font()
+        font.setPointSize(32)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.update_style_sheet(
+            {
+                "background-color": "rgb(255, 75, 75)",
+                "border": "3px solid rgb(170, 170, 170)",
+            },
+        )
+        self.stop_1_btn = _btn
+
+        _btn = StyleButton("STOP")
+        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        _btn.setFixedWidth(200)
+        _btn.setMinimumHeight(400)
+        font = _btn.font()
+        font.setPointSize(32)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.update_style_sheet(
+            {
+                "background-color": "rgb(255, 75, 75)",
+                "border": "3px solid rgb(170, 170, 170)",
+            },
+        )
+        self.stop_2_btn = _btn
+
+        _btn = StyleButton("Move \n To")
+        _btn.setFixedWidth(100)
+        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        font = _btn.font()
+        font.setPointSize(26)
+        font.setBold(False)
+        _btn.setFont(font)
+        self.move_to_btn = _btn
+
+        _btn = StyleButton("Home \n All")
+        _btn.setFixedWidth(100)
+        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        font = _btn.font()
+        font.setPointSize(26)
+        font.setBold(False)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        self.home_btn = _btn
+
+        _btn = StyleButton("Zero \n All")
+        _btn.setFixedWidth(100)
+        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        font = _btn.font()
+        font.setPointSize(26)
+        font.setBold(False)
+        _btn.setFont(font)
+        self.zero_all_btn = _btn
+
+        # Define TEXT WIDGETS
+        # Define ADVANCED WIDGETS
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.stop_1_btn.clicked.connect(self._stop_move)
+        self.stop_2_btn.clicked.connect(self._stop_move)
+
+    def _define_layout(self):
+        # Sub-Layout #1
+        sub_layout = QVBoxLayout()
+        sub_layout.addWidget(self.move_to_btn)
+        sub_layout.addStretch()
+        sub_layout.addWidget(self.home_btn)
+        sub_layout.addStretch()
+        sub_layout.addWidget(self.zero_all_btn)
+
+        # Sub-Layout #2
+        _text = QLabel("Position")
+        font = _text.font()
+        font.setPointSize(14)
+        _text.setFont(font)
+        _pos_label = _text
+
+        _text = QLabel("Target")
+        font = _text.font()
+        font.setPointSize(14)
+        _text.setFont(font)
+        _target_label = _text
+
+        _text = QLabel("Jog Δ")
+        font = _text.font()
+        font.setPointSize(14)
+        _text.setFont(font)
+        _jog_delta_label = _text
+
+        sub_layout2 = QVBoxLayout()
+        sub_layout2.setSpacing(8)
+        sub_layout2.addSpacing(32)
+        sub_layout2.addWidget(
+            _pos_label,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+        sub_layout2.addWidget(
+            _target_label,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+        sub_layout2.addStretch(14)
+        sub_layout2.addWidget(
+            _jog_delta_label,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+        sub_layout2.addStretch(20)
+
+        # Main Layout
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            self.stop_1_btn,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addLayout(sub_layout)
+        layout.addLayout(sub_layout2)
+        for ii in range(4):
+            acw = AxisControlWidget(self)
+            visible = True if ii == 0 else False
+            acw.setVisible(visible)
+            layout.addWidget(acw)
+            self._axis_control_widgets.append(acw)
+            layout.addSpacing(2)
+        layout.addStretch()
+        layout.addWidget(
+            self.stop_2_btn,
+            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+        )
+        return layout
+
+    @property
+    def logger(self):
+        return self._logger
+
+    @property
+    def mg(self) -> Union[MotionGroup, None]:
+        return self._mg
+
+    def link_motion_group(self, mg):
+        if not isinstance(mg, MotionGroup):
+            self.logger.warning(
+                f"Expected type {MotionGroup} for motion group, but got type"
+                f" {type(mg)}."
+            )
+
+        if mg.drive is None:
+            # drive has not been set yet
+            self.unlink_motion_group()
+            return
+        elif (
+            self.mg is not None
+            and self.mg.drive is not None
+            and mg.drive is self.mg.drive
+        ):
+            pass
+        else:
+            self.unlink_motion_group()
+            self._mg = mg
+
+        for ii, ax in enumerate(self.mg.drive.axes):
+            acw = self._axis_control_widgets[ii]
+            acw.link_axis(self.mg, ii)
+            acw.show()
+
+        self.setEnabled(True)
+
+    def unlink_motion_group(self):
+        for ii, acw in enumerate(self._axis_control_widgets):
+            visible = True if ii == 0 else False
+
+            acw.unlink_axis()
+            acw.setVisible(visible)
+
+        # self.mg.terminate(delay_loop_stop=True)
+        self._mg = None
+        self.setEnabled(False)
+
+    # def _link_drive(self, drive):
+    #     if not isinstance(drive, Drive):
+    #         self.logger.warning(
+    #             f"Expected type {Drive} for drive, but got type {type(drive)}."
+    #         )
+    #
+    #     if self.drive is not None and self.drive is drive:
+    #         pass
+    #     else:
+    #         self.unlink_drive()
+    #         self._drive = drive
+    #
+    #     for ii, ax in enumerate(self.drive.axes):
+    #         acw = self._axis_control_widgets[ii]
+    #         acw.link_axis(ax)
+    #         acw.show()
+    #
+    #     self.setEnabled(True)
+    #     self.driveLinked.emit()
+    #
+    # def link_drive(self, drive):
+    #     self._link_drive(drive)
+    #
+    # def _unlink_drive(self):
+    #     if self.drive is not None:
+    #         self.drive.terminate(delay_loop_stop=True)
+    #
+    #     for acw in self._axis_control_widgets:
+    #         acw.unlink_axis()
+    #         acw.hide()
+    #
+    #     self._drive = None
+    #
+    #     self.setEnabled(False)
+    #     self.driveUnlinked.emit()
+    #
+    # def unlink_drive(self):
+    #     self._unlink_drive()
+
+    def _stop_move(self):
+        self.mg.stop()
+
+
 class RunWidget(QWidget):
     def __init__(self, parent: "ConfigureGUI"):
         super().__init__(parent=parent)
@@ -1102,6 +1589,9 @@ class MGWidget(QWidget):
         self._overlay_widget = None  # type: Union[_OverlayWidget, None]
         self._overlay_shown = False
 
+        self.drive_control_widget = DriveControlWidget(self)
+        self.drive_control_widget.setEnabled(False)
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -1130,11 +1620,13 @@ class MGWidget(QWidget):
         hline2 = _hline
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(self._define_banner_layout())
         layout.addWidget(hline1)
         layout.addLayout(self._define_mg_builder_layout(), 2)
         layout.addWidget(hline2)
-        layout.addStretch(1)
+        layout.addWidget(self.drive_control_widget)
+        # layout.addStretch(1)
 
         return layout
 
@@ -1284,6 +1776,7 @@ class MGWidget(QWidget):
         if self.mg.transform is None:
             self.mg.replace_transform({"type": "identity"})
 
+        self._refresh_drive_control()
         self.configChanged.emit()
 
     def _rerun_drive(self):
@@ -1294,7 +1787,16 @@ class MGWidget(QWidget):
 
         config = self.mg.drive.config
         self.mg.replace_drive(config)
+        self._refresh_drive_control()
         self.configChanged.emit()
+
+    def _refresh_drive_control(self):
+        self.logger.info("Refreshing drive control widget.")
+        if self.mg is None or self.mg.drive is None:
+            self.drive_control_widget.unlink_motion_group()
+            return
+
+        self.drive_control_widget.link_motion_group(self.mg)
 
     def _update_toml_widget(self):
         self.toml_widget.setText(self.mg_config.as_toml_string)
@@ -1318,7 +1820,7 @@ class MGWidget(QWidget):
                 config=self.mg_config,
                 logger=self.logger,
                 loop=self.mg_loop,
-                auto_run=False,
+                auto_run=True,
             )
         except (ConnectionError, TimeoutError, ValueError, TypeError):
             self.logger.warning("Not able to instantiate MotionGroup.")
@@ -1330,8 +1832,18 @@ class MGWidget(QWidget):
 
     def closeEvent(self, event):
         self.logger.info("Closing MGWidget")
+        try:
+            self.configChanged.disconnect()
+        except RuntimeError:
+            pass
+
         if self._overlay_widget is not None:
             self._overlay_widget.close()
+
+        if isinstance(self.mg, MotionGroup):
+            self.mg.terminate(delay_loop_stop=True)
+
+        self.mg_loop.call_soon_threadsafe(self.mg_loop.stop)
         event.accept()
 
 
