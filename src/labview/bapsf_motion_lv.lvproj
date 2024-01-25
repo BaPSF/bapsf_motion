@@ -19,11 +19,32 @@
 		<Property Name="server.vi.callsEnabled" Type="Bool">true</Property>
 		<Property Name="server.vi.propertiesEnabled" Type="Bool">true</Property>
 		<Property Name="specify.custom.address" Type="Bool">false</Property>
-		<Item Name="__pycache__" Type="Folder">
-			<Item Name="bapsf_motion_interface.cpython-310.pyc" Type="Document" URL="../__pycache__/bapsf_motion_interface.cpython-310.pyc"/>
-		</Item>
-		<Item Name="labview" Type="Folder" URL="..">
-			<Property Name="NI.DISK" Type="Bool">true</Property>
+		<Item Name="__pycache__" Type="Folder"/>
+		<Item Name="labview" Type="Folder">
+			<Item Name="helpers" Type="Folder" URL="../helpers">
+				<Property Name="NI.DISK" Type="Bool">true</Property>
+			</Item>
+			<Item Name="requests" Type="Folder" URL="../requests">
+				<Property Name="NI.DISK" Type="Bool">true</Property>
+			</Item>
+			<Item Name="typedefs" Type="Folder" URL="../typedefs">
+				<Property Name="NI.DISK" Type="Bool">true</Property>
+			</Item>
+			<Item Name="utils" Type="Folder" URL="../utils">
+				<Property Name="NI.DISK" Type="Bool">true</Property>
+			</Item>
+			<Item Name=".DS_Store" Type="Document" URL="../.DS_Store"/>
+			<Item Name="_configure.py" Type="Document" URL="../_configure.py"/>
+			<Item Name="bapsf_motion.vi" Type="VI" URL="../bapsf_motion.vi"/>
+			<Item Name="bapsf_motion_interface.py" Type="Document" URL="../bapsf_motion_interface.py"/>
+			<Item Name="bapsf_motion_lv.aliases" Type="Document" URL="../bapsf_motion_lv.aliases"/>
+			<Item Name="bapsf_motion_lv.lvlps" Type="Document" URL="../bapsf_motion_lv.lvlps"/>
+			<Item Name="configure_dash_.py" Type="Document" URL="../configure_dash_.py"/>
+			<Item Name="configure_gui.py" Type="Document" URL="../configure_gui.py"/>
+			<Item Name="package-lock.json" Type="Document" URL="../package-lock.json"/>
+			<Item Name="README.md" Type="Document" URL="../README.md"/>
+			<Item Name="run.log" Type="Document" URL="../run.log"/>
+			<Item Name="ShowConsoleForPythonNode.png" Type="Document" URL="../ShowConsoleForPythonNode.png"/>
 		</Item>
 		<Item Name="Dependencies" Type="Dependencies">
 			<Item Name="vi.lib" Type="Folder">
