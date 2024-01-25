@@ -204,12 +204,10 @@ def configure():
         if p.exitcode == 0:
             config_str = as_toml_string(data)
             logger.info(f"The run configurator returned a configuration of {config_str}.")
-            return config_str
         else:
             logger.error(
                 f"The run configurator returned with an exit code of {p.exitcode}."
             )
-            return ""
+            config_str = ""
 
-    p.terminate()
-    return _config
+    return config_str
