@@ -1,14 +1,17 @@
 
 import functools
 import logging
+import multiprocessing as mp
 import time
 
+from collections import UserDict
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Union
+from typing import Any, Dict, Union
 
 try:
     from bapsf_motion.actors import RunManager
+    from bapsf_motion.utils import toml
 except ModuleNotFoundError:
     import sys
 
@@ -20,6 +23,7 @@ except ModuleNotFoundError:
     sys.path.append(str(_BAPSF_MOTION))
 
     from bapsf_motion.actors import RunManager
+    from bapsf_motion.utils import toml
 
 _HERE = Path(__file__).resolve().parent
 _LOG_FILE = (_HERE / "run.log").resolve()
@@ -133,15 +137,79 @@ def cleanup():
     del globals()["_rm"]
 
 
+def _deepcopy_dict(item):
+    _copy = {}
+    for key, val in item.items():
+        if isinstance(val, (dict, UserDict)):
+            val = _deepcopy_dict(val)
+
+        _copy[key] = val
+
+    return _copy
+
+
+def as_toml_string(config) -> str:
+    def convert_key_to_string(_d):
+        _config = {}
+        for key, value in _d.items():
+            if isinstance(value, (dict, UserDict)):
+                value = convert_key_to_string(value)
+
+            if not isinstance(key, str):
+                key = f"{key}"
+
+            _config[key] = value
+
+        return _config
+
+    config_str = toml.dumps(convert_key_to_string(config))
+    if not config_str.startswith("[run]"):
+        config_str = "[run]\n" + config_str
+
+    return config_str
+
+
+def _run_configure(lock: mp.Lock, config: Dict[str, Any]):
+    from PySide6.QtWidgets import QApplication
+    from bapsf_motion import __version__
+    from bapsf_motion.gui.configure import ConfigureGUI
+
+    lock.acquire()
+
+    app = QApplication([])
+    window = ConfigureGUI()
+    window.show()
+    app.exec()
+
+    config.update(_deepcopy_dict(window.rm.config))
+    config["BAPSF_MOTION_VERSION"] = __version__
+
+    lock.release()
+
+
 def configure():
-    import labview.configure_ as config
-    import multiprocessing
+    mp.set_executable(
+        (_HERE / ".venv" / "bin" / "python").resolve()
+    )
+    mp.set_start_method("spawn")
+    lock = mp.Lock()
+    with mp.Manager() as manager:
+        data = manager.dict()
+        p = mp.Process(target=_run_configure, args=(lock, data))
+        p.start()
+        p.join()
 
-    q = multiprocessing.Queue()
-    p = multiprocessing.Process(target=config.run, args=(q,))
-    p.start()
+        logger.info(f"The run configurator finished with exit code {p.exitcode}.")
 
-    _config = q.get(block=True)
+        if p.exitcode == 0:
+            config_str = as_toml_string(data)
+            logger.info(f"The run configurator returned a configuration of {config_str}.")
+            return config_str
+        else:
+            logger.error(
+                f"The run configurator returned with an exit code of {p.exitcode}."
+            )
+            return ""
 
     p.terminate()
     return _config
