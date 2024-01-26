@@ -4,10 +4,11 @@
 astropy
 matplotlib >= 3.3.0
 numpy >= 1.18.1
-PyQt5
+numpydoc
+pkg_resources
 PySide6
-qtwidgets
-scipy
+qtawesome
 tomli; python_version < '3.11'
 tomli_w
+tqdm
 xarray
