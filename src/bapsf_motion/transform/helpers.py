@@ -3,11 +3,12 @@ Module for helper functions associated with coordinate transform
 functionality between the probe :term:`motion space` and the probe
 drive coordinate system.
 """
-__all__ = ["register_transform", "transform_factory"]
+__all__ = ["register_transform", "transform_factory", "transform_registry"]
 
 import inspect
 
-from typing import Type
+from numpydoc.docscrape import NumpyDocString, Parameter
+from typing import Dict, List, Type
 
 from bapsf_motion.transform import base
 
@@ -96,3 +97,55 @@ def transform_factory(drive: "Drive", *, tr_type: str, **settings):
     # TODO: How to automatically document the available ex_types?
     tr = _TRANSFORM_REGISTRY[tr_type]
     return tr(drive, **settings)
+
+
+class TransformRegistry:
+    _registry = _TRANSFORM_REGISTRY  # type: Dict[str, base.BaseTransform]
+
+    @property
+    def available_transforms(self):
+        return set(self._registry.keys())
+
+    def get_transform(self, name: str):
+        try:
+            return self._registry[name]
+        except KeyError:
+            raise ValueError(
+                f"The requested transform {name} does not exist."
+            )
+
+    def get_names_by_dimensionality(self, ndim: int):
+        return {
+             name
+             for name, tr in self._registry.items()
+             if tr._dimensionality in (-1, ndim)
+         }
+
+    def get_input_parameters(self, name: str):
+        tr = self.get_transform(name)
+        sig = inspect.signature(tr).parameters.copy()
+        sig.pop("drive", None)
+        sig.pop("kwargs", None)
+
+        doc = inspect.getdoc(tr)
+        ndoc = NumpyDocString(doc)
+        ndoc_params = ndoc["Parameters"]  # type: List[Parameter]
+
+        params = {}
+        for pname, param in sig.items():
+            desc = ""
+            for pdesc in ndoc_params:
+                if pname == pdesc.name.split(":")[0]:
+                    desc = pdesc.desc
+                    ndoc_params.remove(pdesc)
+                    break
+
+            params[pname] = {
+                "param": param,
+                "desc": desc,
+            }
+
+        return params
+
+
+transform_registry = TransformRegistry()
