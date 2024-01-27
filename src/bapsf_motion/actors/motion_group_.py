@@ -833,7 +833,8 @@ class MotionGroup(EventActor):
         return self._transform
 
     def terminate(self, delay_loop_stop=False):
-        self.drive.terminate(delay_loop_stop=True)
+        if self.drive is not None:
+            self.drive.terminate(delay_loop_stop=True)
         super().terminate(delay_loop_stop=delay_loop_stop)
 
     @property
