@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QFileDialog,
     QStackedWidget,
+    QComboBox,
 )
 from typing import Any, Dict, List, Union
 
@@ -35,6 +36,8 @@ from bapsf_motion.actors import (
     Axis,
 )
 from bapsf_motion.gui.widgets import QLogger, StyleButton, LED
+from bapsf_motion.transform import BaseTransform
+from bapsf_motion.transform.helpers import transform_registry
 from bapsf_motion.utils import toml, ipv4_pattern
 from bapsf_motion.utils import units as u
 
@@ -807,6 +810,188 @@ class DriveConfigOverlay(_OverlayWidget):
         self.drive_loop.call_soon_threadsafe(self.drive_loop.stop)
 
         event.accept()
+
+
+class TransformConfigOverlay(_OverlayWidget):
+    configChanged = Signal()
+    returnConfig = Signal(object)
+
+    registry = transform_registry
+
+    def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
+        super().__init__(parent)
+
+        self._logger = _logger
+        self._mg = mg
+        self._transform = None
+        self._params_widget = None  # type: Union[None, QWidget]
+
+        self.setStyleSheet("border: 0px")
+
+        # Define BUTTONS
+
+        _btn = StyleButton("Replace")
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
+        font.setPointSize(24)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        self.done_btn = _btn
+
+        _btn = StyleButton("Discard && Return")
+        _btn.setFixedWidth(250)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
+        font.setPointSize(24)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 110, 110)"}
+        )
+        self.discard_btn = _btn
+
+        # Define TEXT WIDGETS
+        # Define ADVANCED WIDGETS
+        _w = QComboBox(self)
+        _w.addItems(
+            list(self.registry.get_names_by_dimensionality(self._mg.drive.naxes))
+        )
+        _w.setCurrentText(self._mg.transform.transform_type)
+        _w.setEditable(False)
+        font = _w.font()
+        font.setPointSize(18)
+        _w.setFont(font)
+        _w.setMinimumWidth(300)
+        _w.setMaximumWidth(500)
+        self.combo_widget = _w
+
+        self.setLayout(self._define_layout())
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.done_btn.clicked.connect(self.close)
+        self.discard_btn.clicked.connect(self.close)
+
+        self.combo_widget.currentTextChanged.connect(self._refresh_params_widget)
+
+    def _define_layout(self):
+        _hline = QFrame()
+        _hline.setFrameShape(QFrame.Shape.HLine)
+        _hline.setFrameShadow(QFrame.Shadow.Plain)
+        _hline.setLineWidth(3)
+        _hline.setMidLineWidth(3)
+        _hline.setStyleSheet("border-color: rgb(95, 95, 95)")
+        hline = _hline
+
+        self._params_widget = self._define_params_widget(
+            self.transform.transform_type
+        )
+
+        layout = QVBoxLayout(self)
+        layout.addLayout(self._define_banner_layout())
+        layout.addWidget(hline)
+        layout.addSpacing(8)
+        layout.addWidget(self.combo_widget)
+        layout.addSpacing(8)
+        layout.addWidget(self._params_widget)
+        layout.addStretch()
+
+        return layout
+
+    def _define_banner_layout(self):
+        layout = QHBoxLayout(self)
+        layout.addWidget(
+            self.discard_btn,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addStretch()
+        layout.addWidget(
+            self.done_btn,
+            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+        )
+        return layout
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def mg(self) -> Union[MotionGroup, None]:
+        return self._mg
+
+    @property
+    def transform(self) -> BaseTransform:
+        if self._transform is None:
+            return self.mg.transform
+
+        return self._transform
+
+    def _define_params_widget(self, tr_type: str):
+        # if self.transform.transform_type == tr_type:
+        #     return
+
+        layout = QGridLayout(self)
+        layout.setColumnStretch(0, 2)
+        layout.setColumnStretch(1, 2)
+        layout.setColumnStretch(2, 4)
+        layout.setColumnStretch(3, 1)
+
+        params = self.registry.get_input_parameters(tr_type)
+        ii = 0
+        for key, val in params.items():
+            _txt = QLabel(key, parent=self)
+            font = _txt.font()
+            font.setPointSize(16)
+            font.setBold(True)
+            _txt.setFont(font)
+            _label = _txt
+
+            _txt = QLabel(
+                f"{val['param'].annotation}".split(".")[-1],
+                parent=self
+            )
+            font = _txt.font()
+            font.setPointSize(16)
+            font.setBold(True)
+            _txt.setFont(font)
+            _type = _txt
+
+            _txt = QLineEdit(parent=self)
+            font = _txt.font()
+            font.setPointSize(16)
+            _txt.setFont(font)
+            _input = _txt
+            default = val["param"].default
+            if default is not val["param"].empty:
+                _input.setText(f"{default}")
+            _input.setToolTip("\n".join(val["desc"]))
+
+            layout.addWidget(_label, ii, 0, alignment=Qt.AlignmentFlag.AlignRight)
+            layout.addWidget(_type, ii, 1, alignment=Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(_input, ii, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+            ii += 1
+
+        _widget = QWidget()
+        _widget.setLayout(layout)
+        return _widget
+
+    @Slot(str)
+    def _refresh_params_widget(self, tr_type):
+        _widget = self._define_params_widget(tr_type)
+
+        old_widget = self._params_widget
+        self.layout().replaceWidget(old_widget, _widget)
+        self._params_widget.close()
+        self._params_widget.deleteLater()
+        self._params_widget = _widget
+
+    def link_motion_group(self, mg: MotionGroup):
+        if not isinstance(mg, MotionGroup):
+            return
+
+        self._mg = mg
 
 
 class AxisControlWidget(QWidget):
@@ -1599,6 +1784,7 @@ class MGWidget(QWidget):
 
     def _connect_signals(self):
         self.drive_btn.clicked.connect(self._popup_drive_configuration)
+        self.transform_btn.clicked.connect(self._popup_transform_configuration)
 
         self.mg_name_widget.editingFinished.connect(self._rename_motion_group)
 
@@ -1721,7 +1907,33 @@ class MGWidget(QWidget):
         self._overlay_widget.show()
         self._overlay_shown = True
 
+    def _popup_transform_configuration(self):
+        _overlay = TransformConfigOverlay(self.mg, parent=self)
+        _overlay.move(0, 0)
+        _overlay.resize(self.width(), self.height())
+
+        # overlay signals
+        # _overlay.returnDriveConfig.connect(self._change_drive)
+        # _overlay.discard_btn.clicked.connect(self._rerun_drive)
+        _overlay.closing.connect(self._overlay_close)
+
+        self._overlay_widget = _overlay
+
+        # initialize overlay configuration
+        # drive_config = self.mg_config.get("drive", None)
+        # drive_config = None if not drive_config else drive_config
+        # if drive_config is not None and self.mg.drive is not None:
+        #     self.mg.drive.terminate(delay_loop_stop=True)
+        # self._overlay_widget.drive_config = drive_config
+
+        self._overlay_widget.link_motion_group(self.mg)
+
+        self._overlay_widget.show()
+        self._overlay_shown = True
+
     def _overlay_close(self):
+        self._overlay_widget.deleteLater()
+        self._overlay_widget = None
         self._overlay_shown = False
 
     def resizeEvent(self, event):
