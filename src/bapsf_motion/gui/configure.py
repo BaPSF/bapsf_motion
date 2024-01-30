@@ -1,4 +1,6 @@
+import ast
 import asyncio
+import inspect
 import logging
 import logging.config
 
@@ -35,9 +37,9 @@ from bapsf_motion.actors import (
     Drive,
     Axis,
 )
-from bapsf_motion.gui.widgets import QLogger, StyleButton, LED
+from bapsf_motion.gui.widgets import QLogger, StyleButton, LED, QLineEditeSpecialized
 from bapsf_motion.transform import BaseTransform
-from bapsf_motion.transform.helpers import transform_registry
+from bapsf_motion.transform.helpers import transform_registry, transform_factory
 from bapsf_motion.utils import toml, ipv4_pattern
 from bapsf_motion.utils import units as u
 
@@ -825,6 +827,7 @@ class TransformConfigOverlay(_OverlayWidget):
         self._mg = mg
         self._transform = None
         self._params_widget = None  # type: Union[None, QWidget]
+        self._transform_inputs = None
 
         self.setStyleSheet("border: 0px")
 
@@ -889,7 +892,7 @@ class TransformConfigOverlay(_OverlayWidget):
             self.transform.transform_type
         )
 
-        layout = QVBoxLayout(self)
+        layout = QVBoxLayout()
         layout.addLayout(self._define_banner_layout())
         layout.addWidget(hline)
         layout.addSpacing(8)
@@ -901,7 +904,7 @@ class TransformConfigOverlay(_OverlayWidget):
         return layout
 
     def _define_banner_layout(self):
-        layout = QHBoxLayout(self)
+        layout = QHBoxLayout()
         layout.addWidget(
             self.discard_btn,
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
@@ -928,53 +931,86 @@ class TransformConfigOverlay(_OverlayWidget):
 
         return self._transform
 
-    def _define_params_widget(self, tr_type: str):
-        # if self.transform.transform_type == tr_type:
-        #     return
+    @property
+    def transform_inputs(self):
+        if self._transform_inputs is None:
+            self._transform_inputs = {}
 
-        layout = QGridLayout(self)
+        return self._transform_inputs
+
+    @property
+    def transform_type(self):
+        return self.combo_widget.currentText()
+
+    def _define_params_widget(self, tr_type: str):
+        params = self.registry.get_input_parameters(tr_type)
+        if self.transform.transform_type == tr_type:
+            self._transform_inputs = {**self.transform.inputs}
+        else:
+            self._transform_inputs = {}
+
+        _widget = QWidget()
+        layout = QGridLayout(_widget)
+        layout.setSpacing(4)
         layout.setColumnStretch(0, 2)
         layout.setColumnStretch(1, 2)
         layout.setColumnStretch(2, 4)
         layout.setColumnStretch(3, 1)
+        layout.setColumnStretch(4, 1)
 
-        params = self.registry.get_input_parameters(tr_type)
         ii = 0
         for key, val in params.items():
-            _txt = QLabel(key, parent=self)
+            if key in self.transform_inputs:
+                default = self.transform_inputs[key]
+            elif val["param"].default is not val["param"].empty:
+                default = val["param"].default
+                self.transform_inputs[key] = default
+            else:
+                default = None
+                self.transform_inputs[key] = default
+
+            _txt = QLabel(key, parent=_widget)
             font = _txt.font()
             font.setPointSize(16)
             font.setBold(True)
             _txt.setFont(font)
             _label = _txt
 
-            _txt = QLabel(
-                f"{val['param'].annotation}".split(".")[-1],
-                parent=self
-            )
+            annotation = val['param'].annotation
+            if inspect.isclass(annotation):
+                annotation = annotation.__name__
+            annotation = f"{annotation}".split(".")[-1]
+
+            _txt = QLabel(annotation, parent=_widget)
             font = _txt.font()
             font.setPointSize(16)
             font.setBold(True)
             _txt.setFont(font)
             _type = _txt
 
-            _txt = QLineEdit(parent=self)
+            text = "" if default is None else f"{default}"
+            _txt = QLineEditeSpecialized(text, parent=_widget)
+            _txt.setObjectName(key)
+            _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             font = _txt.font()
             font.setPointSize(16)
             _txt.setFont(font)
             _input = _txt
-            default = val["param"].default
-            if default is not val["param"].empty:
-                _input.setText(f"{default}")
-            _input.setToolTip("\n".join(val["desc"]))
+            _input.editingFinishedPayload.connect(self._update_transform_inputs)
+
+            _txt = QLabel("", parent=_widget)
+            _icon = qta.icon("fa.question-circle-o").pixmap(QSize(16, 16))  # type: QIcon
+            _txt.setPixmap(_icon)
+            _txt.setToolTip("\n".join(val["desc"]))
+            _txt.setToolTipDuration(5000)
+            _help = _txt
 
             layout.addWidget(_label, ii, 0, alignment=Qt.AlignmentFlag.AlignRight)
             layout.addWidget(_type, ii, 1, alignment=Qt.AlignmentFlag.AlignCenter)
             layout.addWidget(_input, ii, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+            layout.addWidget(_help, ii, 3, alignment=Qt.AlignmentFlag.AlignLeft)
             ii += 1
 
-        _widget = QWidget()
-        _widget.setLayout(layout)
         return _widget
 
     @Slot(str)
@@ -987,11 +1023,62 @@ class TransformConfigOverlay(_OverlayWidget):
         self._params_widget.deleteLater()
         self._params_widget = _widget
 
+        self._validate_inputs()
+
     def link_motion_group(self, mg: MotionGroup):
         if not isinstance(mg, MotionGroup):
             return
 
         self._mg = mg
+
+    @Slot(object)
+    def _update_transform_inputs(self, input_widget: "QLineEditeSpecialized"):
+        param = input_widget.objectName()
+        _input_string = input_widget.text()
+
+        try:
+            _input = ast.literal_eval(_input_string)
+        except (ValueError, SyntaxError):
+            params = self.registry.get_input_parameters(self.transform_type)
+            _type = params[param]["param"].annotation
+            if inspect.isclass(_type) and issubclass(_type, str):
+                _input = _input_string
+            elif _input_string == "":
+                _input = None
+            else:
+                self.logger.exception(
+                    f"Input '{input_widget.text()}' is not a valid type for '{param}'."
+                )
+                _input = None
+                input_widget.setText("")
+                raise
+
+        self.transform_inputs[param] = _input
+
+        self.logger.info(
+            f"Updating input parameter {param} to {_input} for transformation "
+            f"type {self.transform_type}."
+        )
+
+        self._validate_inputs()
+
+    def _validate_inputs(self):
+
+        try:
+            transform = transform_factory(
+                self.mg.drive, tr_type=self.transform_type, **self.transform_inputs
+            )
+            self._transform = transform
+            self.change_validation_state(True)
+        except (ValueError, TypeError) as err:
+            self.logger.exception("Supplied transform input arguments are not valid.")
+            # self.logger.warning(f"{err.__class__.__name__}: {err}")
+            # self.logger.warning("Supplied transform input arguments are not valid.")
+            self.change_validation_state(False)
+            raise
+
+    def change_validation_state(self, valid: bool = False):
+        self.done_btn.setEnabled(valid)
 
 
 class AxisControlWidget(QWidget):
