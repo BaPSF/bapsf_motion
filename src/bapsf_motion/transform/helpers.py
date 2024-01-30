@@ -8,7 +8,7 @@ __all__ = ["register_transform", "transform_factory", "transform_registry"]
 import inspect
 
 from numpydoc.docscrape import NumpyDocString, Parameter
-from typing import Dict, List, Type
+from typing import Dict, List, Type, Union
 
 from bapsf_motion.transform import base
 
@@ -121,7 +121,9 @@ class TransformRegistry:
              if tr._dimensionality in (-1, ndim)
          }
 
-    def get_input_parameters(self, name: str):
+    def get_input_parameters(
+        self, name: str
+    ) -> Dict[str, Dict[str, Union[inspect.Parameter, List[str]]]]:
         tr = self.get_transform(name)
         sig = inspect.signature(tr).parameters.copy()
         sig.pop("drive", None)
