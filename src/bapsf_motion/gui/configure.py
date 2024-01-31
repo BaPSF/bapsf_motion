@@ -961,7 +961,7 @@ class TransformConfigOverlay(_OverlayWidget):
         else:
             self._transform_inputs = {}
 
-        _widget = QWidget()
+        _widget = QWidget(parent=self)
         layout = QGridLayout(_widget)
         layout.setSpacing(4)
         layout.setColumnStretch(0, 2)
