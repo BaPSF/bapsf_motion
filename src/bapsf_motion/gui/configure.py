@@ -2083,7 +2083,7 @@ class MGWidget(QWidget):
         return self._mg_config
 
     @Slot(object)
-    def _change_drive(self, config):
+    def _change_drive(self, config: Dict[str, Any]):
         self.logger.info("Replacing the motion group's drive.")
         self.mg.replace_drive(config)
 
