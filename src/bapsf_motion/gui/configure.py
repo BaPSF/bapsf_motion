@@ -1078,10 +1078,8 @@ class TransformConfigOverlay(_OverlayWidget):
             )
             self._transform = transform
             self.change_validation_state(True)
-        except (ValueError, TypeError) as err:
+        except (ValueError, TypeError):
             self.logger.exception("Supplied transform input arguments are not valid.")
-            # self.logger.warning(f"{err.__class__.__name__}: {err}")
-            # self.logger.warning("Supplied transform input arguments are not valid.")
             self.change_validation_state(False)
             raise
 
