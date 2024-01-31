@@ -420,7 +420,7 @@ class DriveConfigOverlay(_OverlayWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Save to MG")
+        _btn = StyleButton("Add")
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(48)
         font = _btn.font()
@@ -429,7 +429,7 @@ class DriveConfigOverlay(_OverlayWidget):
         _btn.setEnabled(False)
         self.done_btn = _btn
 
-        _btn = StyleButton("Discard && Return")
+        _btn = StyleButton("Discard")
         _btn.setFixedWidth(250)
         _btn.setFixedHeight(48)
         font = _btn.font()
@@ -842,7 +842,7 @@ class TransformConfigOverlay(_OverlayWidget):
         _btn.setEnabled(False)
         self.done_btn = _btn
 
-        _btn = StyleButton("Discard && Return")
+        _btn = StyleButton("Discard")
         _btn.setFixedWidth(250)
         _btn.setFixedHeight(48)
         font = _btn.font()
@@ -1823,7 +1823,7 @@ class MGWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Add to Run")
+        _btn = StyleButton("Add")
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(48)
         font = _btn.font()
@@ -1832,7 +1832,7 @@ class MGWidget(QWidget):
         _btn.setEnabled(False)
         self.done_btn = _btn
 
-        _btn = StyleButton("Discard && Return to Run")
+        _btn = StyleButton("Discard")
         _btn.setFixedWidth(300)
         _btn.setFixedHeight(48)
         font = _btn.font()
