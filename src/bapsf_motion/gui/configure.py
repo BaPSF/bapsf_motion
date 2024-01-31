@@ -1039,12 +1039,6 @@ class TransformConfigOverlay(_OverlayWidget):
 
         self._validate_inputs()
 
-    def link_motion_group(self, mg: MotionGroup):
-        if not isinstance(mg, MotionGroup):
-            return
-
-        self._mg = mg
-
     @Slot(object)
     def _update_transform_inputs(self, input_widget: "QLineEditeSpecialized"):
         param = input_widget.objectName()
