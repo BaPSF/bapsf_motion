@@ -922,17 +922,28 @@ class TransformConfigOverlay(_OverlayWidget):
 
     @property
     def mg(self) -> Union[MotionGroup, None]:
+        """
+        Motion group instance that the transform is being constructed
+        for.
+        """
         return self._mg
 
     @property
     def transform(self) -> BaseTransform:
+        """
+        The transform object that been constructed for :attr:`mg`.
+        """
         if self._transform is None:
             return self.mg.transform
 
         return self._transform
 
     @property
-    def transform_inputs(self):
+    def transform_inputs(self) -> Dict[str, Any]:
+        """
+        Dictionary of input values for creating the :attr:`transform`
+        instance.
+        """
         if self._transform_inputs is None:
             self._transform_inputs = {}
 
