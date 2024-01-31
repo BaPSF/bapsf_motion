@@ -828,7 +828,7 @@ class MotionGroup(EventActor):
         tr_config = config.copy()
         tr_type = tr_config.pop("type")
         self._transform = transform.transform_factory(
-            self.drive, tr_type=tr_type, **config
+            self.drive, tr_type=tr_type, **tr_config
         )
         return self._transform
 
