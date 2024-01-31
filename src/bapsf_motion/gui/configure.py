@@ -857,16 +857,16 @@ class TransformConfigOverlay(_OverlayWidget):
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
         _w = QComboBox(self)
+        _w.setMinimumWidth(300)
+        _w.setMaximumWidth(500)
         _w.addItems(
             list(self.registry.get_names_by_dimensionality(self._mg.drive.naxes))
         )
-        _w.setCurrentText(self._mg.transform.transform_type)
         _w.setEditable(False)
+        _w.setCurrentText(self._mg.transform.transform_type)
         font = _w.font()
         font.setPointSize(18)
         _w.setFont(font)
-        _w.setMinimumWidth(300)
-        _w.setMaximumWidth(500)
         self.combo_widget = _w
 
         self.setLayout(self._define_layout())
@@ -943,6 +943,7 @@ class TransformConfigOverlay(_OverlayWidget):
         return self.combo_widget.currentText()
 
     def _define_params_widget(self, tr_type: str):
+        # re-initialized the transform_inputs dictionary
         params = self.registry.get_input_parameters(tr_type)
         if self.transform.transform_type == tr_type:
             self._transform_inputs = {**self.transform.inputs}
@@ -960,6 +961,7 @@ class TransformConfigOverlay(_OverlayWidget):
 
         ii = 0
         for key, val in params.items():
+            # determine the seeded value for the transform input
             if key in self.transform_inputs:
                 default = self.transform_inputs[key]
             elif val["param"].default is not val["param"].empty:
@@ -1019,9 +1021,10 @@ class TransformConfigOverlay(_OverlayWidget):
 
         old_widget = self._params_widget
         self.layout().replaceWidget(old_widget, _widget)
-        self._params_widget.close()
-        self._params_widget.deleteLater()
         self._params_widget = _widget
+
+        old_widget.close()
+        old_widget.deleteLater()
 
         self._validate_inputs()
 
