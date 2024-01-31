@@ -874,7 +874,7 @@ class TransformConfigOverlay(_OverlayWidget):
         self._connect_signals()
 
     def _connect_signals(self):
-        self.done_btn.clicked.connect(self.close)
+        self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
 
         self.combo_widget.currentTextChanged.connect(self._refresh_params_widget)
@@ -1087,6 +1087,16 @@ class TransformConfigOverlay(_OverlayWidget):
 
     def change_validation_state(self, valid: bool = False):
         self.done_btn.setEnabled(valid)
+
+    def return_and_close(self):
+        config = self.transform.config
+
+        self.logger.info(
+            f"New transform configuration of type {config['type']} is "
+            f"being returned."
+        )
+        self.returnConfig.emit(config)
+        self.close()
 
 
 class AxisControlWidget(QWidget):
