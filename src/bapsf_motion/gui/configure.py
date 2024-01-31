@@ -2018,21 +2018,10 @@ class MGWidget(QWidget):
         _overlay.resize(self.width(), self.height())
 
         # overlay signals
-        # _overlay.returnDriveConfig.connect(self._change_drive)
-        # _overlay.discard_btn.clicked.connect(self._rerun_drive)
+        _overlay.returnConfig.connect(self._change_transform)
         _overlay.closing.connect(self._overlay_close)
 
         self._overlay_widget = _overlay
-
-        # initialize overlay configuration
-        # drive_config = self.mg_config.get("drive", None)
-        # drive_config = None if not drive_config else drive_config
-        # if drive_config is not None and self.mg.drive is not None:
-        #     self.mg.drive.terminate(delay_loop_stop=True)
-        # self._overlay_widget.drive_config = drive_config
-
-        self._overlay_widget.link_motion_group(self.mg)
-
         self._overlay_widget.show()
         self._overlay_shown = True
 
@@ -2094,6 +2083,13 @@ class MGWidget(QWidget):
             self.mg.replace_transform({"type": "identity"})
 
         self._refresh_drive_control()
+        self.configChanged.emit()
+
+    @Slot(object)
+    def _change_transform(self, config: Dict[str, Any]):
+        self.logger.info("Replacing the motion group's transform.")
+        self.logger.info(f"{config}")
+        self.mg.replace_transform(config)
         self.configChanged.emit()
 
     def _rerun_drive(self):
