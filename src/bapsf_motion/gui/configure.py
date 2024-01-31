@@ -1071,6 +1071,28 @@ class TransformConfigOverlay(_OverlayWidget):
         self._validate_inputs()
 
     def _validate_inputs(self):
+        tr_type = self.transform_type
+        _inputs = self.transform_inputs
+        params = self.registry.get_input_parameters(tr_type)
+
+        for key, val in _inputs.items():
+            annotation = params[key]["param"]
+
+            if val is not None:
+                continue
+            elif (
+                annotation is None
+                or (
+                    hasattr(annotation, "__args__")
+                    and type(None) in annotation.__args__
+                )
+            ):
+                # val is None and is allowed to be None
+                continue
+            else:
+                # not all inputs have been defined yet
+                self.change_validation_state(False)
+                return
 
         try:
             transform = transform_factory(
