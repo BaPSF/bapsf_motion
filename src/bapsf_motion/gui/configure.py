@@ -2097,6 +2097,13 @@ class MGWidget(QWidget):
         self._overlay_widget.show()
         self._overlay_shown = True
 
+    def _overlay_setup(self, overlay: "_OverlayWidget"):
+        overlay.move(0, 0)
+        overlay.resize(self.width(), self.height())
+        overlay.closing.connect(self._overlay_close)
+
+        self._overlay_widget = overlay
+
     def _overlay_close(self):
         self._overlay_widget.deleteLater()
         self._overlay_widget = None
