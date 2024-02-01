@@ -1190,7 +1190,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layout.setSpacing(0)
         layout.addLayout(self._define_motion_space_layout())
         layout.addSpacing(20)
-        layout.addLayout(self._define_layer_layout())
+        layout.addLayout(self._define_layer_list_layout())
         layout.addSpacing(20)
         layout.addStretch()
 
@@ -1288,7 +1288,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         return layout
 
-    def _define_layer_layout(self):
+    def _define_layer_list_layout(self):
 
         _txt = QLabel("Point Layers", parent=self)
         font = _txt.font()
