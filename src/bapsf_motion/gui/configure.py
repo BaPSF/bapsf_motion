@@ -72,7 +72,7 @@ class _OverlayWidget(QWidget):
         self.overlay_fill_color = QColor(50, 50, 50)
         self.overlay_pen_color = QColor(90, 90, 90)
 
-        self._margins = [0.02, 0.04]
+        self._margins = [0.01, 0.01]  # [ w_margin / width, h_margin / height]
         self._set_contents_margins(*self._margins)
 
     def _set_contents_margins(self, width_fraction, height_fraction):
