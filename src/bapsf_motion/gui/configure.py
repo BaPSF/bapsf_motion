@@ -44,7 +44,7 @@ from bapsf_motion.transform.helpers import transform_registry, transform_factory
 from bapsf_motion.utils import toml, ipv4_pattern
 from bapsf_motion.utils import units as u
 
-_logger = logging.getLogger(":: GUI ::")
+_logger = logging.getLogger("GUI")
 
 
 class _OverlayWidget(QWidget):
@@ -2273,7 +2273,7 @@ class ConfigureGUI(QMainWindow):
             "formatters": {
                 "default": {
                     "class": "logging.Formatter",
-                    "format": "%(asctime)s - [%(levelname)s] %(name)s  %(message)s",
+                    "format": "%(asctime)s - [%(levelname)s] { %(name)s }  %(message)s",
                     "datefmt": "%H:%M:%S",
                 },
             },
@@ -2297,14 +2297,14 @@ class ConfigureGUI(QMainWindow):
                     "handlers": ["stderr", "stdout"],
                     "propagate": True,
                 },
-                ":: GUI ::": {
+                "GUI": {
                     "level": "DEBUG",
-                    "handlers": ["stderr"],
+                    "handlers": [],
                     "propagate": True,
                 },
                 "RM": {
                     "level": "DEBUG",
-                    "handlers": ["stderr"],
+                    "handlers": [],
                     "propagate": True,
                 },
             },

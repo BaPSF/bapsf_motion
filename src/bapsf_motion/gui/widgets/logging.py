@@ -143,7 +143,7 @@ class QLogger(QWidget):
         handler = QLogHandler(widget=self._log_widget)
         handler.setFormatter(
             logging.Formatter(
-                fmt="%(asctime)s - [%(levelname)s] %(name)s  %(message)s",
+                fmt="%(asctime)s - [%(levelname)s] { %(name)s }  %(message)s",
                 datefmt="%H:%M:%S",
             ),
         )
