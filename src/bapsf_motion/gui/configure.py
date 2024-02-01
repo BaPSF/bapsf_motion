@@ -1146,7 +1146,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         sub_layout.setContentsMargins(0, 0, 0, 0)
         sub_layout.addWidget(self._define_sidebar_widget())
         sub_layout.addWidget(vline)
-        sub_layout.addStretch()
+        sub_layout.addWidget(self._define_right_area_widget())
 
         layout = QVBoxLayout()
         layout.setSpacing(12)
@@ -1179,6 +1179,37 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         return layout
 
+    def _define_sidebar_widget(self):
+        _widget = QWidget(parent=self)
+        _widget.setMinimumWidth(350)
+        _widget.setMaximumWidth(500)
+        _widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+
+        layout = QVBoxLayout(_widget)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(0)
+        layout.addLayout(self._define_motion_space_layout())
+        layout.addStretch()
+
+        return _widget
+
+    def _define_right_area_widget(self):
+        _widget = QWidget(parent=self)
+        _widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+        _hline = QFrame(parent=self)
+        _hline.setFrameShape(QFrame.Shape.HLine)
+        _hline.setFrameShadow(QFrame.Shadow.Plain)
+        _hline.setLineWidth(3)
+        _hline.setMidLineWidth(3)
+        _hline.setStyleSheet("border-color: rgb(95, 95, 95)")
+        hline = _hline
+
+        layout = QVBoxLayout(_widget)
+        layout.addStretch(4)
+        layout.addWidget(hline)
+        layout.addStretch(1)
+        return _widget
     def _define_motion_space_layout(self):
         _txt = QLabel("Motion Space", parent=self)
         font = _txt.font()
@@ -1260,19 +1291,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         return layout
 
-    def _define_sidebar_widget(self):
-        _widget = QWidget(parent=self)
-        _widget.setMinimumWidth(350)
-        _widget.setMaximumWidth(500)
-        _widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+    def _define_plot_layout(self):
+        ...
 
-        layout = QVBoxLayout(_widget)
-        layout.setContentsMargins(4, 4, 4, 4)
-        layout.setSpacing(0)
-        layout.addLayout(self._define_motion_space_layout())
-        layout.addStretch()
-
-        return _widget
+    def _define_layer_config_layout(self):
+        ...
 
     def return_and_close(self):
         self.close()
