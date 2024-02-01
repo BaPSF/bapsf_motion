@@ -4,6 +4,7 @@ import inspect
 import logging
 import logging.config
 
+from abc import abstractmethod
 from pathlib import Path
 from PySide6.QtCore import Qt, QDir, Signal, Slot, QSize
 from PySide6.QtGui import QCloseEvent, QColor, QPainter, QIcon
@@ -107,6 +108,57 @@ class _OverlayWidget(QWidget):
     def closeEvent(self, event):
         self.closing.emit()
         event.accept()
+
+
+class _ConfigOverlay(_OverlayWidget):
+    configChanged = Signal()
+    returnConfig = Signal(object)
+
+    def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
+        super().__init__(parent=parent)
+
+        self._logger = _logger
+        self._mg = mg
+
+        # Define BUTTONS
+
+        _btn = StyleButton("Add / Update", parent=self)
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
+        font.setPointSize(24)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        self.done_btn = _btn
+
+        _btn = StyleButton("Discard", parent=self)
+        _btn.setFixedWidth(250)
+        _btn.setFixedHeight(48)
+        font = _btn.font()
+        font.setPointSize(24)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 110, 110)"}
+        )
+        self.discard_btn = _btn
+
+    def _connect_signals(self):
+        self.discard_btn.clicked.connect(self.close)
+        self.done_btn.clicked.connect(self.return_and_close)
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def mg(self) -> Union[MotionGroup, None]:
+        """Working motion group."""
+        return self._mg
+
+    @abstractmethod
+    def return_and_close(self):
+        ...
 
 
 class AxisConfigWidget(QWidget):
