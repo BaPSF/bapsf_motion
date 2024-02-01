@@ -1108,6 +1108,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._mb = None
 
         # Define BUTTONS
+
+        self.add_ly_btn = self._generate_btn_widget("ADD")
+        self.remove_ly_btn = self._generate_btn_widget("REMOVE")
+        self.edit_ly_btn = self._generate_btn_widget("EDIT")
+
+        self.add_ex_btn = self._generate_btn_widget("ADD")
+        self.remove_ex_btn = self._generate_btn_widget("REMOVE")
+        self.edit_ex_btn = self._generate_btn_widget("EDIT")
+
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
 
@@ -1142,6 +1151,16 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     @property
     def axis_names(self):
         return self.mg.drive.anames
+
+    def _generate_btn_widget(self, txt: str):
+        btn = StyleButton(txt, parent=self)
+        btn.setFixedHeight(32)
+        font = btn.font()
+        font.setPointSize(16)
+        btn.setFont(font)
+        btn.setEnabled(True)
+
+        return btn
 
     def _define_banner_layout(self):
         layout = QHBoxLayout()
