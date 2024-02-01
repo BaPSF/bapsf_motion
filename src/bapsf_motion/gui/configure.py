@@ -1104,6 +1104,180 @@ class TransformConfigOverlay(_ConfigOverlay):
         self.close()
 
 
+class MotionBuilderConfigOverlay(_ConfigOverlay):
+
+    layer_registry = None
+    exclusion_registry = None
+
+    def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
+        super().__init__(mg, parent)
+
+        self._mb = None
+
+        # Define BUTTONS
+        # Define TEXT WIDGETS
+        # Define ADVANCED WIDGETS
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        super()._connect_signals()
+
+    def _define_layout(self):
+        _hline = QFrame(parent=self)
+        _hline.setFrameShape(QFrame.Shape.HLine)
+        _hline.setFrameShadow(QFrame.Shadow.Plain)
+        _hline.setLineWidth(3)
+        _hline.setMidLineWidth(3)
+        _hline.setStyleSheet("border-color: rgb(95, 95, 95)")
+        hline = _hline
+
+        _vline = QFrame(parent=self)
+        _vline.setFrameShape(QFrame.Shape.VLine)
+        _vline.setFrameShadow(QFrame.Shadow.Plain)
+        _vline.setLineWidth(3)
+        _vline.setMidLineWidth(3)
+        _vline.setStyleSheet("border-color: rgb(95, 95, 95)")
+        vline = _vline
+
+        sub_layout = QHBoxLayout()
+        sub_layout.setSpacing(0)
+        sub_layout.setContentsMargins(0, 0, 0, 0)
+        sub_layout.addWidget(self._define_sidebar_widget())
+        sub_layout.addWidget(vline)
+        sub_layout.addStretch()
+
+        layout = QVBoxLayout()
+        layout.setSpacing(12)
+
+        layout.addLayout(self._define_banner_layout())
+        layout.addWidget(hline)
+        layout.addSpacing(6)
+        layout.addLayout(sub_layout)
+
+        return layout
+
+    @property
+    def dimensionality(self):
+        return self.mg.drive.naxes
+
+    @property
+    def axis_names(self):
+        return self.mg.drive.anames
+
+    def _define_banner_layout(self):
+        layout = QHBoxLayout()
+        layout.addWidget(
+            self.discard_btn,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addStretch()
+        layout.addWidget(
+            self.done_btn,
+            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+        )
+        return layout
+
+    def _define_motion_space_layout(self):
+        _txt = QLabel("Motion Space", parent=self)
+        font = _txt.font()
+        font.setPointSize(16)
+        font.setBold(True)
+        _txt.setFont(font)
+
+        layout = QGridLayout()
+        layout.setContentsMargins(8, 4, 12, 4)
+        layout.setSpacing(4)
+        layout.setColumnMinimumWidth(4, 18)
+        layout.setRowMinimumHeight(1, 12)
+        layout.addWidget(
+            _txt, 0, 0, 1, 8,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop,
+        )
+
+        for ii, name in enumerate(self.axis_names):
+            _txt = QLabel(name, parent=self)
+            font = _txt.font()
+            font.setPointSize(12)
+            _txt.setFont(font)
+            axis_label = _txt
+
+            _txt = QLabel("range", parent=self)
+            _txt.setFont(font)
+            range_label = _txt
+
+            _txt = QLineEdit(parent=self)
+            _txt.setFont(font)
+            _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            _txt.setObjectName(f"{name}_min")
+            min_range = _txt
+
+            _txt = QLineEdit(parent=self)
+            _txt.setFont(font)
+            _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            _txt.setObjectName(f"{name}_max")
+            max_range = _txt
+
+            _txt = QLabel("Δ", parent=self)
+            _txt.setFont(font)
+            delta_label = _txt
+
+            _txt = QLineEdit(parent=self)
+            _txt.setFont(font)
+            _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+            _txt.setObjectName(f"{name}_delta")
+            delta = _txt
+
+            _txt = QLabel(f"{self.mg.drive.axes[ii].units}", parent=self)
+            _txt.setFont(font)
+            unit_label = _txt
+
+            layout.addWidget(
+                axis_label, ii + 2, 0, 1, 1, alignment=Qt.AlignmentFlag.AlignRight
+            )
+            layout.addWidget(
+                range_label, ii + 2, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
+            )
+            layout.addWidget(
+                min_range, ii + 2, 2, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
+            )
+            layout.addWidget(
+                max_range, ii + 2, 3, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
+            )
+            layout.addWidget(
+                delta_label, ii + 2, 5, 1, 1, alignment=Qt.AlignmentFlag.AlignRight
+            )
+            layout.addWidget(
+                delta, ii + 2, 6, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
+            )
+            layout.addWidget(
+                unit_label, ii + 2, 7, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft
+            )
+
+        return layout
+
+    def _define_sidebar_widget(self):
+        _widget = QWidget(parent=self)
+        _widget.setMinimumWidth(350)
+        _widget.setMaximumWidth(500)
+        _widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+
+        layout = QVBoxLayout(_widget)
+        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setSpacing(0)
+        layout.addLayout(self._define_motion_space_layout())
+        layout.addStretch()
+
+        return _widget
+
+    def return_and_close(self):
+        self.close()
+
+
 class AxisControlWidget(QWidget):
     axisLinked = Signal()
     axisUnlinked = Signal()
@@ -1895,6 +2069,7 @@ class MGWidget(QWidget):
     def _connect_signals(self):
         self.drive_btn.clicked.connect(self._popup_drive_configuration)
         self.transform_btn.clicked.connect(self._popup_transform_configuration)
+        self.mb_btn.clicked.connect(self._popup_motion_builder_configuration)
 
         self.mg_name_widget.editingFinished.connect(self._rename_motion_group)
 
@@ -2021,6 +2196,17 @@ class MGWidget(QWidget):
 
         # overlay signals
         self._overlay_widget.returnConfig.connect(self._change_transform)
+
+        self._overlay_widget.show()
+        self._overlay_shown = True
+
+    def _popup_motion_builder_configuration(self):
+        self._overlay_setup(
+            MotionBuilderConfigOverlay(self.mg, parent=self)
+        )
+
+        # overlay signals
+        # _overlay.returnConfig.connect(self._change_transform)
 
         self._overlay_widget.show()
         self._overlay_shown = True
