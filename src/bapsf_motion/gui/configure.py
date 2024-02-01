@@ -1120,6 +1120,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
 
+        self.layer_list_box = QListWidget(parent=self)
+        self.layer_list_box.setMinimumHeight(250)
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -1131,6 +1134,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         sub_layout.setSpacing(0)
         sub_layout.setContentsMargins(0, 0, 0, 0)
         sub_layout.addWidget(self._define_sidebar_widget())
+        sub_layout.addSpacing(8)
         sub_layout.addWidget(VLinePlain(parent=self))
         sub_layout.addWidget(self._define_right_area_widget())
 
@@ -1185,6 +1189,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layout.setContentsMargins(4, 4, 4, 4)
         layout.setSpacing(0)
         layout.addLayout(self._define_motion_space_layout())
+        layout.addSpacing(20)
+        layout.addLayout(self._define_layer_layout())
+        layout.addSpacing(20)
         layout.addStretch()
 
         return _widget
@@ -1278,6 +1285,35 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             layout.addWidget(
                 unit_label, ii + 2, 7, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft
             )
+
+        return layout
+
+    def _define_layer_layout(self):
+
+        _txt = QLabel("Point Layers", parent=self)
+        font = _txt.font()
+        font.setPointSize(16)
+        font.setBold(True)
+        _txt.setFont(font)
+        title = _txt
+
+        sub_layout = QHBoxLayout()
+        sub_layout.setContentsMargins(0, 0, 0, 0)
+        sub_layout.setSpacing(8)
+        sub_layout.addWidget(self.add_ly_btn)
+        sub_layout.addWidget(self.remove_ly_btn)
+        sub_layout.addWidget(self.edit_ly_btn)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        layout.addWidget(
+            title,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter,
+        )
+        layout.addSpacing(2)
+        layout.addWidget(self.layer_list_box)
+        layout.addLayout(sub_layout)
 
         return layout
 
