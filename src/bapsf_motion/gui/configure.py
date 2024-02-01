@@ -454,16 +454,15 @@ class AxisConfigWidget(QWidget):
         event.accept()
 
 
-class DriveConfigOverlay(_OverlayWidget):
+class DriveConfigOverlay(_ConfigOverlay):
     configChanged = Signal()
-    returnDriveConfig = Signal(object)
+    returnConfig = Signal(object)
 
     drive_loop = asyncio.new_event_loop()
 
-    def __init__(self, parent: "MGWidget" = None):
-        super().__init__(parent)
+    def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
+        super().__init__(mg, parent)
 
-        self._logger = _logger
         self._drive_handlers = []
 
         self._drive = None
@@ -471,27 +470,6 @@ class DriveConfigOverlay(_OverlayWidget):
         self._axis_widgets = None
 
         # Define BUTTONS
-
-        _btn = StyleButton("Add")
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        _btn.setFont(font)
-        _btn.setEnabled(False)
-        self.done_btn = _btn
-
-        _btn = StyleButton("Discard")
-        _btn.setFixedWidth(250)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 110, 110)"}
-        )
-        self.discard_btn = _btn
 
         _btn = StyleButton("Load a Default")
         _btn.setFixedWidth(250)
@@ -539,8 +517,8 @@ class DriveConfigOverlay(_OverlayWidget):
         self._connect_signals()
 
     def _connect_signals(self):
-        self.discard_btn.clicked.connect(self.close)
-        self.done_btn.clicked.connect(self.return_and_close)
+        super()._connect_signals()
+
         self.validate_btn.clicked.connect(self._validate_drive)
 
         self.configChanged.connect(self._update_dr_name_widget)
@@ -601,10 +579,6 @@ class DriveConfigOverlay(_OverlayWidget):
         layout.addSpacing(18)
 
         return layout
-
-    @property
-    def logger(self):
-        return self._logger
 
     @property
     def drive(self) -> Union[Drive, None]:
@@ -844,7 +818,7 @@ class DriveConfigOverlay(_OverlayWidget):
             f"Drive has been validated and is being returned so it can be"
             f" added to the motion group.  Drive config is {config}."
         )
-        self.returnDriveConfig.emit(config)
+        self.returnConfig.emit(config)
         self.close()
 
     def closeEvent(self, event):
@@ -866,46 +840,18 @@ class DriveConfigOverlay(_OverlayWidget):
         event.accept()
 
 
-class TransformConfigOverlay(_OverlayWidget):
-    configChanged = Signal()
-    returnConfig = Signal(object)
+class TransformConfigOverlay(_ConfigOverlay):
 
     registry = transform_registry
 
     def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
-        super().__init__(parent)
+        super().__init__(mg, parent)
 
-        self._logger = _logger
-        self._mg = mg
         self._transform = None
         self._params_widget = None  # type: Union[None, QWidget]
         self._transform_inputs = None
 
-        self.setStyleSheet("border: 0px")
-
         # Define BUTTONS
-
-        _btn = StyleButton("Replace")
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        _btn.setFont(font)
-        _btn.setEnabled(False)
-        self.done_btn = _btn
-
-        _btn = StyleButton("Discard")
-        _btn.setFixedWidth(250)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 110, 110)"}
-        )
-        self.discard_btn = _btn
-
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
         _w = QComboBox(self)
@@ -926,8 +872,7 @@ class TransformConfigOverlay(_OverlayWidget):
         self._connect_signals()
 
     def _connect_signals(self):
-        self.done_btn.clicked.connect(self.return_and_close)
-        self.discard_btn.clicked.connect(self.close)
+        super()._connect_signals()
 
         self.combo_widget.currentTextChanged.connect(self._refresh_params_widget)
 
@@ -967,18 +912,6 @@ class TransformConfigOverlay(_OverlayWidget):
             alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
         )
         return layout
-
-    @property
-    def logger(self) -> logging.Logger:
-        return self._logger
-
-    @property
-    def mg(self) -> Union[MotionGroup, None]:
-        """
-        Motion group instance that the transform is being constructed
-        for.
-        """
-        return self._mg
 
     @property
     def transform(self) -> BaseTransform:
@@ -1948,7 +1881,7 @@ class MGWidget(QWidget):
         self.mg_name_widget = _widget
 
         # Define ADVANCED WIDGETS
-        self._overlay_widget = None  # type: Union[_OverlayWidget, None]
+        self._overlay_widget = None  # type: Union[_ConfigOverlay, None]
         self._overlay_shown = False
 
         self.drive_control_widget = DriveControlWidget(self)
@@ -2063,16 +1996,13 @@ class MGWidget(QWidget):
         ...
 
     def _popup_drive_configuration(self):
-        _overlay = DriveConfigOverlay(self)
-        _overlay.move(0, 0)
-        _overlay.resize(self.width(), self.height())
+        self._overlay_setup(
+            DriveConfigOverlay(self.mg, parent=self)
+        )
 
         # overlay signals
-        _overlay.returnDriveConfig.connect(self._change_drive)
-        _overlay.discard_btn.clicked.connect(self._rerun_drive)
-        _overlay.closing.connect(self._overlay_close)
-
-        self._overlay_widget = _overlay
+        self._overlay_widget.returnConfig.connect(self._change_drive)
+        self._overlay_widget.discard_btn.clicked.connect(self._rerun_drive)
 
         # initialize drive overlay with current drive configuration
         drive_config = self.mg_config.get("drive", None)
@@ -2085,15 +2015,13 @@ class MGWidget(QWidget):
         self._overlay_shown = True
 
     def _popup_transform_configuration(self):
-        _overlay = TransformConfigOverlay(self.mg, parent=self)
-        _overlay.move(0, 0)
-        _overlay.resize(self.width(), self.height())
+        self._overlay_setup(
+            TransformConfigOverlay(self.mg, parent=self)
+        )
 
         # overlay signals
-        _overlay.returnConfig.connect(self._change_transform)
-        _overlay.closing.connect(self._overlay_close)
+        self._overlay_widget.returnConfig.connect(self._change_transform)
 
-        self._overlay_widget = _overlay
         self._overlay_widget.show()
         self._overlay_shown = True
 
