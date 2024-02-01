@@ -38,7 +38,14 @@ from bapsf_motion.actors import (
     Drive,
     Axis,
 )
-from bapsf_motion.gui.widgets import QLogger, StyleButton, LED, QLineEditeSpecialized
+from bapsf_motion.gui.widgets import (
+    QLogger,
+    StyleButton,
+    LED,
+    QLineEditeSpecialized,
+    HLinePlain,
+    VLinePlain,
+)
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
 from bapsf_motion.utils import toml, ipv4_pattern
@@ -526,17 +533,10 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.dr_name_widget.editingFinished.connect(self._change_drive_name)
 
     def _define_layout(self):
-        _hline = QFrame()
-        _hline.setFrameShape(QFrame.Shape.HLine)
-        _hline.setFrameShadow(QFrame.Shadow.Plain)
-        _hline.setLineWidth(3)
-        _hline.setMidLineWidth(3)
-        _hline.setStyleSheet("border-color: rgb(95, 95, 95)")
-        hline = _hline
 
         layout = QVBoxLayout()
         layout.addLayout(self._define_banner_layout())
-        layout.addWidget(hline)
+        layout.addWidget(HLinePlain(parent=self))
         layout.addLayout(self._define_second_row_layout())
         layout.addSpacing(24)
         layout.addWidget(self._spawn_axis_widget("X"))
@@ -877,13 +877,6 @@ class TransformConfigOverlay(_ConfigOverlay):
         self.combo_widget.currentTextChanged.connect(self._refresh_params_widget)
 
     def _define_layout(self):
-        _hline = QFrame()
-        _hline.setFrameShape(QFrame.Shape.HLine)
-        _hline.setFrameShadow(QFrame.Shadow.Plain)
-        _hline.setLineWidth(3)
-        _hline.setMidLineWidth(3)
-        _hline.setStyleSheet("border-color: rgb(95, 95, 95)")
-        hline = _hline
 
         self._params_widget = self._define_params_widget(
             self.transform.transform_type
@@ -891,7 +884,7 @@ class TransformConfigOverlay(_ConfigOverlay):
 
         layout = QVBoxLayout()
         layout.addLayout(self._define_banner_layout())
-        layout.addWidget(hline)
+        layout.addWidget(HLinePlain(parent=self))
         layout.addSpacing(8)
         layout.addWidget(self.combo_widget)
         layout.addSpacing(8)
@@ -1125,34 +1118,18 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         super()._connect_signals()
 
     def _define_layout(self):
-        _hline = QFrame(parent=self)
-        _hline.setFrameShape(QFrame.Shape.HLine)
-        _hline.setFrameShadow(QFrame.Shadow.Plain)
-        _hline.setLineWidth(3)
-        _hline.setMidLineWidth(3)
-        _hline.setStyleSheet("border-color: rgb(95, 95, 95)")
-        hline = _hline
-
-        _vline = QFrame(parent=self)
-        _vline.setFrameShape(QFrame.Shape.VLine)
-        _vline.setFrameShadow(QFrame.Shadow.Plain)
-        _vline.setLineWidth(3)
-        _vline.setMidLineWidth(3)
-        _vline.setStyleSheet("border-color: rgb(95, 95, 95)")
-        vline = _vline
-
         sub_layout = QHBoxLayout()
         sub_layout.setSpacing(0)
         sub_layout.setContentsMargins(0, 0, 0, 0)
         sub_layout.addWidget(self._define_sidebar_widget())
-        sub_layout.addWidget(vline)
+        sub_layout.addWidget(VLinePlain(parent=self))
         sub_layout.addWidget(self._define_right_area_widget())
 
         layout = QVBoxLayout()
         layout.setSpacing(12)
 
         layout.addLayout(self._define_banner_layout())
-        layout.addWidget(hline)
+        layout.addWidget(HLinePlain(parent=self))
         layout.addSpacing(6)
         layout.addLayout(sub_layout)
 
@@ -1197,19 +1174,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget = QWidget(parent=self)
         _widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
-        _hline = QFrame(parent=self)
-        _hline.setFrameShape(QFrame.Shape.HLine)
-        _hline.setFrameShadow(QFrame.Shadow.Plain)
-        _hline.setLineWidth(3)
-        _hline.setMidLineWidth(3)
-        _hline.setStyleSheet("border-color: rgb(95, 95, 95)")
-        hline = _hline
-
         layout = QVBoxLayout(_widget)
         layout.addStretch(4)
-        layout.addWidget(hline)
+        layout.addWidget(HLinePlain(parent=self))
         layout.addStretch(1)
+
         return _widget
+
     def _define_motion_space_layout(self):
         _txt = QLabel("Motion Space", parent=self)
         font = _txt.font()
@@ -1878,15 +1849,10 @@ class RunWidget(QWidget):
         control_widget = QWidget()
         control_widget.setLayout(self._define_control_layout())
 
-        vline = QFrame()
-        vline.setFrameShape(QFrame.Shape.VLine)
-        vline.setStyleSheet("color: rgb(95, 95, 95)")
-        vline.setLineWidth(10)
-
         # Construct layout below top banner
         layout = QHBoxLayout()
         layout.addWidget(toml_widget)
-        layout.addWidget(vline)
+        layout.addWidget(VLinePlain(parent=self))
         layout.addWidget(control_widget)
 
         # Populate the main layout
@@ -2101,24 +2067,12 @@ class MGWidget(QWidget):
 
     def _define_layout(self):
 
-        _hline = QFrame()
-        _hline.setFrameShape(QFrame.Shape.HLine)
-        _hline.setStyleSheet("color: rgb(95, 95, 95)")
-        _hline.setLineWidth(10)
-        hline1 = _hline
-
-        _hline = QFrame()
-        _hline.setFrameShape(QFrame.Shape.HLine)
-        _hline.setStyleSheet("color: rgb(95, 95, 95)")
-        _hline.setLineWidth(10)
-        hline2 = _hline
-
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(self._define_banner_layout())
-        layout.addWidget(hline1)
+        layout.addWidget(HLinePlain(parent=self))
         layout.addLayout(self._define_mg_builder_layout(), 2)
-        layout.addWidget(hline2)
+        layout.addWidget(HLinePlain(parent=self))
         layout.addWidget(self.drive_control_widget)
         # layout.addStretch(1)
 
@@ -2436,16 +2390,6 @@ class ConfigureGUI(QMainWindow):
         self.setMinimumHeight(600)
 
     def _define_layout(self):
-        layout = QHBoxLayout()
-
-        # layout.addWidget(self.dummy_widget())
-        # layout.addWidget(self._run_widget)
-        layout.addWidget(self._stacked_widget)
-
-        vline = QFrame()
-        vline.setFrameShape(QFrame.Shape.VLine)
-        vline.setMidLineWidth(3)
-        layout.addWidget(vline)
 
         self._log_widget.setMinimumWidth(400)
         self._log_widget.setMaximumWidth(500)
@@ -2453,6 +2397,10 @@ class ConfigureGUI(QMainWindow):
         self._log_widget.setSizePolicy(
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Ignored)
+
+        layout = QHBoxLayout()
+        layout.addWidget(self._stacked_widget)
+        layout.addWidget(VLinePlain(parent=self))
         layout.addWidget(self._log_widget)
 
         return layout
