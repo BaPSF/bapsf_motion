@@ -56,7 +56,7 @@ class _OverlayWidget(QWidget):
         # self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self.setStyleSheet("border: 2px solid black")
+        self.setStyleSheet("_OverlayWidget{ border: 2px solid black }")
 
         self.background_fill_color = QColor(30, 30, 30, 120)
         self.background_pen_color = QColor(30, 30, 30, 120)
