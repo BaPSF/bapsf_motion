@@ -1808,7 +1808,7 @@ class MGWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Add")
+        _btn = StyleButton("Add / Update")
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(48)
         font = _btn.font()
