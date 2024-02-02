@@ -1158,6 +1158,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def axis_names(self):
         return self.mg.drive.anames
 
+    @property
+    def mb(self) -> Union[MotionBuilder, None]:
+        if self._mb is None and self.mg.mb is not None:
+            return self.mg.mb
+
+        return self._mb
+
     def _generate_btn_widget(self, txt: str):
         btn = StyleButton(txt, parent=self)
         btn.setFixedHeight(32)
