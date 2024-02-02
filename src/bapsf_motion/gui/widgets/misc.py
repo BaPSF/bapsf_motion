@@ -1,6 +1,6 @@
 __all__ = [
     "IPv4Validator",
-    "QLineEditeSpecialized",
+    "QLineEditSpecialized",
     "HLinePlain",
     "VLinePlain",
 ]
@@ -34,7 +34,7 @@ class IPv4Validator(QValidator):
         return QValidator.State.Acceptable
 
 
-class QLineEditeSpecialized(QLineEdit):
+class QLineEditSpecialized(QLineEdit):
     editingFinishedPayload = Signal(object)
 
     def __init__(self, *args, **kwargs):

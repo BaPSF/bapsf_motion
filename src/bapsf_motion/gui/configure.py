@@ -43,7 +43,7 @@ from bapsf_motion.gui.widgets import (
     QLogger,
     StyleButton,
     LED,
-    QLineEditeSpecialized,
+    QLineEditSpecialized,
     HLinePlain,
     VLinePlain,
 )
@@ -1022,7 +1022,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         self._validate_inputs()
 
     @Slot(object)
-    def _update_transform_inputs(self, input_widget: "QLineEditeSpecialized"):
+    def _update_transform_inputs(self, input_widget: "QLineEditSpecialized"):
         param = input_widget.objectName()
         _input_string = input_widget.text()
 
@@ -1255,14 +1255,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setFont(font)
             range_label = _txt
 
-            _txt = QLineEdit(f"{args['range'][0]:.2f}", parent=self)
+            _txt = QLineEditSpecialized(f"{args['range'][0]:.2f}", parent=self)
             _txt.setFont(font)
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_min")
             min_range = _txt
 
-            _txt = QLineEdit(f"{args['range'][1]:.2f}", parent=self)
+            _txt = QLineEditSpecialized(f"{args['range'][1]:.2f}", parent=self)
             _txt.setFont(font)
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -1273,7 +1273,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setFont(font)
             delta_label = _txt
 
-            _txt = QLineEdit(
+            _txt = QLineEditSpecialized(
                 f"{(args['range'][1] - args['range'][0]) / args['num']:.2f}",
                 parent=self
             )
