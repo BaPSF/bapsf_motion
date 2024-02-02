@@ -348,6 +348,9 @@ class MotionBuilder(MBItem):
         """
         # generate the motion list
 
+        if self.layers is None or not self.layers:
+            return
+
         for_concatenation = []
 
         for layer in self.layers:
@@ -391,7 +394,7 @@ class MotionBuilder(MBItem):
         ...
 
     @property
-    def motion_list(self) -> xr.DataArray:
+    def motion_list(self) -> Union[xr.DataArray, None]:
         r"""
         Return the current :term:`motion list`.  If the motion list
         has not been generated, then it will be done automatically.
@@ -406,6 +409,9 @@ class MotionBuilder(MBItem):
         except KeyError:
             self.rebuild_mask()
             self.generate()
-            mb = self._ds["motion_list"]
+            if "motion_list" not in self._ds:
+                mb = None
+            else:
+                mb = self._ds["motion_list"]
 
         return mb
