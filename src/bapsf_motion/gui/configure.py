@@ -3,6 +3,7 @@ import asyncio
 import inspect
 import logging
 import logging.config
+import numpy as np
 
 from abc import abstractmethod
 from pathlib import Path
@@ -46,6 +47,9 @@ from bapsf_motion.gui.widgets import (
     HLinePlain,
     VLinePlain,
 )
+from bapsf_motion.motion_builder import MotionBuilder
+from bapsf_motion.motion_builder.layers import BaseLayer
+from bapsf_motion.motion_builder.exclusions import BaseExclusion
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
 from bapsf_motion.utils import toml, ipv4_pattern
@@ -1218,6 +1222,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return _widget
 
     def _define_motion_space_layout(self):
+
+        self._initialize_motion_builder()
+
         _txt = QLabel("Motion Space", parent=self)
         font = _txt.font()
         font.setPointSize(16)
@@ -1234,7 +1241,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop,
         )
 
-        for ii, name in enumerate(self.axis_names):
+        for ii, args in self.mb.config["space"].items():
+            axis = self.mg.drive.axes[ii]
+            name = args["label"]
+
             _txt = QLabel(name, parent=self)
             font = _txt.font()
             font.setPointSize(12)
@@ -1245,14 +1255,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setFont(font)
             range_label = _txt
 
-            _txt = QLineEdit(parent=self)
+            _txt = QLineEdit(f"{args['range'][0]:.2f}", parent=self)
             _txt.setFont(font)
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_min")
             min_range = _txt
 
-            _txt = QLineEdit(parent=self)
+            _txt = QLineEdit(f"{args['range'][1]:.2f}", parent=self)
             _txt.setFont(font)
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -1263,14 +1273,17 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setFont(font)
             delta_label = _txt
 
-            _txt = QLineEdit(parent=self)
+            _txt = QLineEdit(
+                f"{(args['range'][1] - args['range'][0]) / args['num']:.2f}",
+                parent=self
+            )
             _txt.setFont(font)
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_delta")
             delta = _txt
 
-            _txt = QLabel(f"{self.mg.drive.axes[ii].units}", parent=self)
+            _txt = QLabel(f"{axis.units}", parent=self)
             _txt.setFont(font)
             unit_label = _txt
 
@@ -1361,6 +1374,60 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def _define_layer_config_layout(self):
         ...
+
+    def _initialize_motion_builder(self):
+        if self.mb is not None:
+            return
+
+        config = {"space": {}}
+        for ii, aname in enumerate(self.axis_names):
+            axis = self.mg.drive.axes[ii]
+
+            if axis.units.physical_type == u.get_physical_type("length"):
+                _range = [-55.0, 55.0]
+                num = int(np.ceil((_range[1] - _range[0]) / .25))
+
+                _convert = (1 * u.cm).to(axis.units)  # type: u.Quantity
+                _convert = _convert.value
+                _range = [float(r * _convert) for r in _range]
+            elif axis.units.physical_type == u.get_physical_type("angle"):
+                _x = 3 * 360.0
+                delta = 5.0
+                if axis.units == u.rad:
+                    _x = _x * (2.0 * np.pi / 360.0)
+                    delta = delta * (np.pi / 180.0)
+
+                _range = [float(-_x), float(_x)]
+                num = int(np.ceil(2.0 * _x / delta))
+            else:  # this should not happen
+                _range = [-1.0, 1.0]
+                num = 11
+
+            config["space"][ii] = {
+                "label": aname,
+                "range": _range,
+                "num": num,
+            }
+
+        self._spawn_motion_builder(config)
+
+    def _spawn_motion_builder(self, config):
+        space = list(config["space"].values())
+
+        exclusions = config.get("exclusions", None)
+        if exclusions is not None:
+            exclusions = list(exclusions.values())
+
+        layers = config.get("layers", None)
+        if layers is not None:
+            layers = list(layers.values())
+
+        self.logger.info(f"space looks like : {space}")
+        self.logger.info(f"exclusions look like : {exclusions}")
+        self.logger.info(f"layers looks like : {layers}")
+
+        self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
+        return self._mb
 
     def return_and_close(self):
         self.close()
