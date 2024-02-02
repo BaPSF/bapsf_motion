@@ -1122,6 +1122,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.layer_list_box = QListWidget(parent=self)
         self.layer_list_box.setMinimumHeight(250)
+        self.exclusion_list_box = QListWidget(parent=self)
+        self.exclusion_list_box.setMinimumHeight(250)
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -1190,8 +1192,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layout.setSpacing(0)
         layout.addLayout(self._define_motion_space_layout())
         layout.addSpacing(20)
+        layout.addLayout(self._define_exclusion_list_layout())
+        layout.addSpacing(24)
         layout.addLayout(self._define_layer_list_layout())
-        layout.addSpacing(20)
         layout.addStretch()
 
         return _widget
@@ -1201,7 +1204,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         layout = QVBoxLayout(_widget)
-        layout.addStretch(4)
+        layout.addStretch(3)
         layout.addWidget(HLinePlain(parent=self))
         layout.addStretch(1)
 
@@ -1313,6 +1316,35 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         layout.addSpacing(2)
         layout.addWidget(self.layer_list_box)
+        layout.addLayout(sub_layout)
+
+        return layout
+
+    def _define_exclusion_list_layout(self):
+
+        _txt = QLabel("Exclusion Layers", parent=self)
+        font = _txt.font()
+        font.setPointSize(16)
+        font.setBold(True)
+        _txt.setFont(font)
+        title = _txt
+
+        sub_layout = QHBoxLayout()
+        sub_layout.setContentsMargins(0, 0, 0, 0)
+        sub_layout.setSpacing(8)
+        sub_layout.addWidget(self.add_ex_btn)
+        sub_layout.addWidget(self.remove_ex_btn)
+        sub_layout.addWidget(self.edit_ex_btn)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        layout.addWidget(
+            title,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter,
+        )
+        layout.addSpacing(2)
+        layout.addWidget(self.exclusion_list_box)
         layout.addLayout(sub_layout)
 
         return layout
