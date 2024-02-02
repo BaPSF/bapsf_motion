@@ -984,7 +984,7 @@ class TransformConfigOverlay(_ConfigOverlay):
             _type = _txt
 
             text = "" if default is None else f"{default}"
-            _txt = QLineEditeSpecialized(text, parent=_widget)
+            _txt = QLineEditSpecialized(text, parent=_widget)
             _txt.setObjectName(key)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
             font = _txt.font()
