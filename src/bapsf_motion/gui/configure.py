@@ -3,6 +3,8 @@ import asyncio
 import inspect
 import logging
 import logging.config
+import matplotlib as mpl
+import numpy as np
 import re
 
 import numpy as np
@@ -56,6 +58,12 @@ from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
 from bapsf_motion.utils import toml, ipv4_pattern
 from bapsf_motion.utils import units as u
+
+
+# noqa
+mpl.use("qtagg")  # matplotlib's backend for Qt bindings
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
 
 _logger = logging.getLogger("GUI")
 
@@ -1132,11 +1140,17 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.exclusion_list_box = QListWidget(parent=self)
         self.exclusion_list_box.setMinimumHeight(250)
 
+        self.mpl_canvas = FigureCanvas()
+        self.mpl_canvas.setParent(self)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
         self.setLayout(self._define_layout())
+        self.update_canvas()
         self._connect_signals()
 
     def _connect_signals(self):
         super()._connect_signals()
+        self.configChanged.connect(self.update_canvas)
 
     def _define_layout(self):
         sub_layout = QHBoxLayout()
@@ -1218,7 +1232,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         layout = QVBoxLayout(_widget)
-        layout.addStretch(3)
+        layout.addWidget(self.mpl_canvas)
         layout.addWidget(HLinePlain(parent=self))
         layout.addStretch(1)
 
@@ -1541,6 +1555,19 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
         return self._mb
+
+    def update_canvas(self):
+        self.logger.info("Redrawing plot...")
+        self.logger.info(f"MB config = {self.mb.config}")
+
+        self.mpl_canvas.figure.clear()
+        self.mpl_canvas.figure.add_subplot(111)
+        self.mb.mask.plot(
+            x=self.mb.mask.dims[0],
+            y=self.mb.mask.dims[1],
+            ax=self.mpl_canvas.figure.axes[0],
+        )
+        self.mpl_canvas.draw()
 
     def return_and_close(self):
         self.close()
