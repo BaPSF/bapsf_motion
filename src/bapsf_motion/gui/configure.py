@@ -3,6 +3,8 @@ import asyncio
 import inspect
 import logging
 import logging.config
+import re
+
 import numpy as np
 
 from abc import abstractmethod
@@ -1110,6 +1112,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         super().__init__(mg, parent)
 
         self._mb = None
+        self._space_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
 
         # Define BUTTONS
 
@@ -1260,6 +1263,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_min")
+            _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             min_range = _txt
 
             _txt = QLineEditSpecialized(f"{args['range'][1]:.2f}", parent=self)
@@ -1267,6 +1271,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_max")
+            _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             max_range = _txt
 
             _txt = QLabel("Δ", parent=self)
@@ -1281,6 +1286,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_delta")
+            _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             delta = _txt
 
             _txt = QLabel(f"{axis.units}", parent=self)
@@ -1308,6 +1314,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             layout.addWidget(
                 unit_label, ii + 2, 7, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft
             )
+
+            self._space_input_widgets[name] = {
+                "min": min_range,
+                "max": max_range,
+                "delta": delta,
+            }
 
         return layout
 
@@ -1411,7 +1423,108 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self._spawn_motion_builder(config)
 
+    @Slot(object)
+    def _validate_space_inputs(self, input_widget: QLineEditSpecialized):
+        w_name = input_widget.objectName()
+        match = re.compile(r"(?P<label>.+)_(?P<what>(min|max|delta))").fullmatch(w_name)
+        if match is None:
+            # input_widget does not have a name corresponding to the space inputs
+            return
+
+        axis_index = None
+        axis_config = None
+        axis_label = match.group("label")
+        axis_input_type = match.group("what")
+
+        space_config = self.mb.config["space"].copy()
+        for key, value in space_config.items():
+            if value["label"] == axis_label:
+                axis_index = key
+                axis_config = value
+                break
+
+        if axis_config is None:
+            # This should never happen
+            return None
+
+        if axis_input_type == "delta":
+            old_val = (
+                (axis_config["range"][1] - axis_config["range"][0])
+                / axis_config["num"]
+            )
+        else:
+            old_val = (
+                axis_config["range"][0]
+                if axis_input_type == "min"
+                else axis_config["range"][0]
+            )
+
+        try:
+            new_val = float(input_widget.text())
+            new_val_good = True
+        except ValueError:
+            new_val = None
+            new_val_good = False
+
+        range_window = axis_config["range"][1] - axis_config["range"][0]
+        old_delta = range_window / axis_config["num"]
+
+        if not new_val_good:
+            pass
+        elif axis_input_type == "min" and new_val >= axis_config["range"][1]:
+            new_val_good = False
+        elif axis_input_type == "min" and (
+            old_delta / (axis_config["range"][1] - new_val) >= 0.1
+        ):
+            new_val_good = False
+        elif axis_input_type == "min":
+            axis_config["range"][0] = new_val
+            axis_config["num"] = int(
+                np.ceil(
+                    (axis_config["range"][1] - new_val) / old_delta
+                )
+            )
+        elif axis_input_type == "max" and new_val <= axis_config["range"][0]:
+            new_val_good = False
+        elif axis_input_type == "max" and (
+            old_delta / (new_val - axis_config["range"][0]) >= 0.1
+        ):
+            new_val_good = False
+        elif axis_input_type == "max":
+            axis_config["range"][1] = new_val
+            axis_config["num"] = int(
+                np.ceil(
+                    (new_val - axis_config["range"][0]) / old_delta
+                )
+            )
+        elif axis_input_type == "delta" and (
+            new_val / (axis_config["range"][1] - axis_config["range"][0]) >= 0.1
+        ):
+            new_val_good = False
+        elif axis_input_type == "delta":
+            num = int(
+                np.ceil(
+                    (axis_config["range"][1] - axis_config["range"][0]) / new_val
+                )
+            )
+            axis_config["num"] = num
+
+        if not new_val_good:
+            input_widget.setText(f"{old_val:.3f}")
+            return
+
+        space_config[axis_index] = axis_config
+        config = {
+            "space": space_config,
+            "exclusions": self.mb.config.get("exclusions", None),
+            "layers": self.mb.config.get("layers", None),
+        }
+        self._spawn_motion_builder(config)
+
+        self.configChanged.emit()
+
     def _spawn_motion_builder(self, config):
+        self.logger.info("Rebuilding motion builder...")
         space = list(config["space"].values())
 
         exclusions = config.get("exclusions", None)
