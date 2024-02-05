@@ -11,8 +11,20 @@ import numpy as np
 
 from abc import abstractmethod
 from pathlib import Path
-from PySide6.QtCore import Qt, QDir, Signal, Slot, QSize
-from PySide6.QtGui import QCloseEvent, QColor, QPainter, QIcon
+from PySide6.QtCore import (
+    Qt,
+    QDir,
+    Signal,
+    Slot,
+    QSize,
+)
+from PySide6.QtGui import (
+    QCloseEvent,
+    QColor,
+    QPainter,
+    QIcon,
+    QDoubleValidator,
+)
 from PySide6.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
@@ -50,6 +62,7 @@ from bapsf_motion.gui.widgets import (
     QLineEditSpecialized,
     HLinePlain,
     VLinePlain,
+    IPv4Validator,
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.motion_builder.layers import BaseLayer
@@ -206,7 +219,7 @@ class AxisConfigWidget(QWidget):
         )
 
         # Define BUTTONS
-        _btn = LED()
+        _btn = LED(parent=self)
         _btn.set_fixed_height(24)
         self.online_led = _btn
 
@@ -218,18 +231,21 @@ class AxisConfigWidget(QWidget):
         _widget.setFixedWidth(30)
         self.ax_name_widget = _widget
 
-        _widget = QLineEdit()
+        _widget = QLineEdit(parent=self)
         font = _widget.font()
         font.setPointSize(16)
         _widget.setFont(font)
         _widget.setMinimumWidth(220)
+        _widget.setInputMask("009.009.009.009;_")
+        _widget.setValidator(IPv4Validator(logger=self._logger))
         self.ip_widget = _widget
 
-        _widget = QLineEdit()
+        _widget = QLineEdit(parent=self)
         font = _widget.font()
         font.setPointSize(16)
         _widget.setFont(font)
         _widget.setFixedWidth(120)
+        _widget.setValidator(QDoubleValidator())
         self.cm_per_rev_widget = _widget
 
         # Define ADVANCED WIDGETS
