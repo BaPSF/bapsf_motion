@@ -1160,6 +1160,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mpl_canvas.setParent(self)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
+        self._initialize_motion_builder()
         self.setLayout(self._define_layout())
         self.update_canvas()
         self._connect_signals()
@@ -1256,8 +1257,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def _define_motion_space_layout(self):
 
-        self._initialize_motion_builder()
-
         _txt = QLabel("Motion Space", parent=self)
         font = _txt.font()
         font.setPointSize(16)
@@ -1353,35 +1352,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         return layout
 
-    def _define_layer_list_layout(self):
-
-        _txt = QLabel("Point Layers", parent=self)
-        font = _txt.font()
-        font.setPointSize(16)
-        font.setBold(True)
-        _txt.setFont(font)
-        title = _txt
-
-        sub_layout = QHBoxLayout()
-        sub_layout.setContentsMargins(0, 0, 0, 0)
-        sub_layout.setSpacing(8)
-        sub_layout.addWidget(self.add_ly_btn)
-        sub_layout.addWidget(self.remove_ly_btn)
-        sub_layout.addWidget(self.edit_ly_btn)
-
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
-        layout.addWidget(
-            title,
-            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter,
-        )
-        layout.addSpacing(2)
-        layout.addWidget(self.layer_list_box)
-        layout.addLayout(sub_layout)
-
-        return layout
-
     def _define_exclusion_list_layout(self):
 
         _txt = QLabel("Exclusion Layers", parent=self)
@@ -1407,6 +1377,35 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         layout.addSpacing(2)
         layout.addWidget(self.exclusion_list_box)
+        layout.addLayout(sub_layout)
+
+        return layout
+
+    def _define_layer_list_layout(self):
+
+        _txt = QLabel("Point Layers", parent=self)
+        font = _txt.font()
+        font.setPointSize(16)
+        font.setBold(True)
+        _txt.setFont(font)
+        title = _txt
+
+        sub_layout = QHBoxLayout()
+        sub_layout.setContentsMargins(0, 0, 0, 0)
+        sub_layout.setSpacing(8)
+        sub_layout.addWidget(self.add_ly_btn)
+        sub_layout.addWidget(self.remove_ly_btn)
+        sub_layout.addWidget(self.edit_ly_btn)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        layout.addWidget(
+            title,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter,
+        )
+        layout.addSpacing(2)
+        layout.addWidget(self.layer_list_box)
         layout.addLayout(sub_layout)
 
         return layout
