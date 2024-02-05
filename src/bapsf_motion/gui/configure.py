@@ -82,10 +82,12 @@ _logger = logging.getLogger("GUI")
 
 
 class _OverlayWidget(QWidget):
-    closing = Signal()
 
     def __init__(self, parent):
         super().__init__(parent=parent)
+
+        # custom signals
+        self.closing = Signal()
 
         # make the window frameless
         # self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -145,11 +147,13 @@ class _OverlayWidget(QWidget):
 
 
 class _ConfigOverlay(_OverlayWidget):
-    configChanged = Signal()
-    returnConfig = Signal(object)
 
     def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
         super().__init__(parent=parent)
+
+        # custom signals
+        self.configChanged = Signal()
+        self.returnConfig = Signal(object)
 
         self._logger = _logger
         self._mg = mg
