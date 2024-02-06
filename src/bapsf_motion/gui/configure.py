@@ -1287,6 +1287,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_min")
+            _txt.setValidator(QDoubleValidator())
             _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             min_range = _txt
 
@@ -1295,6 +1296,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_max")
+            _txt.setValidator(QDoubleValidator())
             _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             max_range = _txt
 
@@ -1310,6 +1312,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_delta")
+            _txt.setValidator(QDoubleValidator())
             _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             delta = _txt
 
