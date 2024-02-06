@@ -4,6 +4,7 @@ Module that contains all the functionality focused around
 """
 __all__ = [
     "exclusion_factory",
+    "exclusion_registry",
     "register_exclusion",
     "BaseExclusion",
 ]
@@ -19,6 +20,7 @@ from bapsf_motion.motion_builder.exclusions.circular import CircularExclusion
 from bapsf_motion.motion_builder.exclusions.divider import DividerExclusion
 from bapsf_motion.motion_builder.exclusions.helpers import (
     exclusion_factory,
+    exclusion_registry,
     register_exclusion,
 )
 from bapsf_motion.motion_builder.exclusions.lapd import LaPDXYExclusion
