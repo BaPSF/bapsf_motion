@@ -157,6 +157,7 @@ class LaPDXYExclusion(BaseExclusion):
         port_location: Union[str, float] = "E",
         cone_full_angle: float = 80,
         include_cone: bool = True,
+        skip_ds_add: bool = False,
     ):
         super().__init__(
             ds,
@@ -165,6 +166,7 @@ class LaPDXYExclusion(BaseExclusion):
             port_location=port_location,
             cone_full_angle=cone_full_angle,
             include_cone=include_cone,
+            skip_ds_add=skip_ds_add,
         )
 
     @property
