@@ -376,8 +376,14 @@ class MotionBuilder(MBItem):
         """
         Clear/delete the currently constructed :term:`motion list`.
         """
-        self._ds.drop_vars("motion_list")
-        self._ds.drop_dims("index")
+        # TODO: make this more robust...like double checking that are
+        #       no point layers defined so a motion list can not exist
+        try:
+            self._ds.drop_vars("motion_list")
+            self._ds.drop_dims("index")
+        except ValueError:
+            # "motion_list" does not exist yet
+            pass
 
     def rebuild_mask(self):
         """
