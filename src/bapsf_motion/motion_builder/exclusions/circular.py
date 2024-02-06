@@ -8,6 +8,8 @@ import numbers
 import numpy as np
 import xarray as xr
 
+from typing import Optional, Tuple
+
 from bapsf_motion.motion_builder.exclusions.base import BaseExclusion
 from bapsf_motion.motion_builder.exclusions.helpers import register_exclusion
 
@@ -103,8 +105,8 @@ class CircularExclusion(BaseExclusion):
         self,
         ds: xr.Dataset,
         *,
-        radius,
-        center=None,
+        radius: float,
+        center: Optional[Tuple[float, float]] = None,
         exclude: str = "outside",
         skip_ds_add: bool = False,
     ):

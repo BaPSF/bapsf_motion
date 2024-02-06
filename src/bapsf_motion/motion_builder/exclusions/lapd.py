@@ -152,10 +152,10 @@ class LaPDXYExclusion(BaseExclusion):
         self,
         ds: xr.Dataset,
         *,
-        diameter: Real = 100,
-        pivot_radius: Real = 58.771,
-        port_location: Union[str, Real] = "E",
-        cone_full_angle: Real = 80,
+        diameter: float = 100,
+        pivot_radius: float = 58.771,
+        port_location: Union[str, float] = "E",
+        cone_full_angle: float = 80,
         include_cone: bool = True,
     ):
         super().__init__(
