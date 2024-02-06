@@ -100,7 +100,7 @@ def transform_factory(drive: "Drive", *, tr_type: str, **settings):
 
 
 class TransformRegistry:
-    _registry = _TRANSFORM_REGISTRY  # type: Dict[str, base.BaseTransform]
+    _registry = _TRANSFORM_REGISTRY  # type: Dict[str, Type[base.BaseTransform]]
 
     @property
     def available_transforms(self):
