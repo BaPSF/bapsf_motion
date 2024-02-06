@@ -66,7 +66,11 @@ from bapsf_motion.gui.widgets import (
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.motion_builder.layers import BaseLayer
-from bapsf_motion.motion_builder.exclusions import BaseExclusion
+from bapsf_motion.motion_builder.exclusions import (
+    BaseExclusion,
+    exclusion_registry,
+    exclusion_factory,
+)
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
 from bapsf_motion.utils import toml, ipv4_pattern
@@ -1125,25 +1129,62 @@ class TransformConfigOverlay(_ConfigOverlay):
 
 class MotionBuilderConfigOverlay(_ConfigOverlay):
     layer_registry = None
-    exclusion_registry = None
+    exclusion_registry = exclusion_registry
 
     def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
         super().__init__(mg, parent)
 
         self._mb = None
+
         self._space_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
+
+        # _param_inputs:
+        #     dictionary of input parameters for instantiating an exclusion or
+        #     points layer
+        # _params_widget:
+        #     top enclosing widget for setting and configuring parameter inputs
+        #     for an exclusion or point layer
+        # _params_field_widget:
+        #     child widget of _params_widget that contains the actual inpu fields
+        #     for configuring _param_inputs
+        # _params_input_widgets:
+        #     dictionary of the actual widgets that control the _param_inputs
+        #     values
+        self._param_inputs = {}  # type: Dict[str, Anay]
+        self._params_widget = None  # type: Union[QWidget, None]
+        self._params_field_widget = None  # type: Union[QWidget, None]
+        self._params_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
 
         # Define BUTTONS
 
         self.add_ly_btn = self._generate_btn_widget("ADD")
+        self.add_ly_btn.setEnabled(False)
         self.remove_ly_btn = self._generate_btn_widget("REMOVE")
+        self.remove_ly_btn.setEnabled(False)
         self.edit_ly_btn = self._generate_btn_widget("EDIT")
+        self.edit_ly_btn.setEnabled(False)
 
         self.add_ex_btn = self._generate_btn_widget("ADD")
         self.remove_ex_btn = self._generate_btn_widget("REMOVE")
+        self.remove_ex_btn.setEnabled(False)
         self.edit_ex_btn = self._generate_btn_widget("EDIT")
+        self.edit_ex_btn.setEnabled(False)
+
+        self.params_add_btn = self._generate_btn_widget("Add / Update")
+        self.params_discard_btn = self._generate_btn_widget("Discard")
 
         # Define TEXT WIDGETS
+        _txt = QComboBox(parent=self)
+        _txt.setMinimumWidth(200)
+        _txt.setMaximumWidth(400)
+        _txt.setEditable(False)
+        # _txt.addItems(_available)
+        # _txt.setCurrentText(_type)
+        self.params_combo_box = _txt
+
+        _txt = QLabel("", parent=self)
+        self.params_label = _txt
+
         # Define ADVANCED WIDGETS
 
         self.layer_list_box = QListWidget(parent=self)
@@ -1162,7 +1203,20 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def _connect_signals(self):
         super()._connect_signals()
+
         self.configChanged.connect(self.update_canvas)
+        self.configChanged.connect(self.update_exclusion_list_box)
+
+        self.add_ex_btn.clicked.connect(self._exclusion_configure_new)
+        self.remove_ex_btn.clicked.connect(self._exclusion_remove_from_mb)
+        self.edit_ex_btn.clicked.connect(self._exclusion_modify_existing)
+
+        self.params_discard_btn.clicked.connect(self._hide_and_clear_params_widget)
+        self.params_add_btn.clicked.connect(self._add_to_mb)
+
+        self.params_combo_box.currentTextChanged.connect(
+            self._refresh_params_widget_from_combo_box_change
+        )
 
     def _define_layout(self):
         sub_layout = QHBoxLayout()
@@ -1246,7 +1300,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layout = QVBoxLayout(_widget)
         layout.addWidget(self.mpl_canvas)
         layout.addWidget(HLinePlain(parent=self))
-        layout.addStretch(1)
+        layout.addWidget(self._define_params_widget())
 
         return _widget
 
@@ -1359,6 +1413,33 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _txt.setFont(font)
         title = _txt
 
+        ex_names = set(ex.name for ex in self.mb.exclusions)
+
+        _available = self.exclusion_registry.get_names_by_dimensionality(
+            self.dimensionality
+        )
+        if not _available:
+            self.logger.warning(
+                "There are now coded exclusion layers that work with the "
+                f"dimensionality of the existing probe drive, {self.dimensionality}."
+            )
+            self.add_ex_btn.setEnabled(False)
+            self.remove_ex_btn.setEnabled(False)
+            self.edit_ex_btn.setEnabled(False)
+
+            for name in ex_names:
+                self.mb.remove_exclusion(name)
+
+            ex_names = set()
+        elif ex_names - _available:
+            rm_names = ex_names - _available
+            for name in rm_names:
+                self.mb.remove_exclusion(name)
+
+            ex_names = rm_names
+
+        self.exclusion_list_box.addItems(ex_names)
+
         sub_layout = QHBoxLayout()
         sub_layout.setContentsMargins(0, 0, 0, 0)
         sub_layout.setSpacing(8)
@@ -1411,8 +1492,53 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _define_plot_layout(self):
         ...
 
-    def _define_layer_config_layout(self):
-        ...
+    def _define_params_widget(self):
+        _widget = QWidget(parent=self)
+        _widget.setMinimumHeight(300)
+        size_policy = _widget.sizePolicy()
+        size_policy.setRetainSizeWhenHidden(True)
+        _widget.setSizePolicy(size_policy)
+        layout = QVBoxLayout(_widget)
+
+        self.params_add_btn.setEnabled(False)
+
+        hline = HLinePlain(parent=self)
+        hline.set_color(30, 30, 30)
+        hline.setLineWidth(2)
+
+        self._params_field_widget = QWidget(parent=_widget)
+
+        banner_layout = QHBoxLayout()
+        banner_layout.setContentsMargins(0, 0, 0, 0)
+        banner_layout.setSpacing(8)
+
+        banner_layout.addWidget(
+            self.params_label,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+        )
+        banner_layout.addSpacing(20)
+        banner_layout.addWidget(
+            self.params_combo_box,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+        )
+        banner_layout.addStretch()
+        banner_layout.addWidget(
+            self.params_discard_btn,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+        banner_layout.addWidget(
+            self.params_add_btn,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+
+        layout.addLayout(banner_layout)
+        layout.addWidget(hline)
+        layout.addWidget(self._params_field_widget)
+        layout.addStretch()
+
+        self._params_widget = _widget
+        self._params_widget.hide()
+        return self._params_widget
 
     def _initialize_motion_builder(self):
         if self.mb is not None:
@@ -1569,6 +1695,245 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
         return self._mb
 
+    def _define_params_field_widget(self, ex_or_ly, _type):
+        _registry = (
+            self.exclusion_registry
+            if ex_or_ly == "exclusion"
+            else self.layer_registry
+        )
+
+        self._param_inputs.update(
+            {"_type": _type, "_registry": _registry}
+        )
+
+        params = _registry.get_input_parameters(_type)
+
+        _widget = QWidget(parent=self._params_widget)
+        layout = QGridLayout(_widget)
+        layout.setContentsMargins(8, 4, 8, 4)
+        layout.setSpacing(8)
+
+        # layout.setColumnStretch(0, 2)
+        # layout.setColumnStretch(1, 2)
+        # layout.setColumnStretch(2, 4)
+        # layout.setColumnStretch(3, 1)
+        # layout.setColumnStretch(4, 1)
+
+        ii = 0
+        for key, val in params.items():
+            # determine the seeded value for the transform input
+            if key in self._param_inputs:
+                default = self._param_inputs[key]
+            elif val["param"].default is not val["param"].empty:
+                default = val["param"].default
+                self._param_inputs[key] = default
+            else:
+                default = None
+                self._param_inputs[key] = default
+
+            _txt = QLabel(key, parent=_widget)
+            font = _txt.font()
+            font.setPointSize(16)
+            font.setBold(True)
+            _txt.setFont(font)
+            _label = _txt
+
+            annotation = val['param'].annotation
+            if inspect.isclass(annotation):
+                annotation = annotation.__name__
+            annotation = f"{annotation}".split(".")[-1]
+
+            _txt = QLabel(annotation, parent=_widget)
+            font = _txt.font()
+            font.setPointSize(16)
+            font.setBold(True)
+            _txt.setFont(font)
+            _type = _txt
+
+            text = "" if default is None else f"{default}"
+            _txt = QLineEditSpecialized(text, parent=_widget)
+            _txt.setObjectName(key)
+            _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            font = _txt.font()
+            font.setPointSize(16)
+            _txt.setFont(font)
+            _input = _txt
+            _input.editingFinishedPayload.connect(self._update_param_inputs)
+
+            _txt = QLabel("", parent=_widget)
+            _icon = qta.icon("fa.question-circle-o").pixmap(QSize(16, 16))  # type: QIcon
+            _txt.setPixmap(_icon)
+            _txt.setToolTip("\n".join(val["desc"]))
+            _txt.setToolTipDuration(10000)
+            _txt.setMaximumWidth(24)
+            _help = _txt
+
+            layout.addWidget(_label, ii, 0, alignment=Qt.AlignmentFlag.AlignRight)
+            layout.addWidget(_type, ii, 1, alignment=Qt.AlignmentFlag.AlignCenter)
+            layout.addWidget(_input, ii, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+            layout.addWidget(_help, ii, 3, alignment=Qt.AlignmentFlag.AlignLeft)
+            ii += 1
+
+        return _widget
+
+    def _refresh_params_widget(self):
+        self.params_add_btn.setEnabled(False)
+
+        _type = self.params_combo_box.currentText()
+        ex_or_ly = self.params_combo_box.objectName()
+
+        _widget = self._define_params_field_widget(ex_or_ly, _type)
+
+        old_widget = self._params_field_widget
+        self._params_widget.layout().replaceWidget(old_widget, _widget)
+        self._params_field_widget = _widget
+
+        old_widget.close()
+        old_widget.deleteLater()
+
+        self._validate_inputs()
+
+    def _refresh_params_widget_from_combo_box_change(self):
+        self._param_inputs = {}
+        self._refresh_params_widget()
+
+    def _exclusion_configure_new(self):
+        if not self._params_widget.isHidden():
+            self._hide_and_clear_params_widget()
+
+        self.params_label.setText("New Exclusion")
+
+        _available = self.exclusion_registry.get_names_by_dimensionality(
+            self.dimensionality
+        )
+        self.params_combo_box.currentTextChanged.disconnect()
+        self.params_combo_box.clear()
+        self.params_combo_box.addItems(_available)
+        self.params_combo_box.setCurrentIndex(0)
+        self.params_combo_box.currentTextChanged.connect(
+            self._refresh_params_widget_from_combo_box_change
+        )
+        self.params_combo_box.setObjectName("exclusion")
+
+        self._refresh_params_widget()
+
+        self._show_params_widget()
+
+    def _exclusion_modify_existing(self):
+        ...
+
+    def _add_to_mb(self):
+        _inputs = self._param_inputs.copy()
+        _type = _inputs.pop("_type")
+        _registry = _inputs.pop("_registry")
+        _name = self.params_label.text()
+
+        if _registry is self.exclusion_registry and _name == "New Exclusion":
+            self.mb.add_exclusion(_type, **_inputs)
+        elif _registry is self.exclusion_registry:
+            # modifying existing exclusion
+            ...
+
+        self._hide_and_clear_params_widget()
+        self.configChanged.emit()
+
+    def _exclusion_remove_from_mb(self):
+        ex_row = self.exclusion_list_box.currentRow()
+        ex = self.exclusion_list_box.takeItem(ex_row)
+
+        self.mb.remove_exclusion(ex.text())
+        # ex.deleteLater()
+
+        # TODO: remove params_widget if the removed exclusion is currently
+        #       populating the params_widget
+
+        self.configChanged.emit()
+
+    def _show_params_widget(self):
+        self._params_field_widget.setEnabled(True)
+        self._params_widget.show()
+
+    @Slot(object)
+    def _update_param_inputs(self, input_widget: "QLineEditSpecialized"):
+        param = input_widget.objectName()
+        _input_string = input_widget.text()
+
+        _type = self._param_inputs["_type"]
+        _registry = self._param_inputs["_registry"]
+
+        try:
+            _input = ast.literal_eval(_input_string)
+        except (ValueError, SyntaxError):
+            params = _registry.get_input_parameters(_type)
+            _type = params[param]["param"].annotation
+            if inspect.isclass(_type) and issubclass(_type, str):
+                _input = _input_string
+            elif _input_string == "":
+                _input = None
+            else:
+                self.logger.exception(
+                    f"Input '{input_widget.text()}' is not a valid type for '{param}'."
+                )
+                _input = None
+                input_widget.setText("")
+                raise
+
+        self._param_inputs[param] = _input
+
+        self.logger.info(
+            f"Updating input parameter {param} to {_input} for transformation "
+            f"type {_type}."
+        )
+
+        self._validate_inputs()
+
+    def _validate_inputs(self):
+        _inputs = self._param_inputs.copy()
+        _type = _inputs.pop("_type")
+        _registry = _inputs.pop("_registry")
+        params = _registry.get_input_parameters(_type)
+
+        for key, val in _inputs.items():
+            annotation = params[key]["param"]
+
+            if val is not None:
+                continue
+            elif (
+                annotation is None
+                or (
+                    hasattr(annotation, "__args__")
+                    and type(None) in annotation.__args__
+                )
+            ):
+                # val is None and is allowed to be None
+                continue
+            else:
+                # not all inputs have been defined yet
+                self.change_validation_state(False)
+                return
+
+        try:
+            _layer = _registry.factory(
+                self.mb._ds,
+                _type=_type,
+                skip_ds_add=True,
+                **_inputs,
+            )
+            # self._transform = transform
+            self.change_validation_state(True)
+        except (ValueError, TypeError):
+            self.logger.exception("Supplied input arguments are not valid.")
+            self.change_validation_state(False)
+            raise
+
+    def change_validation_state(self, valid: bool = False):
+        self.params_add_btn.setEnabled(valid)
+
+    def _hide_and_clear_params_widget(self):
+        self._params_field_widget.setEnabled(False)
+        self._params_widget.hide()
+        self._param_inputs = {}
+
     def update_canvas(self):
         self.logger.info("Redrawing plot...")
         self.logger.info(f"MB config = {self.mb.config}")
@@ -1581,6 +1946,19 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             ax=self.mpl_canvas.figure.axes[0],
         )
         self.mpl_canvas.draw()
+
+    def update_exclusion_list_box(self):
+        ex_names = set(ex.name for ex in self.mb.exclusions)
+        self.exclusion_list_box.clear()
+
+        if not ex_names:
+            self.remove_ex_btn.setEnabled(False)
+            self.edit_ex_btn.setEnabled(False)
+            return
+
+        self.exclusion_list_box.addItems(ex_names)
+        self.remove_ex_btn.setEnabled(True)
+        self.edit_ex_btn.setEnabled(True)
 
     def return_and_close(self):
         self.close()
