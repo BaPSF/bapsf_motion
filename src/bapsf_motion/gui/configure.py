@@ -82,12 +82,10 @@ _logger = logging.getLogger("GUI")
 
 
 class _OverlayWidget(QWidget):
+    closing = Signal()
 
     def __init__(self, parent):
         super().__init__(parent=parent)
-
-        # custom signals
-        self.closing = Signal()
 
         # make the window frameless
         # self.setWindowFlags(Qt.WindowType.FramelessWindowHint)
@@ -147,13 +145,11 @@ class _OverlayWidget(QWidget):
 
 
 class _ConfigOverlay(_OverlayWidget):
+    configChanged = Signal()
+    returnConfig = Signal(object)
 
     def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
         super().__init__(parent=parent)
-
-        # custom signals
-        self.configChanged = Signal()
-        self.returnConfig = Signal(object)
 
         self._logger = _logger
         self._mg = mg
@@ -496,9 +492,6 @@ class AxisConfigWidget(QWidget):
 
 
 class DriveConfigOverlay(_ConfigOverlay):
-    configChanged = Signal()
-    returnConfig = Signal(object)
-
     drive_loop = asyncio.new_event_loop()
 
     def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
@@ -875,7 +868,6 @@ class DriveConfigOverlay(_ConfigOverlay):
 
 
 class TransformConfigOverlay(_ConfigOverlay):
-
     registry = transform_registry
 
     def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
@@ -1132,7 +1124,6 @@ class TransformConfigOverlay(_ConfigOverlay):
 
 
 class MotionBuilderConfigOverlay(_ConfigOverlay):
-
     layer_registry = None
     exclusion_registry = None
 
