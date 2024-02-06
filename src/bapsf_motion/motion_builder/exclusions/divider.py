@@ -95,6 +95,7 @@ class DividerExclusion(BaseExclusion):
     """
     # TODO: Can `exclude` be updated to only take "+" and "-"?
     _exclusion_type = "divider"
+    _dimensionality = 2
     region_pattern = re.compile(r"(?P<sign>[+|-])e(?P<axis>[0|1])")
 
     def __init__(

@@ -135,6 +135,7 @@ class LaPDXYExclusion(BaseExclusion):
           }
     """
     _exclusion_type = "lapd_xy"
+    _dimensionality = 2
     _port_location_to_angle = {
         "e": 0,
         "east": 0,

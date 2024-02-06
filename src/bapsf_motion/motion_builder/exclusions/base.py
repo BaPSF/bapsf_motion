@@ -38,6 +38,7 @@ class BaseExclusion(ABC, MBItem):
     #       BaseLayer.regenerate_point_matrix().
 
     _exclusion_type = NotImplemented  # type: str
+    _dimensionality = NotImplemented  # type: int
 
     def __init__(
             self, ds: xr.Dataset, *, skip_ds_add: bool = False, **kwargs
@@ -93,6 +94,15 @@ class BaseExclusion(ABC, MBItem):
         among all subclasses of `BaseExclusion`.
         """
         return self._exclusion_type
+
+    @property
+    def dimensionality(self) -> int:
+        """
+        The designed dimensionality of the exclusion layer.  If ``-1``,
+        then the exclusion does not have a fixed dimensionality, and it
+        can morph to the associated motion space.
+        """
+        return self._dimensionality
 
     @property
     def exclusion(self) -> xr.DataArray:

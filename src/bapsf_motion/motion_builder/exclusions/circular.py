@@ -97,6 +97,7 @@ class CircularExclusion(BaseExclusion):
     """
     # TODO: Can this class be extend to a N-D motion space.
     _exclusion_type = "circle"
+    _dimensionality = 2
 
     def __init__(
         self,
