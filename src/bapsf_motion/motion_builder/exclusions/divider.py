@@ -110,7 +110,7 @@ class DividerExclusion(BaseExclusion):
             ds,
             skip_ds_add=skip_ds_add,
             mb=mb,
-            exclude_region=exclude,
+            exclude=exclude,
         )
 
     @property
@@ -130,7 +130,7 @@ class DividerExclusion(BaseExclusion):
         ``excluded`` in the class parameters section for further
         details.
         """
-        return self.inputs["exclude_region"]
+        return self.inputs["exclude"]
 
     def _validate_inputs(self):
         """Validate input arguments."""

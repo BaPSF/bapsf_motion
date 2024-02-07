@@ -115,7 +115,7 @@ class CircularExclusion(BaseExclusion):
             skip_ds_add=skip_ds_add,
             radius=radius,
             center=center,
-            exclude_region=exclude,
+            exclude=exclude,
         )
 
     def _generate_exclusion(self):
@@ -166,4 +166,4 @@ class CircularExclusion(BaseExclusion):
         ``'inside'`` for an interior excluded region and ``'outside'``
         for and exterior excluded region.
         """
-        return self.inputs["exclude_region"]
+        return self.inputs["exclude"]
