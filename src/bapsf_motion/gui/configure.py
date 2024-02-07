@@ -41,7 +41,7 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QComboBox,
 )
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
@@ -1933,6 +1933,17 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setEnabled(True)
 
         return btn
+
+    @staticmethod
+    def _generate_list_name(name, _type):
+        return f"{name:<11} <type = {_type}>"
+
+    @staticmethod
+    def _get_layer_name_from_list_name(list_name):
+        match = re.compile(
+            r"(?P<name>\S+)\s+(<type = )(?P<type>\S+)(>)"
+        ).fullmatch(list_name)
+        return None if match is None else match.group("name")
 
     def _initialize_motion_builder(self):
         if self.mb is not None:
