@@ -1655,7 +1655,34 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._show_params_widget()
 
     def _exclusion_modify_existing(self):
-        ...
+        item = self.exclusion_list_box.currentItem()
+        name = self._get_layer_name_from_list_name(item.text())
+        if name is None:
+            return
+
+        ex = None
+        for _ex in self.mb.exclusions:
+            if _ex.name == name:
+                ex = _ex
+                break
+        if ex is None:
+            return
+
+        if not self._params_widget.isHidden():
+            self._hide_and_clear_params_widget()
+
+        self.params_label.setText(ex.name)
+        _available = self.exclusion_registry.get_names_by_dimensionality(
+            self.dimensionality
+        )
+        self._refresh_params_combo_box(_available, ex.exclusion_type)
+        self.params_combo_box.setObjectName("exclusion")
+
+        self._param_inputs = ex.config.copy()
+        self._param_inputs.pop("type")
+
+        self._refresh_params_widget()
+        self._show_params_widget()
 
     def _exclusion_remove_from_mb(self):
         ex_row = self.exclusion_list_box.currentRow()
@@ -1935,7 +1962,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.mb.add_exclusion(_type, **_inputs)
         elif _registry is self.exclusion_registry:
             # modifying existing exclusion
-            ...
+            self.mb.remove_exclusion(_name)
+            self.mb.add_exclusion(_type, **_inputs)
 
         self._hide_and_clear_params_widget()
         self.configChanged.emit()
