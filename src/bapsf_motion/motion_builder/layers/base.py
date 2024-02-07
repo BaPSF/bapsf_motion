@@ -34,6 +34,7 @@ class BaseLayer(ABC, MBItem):
     #       its dependencies from the motion builder dataset?
 
     _layer_type = NotImplemented  # type: str
+    _dimensionality = NotImplemented  # type: int
 
     def __init__(
         self, ds: xr.Dataset, *, skip_ds_add: bool = False, **kwargs
@@ -71,6 +72,15 @@ class BaseLayer(ABC, MBItem):
         # TODO: is there a better way of enforcing uniqueness than checking
         #       during @register_layer?
         return self._layer_type
+
+    @property
+    def dimensionality(self) -> int:
+        """
+        The designed dimensionality of the point layer.  If ``-1``,
+        then the exclusion does not have a fixed dimensionality, and it
+        can morph to the associated motion space.
+        """
+        return self._dimensionality
 
     @property
     def points(self) -> xr.DataArray:

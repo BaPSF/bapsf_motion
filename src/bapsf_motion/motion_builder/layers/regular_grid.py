@@ -88,6 +88,7 @@ class GridLayer(BaseLayer):
     # TODO: Can the different code types in teh docstring be done with
     #       tabs?
     _layer_type = "grid"
+    _dimensionality = -1
 
     def __init__(
             self,
