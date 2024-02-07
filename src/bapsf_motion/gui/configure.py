@@ -1647,13 +1647,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _available = self.exclusion_registry.get_names_by_dimensionality(
             self.dimensionality
         )
-        self.params_combo_box.currentTextChanged.disconnect()
-        self.params_combo_box.clear()
-        self.params_combo_box.addItems(_available)
-        self.params_combo_box.setCurrentIndex(0)
-        self.params_combo_box.currentTextChanged.connect(
-            self._refresh_params_widget_from_combo_box_change
-        )
+        self._refresh_params_combo_box(_available)
         self.params_combo_box.setObjectName("exclusion")
 
         self._refresh_params_widget()
@@ -1679,6 +1673,21 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._params_field_widget.setEnabled(False)
         self._params_widget.hide()
         self._param_inputs = {}
+
+    def _refresh_params_combo_box(self, items, current: Optional[str] = None):
+        self.params_combo_box.currentTextChanged.disconnect()
+
+        self.params_combo_box.setObjectName("")
+        self.params_combo_box.clear()
+        self.params_combo_box.addItems(items)
+        if current is None:
+            self.params_combo_box.setCurrentIndex(0)
+        else:
+            self.params_combo_box.setCurrentText(current)
+
+        self.params_combo_box.currentTextChanged.connect(
+            self._refresh_params_widget_from_combo_box_change
+        )
 
     def _refresh_params_widget(self):
         self.params_add_btn.setEnabled(False)
