@@ -1661,7 +1661,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         ex_row = self.exclusion_list_box.currentRow()
         ex = self.exclusion_list_box.takeItem(ex_row)
 
-        self.mb.remove_exclusion(ex.text())
+        name = self._get_layer_name_from_list_name(ex.text())
+        if name is None:
+            return
+
+        self.mb.remove_exclusion(name)
         # ex.deleteLater()
 
         # TODO: remove params_widget if the removed exclusion is currently
@@ -1904,7 +1908,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mpl_canvas.draw()
 
     def update_exclusion_list_box(self):
-        ex_names = set(ex.name for ex in self.mb.exclusions)
+        ex_names = set(
+            self._generate_list_name(ex.name, ex.exclusion_type)
+            for ex in self.mb.exclusions
+        )
         self.exclusion_list_box.clear()
 
         if not ex_names:
