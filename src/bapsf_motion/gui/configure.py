@@ -1219,6 +1219,29 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
 
     def _define_layout(self):
+        #
+        #  +-------------------------------------------------------+
+        #  | banner_layout                                         |
+        #  +-------------------+-----------------------------------+
+        #  |     sidebar       | right_area                        |
+        #  |                   |                                   |
+        #  | +--------------+  |  +-----------------------------+  |
+        #  | | motion_space |  |  | Plot                        |  |
+        #  | |              |  |  |                             |  |
+        #  | +--------------+  |  |                             |  |
+        #  |                   |  |                             |  |
+        #  | +--------------+  |  +-----------------------------+  |
+        #  | |  exclusion   |  |                                   |
+        #  | |  list        |  |  +--params_widget--------------+  |
+        #  | +--------------+  |  |                             |  |
+        #  |                   |  | banner                      |  |
+        #  | +--------------+  |  |                             |  |
+        #  | |  layer       |  |  | +--params_field_widget----+ |  |
+        #  | |  list        |  |  | |                         | |  |
+        #  | +--------------+  |  | +-------------------------+ |  |
+        #  |                   |  +-----------------------------+  |
+        #  +-------------------+-----------------------------------+
+        #
         sub_layout = QHBoxLayout()
         sub_layout.setSpacing(0)
         sub_layout.setContentsMargins(0, 0, 0, 0)
@@ -1252,15 +1275,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         return self._mb
 
-    def _generate_btn_widget(self, txt: str):
-        btn = StyleButton(txt, parent=self)
-        btn.setFixedHeight(32)
-        font = btn.font()
-        font.setPointSize(16)
-        btn.setFont(font)
-        btn.setEnabled(True)
-
-        return btn
+    # -- LAYOUT AND WIDGET DEFINITIONS --
 
     def _define_banner_layout(self):
         layout = QHBoxLayout()
@@ -1540,161 +1555,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._params_widget.hide()
         return self._params_widget
 
-    def _initialize_motion_builder(self):
-        if self.mb is not None:
-            return
-
-        config = {"space": {}}
-        for ii, aname in enumerate(self.axis_names):
-            axis = self.mg.drive.axes[ii]
-
-            if axis.units.physical_type == u.get_physical_type("length"):
-                _range = [-55.0, 55.0]
-                num = int(np.ceil((_range[1] - _range[0]) / .25))
-
-                _convert = (1 * u.cm).to(axis.units)  # type: u.Quantity
-                _convert = _convert.value
-                _range = [float(r * _convert) for r in _range]
-            elif axis.units.physical_type == u.get_physical_type("angle"):
-                _x = 3 * 360.0
-                delta = 5.0
-                if axis.units == u.rad:
-                    _x = _x * (2.0 * np.pi / 360.0)
-                    delta = delta * (np.pi / 180.0)
-
-                _range = [float(-_x), float(_x)]
-                num = int(np.ceil(2.0 * _x / delta))
-            else:  # this should not happen
-                _range = [-1.0, 1.0]
-                num = 11
-
-            config["space"][ii] = {
-                "label": aname,
-                "range": _range,
-                "num": num,
-            }
-
-        self._spawn_motion_builder(config)
-
-    @Slot(object)
-    def _validate_space_inputs(self, input_widget: QLineEditSpecialized):
-        w_name = input_widget.objectName()
-        match = re.compile(r"(?P<label>.+)_(?P<what>(min|max|delta))").fullmatch(w_name)
-        if match is None:
-            # input_widget does not have a name corresponding to the space inputs
-            return
-
-        axis_index = None
-        axis_config = None
-        axis_label = match.group("label")
-        axis_input_type = match.group("what")
-
-        space_config = self.mb.config["space"].copy()
-        for key, value in space_config.items():
-            if value["label"] == axis_label:
-                axis_index = key
-                axis_config = value
-                break
-
-        if axis_config is None:
-            # This should never happen
-            return None
-
-        if axis_input_type == "delta":
-            old_val = (
-                (axis_config["range"][1] - axis_config["range"][0])
-                / axis_config["num"]
-            )
-        else:
-            old_val = (
-                axis_config["range"][0]
-                if axis_input_type == "min"
-                else axis_config["range"][0]
-            )
-
-        try:
-            new_val = float(input_widget.text())
-            new_val_good = True
-        except ValueError:
-            new_val = None
-            new_val_good = False
-
-        range_window = axis_config["range"][1] - axis_config["range"][0]
-        old_delta = range_window / axis_config["num"]
-
-        if not new_val_good:
-            pass
-        elif axis_input_type == "min" and new_val >= axis_config["range"][1]:
-            new_val_good = False
-        elif axis_input_type == "min" and (
-            old_delta / (axis_config["range"][1] - new_val) >= 0.1
-        ):
-            new_val_good = False
-        elif axis_input_type == "min":
-            axis_config["range"][0] = new_val
-            axis_config["num"] = int(
-                np.ceil(
-                    (axis_config["range"][1] - new_val) / old_delta
-                )
-            )
-        elif axis_input_type == "max" and new_val <= axis_config["range"][0]:
-            new_val_good = False
-        elif axis_input_type == "max" and (
-            old_delta / (new_val - axis_config["range"][0]) >= 0.1
-        ):
-            new_val_good = False
-        elif axis_input_type == "max":
-            axis_config["range"][1] = new_val
-            axis_config["num"] = int(
-                np.ceil(
-                    (new_val - axis_config["range"][0]) / old_delta
-                )
-            )
-        elif axis_input_type == "delta" and (
-            new_val / (axis_config["range"][1] - axis_config["range"][0]) >= 0.1
-        ):
-            new_val_good = False
-        elif axis_input_type == "delta":
-            num = int(
-                np.ceil(
-                    (axis_config["range"][1] - axis_config["range"][0]) / new_val
-                )
-            )
-            axis_config["num"] = num
-
-        if not new_val_good:
-            input_widget.setText(f"{old_val:.3f}")
-            return
-
-        space_config[axis_index] = axis_config
-        config = {
-            "space": space_config,
-            "exclusions": self.mb.config.get("exclusions", None),
-            "layers": self.mb.config.get("layers", None),
-        }
-        self._spawn_motion_builder(config)
-
-        self.configChanged.emit()
-
-    def _spawn_motion_builder(self, config):
-        self.logger.info("Rebuilding motion builder...")
-        space = list(config["space"].values())
-
-        exclusions = config.get("exclusions", None)
-        if exclusions is not None:
-            exclusions = list(exclusions.values())
-
-        layers = config.get("layers", None)
-        if layers is not None:
-            layers = list(layers.values())
-
-        self.logger.info(f"space looks like : {space}")
-        self.logger.info(f"exclusions look like : {exclusions}")
-        self.logger.info(f"layers looks like : {layers}")
-
-        self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
-        return self._mb
-
     def _define_params_field_widget(self, ex_or_ly, _type):
         _registry = (
             self.exclusion_registry
@@ -1776,26 +1636,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         return _widget
 
-    def _refresh_params_widget(self):
-        self.params_add_btn.setEnabled(False)
-
-        _type = self.params_combo_box.currentText()
-        ex_or_ly = self.params_combo_box.objectName()
-
-        _widget = self._define_params_field_widget(ex_or_ly, _type)
-
-        old_widget = self._params_field_widget
-        self._params_widget.layout().replaceWidget(old_widget, _widget)
-        self._params_field_widget = _widget
-
-        old_widget.close()
-        old_widget.deleteLater()
-
-        self._validate_inputs()
-
-    def _refresh_params_widget_from_combo_box_change(self):
-        self._param_inputs = {}
-        self._refresh_params_widget()
+    # -- WIDGET INTERACTION FUNCTIONALITY --
 
     def _exclusion_configure_new(self):
         if not self._params_widget.isHidden():
@@ -1822,21 +1663,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _exclusion_modify_existing(self):
         ...
 
-    def _add_to_mb(self):
-        _inputs = self._param_inputs.copy()
-        _type = _inputs.pop("_type")
-        _registry = _inputs.pop("_registry")
-        _name = self.params_label.text()
-
-        if _registry is self.exclusion_registry and _name == "New Exclusion":
-            self.mb.add_exclusion(_type, **_inputs)
-        elif _registry is self.exclusion_registry:
-            # modifying existing exclusion
-            ...
-
-        self._hide_and_clear_params_widget()
-        self.configChanged.emit()
-
     def _exclusion_remove_from_mb(self):
         ex_row = self.exclusion_list_box.currentRow()
         ex = self.exclusion_list_box.takeItem(ex_row)
@@ -1848,6 +1674,32 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         #       populating the params_widget
 
         self.configChanged.emit()
+
+    def _hide_and_clear_params_widget(self):
+        self._params_field_widget.setEnabled(False)
+        self._params_widget.hide()
+        self._param_inputs = {}
+
+    def _refresh_params_widget(self):
+        self.params_add_btn.setEnabled(False)
+
+        _type = self.params_combo_box.currentText()
+        ex_or_ly = self.params_combo_box.objectName()
+
+        _widget = self._define_params_field_widget(ex_or_ly, _type)
+
+        old_widget = self._params_field_widget
+        self._params_widget.layout().replaceWidget(old_widget, _widget)
+        self._params_field_widget = _widget
+
+        old_widget.close()
+        old_widget.deleteLater()
+
+        self._validate_inputs()
+
+    def _refresh_params_widget_from_combo_box_change(self):
+        self._param_inputs = {}
+        self._refresh_params_widget()
 
     def _show_params_widget(self):
         self._params_field_widget.setEnabled(True)
@@ -1886,6 +1738,106 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
 
         self._validate_inputs()
+
+    @Slot(object)
+    def _validate_space_inputs(self, input_widget: QLineEditSpecialized):
+        w_name = input_widget.objectName()
+        match = re.compile(r"(?P<label>.+)_(?P<what>(min|max|delta))").fullmatch(w_name)
+        if match is None:
+            # input_widget does not have a name corresponding to the space inputs
+            return
+
+        axis_index = None
+        axis_config = None
+        axis_label = match.group("label")
+        axis_input_type = match.group("what")
+
+        space_config = self.mb.config["space"].copy()
+        for key, value in space_config.items():
+            if value["label"] == axis_label:
+                axis_index = key
+                axis_config = value
+                break
+
+        if axis_config is None:
+            # This should never happen
+            return None
+
+        if axis_input_type == "delta":
+            old_val = (
+                    (axis_config["range"][1] - axis_config["range"][0])
+                    / axis_config["num"]
+            )
+        else:
+            old_val = (
+                axis_config["range"][0]
+                if axis_input_type == "min"
+                else axis_config["range"][0]
+            )
+
+        try:
+            new_val = float(input_widget.text())
+            new_val_good = True
+        except ValueError:
+            new_val = None
+            new_val_good = False
+
+        range_window = axis_config["range"][1] - axis_config["range"][0]
+        old_delta = range_window / axis_config["num"]
+
+        if not new_val_good:
+            pass
+        elif axis_input_type == "min" and new_val >= axis_config["range"][1]:
+            new_val_good = False
+        elif axis_input_type == "min" and (
+                old_delta / (axis_config["range"][1] - new_val) >= 0.1
+        ):
+            new_val_good = False
+        elif axis_input_type == "min":
+            axis_config["range"][0] = new_val
+            axis_config["num"] = int(
+                np.ceil(
+                    (axis_config["range"][1] - new_val) / old_delta
+                )
+            )
+        elif axis_input_type == "max" and new_val <= axis_config["range"][0]:
+            new_val_good = False
+        elif axis_input_type == "max" and (
+                old_delta / (new_val - axis_config["range"][0]) >= 0.1
+        ):
+            new_val_good = False
+        elif axis_input_type == "max":
+            axis_config["range"][1] = new_val
+            axis_config["num"] = int(
+                np.ceil(
+                    (new_val - axis_config["range"][0]) / old_delta
+                )
+            )
+        elif axis_input_type == "delta" and (
+                new_val / (axis_config["range"][1] - axis_config["range"][0]) >= 0.1
+        ):
+            new_val_good = False
+        elif axis_input_type == "delta":
+            num = int(
+                np.ceil(
+                    (axis_config["range"][1] - axis_config["range"][0]) / new_val
+                )
+            )
+            axis_config["num"] = num
+
+        if not new_val_good:
+            input_widget.setText(f"{old_val:.3f}")
+            return
+
+        space_config[axis_index] = axis_config
+        config = {
+            "space": space_config,
+            "exclusions": self.mb.config.get("exclusions", None),
+            "layers": self.mb.config.get("layers", None),
+        }
+        self._spawn_motion_builder(config)
+
+        self.configChanged.emit()
 
     def _validate_inputs(self):
         _inputs = self._param_inputs.copy()
@@ -1929,11 +1881,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def change_validation_state(self, valid: bool = False):
         self.params_add_btn.setEnabled(valid)
 
-    def _hide_and_clear_params_widget(self):
-        self._params_field_widget.setEnabled(False)
-        self._params_widget.hide()
-        self._param_inputs = {}
-
     def update_canvas(self):
         self.logger.info("Redrawing plot...")
         self.logger.info(f"MB config = {self.mb.config}")
@@ -1959,6 +1906,88 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.exclusion_list_box.addItems(ex_names)
         self.remove_ex_btn.setEnabled(True)
         self.edit_ex_btn.setEnabled(True)
+
+    # -- NORMAL METHODS --
+
+    def _add_to_mb(self):
+        _inputs = self._param_inputs.copy()
+        _type = _inputs.pop("_type")
+        _registry = _inputs.pop("_registry")
+        _name = self.params_label.text()
+
+        if _registry is self.exclusion_registry and _name == "New Exclusion":
+            self.mb.add_exclusion(_type, **_inputs)
+        elif _registry is self.exclusion_registry:
+            # modifying existing exclusion
+            ...
+
+        self._hide_and_clear_params_widget()
+        self.configChanged.emit()
+
+    def _generate_btn_widget(self, txt: str):
+        btn = StyleButton(txt, parent=self)
+        btn.setFixedHeight(32)
+        font = btn.font()
+        font.setPointSize(16)
+        btn.setFont(font)
+        btn.setEnabled(True)
+
+        return btn
+
+    def _initialize_motion_builder(self):
+        if self.mb is not None:
+            return
+
+        config = {"space": {}}
+        for ii, aname in enumerate(self.axis_names):
+            axis = self.mg.drive.axes[ii]
+
+            if axis.units.physical_type == u.get_physical_type("length"):
+                _range = [-55.0, 55.0]
+                num = int(np.ceil((_range[1] - _range[0]) / .25))
+
+                _convert = (1 * u.cm).to(axis.units)  # type: u.Quantity
+                _convert = _convert.value
+                _range = [float(r * _convert) for r in _range]
+            elif axis.units.physical_type == u.get_physical_type("angle"):
+                _x = 3 * 360.0
+                delta = 5.0
+                if axis.units == u.rad:
+                    _x = _x * (2.0 * np.pi / 360.0)
+                    delta = delta * (np.pi / 180.0)
+
+                _range = [float(-_x), float(_x)]
+                num = int(np.ceil(2.0 * _x / delta))
+            else:  # this should not happen
+                _range = [-1.0, 1.0]
+                num = 11
+
+            config["space"][ii] = {
+                "label": aname,
+                "range": _range,
+                "num": num,
+            }
+
+        self._spawn_motion_builder(config)
+
+    def _spawn_motion_builder(self, config):
+        self.logger.info("Rebuilding motion builder...")
+        space = list(config["space"].values())
+
+        exclusions = config.get("exclusions", None)
+        if exclusions is not None:
+            exclusions = list(exclusions.values())
+
+        layers = config.get("layers", None)
+        if layers is not None:
+            layers = list(layers.values())
+
+        self.logger.info(f"space looks like : {space}")
+        self.logger.info(f"exclusions look like : {exclusions}")
+        self.logger.info(f"layers looks like : {layers}")
+
+        self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
+        return self._mb
 
     def return_and_close(self):
         self.close()
