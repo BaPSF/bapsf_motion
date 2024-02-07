@@ -1651,7 +1651,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.params_combo_box.setObjectName("exclusion")
 
         self._refresh_params_widget()
-
         self._show_params_widget()
 
     def _exclusion_modify_existing(self):
