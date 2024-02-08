@@ -95,9 +95,10 @@ class GridLayer(BaseLayer):
             ds: xr.Dataset,
             limits: List[List[float]],
             steps: List[int],
+            skip_ds_add: bool = False,
     ):
         # assign all, and only, instance variables above the super
-        super().__init__(ds, limits=limits, steps=steps)
+        super().__init__(ds, limits=limits, steps=steps, skip_ds_add=skip_ds_add)
 
     def _generate_point_matrix(self):
         """
