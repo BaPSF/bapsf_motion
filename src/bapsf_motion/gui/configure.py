@@ -1124,7 +1124,7 @@ class TransformConfigOverlay(_ConfigOverlay):
 
 
 class MotionBuilderConfigOverlay(_ConfigOverlay):
-    layer_registry = None
+    layer_registry = layer_registry
     exclusion_registry = exclusion_registry
 
     def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
@@ -1154,7 +1154,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # Define BUTTONS
 
         self.add_ly_btn = self._generate_btn_widget("ADD")
-        self.add_ly_btn.setEnabled(False)
         self.remove_ly_btn = self._generate_btn_widget("REMOVE")
         self.remove_ly_btn.setEnabled(False)
         self.edit_ly_btn = self._generate_btn_widget("EDIT")
@@ -1202,10 +1201,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.configChanged.connect(self.update_canvas)
         self.configChanged.connect(self.update_exclusion_list_box)
+        self.configChanged.connect(self.update_layer_list_box)
 
         self.add_ex_btn.clicked.connect(self._exclusion_configure_new)
         self.remove_ex_btn.clicked.connect(self._exclusion_remove_from_mb)
         self.edit_ex_btn.clicked.connect(self._exclusion_modify_existing)
+
+        self.add_ly_btn.clicked.connect(self._layer_configure_new)
+        # self.remove_ly_btn.clicked.connect(self._exclusion_remove_from_mb)
+        # self.edit_ly_btn.clicked.connect(self._exclusion_modify_existing)
 
         self.params_discard_btn.clicked.connect(self._hide_and_clear_params_widget)
         self.params_add_btn.clicked.connect(self._add_to_mb)
@@ -1480,6 +1484,33 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _txt.setFont(font)
         title = _txt
 
+        ly_names = set(ly.name for ly in self.mb.layers)
+
+        _available = self.layer_registry.get_names_by_dimensionality(
+            self.dimensionality
+        )
+        if not _available:
+            self.logger.warning(
+                "There are no coded point layers that work with the "
+                f"dimensionality of the existing probe drive, {self.dimensionality}."
+            )
+            self.add_ly_btn.setEnabled(False)
+            self.remove_ly_btn.setEnabled(False)
+            self.edit_ly_btn.setEnabled(False)
+
+            for name in ly_names:
+                self.mb.remove_layer(name)
+
+            ly_names = set()
+        elif ly_names - _available:
+            rm_names = ly_names - _available
+            for name in rm_names:
+                self.mb.remove_layer(name)
+
+            ly_names = rm_names
+
+        self.layer_list_box.addItems(ly_names)
+
         sub_layout = QHBoxLayout()
         sub_layout.setContentsMargins(0, 0, 0, 0)
         sub_layout.setSpacing(8)
@@ -1699,6 +1730,27 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._params_field_widget.setEnabled(False)
         self._params_widget.hide()
         self._param_inputs = {}
+
+    def _layer_configure_new(self):
+        if not self._params_widget.isHidden():
+            self._hide_and_clear_params_widget()
+
+        self.params_label.setText("New Layer")
+
+        _available = self.layer_registry.get_names_by_dimensionality(
+            self.dimensionality
+        )
+        self._refresh_params_combo_box(_available)
+        self.params_combo_box.setObjectName("layer")
+
+        self._refresh_params_widget()
+        self._show_params_widget()
+
+    def _layer_modify_existing(self):
+        ...
+
+    def _layer_remove_from_mb(self):
+        ...
 
     def _refresh_params_combo_box(self, items, current: Optional[str] = None):
         self.params_combo_box.currentTextChanged.disconnect()
@@ -1945,6 +1997,23 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.remove_ex_btn.setEnabled(True)
         self.edit_ex_btn.setEnabled(True)
 
+    def update_layer_list_box(self):
+        ly_names = set(
+            self._generate_list_name(ly.name, ly.layer_type)
+            for ly in self.mb.layers
+        )
+
+        self.layer_list_box.clear()
+
+        if not ly_names:
+            self.remove_ly_btn.setEnabled(False)
+            self.edit_ly_btn.setEnabled(False)
+            return
+
+        self.layer_list_box.addItems(ly_names)
+        self.remove_ly_btn.setEnabled(True)
+        self.edit_ly_btn.setEnabled(True)
+
     # -- NORMAL METHODS --
 
     def _add_to_mb(self):
@@ -1959,6 +2028,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             # modifying existing exclusion
             self.mb.remove_exclusion(_name)
             self.mb.add_exclusion(_type, **_inputs)
+        elif _name == "New Layer":
+            self.mb.add_layer(_type, **_inputs)
+        else:
+            self.mb.remove_layer(_name)
+            self.mb.add_layer(_type, **_inputs)
 
         self._hide_and_clear_params_widget()
         self.configChanged.emit()
@@ -1975,7 +2049,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     @staticmethod
     def _generate_list_name(name, _type):
-        return f"{name:<11} <type = {_type}>"
+        return f"{name:<17} <type = {_type}>"
 
     @staticmethod
     def _get_layer_name_from_list_name(list_name):
