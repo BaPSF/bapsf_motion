@@ -4,6 +4,7 @@ Module that contains all the functionality focused around
 """
 __all__ = [
     "layer_factory",
+    "layer_registry",
     "register_layer",
     "BaseLayer",
 ]
@@ -12,7 +13,11 @@ __all__ += __mlayers__
 
 from bapsf_motion.motion_builder.layers.base import BaseLayer
 from bapsf_motion.motion_builder.layers.regular_grid import GridLayer
-from bapsf_motion.motion_builder.layers.helpers import register_layer, layer_factory
+from bapsf_motion.motion_builder.layers.helpers import (
+    register_layer,
+    layer_factory,
+    layer_registry,
+)
 
 # TODO: types of layers
 #       - Sphere (regular grid & bloom)
