@@ -411,13 +411,13 @@ class MotionBuilder(MBItem):
         """
         # return the generated motion list
         try:
-            mb = self._ds["motion_list"]
+            ml = self._ds["motion_list"]
         except KeyError:
             self.rebuild_mask()
             self.generate()
             if "motion_list" not in self._ds:
-                mb = None
+                ml = None
             else:
-                mb = self._ds["motion_list"]
+                ml = self._ds["motion_list"]
 
-        return mb
+        return ml
