@@ -118,7 +118,7 @@ class MBItem:
         return len(self.mspace_dims)
 
     @staticmethod
-    def _validate_ds(ds: xr.Dataset):
+    def _validate_ds(ds: xr.Dataset) -> xr.Dataset:
         """Validate the given `~xarray.Dataset`."""
         # TODO: make this into a function that can be used by exclusions and layers
         if not isinstance(ds, xr.Dataset):
