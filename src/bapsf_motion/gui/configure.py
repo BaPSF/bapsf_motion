@@ -1208,8 +1208,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ex_btn.clicked.connect(self._exclusion_modify_existing)
 
         self.add_ly_btn.clicked.connect(self._layer_configure_new)
-        # self.remove_ly_btn.clicked.connect(self._exclusion_remove_from_mb)
-        # self.edit_ly_btn.clicked.connect(self._exclusion_modify_existing)
+        self.remove_ly_btn.clicked.connect(self._layer_remove_from_mb)
+        self.edit_ly_btn.clicked.connect(self._layer_modify_existing)
 
         self.params_discard_btn.clicked.connect(self._hide_and_clear_params_widget)
         self.params_add_btn.clicked.connect(self._add_to_mb)
@@ -1747,10 +1747,51 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._show_params_widget()
 
     def _layer_modify_existing(self):
-        ...
+        item = self.layer_list_box.currentItem()
+        name = self._get_layer_name_from_list_name(item.text())
+        if name is None:
+            return
+
+        ly = None
+        for _ly in self.mb.layers:
+            if _ly.name == name:
+                ly = _ly
+                break
+        if ly is None:
+            return
+
+        if not self._params_widget.isHidden():
+            self._hide_and_clear_params_widget()
+
+        self.params_label.setText(ly.name)
+        _available = self.layer_registry.get_names_by_dimensionality(
+            self.dimensionality
+        )
+        self._refresh_params_combo_box(_available, ly.layer_type)
+        self.params_combo_box.setObjectName("layer")
+
+        self._param_inputs = ly.config.copy()
+        self._param_inputs.pop("type")
+
+        self._refresh_params_widget()
+        self._show_params_widget()
 
     def _layer_remove_from_mb(self):
-        ...
+        ly_row = self.layer_list_box.currentRow()
+        item = self.layer_list_box.takeItem(ly_row)
+
+        name = self._get_layer_name_from_list_name(item.text())
+        if name is None:
+            return
+
+        self.logger.info(f"Removing layer {name}.")
+        self.mb.remove_layer(name)
+        # ex.deleteLater()
+
+        # TODO: remove params_widget if the removed exclusion is currently
+        #       populating the params_widget
+
+        self.configChanged.emit()
 
     def _refresh_params_combo_box(self, items, current: Optional[str] = None):
         self.params_combo_box.currentTextChanged.disconnect()
