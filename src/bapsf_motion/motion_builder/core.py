@@ -9,6 +9,8 @@ import xarray as xr
 
 from typing import Any, Dict, List, Optional, Union
 
+from xarray.core.types import ErrorOptions
+
 from bapsf_motion.motion_builder.item import MBItem
 from bapsf_motion.motion_builder.exclusions import (
     exclusion_factory,
@@ -220,6 +222,7 @@ class MotionBuilder(MBItem):
         # TODO: add ref in docstring to documented available layers
         layer = layer_factory(self._ds, ly_type=ly_type, **settings)
         self.layers.append(layer)
+        self.clear_motion_list()
 
     def remove_layer(self, name: str):
         """
@@ -237,7 +240,7 @@ class MotionBuilder(MBItem):
                 # TODO: can we define a __del__ in BaseLayer that would
                 #       handle cleanup for layer classes
                 del self.layers[ii]
-                self._ds = self._ds.drop_vars(name)
+                self.drop_vars(name)
                 break
 
         self.clear_motion_list()
@@ -263,8 +266,8 @@ class MotionBuilder(MBItem):
         # TODO: add ref in docstring to documented available layers
         exclusion = exclusion_factory(self._ds, ex_type=ex_type, **settings)
         self.exclusions.append(exclusion)
-
-        self._ds["mask"] = np.logical_and(self._ds["mask"], exclusion.mask)
+        self.clear_motion_list()
+        self.rebuild_mask()
 
     def remove_exclusion(self, name: str):
         """
@@ -283,7 +286,7 @@ class MotionBuilder(MBItem):
                 # TODO: can we define a __del__ in BaseLayer that would
                 #       handle cleanup for layer classes
                 del self.exclusions[ii]
-                self._ds = self._ds.drop_vars(name)
+                self.drop_vars(name)
                 break
 
         self.clear_motion_list()
@@ -379,8 +382,7 @@ class MotionBuilder(MBItem):
         # TODO: make this more robust...like double checking that are
         #       no point layers defined so a motion list can not exist
         try:
-            self._ds = self._ds.drop_vars("motion_list")
-            self._ds = self._ds.drop_dims("index")
+            self.drop_vars("motion_list")
         except ValueError:
             # "motion_list" does not exist yet
             pass
@@ -421,3 +423,9 @@ class MotionBuilder(MBItem):
                 ml = self._ds["motion_list"]
 
         return ml
+
+    def drop_vars(self, names: str, *, errors: ErrorOptions = "raise"):
+        super().drop_vars(names, errors=errors)
+
+        for item in self.exclusions + self.layers:
+            item._ds = self._ds

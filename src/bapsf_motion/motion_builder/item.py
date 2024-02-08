@@ -8,6 +8,7 @@ import re
 import xarray as xr
 
 from typing import Hashable, Tuple
+from xarray.core.types import ErrorOptions
 
 
 class MBItem:
@@ -159,3 +160,7 @@ class MBItem:
                 n_existing += 1
 
         return f"{self.base_name}{n_existing + 1:d}"
+
+    def drop_vars(self, names: str, *, errors: ErrorOptions = "raise"):
+        new_ds = self._ds.drop_vars(names, errors=errors)
+        self._ds = new_ds
