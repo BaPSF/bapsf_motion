@@ -1435,7 +1435,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         if not _available:
             self.logger.warning(
-                "There are now coded exclusion layers that work with the "
+                "There are no coded exclusion layers that work with the "
                 f"dimensionality of the existing probe drive, {self.dimensionality}."
             )
             self.add_ex_btn.setEnabled(False)
