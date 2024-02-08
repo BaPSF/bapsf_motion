@@ -1202,6 +1202,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.configChanged.connect(self.update_canvas)
         self.configChanged.connect(self.update_exclusion_list_box)
         self.configChanged.connect(self.update_layer_list_box)
+        self.configChanged.connect(self._validate_mb)
 
         self.add_ex_btn.clicked.connect(self._exclusion_configure_new)
         self.remove_ex_btn.clicked.connect(self._exclusion_remove_from_mb)
@@ -1965,8 +1966,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         }
         self._spawn_motion_builder(config)
 
-        self.configChanged.emit()
-
     def _validate_inputs(self):
         _inputs = self._param_inputs.copy()
         _type = _inputs.pop("_type")
@@ -2164,9 +2163,26 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"layers looks like : {layers}")
 
         self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
+        self.configChanged.emit()
         return self._mb
 
+    def _validate_mb(self):
+        if not isinstance(self.mb, MotionBuilder):
+            self.done_btn.setEnabled(False)
+            return
+        elif len(self.mb.layers) == 0:
+            self.done_btn.setEnabled(False)
+            return
+
+        self.done_btn.setEnabled(True)
+
     def return_and_close(self):
+        config = self.mb.config
+
+        self.logger.info(
+            f"New MotionBuilder configuration is being returned, {config}."
+        )
+        self.returnConfig.emit(config)
         self.close()
 
 
@@ -3081,7 +3097,7 @@ class MGWidget(QWidget):
         )
 
         # overlay signals
-        # _overlay.returnConfig.connect(self._change_transform)
+        self._overlay_widget.returnConfig.connect(self._change_motion_builder)
 
         self._overlay_widget.show()
         self._overlay_shown = True
@@ -3156,8 +3172,13 @@ class MGWidget(QWidget):
     @Slot(object)
     def _change_transform(self, config: Dict[str, Any]):
         self.logger.info("Replacing the motion group's transform.")
-        self.logger.info(f"{config}")
         self.mg.replace_transform(config)
+        self.configChanged.emit()
+
+    @Slot(object)
+    def _change_motion_builder(self, config: Dict[str, Any]):
+        self.logger.info("Replacing the motion group's motion builder.")
+        self.mg.replace_motion_builder(config)
         self.configChanged.emit()
 
     def _rerun_drive(self):
