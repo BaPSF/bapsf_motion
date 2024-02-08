@@ -1973,12 +1973,24 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"MB config = {self.mb.config}")
 
         self.mpl_canvas.figure.clear()
-        self.mpl_canvas.figure.add_subplot(111)
+        ax = self.mpl_canvas.figure.add_subplot(111)
         self.mb.mask.plot(
             x=self.mb.mask.dims[0],
             y=self.mb.mask.dims[1],
-            ax=self.mpl_canvas.figure.axes[0],
+            ax=ax,
         )
+
+        pts = self.mb.motion_list
+        if pts is not None:
+            ax.scatter(
+                x=pts[..., 0],
+                y=pts[..., 1],
+                linewidth=1,
+                s=2 ** 2,
+                facecolors="deepskyblue",
+                edgecolors="black",
+            )
+
         self.mpl_canvas.draw()
 
     def update_exclusion_list_box(self):
