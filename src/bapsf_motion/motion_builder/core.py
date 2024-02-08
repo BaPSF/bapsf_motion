@@ -237,7 +237,7 @@ class MotionBuilder(MBItem):
                 # TODO: can we define a __del__ in BaseLayer that would
                 #       handle cleanup for layer classes
                 del self.layers[ii]
-                self._ds.drop_vars(name)
+                self._ds = self._ds.drop_vars(name)
                 break
 
         self.clear_motion_list()
@@ -283,7 +283,7 @@ class MotionBuilder(MBItem):
                 # TODO: can we define a __del__ in BaseLayer that would
                 #       handle cleanup for layer classes
                 del self.exclusions[ii]
-                self._ds.drop_vars(name)
+                self._ds = self._ds.drop_vars(name)
                 break
 
         self.clear_motion_list()
@@ -379,8 +379,8 @@ class MotionBuilder(MBItem):
         # TODO: make this more robust...like double checking that are
         #       no point layers defined so a motion list can not exist
         try:
-            self._ds.drop_vars("motion_list")
-            self._ds.drop_dims("index")
+            self._ds = self._ds.drop_vars("motion_list")
+            self._ds = self._ds.drop_dims("index")
         except ValueError:
             # "motion_list" does not exist yet
             pass
