@@ -69,7 +69,7 @@ from bapsf_motion.motion_builder.layers import layer_registry
 from bapsf_motion.motion_builder.exclusions import exclusion_registry
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
-from bapsf_motion.utils import toml, ipv4_pattern
+from bapsf_motion.utils import toml, ipv4_pattern, _deepcopy_dict
 from bapsf_motion.utils import units as u
 
 

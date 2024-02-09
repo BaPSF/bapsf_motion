@@ -18,7 +18,7 @@ from bapsf_motion.actors.motion_group_ import (
     MotionGroupConfig,
     handle_user_metadata
 )
-from bapsf_motion.utils import toml
+from bapsf_motion.utils import toml, _deepcopy_dict
 
 
 class RunManagerConfig(UserDict):
@@ -372,7 +372,7 @@ class RunManager(EventActor):
         if identifier is None:
             identifier = len(self.mgs) - 1
 
-        new_rm_config = self.config.copy()
+        new_rm_config = _deepcopy_dict(self.config)
         new_rm_config["motion_group"][identifier] = mg_config
 
         new_rm_config = RunManagerConfig(new_rm_config)
