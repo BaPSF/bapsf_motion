@@ -65,8 +65,13 @@ class QLogger(QWidget):
         "ERROR": logging.ERROR,
     }
 
-    def __init__(self, logger: logging.Logger, verbosity=logging.WARNING):
-        super().__init__()
+    def __init__(
+            self,
+            logger: logging.Logger,
+            verbosity=logging.WARNING,
+            parent=None,
+    ):
+        super().__init__(parent=parent)
 
         self._logger = logger  # type: logging.Logger
         self._log_widget = None  # type: QTextEdit
