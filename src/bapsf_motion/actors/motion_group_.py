@@ -198,14 +198,14 @@ class MotionGroupConfig(UserDict):
                           "num:: 221,
                       },
                   },
-                  "exclusions": {
+                  "exclusion": {
                       "0": {
                           "type": "lapd_xy",
                           "port_location": "E",
                           "cone_full_angle": 60,
                       },
                   },
-                  "layers": {
+                  "layer": {
                       "0": {
                           "type": "grid",
                           "limits": [[0, 30], [-30, 30]],
@@ -241,7 +241,7 @@ class MotionGroupConfig(UserDict):
 
     #: optional keys for the motion group configuration dictionary
     _optional_metadata = {
-        "motion_builder": {"exclusions", "layers"},
+        "motion_builder": {"exclusion", "layer"},
     }
 
     #: allowable motion group header names
@@ -824,13 +824,17 @@ class MotionGroup(EventActor):
         for key in {"name", "user"}:
             mb_config.pop(key, None)
 
-        for key in {"space", "layers", "exclusions"}:
+        _inputs = {}
+        for key, _kwarg in zip(
+                ("space", "layer", "exclusion"),
+                ("space", "layers", "exclusions"),
+        ):
             try:
-                mb_config[key] = list(mb_config.pop(key).values())
+                _inputs[_kwarg] = list(mb_config.pop(key).values())
             except KeyError:
                 continue
 
-        self._mb = MotionBuilder(**mb_config)
+        self._mb = MotionBuilder(**_inputs)
         return self._mb
 
     def _spawn_transform(

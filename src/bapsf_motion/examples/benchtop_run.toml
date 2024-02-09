@@ -22,9 +22,9 @@ space.0.num = 51
 space.1.label = "Y"
 space.1.range = [-5, 5]
 space.1.num = 51
-layers.0.type = "grid"
-layers.0.limits = [[-3, 3], [-3, 3]]
-layers.0.steps = [7, 7]
+layer.0.type = "grid"
+layer.0.limits = [[-3, 3], [-3, 3]]
+layer.0.steps = [7, 7]
 
 [run.mg.transform]
 type = "identity"
