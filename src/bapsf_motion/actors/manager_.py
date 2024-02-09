@@ -289,6 +289,9 @@ class RunManager(EventActor):
         auto_run: bool = False,
         build_mode: bool = False,
     ):
+        self._mgs = None
+        self._config = None
+
         logger = logging.getLogger("RM")
         super().__init__(
             logger=logger,
@@ -310,7 +313,6 @@ class RunManager(EventActor):
             )
             auto_run = False
 
-        self._mgs = None
         self._config = config
 
         for key, mgc in self._config["motion_group"].items():
@@ -322,7 +324,16 @@ class RunManager(EventActor):
         return 
     
     def _initialize_tasks(self):
-        return 
+        return
+
+    def run(self, auto_run=True):
+        super().run(auto_run=auto_run)
+
+        if self.mgs is None or not self.mgs:
+            return
+
+        for mg in self.mgs.values():
+            mg.run()
     
     @property
     def mgs(self) -> Dict[Union[str, int], MotionGroup]:

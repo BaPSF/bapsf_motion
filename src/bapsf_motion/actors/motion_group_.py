@@ -778,8 +778,7 @@ class MotionGroup(EventActor):
         if self.drive is None:
             return
 
-        for ax in self.drive.axes:
-            ax.motor.run(auto_run=auto_run)
+        self.drive.run(auto_run=auto_run)
 
     def _spawn_drive(
         self, config: Dict[str, Any]
@@ -805,11 +804,12 @@ class MotionGroup(EventActor):
                 auto_run=False,
             )
             self._drive = dr
-            return self._drive
         except (TypeError, ValueError) as err:
             self.logger.warning(f"{type(err).__name__}: {err}")
             self.logger.warning("Unable to instantiate drive.")
-            return
+            self._drive = None
+
+        return self._drive
 
     def _spawn_motion_builder(self, config: Dict[str, Any]) -> Union[MotionBuilder, None]:
         """Return an instance of |MotionBuilder|."""
