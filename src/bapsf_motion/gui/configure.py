@@ -3331,7 +3331,7 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.quit_btn.clicked.connect(self.close)
 
         self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
-        # self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
+        self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
         self._run_widget.modify_mg_btn.clicked.connect(
             self._motion_group_modify_existing
         )
@@ -3491,16 +3491,18 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.run_name_widget.setText(rm_name)
 
     def update_display_mg_list(self):
-        mg_labels = []
+        self._run_widget.mg_list_widget.clear()
+        self._run_widget.remove_mg_btn.setEnabled(False)
+        self._run_widget.modify_mg_btn.setEnabled(False)
 
         if self.rm.mgs is None or not self.rm.mgs:
             return
 
+        mg_labels = []
         for key, val in self.rm.mgs.items():
             label = self._generate_mg_list_name(key, val.config["name"])
             mg_labels.append(label)
 
-        self._run_widget.mg_list_widget.clear()
         self._run_widget.mg_list_widget.addItems(mg_labels)
 
     def change_run_name(self):
@@ -3527,7 +3529,10 @@ class ConfigureGUI(QMainWindow):
         self._switch_stack()
 
     def _motion_group_remove_from_rm(self):
-        ...
+        item = self._run_widget.mg_list_widget.currentItem()
+        identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+        self.rm.remove_motion_group(identifier=identifier)
+        self.configChanged.emit()
 
     def _restart_motion_group(self):
         if self._mg_being_modified is not None:
