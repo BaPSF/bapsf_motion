@@ -7,8 +7,6 @@ import matplotlib as mpl
 import numpy as np
 import re
 
-import numpy as np
-
 from abc import abstractmethod
 from pathlib import Path
 from PySide6.QtCore import (
