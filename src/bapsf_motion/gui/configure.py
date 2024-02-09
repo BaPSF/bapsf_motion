@@ -3097,13 +3097,6 @@ class MGWidget(QWidget):
         self._overlay_widget.returnConfig.connect(self._change_drive)
         self._overlay_widget.discard_btn.clicked.connect(self._rerun_drive)
 
-        # initialize drive overlay with current drive configuration
-        drive_config = self.mg_config.get("drive", None)
-        drive_config = None if not drive_config else drive_config
-        if drive_config is not None and self.mg.drive is not None:
-            self.mg.drive.terminate(delay_loop_stop=True)
-        self._overlay_widget.drive_config = drive_config
-
         self._overlay_widget.show()
         self._overlay_shown = True
 
@@ -3214,8 +3207,7 @@ class MGWidget(QWidget):
         if self.mg.drive is None:
             return
 
-        config = self.mg.drive.config
-        self.mg.replace_drive(config)
+        self.mg.drive.run()
         self._refresh_drive_control()
         self.configChanged.emit()
 
