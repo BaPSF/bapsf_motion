@@ -3489,10 +3489,10 @@ class ConfigureGUI(QMainWindow):
     def update_display_mg_list(self):
         mg_labels = []
 
-        if self.rm.config._mgs is None:
+        if self.rm.mgs is None or not self.rm.mgs:
             return
 
-        for key, val in self.rm.config._mgs.items():
+        for key, val in self.rm.mgs.items():
             label = self._generate_mg_list_name(key, val.config["name"])
             mg_labels.append(label)
 
