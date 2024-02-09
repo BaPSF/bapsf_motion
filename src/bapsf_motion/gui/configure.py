@@ -3429,6 +3429,7 @@ class ConfigureGUI(QMainWindow):
         if isinstance(self.rm, RunManager):
             self.rm.terminate()
 
+        self.logger.info(f"Replacing the run manager with new config: {config}.")
         _rm = RunManager(config=config, auto_run=True, build_mode=True)
 
         _remove = []
