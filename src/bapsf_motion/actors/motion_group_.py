@@ -16,6 +16,7 @@ from typing import Any, Dict, Optional, Union
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_builder import MotionBuilder
+from bapsf_motion.transform import BaseTransform
 from bapsf_motion import transform
 from bapsf_motion.utils import toml
 
@@ -995,10 +996,16 @@ class MotionGroup(EventActor):
             self.replace_motion_builder({})
             return
 
-        if self.mb is not None and self.mb.mspace_ndims != self.drive.naxes:
+        if (
+            isinstance(self.mb, MotionBuilder)
+            and self.mb.mspace_ndims != self.drive.naxes
+        ):
             self.replace_motion_builder({})
 
-        if self.transform is not None and self.transform not in (-1, self.drive.naxes):
+        if (
+            isinstance(self.transform, BaseTransform)
+            and self.transform.dimensionality not in (-1, self.drive.naxes)
+        ):
             self.replace_transform({})
 
     def replace_motion_builder(self, mb: Union[MotionBuilder, Dict[str, Any]]):
