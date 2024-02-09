@@ -192,6 +192,10 @@ class _ConfigOverlay(_OverlayWidget):
     def return_and_close(self):
         ...
 
+    def closeEvent(self, event):
+        self.logger.info(f"Closing {self.__class__.__name__}")
+        super().closeEvent(event)
+
 
 class AxisConfigWidget(QWidget):
     configChanged = Signal()
@@ -2973,6 +2977,7 @@ class MGWidget(QWidget):
         self._connect_signals()
 
         self._spawn_motion_group()
+        self._refresh_drive_control()
 
     def _connect_signals(self):
         self.drive_btn.clicked.connect(self._popup_drive_configuration)
@@ -3242,20 +3247,22 @@ class MGWidget(QWidget):
         return mg
 
     def _validate_motion_group(self):
-        if not isinstance(self.mg, MotionGroup):
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
             self.done_btn.setEnabled(False)
-            return
-        elif not isinstance(self.mg.drive, Drive):
-            self.done_btn.setEnabled(False)
+            self.mb_btn.setEnabled(False)
+            self.transform_btn.setEnabled(False)
+            self.drive_control_widget.setEnabled(False)
             return
         elif not isinstance(self.mg.mb, MotionBuilder):
             self.done_btn.setEnabled(False)
-            return
         elif not isinstance(self.mg.transform, BaseTransform):
             self.done_btn.setEnabled(False)
-            return
+        else:
+            self.done_btn.setEnabled(True)
 
-        self.done_btn.setEnabled(True)
+        self.drive_control_widget.setEnabled(True)
+        self.mb_btn.setEnabled(True)
+        self.transform_btn.setEnabled(True)
 
     def return_and_close(self):
         config = _deepcopy_dict(self.mg.config)
