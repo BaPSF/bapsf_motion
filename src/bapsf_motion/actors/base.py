@@ -273,6 +273,7 @@ class EventActor(BaseActor, ABC):
         if delay_loop_stop:
             return
 
+        # if we're stopping the loop, then all tasks need to be cancelled
         for task in asyncio.all_tasks(self.loop):
             if not task.done() or not task.cancelled():
                 self.loop.call_soon_threadsafe(task.cancel)
