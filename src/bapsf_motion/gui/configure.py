@@ -552,6 +552,10 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._connect_signals()
 
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
+            self.mg.drive.terminate(delay_loop_stop=True)
+            self.drive_config = _deepcopy_dict(self.mg.drive.config)
+
     def _connect_signals(self):
         super()._connect_signals()
 
@@ -657,10 +661,9 @@ class DriveConfigOverlay(_ConfigOverlay):
         try:
             self._spawn_drive(config)
         except (TypeError, ValueError, KeyError) as err:
-            # self.logger.warning(f"{err.__class_.__name__}: {err}")
-            self.logger.warning(f"{type(err).__name__}: {err}")
             self.logger.warning(
-                f"Given drive configuration is not valid, so doing nothing."
+                f"Given drive configuration is not valid, so doing nothing.",
+                exc_info=err
             )
             self._drive_config = (
                 None if "name" not in config else {"name": config["name"]}
