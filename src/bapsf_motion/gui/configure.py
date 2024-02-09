@@ -3292,7 +3292,8 @@ class ConfigureGUI(QMainWindow):
     def __init__(self):
         super().__init__()
 
-        self._rm = None
+        self._rm = None  # type: RunManager
+        self._mg_being_modified = None  # type: MotionGroup
 
         # setup logger
         logging.config.dictConfig(self._logging_config_dict)
@@ -3331,7 +3332,9 @@ class ConfigureGUI(QMainWindow):
 
         self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
         # self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
-        # self._run_widget.modify_mg_btn.clicked.connect(self._motion_group_modify_existing)
+        self._run_widget.modify_mg_btn.clicked.connect(
+            self._motion_group_modify_existing
+        )
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
@@ -3513,15 +3516,29 @@ class ConfigureGUI(QMainWindow):
         self._switch_stack()
 
     def _motion_group_modify_existing(self):
-        ...
+        item = self._run_widget.mg_list_widget.currentItem()
+        key, mg_name = self._get_mg_name_from_list_name(item.text())
+        mg = self.rm.mgs[key]
+        mg.terminate(delay_loop_stop=True)
+        self._mg_being_modified = mg
+        self._spawn_mg_widget(mg)
+        self._mg_widget.mg_index = key
+        self._switch_stack()
 
     def _motion_group_remove_from_rm(self):
         ...
+
+    def _restart_motion_group(self):
+        if self._mg_being_modified is not None:
+            self.logger.info(f"Restarting motion group '{self._mg_being_modified.name}'.")
+            self._mg_being_modified.run()
+            self._mg_being_modified = None
 
     def _spawn_mg_widget(self, mg: MotionGroup = None):
         self._mg_widget = MGWidget(mg, parent=self)
         self._mg_widget.closing.connect(self._switch_stack)
         self._mg_widget.returnConfig.connect(self.add_mg_to_rm)
+        self._mg_widget.discard_btn.clicked.connect(self._restart_motion_group)
 
         return self._mg_widget
 
@@ -3532,9 +3549,8 @@ class ConfigureGUI(QMainWindow):
         self.logger.info(
             f"Adding MotionGroup to the run: index = '{index}', config = {mg_config}."
         )
-
         self.rm.add_motion_group(config=mg_config, identifier=index)
-
+        self._mg_being_modified = None
         self.configChanged.emit()
 
     @staticmethod
