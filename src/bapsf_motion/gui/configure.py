@@ -3323,7 +3323,7 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.quit_btn.clicked.connect(self.close)
 
         # self._run_widget.add_mg_btn.clicked.connect(self._switch_stack)
-        self._run_widget.add_mg_btn.clicked.connect(self._init_add_new_motion_group)
+        self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
@@ -3485,7 +3485,6 @@ class ConfigureGUI(QMainWindow):
             self.rm.config.update_run_name(name)
             self.configChanged.emit()
 
-    def _init_add_new_motion_group(self):
         index = len(self.rm.mgs)
         # mg = MotionGroup(
         #     config={"name": "A New MG"},
@@ -3499,6 +3498,7 @@ class ConfigureGUI(QMainWindow):
         # self._mg_widget._set_mg(None)
         # self._mg_widget.mg = mg
 
+    def _motion_group_configure_new(self):
         self._switch_stack()
 
     def _switch_stack(self):
