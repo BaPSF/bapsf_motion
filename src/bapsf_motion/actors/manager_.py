@@ -246,7 +246,8 @@ class RunManagerConfig(UserDict):
 
     def unlink_motion_group(self, key):
         """Unlink and remove motion group from the configuration."""
-        self._mgs.pop(key, None)
+        if self._mgs is not None:
+            self._mgs.pop(key, None)
 
         if key in self["motion_group"]:
             del self["motion_group"][key]
@@ -370,14 +371,14 @@ class RunManager(EventActor):
                 return False
 
         if identifier is None:
-            identifier = len(self.mgs) - 1
+            identifier = len(self.mgs)
 
         new_rm_config = _deepcopy_dict(self.config)
         new_rm_config["motion_group"][identifier] = mg_config
 
         new_rm_config = RunManagerConfig(new_rm_config)
 
-        return True if identifier in new_rm_config["motion_group"] else False
+        return identifier in new_rm_config["motion_group"]
 
     def _raw_add_motion_group(self, config, identifier):
         """A direct add of the motion group without any validation."""
@@ -396,7 +397,7 @@ class RunManager(EventActor):
         identifier: Union[str, int] = None,
     ):
         if identifier is None:
-            identifier = len(self.mgs) - 1
+            identifier = len(self.mgs)
 
         valid = self.validate_motion_group(config, identifier)
 
