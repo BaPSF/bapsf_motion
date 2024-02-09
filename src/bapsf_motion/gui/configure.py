@@ -3477,6 +3477,7 @@ class ConfigureGUI(QMainWindow):
         self.logger.info(f"... Success!")
 
     def update_display_config_text(self):
+        self.logger.info(f"Updating the run config toml: {self.rm.config.as_toml_string}")
         self._run_widget.config_widget.setText(self.rm.config.as_toml_string)
 
     def update_display_rm_name(self):
