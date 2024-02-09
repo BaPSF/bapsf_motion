@@ -2978,6 +2978,7 @@ class MGWidget(QWidget):
 
         self.configChanged.connect(self._update_toml_widget)
         self.configChanged.connect(self._update_mg_name_widget)
+        self.configChanged.connect(self._validate_motion_group)
 
     def _define_layout(self):
 
@@ -3231,6 +3232,22 @@ class MGWidget(QWidget):
         self._set_mg(mg)
 
         return mg
+
+    def _validate_motion_group(self):
+        if not isinstance(self.mg, MotionGroup):
+            self.done_btn.setEnabled(False)
+            return
+        elif not isinstance(self.mg.drive, Drive):
+            self.done_btn.setEnabled(False)
+            return
+        elif not isinstance(self.mg.mb, MotionBuilder):
+            self.done_btn.setEnabled(False)
+            return
+        elif not isinstance(self.mg.transform, BaseTransform):
+            self.done_btn.setEnabled(False)
+            return
+
+        self.done_btn.setEnabled(True)
 
     def closeEvent(self, event):
         self.logger.info("Closing MGWidget")
