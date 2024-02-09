@@ -851,7 +851,6 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.close()
 
     def closeEvent(self, event):
-        self.logger.info("Closing DriveConfigOverlay")
         try:
             self.configChanged.disconnect()
         except RuntimeError:
@@ -866,7 +865,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         self.drive_loop.call_soon_threadsafe(self.drive_loop.stop)
 
-        event.accept()
+        super().closeEvent(event)
 
 
 class TransformConfigOverlay(_ConfigOverlay):
@@ -2399,7 +2398,6 @@ class AxisControlWidget(QWidget):
         self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
 
         limits = self.axis.motor.status["limits"]
-        self.logger.info(f"The axis limits are {limits}")
         self.limit_fwd_btn.setChecked(limits["CW"])
         self.limit_bwd_btn.setChecked(limits["CCW"])
 
@@ -2423,6 +2421,10 @@ class AxisControlWidget(QWidget):
         position[self.axis_index] = target_ax_pos
 
         self.mg.move_to(position)
+
+    def closeEvent(self, event):
+        self.logger.info("Closing AxisControlWidget")
+        event.accept()
 
 
 class DriveControlWidget(QWidget):
@@ -2669,6 +2671,10 @@ class DriveControlWidget(QWidget):
     def _stop_move(self):
         self.mg.stop()
 
+    def closeEvent(self, event):
+        self.logger.info("Closing DriveControlWidget")
+        event.accept()
+
 
 class RunWidget(QWidget):
     def __init__(self, parent: "ConfigureGUI"):
@@ -2869,6 +2875,10 @@ class RunWidget(QWidget):
             return parent.rm
         except AttributeError:
             return None
+
+    def closeEvent(self, event):
+        self.logger.info("Closing RunWidget")
+        event.accept()
 
 
 class MGWidget(QWidget):
@@ -3596,6 +3606,10 @@ class ConfigureGUI(QMainWindow):
 
     def closeEvent(self, event: "QCloseEvent") -> None:
         self.logger.info("Closing ConfigureGUI")
+
+        self._run_widget.close()
+        if isinstance(self._mg_widget, MGWidget):
+            self._mg_widget.close()
 
         if self.rm is not None:
             self.rm.terminate()
