@@ -124,7 +124,7 @@ class RunManagerConfig(UserDict):
         for mg_name in mg_names_in_config:
             mg_config = config.pop(mg_name)
 
-            if not isinstance(mg_config, dict):
+            if not isinstance(mg_config, (dict, UserDict)):
                 self.logger.error(
                     f"TypeError: Expected a dictionary for the motion group "
                     f"configuration, but got type {type(mg_config)}."
@@ -139,7 +139,7 @@ class RunManagerConfig(UserDict):
 
             for mgc in mg_config.values():
 
-                if not isinstance(mgc, dict):
+                if not isinstance(mgc, (dict, UserDict)):
                     self.logger.error(
                         f"TypeError: Expected a dictionary for the motion group "
                         f"configuration, but got type {type(mg_config)}."
