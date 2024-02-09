@@ -2870,6 +2870,7 @@ class RunWidget(QWidget):
 
 
 class MGWidget(QWidget):
+    closing = Signal()
     configChanged = Signal()
 
     mg_loop = asyncio.new_event_loop()
@@ -3263,6 +3264,7 @@ class MGWidget(QWidget):
             self.mg.terminate(delay_loop_stop=True)
 
         self.mg_loop.call_soon_threadsafe(self.mg_loop.stop)
+        self.closing.emit()
         event.accept()
 
 
