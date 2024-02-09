@@ -11,6 +11,7 @@ __all__ = [
 import re
 
 from astropy import units
+from collections import UserDict
 from pathlib import Path
 
 from bapsf_motion.utils import exceptions, toml
@@ -98,3 +99,14 @@ def load_example(filename: str, as_string=False):
         config = toml.dumps(config)
 
     return config
+
+
+def _deepcopy_dict(item):
+    _copy = {}
+    for key, val in item.items():
+        if isinstance(val, (dict, UserDict)):
+            val = _deepcopy_dict(val)
+
+        _copy[key] = val
+
+    return _copy
