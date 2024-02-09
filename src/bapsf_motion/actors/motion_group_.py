@@ -723,8 +723,14 @@ class MotionGroup(EventActor):
         build_mode: bool = False,
     ):
 
+        self._drive = None
+        self._mb = None
+        self._transform = None
+        self._config = None
+
         if logger is None:
             logger = logging.getLogger("MG")
+
         super().__init__(
             logger=logger,
             loop=loop,
@@ -765,6 +771,15 @@ class MotionGroup(EventActor):
 
     def _initialize_tasks(self):
         return
+
+    def run(self, auto_run=True):
+        super().run(auto_run=auto_run)
+
+        if self.drive is None:
+            return
+
+        for ax in self.drive.axes:
+            ax.motor.run(auto_run=auto_run)
 
     def _spawn_drive(
         self, config: Dict[str, Any]
