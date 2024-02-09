@@ -3323,11 +3323,13 @@ class ConfigureGUI(QMainWindow):
 
     def _connect_signals(self):
         self._run_widget.import_btn.clicked.connect(self.toml_import)
+        # self._run_widget.export_btn.clicked.connect(self.toml_export)
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.close)
 
-        # self._run_widget.add_mg_btn.clicked.connect(self._switch_stack)
         self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
+        # self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
+        # self._run_widget.modify_mg_btn.clicked.connect(self._motion_group_modify_existing)
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
@@ -3446,6 +3448,9 @@ class ConfigureGUI(QMainWindow):
 
         self.close()
 
+    def toml_export(self):
+        ...
+
     def toml_import(self):
         path = QDir.currentPath() if self._OPENED_FILE is None \
             else f"{self._OPENED_FILE.parent}"
@@ -3503,6 +3508,12 @@ class ConfigureGUI(QMainWindow):
     def _motion_group_configure_new(self):
         self._spawn_mg_widget()
         self._switch_stack()
+
+    def _motion_group_modify_existing(self):
+        ...
+
+    def _motion_group_remove_from_rm(self):
+        ...
 
     def _spawn_mg_widget(self, mg: MotionGroup = None):
         self._mg_widget = MGWidget(mg, parent=self)
