@@ -2872,6 +2872,7 @@ class RunWidget(QWidget):
 class MGWidget(QWidget):
     closing = Signal()
     configChanged = Signal()
+    returnConfig = Signal(int, object)
 
     mg_loop = asyncio.new_event_loop()
 
@@ -2980,6 +2981,9 @@ class MGWidget(QWidget):
         self.configChanged.connect(self._update_toml_widget)
         self.configChanged.connect(self._update_mg_name_widget)
         self.configChanged.connect(self._validate_motion_group)
+
+        self.done_btn.clicked.connect(self.return_and_close)
+        self.discard_btn.clicked.connect(self.close)
 
     def _define_layout(self):
 
@@ -3249,6 +3253,16 @@ class MGWidget(QWidget):
             return
 
         self.done_btn.setEnabled(True)
+
+    def return_and_close(self):
+        config = _deepcopy_dict(self.mg.config)
+        index = -1 if self._mg_index is None else self._mg_index
+
+        self.logger.info(
+            f"New MotionGroup configuration is being returned, {config}."
+        )
+        self.returnConfig.emit(index, config)
+        self.close()
 
     def closeEvent(self, event):
         self.logger.info("Closing MGWidget")
