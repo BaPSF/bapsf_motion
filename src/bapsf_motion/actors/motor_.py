@@ -547,6 +547,17 @@ class Motor(EventActor):
         # self.start_heartbeat()
         return
 
+    def run(self, auto_run=True):
+
+        if (
+            self.heartbeat_task is None
+            or self.heartbeat_task.done()
+            or self.heartbeat_task.cancelled()
+        ):
+            self._configure_before_run()
+
+        super().run(auto_run=auto_run)
+
     @property
     def _setup_defaults(self) -> Dict[str, Any]:
         """Default values for :attr:`setup`."""
@@ -1468,6 +1479,7 @@ class Motor(EventActor):
     def terminate(self, delay_loop_stop=False):
         self.logger.info("Terminating motor")
         super().terminate(delay_loop_stop=True)
+        self._heartbeat_task = None
 
         # TODO: add additional motor shutdown tasks (i.e. stop and disable)
 
