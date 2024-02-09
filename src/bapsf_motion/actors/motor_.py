@@ -946,7 +946,11 @@ class Motor(EventActor):
         A low level method for sending commands to the motor, and
         receiving the response.
         """
-        if self.start_heartbeat() is None or self.heartbeat_task.done():
+        if self.loop.is_running() and (
+            self.heartbeat_task is None
+            or self.heartbeat_task.done()
+            or self.heartbeat_task.cancelled()
+        ):
             self.start_heartbeat()
 
         try:
