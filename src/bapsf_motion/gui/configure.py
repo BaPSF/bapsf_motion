@@ -3299,15 +3299,14 @@ class ConfigureGUI(QMainWindow):
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
         self._run_widget = RunWidget(self)
-        self._mg_widget = MGWidget(self)
-        self._stacked_widget = QStackedWidget()
+        self._mg_widget = None  # type: MGWidget
+
+        self._stacked_widget = QStackedWidget(parent=self)
         self._stacked_widget.addWidget(self._run_widget)
-        self._stacked_widget.addWidget(self._mg_widget)
-        self._stacked_widget.setCurrentWidget(self._run_widget)
 
         layout = self._define_layout()
 
-        widget = QWidget()
+        widget = QWidget(parent=self)
         widget.setLayout(layout)
         self.setCentralWidget(widget)
 
@@ -3326,9 +3325,6 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
-
-        self._mg_widget.discard_btn.clicked.connect(self._switch_stack)
-        self._mg_widget.done_btn.clicked.connect(self._switch_stack)
 
         self.configChanged.connect(self.update_display_config_text)
         self.configChanged.connect(self.update_display_rm_name)
@@ -3485,26 +3481,41 @@ class ConfigureGUI(QMainWindow):
             self.rm.config.update_run_name(name)
             self.configChanged.emit()
 
-        index = len(self.rm.mgs)
-        # mg = MotionGroup(
-        #     config={"name": "A New MG"},
-        #     logger=self.rm.logger,
-        #     loop=self.rm.loop,
-        #     auto_run=False,
-        #     build_mode=True,
-        # )
-
-        self._mg_widget.mg_index = index
-        # self._mg_widget._set_mg(None)
-        # self._mg_widget.mg = mg
-
     def _motion_group_configure_new(self):
+        self._spawn_mg_widget()
         self._switch_stack()
 
+    def _spawn_mg_widget(self, mg: MotionGroup = None):
+        self._mg_widget = MGWidget(mg, parent=self)
+        self._mg_widget.closing.connect(self._switch_stack)
+        self._mg_widget.returnConfig.connect(self.add_mg_to_rm)
+
+        return self._mg_widget
+
+    @Slot(int, object)
+    def add_mg_to_rm(self, index: int, mg_config: Dict[str, Any]):
+        index = None if index == -1 else index
+
+        self.logger.info(
+            f"Adding MotionGroup to the run: index = '{index}', config = {mg_config}."
+        )
+
+        self.rm.add_motion_group(config=mg_config, identifier=index)
+
+        self.configChanged.emit()
+
     def _switch_stack(self):
-        index = self._stacked_widget.currentIndex()
-        switch_to = 0 if index == 1 else 1
-        self._stacked_widget.setCurrentIndex(switch_to)
+        _w = self._stacked_widget.currentWidget()
+        if isinstance(_w, RunWidget):
+            self._stacked_widget.addWidget(self._mg_widget)
+            self._stacked_widget.setCurrentWidget(self._mg_widget)
+        else:
+            # the stack widget is the MGWidget instance
+            self._stacked_widget.removeWidget(_w)
+            self._stacked_widget.setCurrentIndex(0)
+            _w.close()
+            _w.deleteLater()
+            self._mg_widget = None
 
     def closeEvent(self, event: "QCloseEvent") -> None:
         self.logger.info("Closing ConfigureGUI")
