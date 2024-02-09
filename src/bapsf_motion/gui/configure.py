@@ -3322,6 +3322,8 @@ class ConfigureGUI(QMainWindow):
         self.replace_rm({"name": "A New Run"})
 
     def _connect_signals(self):
+        # Note: _mg_widget signals are connected in _spawn_mg_widget()
+        #
         self._run_widget.import_btn.clicked.connect(self.toml_import)
         # self._run_widget.export_btn.clicked.connect(self.toml_export)
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
