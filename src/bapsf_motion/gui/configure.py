@@ -3493,7 +3493,7 @@ class ConfigureGUI(QMainWindow):
             return
 
         for key, val in self.rm.config._mgs.items():
-            label = f"[{key}] {val.config['name']}"
+            label = self._generate_mg_list_name(key, val.config["name"])
             mg_labels.append(label)
 
         self._run_widget.mg_list_widget.clear()
@@ -3536,6 +3536,21 @@ class ConfigureGUI(QMainWindow):
         self.rm.add_motion_group(config=mg_config, identifier=index)
 
         self.configChanged.emit()
+
+    @staticmethod
+    def _generate_mg_list_name(index, mg_name):
+        return f"[{index:2d}]   {mg_name}"
+
+    @staticmethod
+    def _get_mg_name_from_list_name(list_name):
+        match = re.compile(
+            r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)"
+        ).fullmatch(list_name)
+        return (
+            None
+            if match is None
+            else (int(match.group("index")), match.group("name"))
+        )
 
     def _switch_stack(self):
         _w = self._stacked_widget.currentWidget()
