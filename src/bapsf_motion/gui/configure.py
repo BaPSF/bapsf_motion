@@ -965,7 +965,8 @@ class TransformConfigOverlay(_ConfigOverlay):
         # re-initialized the transform_inputs dictionary
         params = self.registry.get_input_parameters(tr_type)
         if self.transform.transform_type == tr_type:
-            self._transform_inputs = {**self.transform.inputs}
+            self._transform_inputs = {**self.transform.config}
+            self._transform_inputs.pop("type")
         else:
             self._transform_inputs = {}
 
