@@ -1,3 +1,7 @@
+"""
+This module contains helper widgets for contructing the main GUIs in
+`bapsf_motion.gui`.
+"""
 __all__ = [
     "QLogHandler",
     "QLogger",

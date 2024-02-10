@@ -1,3 +1,4 @@
+"""This module contains miscellaneous custom Qt widgets."""
 __all__ = [
     "IPv4Validator",
     "QLineEditSpecialized",

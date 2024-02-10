@@ -1,3 +1,6 @@
+"""
+This module defines the configuration GUI for construction data runs.
+"""
 __all__ = ["ConfigureGUI"]
 
 import ast

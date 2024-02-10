@@ -1,3 +1,4 @@
+"""This module contains custom Qt buttons."""
 __all__ = ["LED", "StopButton", "StyleButton"]
 
 import math

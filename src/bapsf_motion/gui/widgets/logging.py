@@ -1,3 +1,7 @@
+"""
+This module contains custom Qt widgets for displaying logs generated
+by Python's `logging` package.
+"""
 __all__ = ["QLogHandler", "QLogger"]
 
 import logging
