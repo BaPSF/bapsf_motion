@@ -2,6 +2,7 @@
 # ought to mirror 'install_requires' under 'options' in setup.cfg
 -r build.txt
 astropy
+importlib_metadata; python_version < '3.8'
 matplotlib >= 3.3.0
 numpy >= 1.18.1
 numpydoc

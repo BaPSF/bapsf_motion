@@ -8,7 +8,10 @@ import sys
 if sys.version_info < (3, 6):  # coverage: ignore
     raise ImportError("bapsf_motion does not support Python < 3.6")
 
-import pkg_resources
+if sys.version_info > (3, 7):
+    from importlib.metadata import version, PackageNotFoundError
+else:
+    from importlib_metadata import version, PackageNotFoundError
 
 from bapsf_motion import actors, gui, motion_builder, transform, utils
 
@@ -24,8 +27,8 @@ try:
     #       frozen to the version at time of install.
     #
     #: bapsf_motion version string
-    __version__ = pkg_resources.get_distribution("bapsf_motion").version
-except pkg_resources.DistributionNotFound:
+    __version__ = version("bapsf_motion")
+except PackageNotFoundError:
     # package is not installed
     fallback_version = "unknown"
     try:
