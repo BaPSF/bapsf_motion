@@ -1977,8 +1977,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         space_config[axis_index] = axis_config
         config = {
             "space": space_config,
-            "exclusions": self.mb.config.get("exclusions", None),
-            "layers": self.mb.config.get("layers", None),
+            "exclusion": self.mb.config.get("exclusion", None),
+            "layer": self.mb.config.get("layer", None),
         }
         self._spawn_motion_builder(config)
 
@@ -2167,11 +2167,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info("Rebuilding motion builder...")
         space = list(config["space"].values())
 
-        exclusions = config.get("exclusions", None)
+        exclusions = config.get("exclusion", None)
         if exclusions is not None:
             exclusions = list(exclusions.values())
 
-        layers = config.get("layers", None)
+        layers = config.get("layer", None)
         if layers is not None:
             layers = list(layers.values())
 
