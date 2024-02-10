@@ -1434,11 +1434,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _txt.setFont(font)
         title = _txt
 
-        ex_names = set(ex.name for ex in self.mb.exclusions)
+        ex_types = set(ex.exclusion_type for ex in self.mb.exclusions)
 
         _available = self.exclusion_registry.get_names_by_dimensionality(
             self.dimensionality
         )
+        ex_names = []
         if not _available:
             self.logger.warning(
                 "There are no coded exclusion layers that work with the "
@@ -1448,16 +1449,20 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.remove_ex_btn.setEnabled(False)
             self.edit_ex_btn.setEnabled(False)
 
-            for name in ex_names:
-                self.mb.remove_exclusion(name)
+            exclusions = self.mb.exclusions.copy()
+            for ex in exclusions:
+                self.mb.remove_exclusion(ex.name)
 
-            ex_names = set()
-        elif ex_names - _available:
-            rm_names = ex_names - _available
-            for name in rm_names:
-                self.mb.remove_exclusion(name)
+        elif ex_types - _available:
+            exclusions = self.mb.exclusions.copy()
+            for ex in exclusions:
+                if ex.exclusion_type in _available:
+                    ex_names.append(
+                        self._generate_list_name(ex.name, ex.exclusion_type)
+                    )
+                    continue
 
-            ex_names = rm_names
+                self.mb.remove_exclusion(ex.name)
 
         self.exclusion_list_box.addItems(ex_names)
 
@@ -1490,11 +1495,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _txt.setFont(font)
         title = _txt
 
-        ly_names = set(ly.name for ly in self.mb.layers)
+        ly_types = set(ly.layer_type for ly in self.mb.layers)
 
         _available = self.layer_registry.get_names_by_dimensionality(
             self.dimensionality
         )
+        ly_names = []
         if not _available:
             self.logger.warning(
                 "There are no coded point layers that work with the "
@@ -1504,16 +1510,20 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.remove_ly_btn.setEnabled(False)
             self.edit_ly_btn.setEnabled(False)
 
-            for name in ly_names:
-                self.mb.remove_layer(name)
+            layers = self.mb.layers.copy()
+            for ly in layers:
+                self.mb.remove_layer(ly.name)
 
-            ly_names = set()
-        elif ly_names - _available:
-            rm_names = ly_names - _available
-            for name in rm_names:
-                self.mb.remove_layer(name)
+        elif ly_types - _available:
+            layers = self.mb.layers.copy()
+            for ly in layers:
+                if ly.layer_type in _available:
+                    ly_names.append(
+                        self._generate_list_name(ly.name, ly.layer_type)
+                    )
+                    continue
 
-            ly_names = rm_names
+                self.mb.remove_layer(ly.name)
 
         self.layer_list_box.addItems(ly_names)
 
