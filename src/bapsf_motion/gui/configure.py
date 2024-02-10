@@ -2451,8 +2451,6 @@ class AxisControlWidget(QWidget):
 
 
 class DriveControlWidget(QWidget):
-    driveLinked = Signal()
-    driveUnlinked = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -2651,45 +2649,6 @@ class DriveControlWidget(QWidget):
         # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self.setEnabled(False)
-
-    # def _link_drive(self, drive):
-    #     if not isinstance(drive, Drive):
-    #         self.logger.warning(
-    #             f"Expected type {Drive} for drive, but got type {type(drive)}."
-    #         )
-    #
-    #     if self.drive is not None and self.drive is drive:
-    #         pass
-    #     else:
-    #         self.unlink_drive()
-    #         self._drive = drive
-    #
-    #     for ii, ax in enumerate(self.drive.axes):
-    #         acw = self._axis_control_widgets[ii]
-    #         acw.link_axis(ax)
-    #         acw.show()
-    #
-    #     self.setEnabled(True)
-    #     self.driveLinked.emit()
-    #
-    # def link_drive(self, drive):
-    #     self._link_drive(drive)
-    #
-    # def _unlink_drive(self):
-    #     if self.drive is not None:
-    #         self.drive.terminate(delay_loop_stop=True)
-    #
-    #     for acw in self._axis_control_widgets:
-    #         acw.unlink_axis()
-    #         acw.hide()
-    #
-    #     self._drive = None
-    #
-    #     self.setEnabled(False)
-    #     self.driveUnlinked.emit()
-    #
-    # def unlink_drive(self):
-    #     self._unlink_drive()
 
     def _stop_move(self):
         self.mg.stop()
