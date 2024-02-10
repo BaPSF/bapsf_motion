@@ -246,7 +246,7 @@ class AxisConfigWidget(QWidget):
         font.setPointSize(16)
         _widget.setFont(font)
         _widget.setFixedWidth(120)
-        _widget.setValidator(QDoubleValidator())
+        _widget.setValidator(QDoubleValidator(decimals=4))
         self.cm_per_rev_widget = _widget
 
         # Define ADVANCED WIDGETS
@@ -1376,7 +1376,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_min")
-            _txt.setValidator(QDoubleValidator())
+            _txt.setValidator(QDoubleValidator(decimals=1))
             _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             min_range = _txt
 
@@ -1385,7 +1385,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_max")
-            _txt.setValidator(QDoubleValidator())
+            _txt.setValidator(QDoubleValidator(decimals=1))
             _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             max_range = _txt
 
@@ -1401,7 +1401,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
             _txt.setObjectName(f"{name}_delta")
-            _txt.setValidator(QDoubleValidator())
+            _txt.setValidator(QDoubleValidator(decimals=2))
             _txt.editingFinishedPayload.connect(self._validate_space_inputs)
             delta = _txt
 
