@@ -2405,6 +2405,9 @@ class AxisControlWidget(QWidget):
         pos = self.position
         self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
 
+        if self.target_position_label.text() == "":
+            self.target_position_label.setText(f"{pos.value:.2f}")
+
         limits = self.axis.motor.status["limits"]
         self.limit_fwd_btn.setChecked(limits["CW"])
         self.limit_bwd_btn.setChecked(limits["CCW"])
