@@ -2533,6 +2533,7 @@ class DriveControlWidget(QWidget):
     def _connect_signals(self):
         self.stop_1_btn.clicked.connect(self._stop_move)
         self.stop_2_btn.clicked.connect(self._stop_move)
+        self.zero_all_btn.clicked.connect(self._zero_drive)
 
     def _define_layout(self):
         # Sub-Layout #1
@@ -2613,6 +2614,9 @@ class DriveControlWidget(QWidget):
 
     def _stop_move(self):
         self.mg.stop()
+
+    def _zero_drive(self):
+        self.mg.drive.send_command("zero")
 
     def link_motion_group(self, mg):
         if not isinstance(mg, MotionGroup):
