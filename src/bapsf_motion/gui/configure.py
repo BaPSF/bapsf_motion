@@ -73,8 +73,7 @@ from bapsf_motion.utils import units as u
 
 # noqa
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
+from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
 
 _logger = logging.getLogger("GUI")
 
