@@ -2278,7 +2278,6 @@ class AxisControlWidget(QWidget):
         self.home_btn = _btn
 
         _btn = StyleButton("ZERO")
-        _btn.setEnabled(False)
         self.zero_btn = _btn
 
         # Define TEXT WIDGETS
@@ -2320,6 +2319,7 @@ class AxisControlWidget(QWidget):
     def _connect_signals(self):
         self.jog_forward_btn.clicked.connect(self._jog_forward)
         self.jog_backward_btn.clicked.connect(self._jog_backward)
+        self.zero_btn.clicked.connect(self._zero_axis)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -2408,6 +2408,9 @@ class AxisControlWidget(QWidget):
         limits = self.axis.motor.status["limits"]
         self.limit_fwd_btn.setChecked(limits["CW"])
         self.limit_bwd_btn.setChecked(limits["CCW"])
+
+    def _zero_axis(self):
+        self.axis.send_command("zero")
 
     def link_axis(self, mg: MotionGroup, ax_index: int):
         if (
