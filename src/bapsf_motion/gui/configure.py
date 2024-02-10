@@ -2611,6 +2611,9 @@ class DriveControlWidget(QWidget):
     def mg(self) -> Union[MotionGroup, None]:
         return self._mg
 
+    def _stop_move(self):
+        self.mg.stop()
+
     def link_motion_group(self, mg):
         if not isinstance(mg, MotionGroup):
             self.logger.warning(
@@ -2649,9 +2652,6 @@ class DriveControlWidget(QWidget):
         # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self.setEnabled(False)
-
-    def _stop_move(self):
-        self.mg.stop()
 
     def closeEvent(self, event):
         self.logger.info("Closing DriveControlWidget")
