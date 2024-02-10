@@ -2143,7 +2143,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return None if match is None else match.group("name")
 
     def _initialize_motion_builder(self):
-        if self.mb is not None:
+        if (
+            not isinstance(self.mg, MotionGroup)
+            or not isinstance(self.mb, MotionBuilder)
+            or not isinstance(self.mg.mb, MotionBuilder)
+        ):
+            pass
+        elif self.mb is self.mg.mb:
+            config = _deepcopy_dict(self.mb.config)
+            self._spawn_motion_builder(config)
             return
 
         config = {"space": {}}
