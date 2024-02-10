@@ -2302,6 +2302,7 @@ class AxisControlWidget(QWidget):
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
+        _txt.setValidator(QDoubleValidator(decimals=2))
         self.target_position_label = _txt
 
         _txt = QLineEdit("0")
@@ -2378,6 +2379,10 @@ class AxisControlWidget(QWidget):
         val = position.value[self.axis_index][0]
         unit = position.unit
         return val * unit
+
+    @property
+    def target_position(self):
+        return float(self.target_position_label.text())
 
     def _get_jog_delta(self):
         delta_str = self.jog_delta_label.text()
@@ -2537,6 +2542,7 @@ class DriveControlWidget(QWidget):
         self.stop_1_btn.clicked.connect(self._stop_move)
         self.stop_2_btn.clicked.connect(self._stop_move)
         self.zero_all_btn.clicked.connect(self._zero_drive)
+        self.move_to_btn.clicked.connect(self._move_to)
 
     def _define_layout(self):
         # Sub-Layout #1
@@ -2614,6 +2620,14 @@ class DriveControlWidget(QWidget):
     @property
     def mg(self) -> Union[MotionGroup, None]:
         return self._mg
+
+    def _move_to(self):
+        target_pos = [
+            acw.target_position
+            for acw in self._axis_control_widgets
+            if not acw.isHidden()
+        ]
+        self.mg.move_to(target_pos)
 
     def _stop_move(self):
         self.mg.stop()
