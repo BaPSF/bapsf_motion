@@ -1287,7 +1287,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     @property
     def mb(self) -> Union[MotionBuilder, None]:
-        if self._mb is None and self.mg.mb is not None:
+        if (
+            self._mb is None
+            and isinstance(self.mg, MotionGroup)
+            and isinstance(self.mg.mb, MotionBuilder)
+        ):
             return self.mg.mb
 
         return self._mb
