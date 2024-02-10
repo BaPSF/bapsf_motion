@@ -2066,6 +2066,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mpl_canvas.draw()
 
     def update_exclusion_list_box(self):
+        self.logger.info("Updating Exclusion List Box")
+        self.remove_ex_btn.setEnabled(False)
+        self.edit_ex_btn.setEnabled(False)
+
         ex_names = set(
             self._generate_list_name(ex.name, ex.exclusion_type)
             for ex in self.mb.exclusions
@@ -2073,15 +2077,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.exclusion_list_box.clear()
 
         if not ex_names:
-            self.remove_ex_btn.setEnabled(False)
-            self.edit_ex_btn.setEnabled(False)
             return
 
         self.exclusion_list_box.addItems(ex_names)
-        self.remove_ex_btn.setEnabled(True)
-        self.edit_ex_btn.setEnabled(True)
 
     def update_layer_list_box(self):
+        self.logger.info("Updating Layer List Box")
+        self.remove_ly_btn.setEnabled(False)
+        self.edit_ly_btn.setEnabled(False)
+
         ly_names = set(
             self._generate_list_name(ly.name, ly.layer_type)
             for ly in self.mb.layers
@@ -2090,13 +2094,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_list_box.clear()
 
         if not ly_names:
-            self.remove_ly_btn.setEnabled(False)
-            self.edit_ly_btn.setEnabled(False)
             return
 
         self.layer_list_box.addItems(ly_names)
-        self.remove_ly_btn.setEnabled(True)
-        self.edit_ly_btn.setEnabled(True)
 
     # -- NORMAL METHODS --
 
