@@ -1345,7 +1345,7 @@ class Motor(EventActor):
 
         alarm_status = self.retrieve_motor_alarm(
             defer_status_update=True,
-            direct_send=True,
+            direct_send=direct_send,
         )
         if not isinstance(alarm_status, self.ack_flags):
             _status.update(alarm_status)
