@@ -1224,6 +1224,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self._refresh_params_widget_from_combo_box_change
         )
 
+        self.layer_list_box.itemSelectionChanged.connect(
+            self.layer_list_box_set_btn_enable
+        )
+        self.exclusion_list_box.itemSelectionChanged.connect(
+            self.exclusion_list_box_set_btn_enable
+        )
+
     def _define_layout(self):
         #
         #  +-------------------------------------------------------+
@@ -2024,6 +2031,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def change_validation_state(self, valid: bool = False):
         self.params_add_btn.setEnabled(valid)
+
+    def exclusion_list_box_set_btn_enable(self, enable=True):
+        self.edit_ex_btn.setEnabled(enable)
+        self.remove_ex_btn.setEnabled(enable)
+
+    def layer_list_box_set_btn_enable(self, enable=True):
+        self.edit_ly_btn.setEnabled(enable)
+        self.remove_ly_btn.setEnabled(enable)
 
     def update_canvas(self):
         self.logger.info("Redrawing plot...")
