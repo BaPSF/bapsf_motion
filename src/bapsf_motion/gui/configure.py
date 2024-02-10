@@ -1198,7 +1198,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self._initialize_motion_builder()
         self.setLayout(self._define_layout())
+
+        self.update_exclusion_list_box()
+        self.update_layer_list_box()
         self.update_canvas()
+
         self._connect_signals()
 
     def _connect_signals(self):
