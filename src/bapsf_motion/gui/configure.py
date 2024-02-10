@@ -2379,6 +2379,36 @@ class AxisControlWidget(QWidget):
         unit = position.unit
         return val * unit
 
+    def _get_jog_delta(self):
+        delta_str = self.jog_delta_label.text()
+        return float(delta_str)
+
+    def _jog_forward(self):
+        pos = self.position.value + self._get_jog_delta()
+        self._move_to(pos)
+
+    def _jog_backward(self):
+        pos = self.position.value - self._get_jog_delta()
+        self._move_to(pos)
+
+    def _move_to(self, target_ax_pos):
+        if self.mg.drive.is_moving:
+            return
+
+        position = self.mg.position.value
+        position[self.axis_index] = target_ax_pos
+
+        self.mg.move_to(position)
+
+    def _update_display_of_axis_status(self):
+        # pos = self.axis.motor.status["position"]
+        pos = self.position
+        self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
+
+        limits = self.axis.motor.status["limits"]
+        self.limit_fwd_btn.setChecked(limits["CW"])
+        self.limit_bwd_btn.setChecked(limits["CCW"])
+
     def link_axis(self, mg: MotionGroup, ax_index: int):
         if (
             not isinstance(ax_index, int)
@@ -2411,62 +2441,6 @@ class AxisControlWidget(QWidget):
         self._mg = None
         self._axis_index = None
         self.axisUnlinked.emit()
-
-    # def link_axis(self, axis):
-    #     if not isinstance(axis, Axis):
-    #         self.logger.warning(
-    #             f"Expect type {Axis} for axis, but got type {type(axis)}."
-    #         )
-    #
-    #     if self.axis is not None and self.axis is axis:
-    #         pass
-    #     else:
-    #         self.unlink_axis()
-    #         self._axis = axis
-    #
-    #     self.axis_name_label.setText(self.axis.name)
-    #     self.axis.motor.status_changed.connect(self._update_display_of_axis_status)
-    #     self._update_display_of_axis_status()
-    #
-    #     self.axisLinked.emit()
-    #
-    # def unlink_axis(self):
-    #     if self.axis is not None:
-    #         self.axis.terminate(delay_loop_stop=True)
-    #         self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
-    #
-    #     self._axis = None
-    #     self.axisUnlinked.emit()
-
-    def _update_display_of_axis_status(self):
-        # pos = self.axis.motor.status["position"]
-        pos = self.position
-        self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
-
-        limits = self.axis.motor.status["limits"]
-        self.limit_fwd_btn.setChecked(limits["CW"])
-        self.limit_bwd_btn.setChecked(limits["CCW"])
-
-    def _get_jog_delta(self):
-        delta_str = self.jog_delta_label.text()
-        return float(delta_str)
-
-    def _jog_forward(self):
-        pos = self.position.value + self._get_jog_delta()
-        self._move_to(pos)
-
-    def _jog_backward(self):
-        pos = self.position.value - self._get_jog_delta()
-        self._move_to(pos)
-
-    def _move_to(self, target_ax_pos):
-        if self.mg.drive.is_moving:
-            return
-
-        position = self.mg.position.value
-        position[self.axis_index] = target_ax_pos
-
-        self.mg.move_to(position)
 
     def closeEvent(self, event):
         self.logger.info("Closing AxisControlWidget")
