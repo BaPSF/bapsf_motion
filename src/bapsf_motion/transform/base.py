@@ -267,10 +267,14 @@ class BaseTransform(ABC):
         # 2. __call__ has conditioned points, so it will always be M x N
         # 3. __call__ has validated to_coords
 
-        return (
+        _matrix = (
             self._matrix_to_drive(points) if to_coords == "drive"
             else self._matrix_to_motion_space(points)
         )
+
+        if _matrix.shape == tuple(2 * [self.naxes + 1]):
+            return _matrix[..., np.newaxis]
+        return _matrix
 
     def _convert(self, points, to_coords="drive"):
         r"""
