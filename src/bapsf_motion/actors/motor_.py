@@ -1388,6 +1388,7 @@ class Motor(EventActor):
         # the heartbeat is already running in the event loop
         send_command = self._send_command if direct_send else self.send_command
 
+        send_command("alarm_reset")
         rtn = send_command("alarm")
         if isinstance(rtn, self.ack_flags):
             return rtn
