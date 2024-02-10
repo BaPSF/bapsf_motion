@@ -1,3 +1,5 @@
+__all__ = ["ConfigureGUI"]
+
 import ast
 import asyncio
 import inspect
