@@ -264,39 +264,6 @@ class AxisConfigWidget(QWidget):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
-    @property
-    def logger(self):
-        return self._logger
-
-    @property
-    def axis(self) -> Union[Axis, None]:
-        return self._axis
-
-    @axis.setter
-    def axis(self, ax: Union[Axis, None]):
-        if not (isinstance(ax, Axis) or ax is None):
-            return
-
-        self._axis = ax
-        self.configChanged.emit()
-
-    @property
-    def axis_config(self):
-        if isinstance(self.axis, Axis):
-            self._axis_config = self.axis.config.copy()
-        return self._axis_config
-
-    @axis_config.setter
-    def axis_config(self, config):
-        # TODO: this needs to be more robust
-        axis_config = self.axis_config.copy()
-        axis_config["ip"] = config["ip"]
-        axis_config["units_per_rev"] = config["units_per_rev"]
-        self._axis_config = axis_config
-
-        self.configChanged.emit()
-        self._check_axis_completeness()
-
     def _connect_signals(self):
         self.ip_widget.editingFinished.connect(self._change_ip_address)
         self.cm_per_rev_widget.editingFinished.connect(self._change_cm_per_rev)
@@ -352,6 +319,52 @@ class AxisConfigWidget(QWidget):
         layout.addLayout(sub_layout)
         return layout
 
+    @property
+    def logger(self):
+        return self._logger
+
+    @property
+    def axis(self) -> Union[Axis, None]:
+        return self._axis
+
+    @axis.setter
+    def axis(self, ax: Union[Axis, None]):
+        if not (isinstance(ax, Axis) or ax is None):
+            return
+
+        self._axis = ax
+        self.configChanged.emit()
+
+    @property
+    def axis_config(self):
+        if isinstance(self.axis, Axis):
+            self._axis_config = self.axis.config.copy()
+        return self._axis_config
+
+    @axis_config.setter
+    def axis_config(self, config):
+        # TODO: this needs to be more robust
+        axis_config = self.axis_config.copy()
+        axis_config["ip"] = config["ip"]
+        axis_config["units_per_rev"] = config["units_per_rev"]
+        self._axis_config = axis_config
+
+        self.configChanged.emit()
+        self._check_axis_completeness()
+
+    def _check_axis_completeness(self):
+        if isinstance(self.axis, Axis):
+            return False
+
+        _completeness = {"name", "ip", "units", "units_per_rev"}
+        if _completeness - set(self.axis_config.keys()):
+            return False
+        elif any([self.axis_config[key] == "" for key in _completeness]):
+            return False
+
+        self._spawn_axis()
+        return True
+
     def _change_cm_per_rev(self):
         try:
             new_cpr = float(self.cm_per_rev_widget.text())
@@ -391,55 +404,6 @@ class AxisConfigWidget(QWidget):
         self.configChanged.emit()
         self._check_axis_completeness()
 
-    def _update_cm_per_rev_widget(self):
-        self.cm_per_rev_widget.setText(f"{self.axis_config['units_per_rev']}")
-
-    def _update_ip_widget(self):
-        self.logger.info(f"Updating IP widget with {self.axis_config['ip']}")
-        self.ip_widget.setText(self.axis_config["ip"])
-
-    def _update_online_led(self):
-        online = False
-
-        if isinstance(self.axis, Axis):
-            online = self.axis.motor.status["connected"]
-
-        self.online_led.setChecked(online)
-
-    def set_ip_handler(self, handler: callable):
-        self._ip_handlers.append(handler)
-
-    def _validate_ip(self, ip):
-        if ip == self.axis_config["ip"]:
-            # ip did not change
-            return ip
-        elif ipv4_pattern.fullmatch(ip) is None:
-            self.logger.error(
-                f"Supplied IP address ({ip}) is not a valid IPv4."
-            )
-            return
-
-        for handler in self._ip_handlers:
-            ip = handler(ip)
-
-            if ip is None or ip == "":
-                return
-
-        return ip
-
-    def _check_axis_completeness(self):
-        if isinstance(self.axis, Axis):
-            return False
-
-        _completeness = {"name", "ip", "units", "units_per_rev"}
-        if _completeness - set(self.axis_config.keys()):
-            return False
-        elif any([self.axis_config[key] == "" for key in _completeness]):
-            return False
-
-        self._spawn_axis()
-        return True
-
     def _spawn_axis(self) -> Union[Axis, None]:
         self.logger.info("Spawning Axis.")
         if isinstance(self.axis, Axis):
@@ -460,6 +424,39 @@ class AxisConfigWidget(QWidget):
         self.axis = axis
         return axis
 
+    def _update_cm_per_rev_widget(self):
+        self.cm_per_rev_widget.setText(f"{self.axis_config['units_per_rev']}")
+
+    def _update_ip_widget(self):
+        self.logger.info(f"Updating IP widget with {self.axis_config['ip']}")
+        self.ip_widget.setText(self.axis_config["ip"])
+
+    def _update_online_led(self):
+        online = False
+
+        if isinstance(self.axis, Axis):
+            online = self.axis.motor.status["connected"]
+
+        self.online_led.setChecked(online)
+
+    def _validate_ip(self, ip):
+        if ip == self.axis_config["ip"]:
+            # ip did not change
+            return ip
+        elif ipv4_pattern.fullmatch(ip) is None:
+            self.logger.error(
+                f"Supplied IP address ({ip}) is not a valid IPv4."
+            )
+            return
+
+        for handler in self._ip_handlers:
+            ip = handler(ip)
+
+            if ip is None or ip == "":
+                return
+
+        return ip
+
     def link_external_axis(self, axis):
         if not isinstance(axis, Axis):
             self.logger.warning(
@@ -474,6 +471,9 @@ class AxisConfigWidget(QWidget):
 
         axis.motor.status_changed.connect(self._update_online_led)
         self.axis = axis
+
+    def set_ip_handler(self, handler: callable):
+        self._ip_handlers.append(handler)
 
     def closeEvent(self, event):
         self.logger.info("Closing AxisConfigWidget")
