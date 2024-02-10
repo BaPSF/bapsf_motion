@@ -1885,6 +1885,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     @Slot(object)
     def _validate_space_inputs(self, input_widget: QLineEditSpecialized):
+        self.logger.info("Validating space inputs")
         w_name = input_widget.objectName()
         match = re.compile(r"(?P<label>.+)_(?P<what>(min|max|delta))").fullmatch(w_name)
         if match is None:
@@ -1982,6 +1983,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._spawn_motion_builder(config)
 
     def _validate_inputs(self):
+        self.logger.info("Validating motion layer parameter inputs")
         _inputs = self._param_inputs.copy()
         _type = _inputs.pop("_type")
         _registry = _inputs.pop("_registry")
@@ -2174,8 +2176,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             layers = list(layers.values())
 
         self.logger.info(f"space looks like : {space}")
-        self.logger.info(f"exclusions look like : {exclusions}")
-        self.logger.info(f"layers looks like : {layers}")
+        self.logger.info(f"exclusion look like : {exclusions}")
+        self.logger.info(f"layer looks like : {layers}")
 
         self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
         self.configChanged.emit()
