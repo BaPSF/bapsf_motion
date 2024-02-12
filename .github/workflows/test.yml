@@ -179,7 +179,7 @@ jobs:
           cache: pip
       - name: Install requirements
         run: |
-          pip install --progress-bar off --upgrade pip setuptools setuptools_scm twine
+          pip install --progress-bar off --upgrade pip setuptools setuptools_scm twine build
           pip install --progress-bar off -r requirements/install.txt
       - name: Build a binary wheel
         run: |
