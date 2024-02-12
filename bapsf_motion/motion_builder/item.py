@@ -8,7 +8,11 @@ import re
 import xarray as xr
 
 from typing import Hashable, Tuple
-from xarray.core.types import ErrorOptions
+
+try:
+    from xarray.core.types import ErrorOptions
+except ModuleNotFoundError:
+    ErrorOptions = str
 
 
 class MBItem:

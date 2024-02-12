@@ -9,7 +9,10 @@ import xarray as xr
 
 from typing import Any, Dict, List, Optional, Union
 
-from xarray.core.types import ErrorOptions
+try:
+    from xarray.core.types import ErrorOptions
+except ModuleNotFoundError:
+    ErrorOptions = str
 
 from bapsf_motion.motion_builder.item import MBItem
 from bapsf_motion.motion_builder.exclusions import (
