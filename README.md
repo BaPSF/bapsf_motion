@@ -1,6 +1,6 @@
 # bapsf_motion
 
-[![Documentation Status](https://readthedocs.org/projects/bapsf-motion/badge/?version=latest)](https://bapsfdaq-motion.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status](https://readthedocs.org/projects/bapsf-motion/badge/?version=latest)](https://bapsf-motion.readthedocs.io/en/latest/?badge=latest)
 
 ``bapsf_motion`` is a module developed for the 
 [Basic Plasma Facility (BaPSF)](https://plasma.physics.ucla.edu/) at the
