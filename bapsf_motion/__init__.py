@@ -13,7 +13,7 @@ if sys.version_info > (3, 7):
 else:
     from importlib_metadata import version, PackageNotFoundError
 
-from bapsf_motion import actors, gui, motion_builder, transform, utils
+from bapsf_motion import actors, motion_builder, transform, utils
 
 # define version
 try:
