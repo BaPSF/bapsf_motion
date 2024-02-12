@@ -25,7 +25,6 @@ from sphinx.application import Sphinx
 
 sys.path.insert(0, os.path.abspath("."))
 sys.path.insert(0, os.path.abspath(".."))
-sys.path.insert(0, os.path.abspath("../src"))
 
 from bapsf_motion import __version__ as release  # noqa
 
