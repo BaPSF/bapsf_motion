@@ -947,7 +947,7 @@ class Motor(EventActor):
                     self.logger.error(msg)
                     self.logger.error(f"{err.__class__.__name__}: {err}")
                     # TODO: make this a custom exception (e.g. MotorConnectionError)
-                    #       so other bapsfdaq_motion functionality can respond
+                    #       so other bapsf_motion functionality can respond
                     #       appropriately...the exception should likely inherit
                     #       from TimeoutError, InterruptedError, ConnectionRefusedError,
                     #       and socket.timeout

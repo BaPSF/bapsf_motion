@@ -141,8 +141,8 @@ class BaseTransform(ABC):
                 "Something went wrong! The coordinate transformed points "
                 "do not share the same dimensionality as 'points'.  The"
                 " is likely a developer error and not a user error.  "
-                "Please post an issue on the bapsfdaq_motion GitHub "
-                "repo, https://github.com/BaPSF/bapsfdaq_motion/issues."
+                "Please post an issue on the bapsf_motion GitHub "
+                "repo, https://github.com/BaPSF/bapsf_motion/issues."
             )
         elif tr_points.ndim == 1 and self.naxes == 1:
             tr_points = tr_points[np.newaxis, ...]
