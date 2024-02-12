@@ -34,11 +34,11 @@ jobs:
 #            name-modifier: 'with Coverage'
 #    steps:
 #      - name: Checkout code
-#        uses: actions/checkout@v3
+#        uses: actions/checkout@v4
 #        with:
 #          fetch-depth: 0
 #      - name: Setup Python
-#        uses: actions/setup-python@v4
+#        uses: actions/setup-python@v5
 #        with:
 #          python-version: ${{ matrix.python }}
 #      - name: Install 'bapsflib' dependencies
@@ -79,11 +79,11 @@ jobs:
 #
 #    steps:
 #      - name: Checkout code
-#        uses: actions/checkout@v3
+#        uses: actions/checkout@v4
 #        with:
 #          fetch-depth: 0
 #      - name: Setup Python
-#        uses: actions/setup-python@v4
+#        uses: actions/setup-python@v5
 #        with:
 #          python-version: ${{ matrix.python }}
 #      - name: Install 'bapsflib' dependencies
@@ -113,11 +113,11 @@ jobs:
 #
 #    steps:
 #      - name: Checkout code
-#        uses: actions/checkout@v3
+#        uses: actions/checkout@v4
 #        with:
 #          fetch-depth: 0
 #      - name: Setup Python
-#        uses: actions/setup-python@v4
+#        uses: actions/setup-python@v5
 #        with:
 #          python-version: ${{ matrix.python }}
 #      - name: Install 'bapsflib' dependencies
@@ -145,11 +145,11 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python }}
       - name: Install 'bapsf_motion' dependencies
@@ -167,13 +167,13 @@ jobs:
       - import-bapsf_motion
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Get history and tags for SCM versioning to work
         run: |
           git fetch --prune --unshallow
           git fetch --depth=1 origin +refs/tags/*:refs/tags/*
       - name: Set up Python 3.10
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
           cache: pip
