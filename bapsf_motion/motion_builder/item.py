@@ -43,14 +43,14 @@ class MBItem:
 
     __mask_name = "mask"
 
-    def __init__(self, ds: xr.Dataset, base_name: str, name_pattern: re.Pattern):
+    def __init__(self, ds: xr.Dataset, base_name: str, name_pattern: "re.Pattern"):
         self._ds = self._validate_ds(ds)
 
         self._base_name = base_name
 
-        if not isinstance(name_pattern, re.Pattern):
-            name_pattern = re.Pattern(name_pattern)
-        self._name_pattern = name_pattern
+        # if not isinstance(name_pattern, re.Pattern):
+        #     name_pattern = re.Pattern(name_pattern)
+        self._name_pattern = re.compile(name_pattern)
 
         self._name = self._determine_name()
 
@@ -60,7 +60,7 @@ class MBItem:
         return self._base_name
 
     @property
-    def name_pattern(self) -> re.Pattern:
+    def name_pattern(self) -> "re.Pattern":
         """
         The naming pattern for motion builder items in the
         `~xarray.Dataset`.

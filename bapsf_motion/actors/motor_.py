@@ -139,7 +139,7 @@ class CommandEntry(UserDict):
         *,
         send: str,
         send_processor: Optional[Callable[[Any], str]] = None,
-        recv: Optional[re.Pattern] = None,
+        recv: Optional["re.Pattern"] = None,
         recv_processor: Optional[Callable[[str], Any]] = do_nothing,
         two_way: bool = False,
         units: Union[str, u.Unit, None] = None,
