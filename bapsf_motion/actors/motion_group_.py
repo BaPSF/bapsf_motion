@@ -783,18 +783,23 @@ class MotionGroup(EventActor):
             self._drive = None
             return self._drive
 
+        _config_inputs = {
+            "name": config["name"],
+            "axes": list(config["axes"].values()),
+        }
         try:
             dr = Drive(
-                axes=list(config["axes"].values()),
-                name=config["name"],
                 logger=self.logger,
                 loop=self.loop,
                 auto_run=False,
+                **_config_inputs,
             )
             self._drive = dr
         except (TypeError, ValueError) as err:
-            self.logger.warning(f"{type(err).__name__}: {err}")
-            self.logger.warning("Unable to instantiate drive.")
+            self.logger.warning(
+                f"Unable to instantiate drive with configuration {_config_inputs}.",
+                exc_info=err,
+            )
             self._drive = None
 
         return self._drive
