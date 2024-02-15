@@ -1,7 +1,6 @@
 # these are dependencies required to build package documentation
 # ought to mirror 'docs' under options.extras_require in setup.cfg
 -r install.txt
--r extras.txt
 git+https://github.com/PlasmaPy/plasmapy_sphinx@main#egg=plasmapy_sphinx
 docutils >= 0.18.1
 ipython

@@ -3,6 +3,7 @@
 # * this will mimic `pip install plasmapy[developer]` (excluding plasmapy)
 -r requirements/build.txt
 -r requirements/install.txt
+-r requirements/gui.txt
 -r requirements/tests.txt
 -r requirements/docs.txt
 -r requirements/extras.txt

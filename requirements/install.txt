@@ -6,8 +6,6 @@ importlib_metadata; python_version < '3.8'
 matplotlib >= 3.3.0
 numpy >= 1.18.1
 numpydoc
-PySide6
-qtawesome
 tomli; python_version < '3.11'
 tomli_w
 tqdm
