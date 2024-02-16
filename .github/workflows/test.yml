@@ -165,11 +165,9 @@ jobs:
         run: |
           python -m pip install -r requirements/gui.txt
       - name: Install additional PySide6 dependencies
-        if: ${{ matrix.architecture == 'x64' }}
+        if: ${{ matrix.architecture == 'x64' && runner.os != 'Windows'}}
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt update && sudo apt install -y libegl1-mesa-dev
-          fi
+          sudo apt update && sudo apt install -y libegl1-mesa-dev
       - name: Install 'bapsf_motion' dependencies (32bit)
         if: ${{ matrix.architecture == 'x86' }}
         run: |
