@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Union
 
 try:
     from xarray.core.types import ErrorOptions
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     ErrorOptions = str
 
 from bapsf_motion.motion_builder.item import MBItem
