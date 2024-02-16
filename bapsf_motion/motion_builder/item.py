@@ -11,7 +11,7 @@ from typing import Hashable, Tuple
 
 try:
     from xarray.core.types import ErrorOptions
-except ModuleNotFoundError:
+except (ModuleNotFoundError, ImportError):
     ErrorOptions = str
 
 
