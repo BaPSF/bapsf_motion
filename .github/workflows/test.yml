@@ -161,6 +161,7 @@ jobs:
       - name: Install 'bapsf_motion' dependencies
         if: ${{ matrix.architecture == 'x64' }}
         run: |
+          sudo apt update && sudo apt install -y libegl1-mesa-dev
           python -m pip install -r requirements/gui.txt
       - name: Install 'bapsf_motion' dependencies (32bit)
         if: ${{ matrix.architecture == 'x86' }}
