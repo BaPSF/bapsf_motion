@@ -159,18 +159,18 @@ jobs:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.architecture }}
       - name: Install 'bapsf_motion' dependencies
-        if: ${{ matrix.architecture == x64 }}
+        if: ${{ matrix.architecture == 'x64' }}
         run: |
           python -m pip install -r requirements/gui.txt
       - name: Install 'bapsf_motion' dependencies (32bit)
-        if: ${{ matrix.architecture == x86 }}
+        if: ${{ matrix.architecture == 'x86' }}
         run: |
           python -m pip install -r requirements/install-32bit.txt
       - name: Import 'bapsf_motion'
         run: |
           python -c 'import bapsf_motion'
       - name: Import 'bapsf_motion.gui'
-        if: ${{ matrix.architecture == x64 }}
+        if: ${{ matrix.architecture == 'x64' }}
         run: |
           python -c 'import bapsf_motion.gui'
 
