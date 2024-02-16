@@ -5,8 +5,8 @@ __all__ = ["__version__"]
 # This is the same check as the one at the top of setup.py
 import sys
 
-if sys.version_info < (3, 6):  # coverage: ignore
-    raise ImportError("bapsf_motion does not support Python < 3.6")
+if sys.version_info < (3, 7):  # coverage: ignore
+    raise ImportError("bapsf_motion does not support Python < 3.7")
 
 if sys.version_info > (3, 7):
     from importlib.metadata import version, PackageNotFoundError
