@@ -33,6 +33,7 @@ class AckFlags(Enum):
     ACK_QUEUED = 2
     NACK = 3
     LOST_CONNECTION = 4
+    MALFORMED = 5
 
 
 class _HeartRate(NamedTuple):
@@ -705,7 +706,7 @@ class Motor(EventActor):
         bit 8 =Full Duplex in RS-422
         """
         rtn = self.send_command("protocol")
-        if self._lost_connection(rtn):
+        if self._lost_connection(rtn) or rtn == self.ack_flags.MALFORMED:
             return
         _bits = f"{rtn:09b}"
 
@@ -724,7 +725,7 @@ class Motor(EventActor):
             # the protocol again.
             #
             rtn = self.send_command("protocol")
-            if self._lost_connection(rtn):
+            if self._lost_connection(rtn) or rtn == self.ack_flags.MALFORMED:
                 return
             _bits = f"{rtn:09b}"
 
@@ -1142,6 +1143,8 @@ class Motor(EventActor):
 
         """
 
+        _send_str = self._commands[command]["send"]
+
         if "%" in rtn_str:
             # Motor acknowledge and executed command.
             return self.ack_flags.ACK
@@ -1159,6 +1162,12 @@ class Motor(EventActor):
                 f"Motor returned Nack from command {command} with error: {err_msg}."
             )
             return self.ack_flags.NACK
+        elif not isinstance(rtn_str, str) or _send_str not in rtn_str:
+            self.logger.error(
+                f"The return string for command '{command} ({_send_str})'"
+                f" is malformed, received '{rtn_str}'."
+            )
+            return self.ack_flags.MALFORMED
 
         recv_pattern = self._commands[command]["recv"]
         if recv_pattern is not None:
@@ -1556,10 +1565,19 @@ class Motor(EventActor):
         on_limits = any(self.status["limits"].values())
         while on_limits:
 
+            if counts > 10:
+                self.logger.error(
+                    "Moving off limits - Was not able to move of limit."
+                )
+                break
+
             pos = self.send_command("get_position")  # type: Union[u.Quantity, AckFlags]
             if self._lost_connection(pos):
                 self.logger.error("Unable to move off limit due to a lost connection.")
                 break
+            elif pos == self.ack_flags.MALFORMED:
+                counts += 1
+                continue
 
             pos = pos.value
             move_to_pos = pos + off_direction * 0.5 * self.steps_per_rev.value
@@ -1580,12 +1598,6 @@ class Motor(EventActor):
                 self.logger.error("Unable to move off limit due to a lost connection.")
                 break
             on_limits = any(alarm_msg["limits"].values())
-
-            if counts > 10:
-                self.logger.error(
-                    "Moving off limits - Was not able to move of limit."
-                )
-                break
 
             counts += 1
 
@@ -1656,6 +1668,12 @@ class Motor(EventActor):
         if self._lost_connection(ic):
             self.logger.error("Unable to set current due to a lost connection.")
             return
+        elif ic == self.ack_flags.MALFORMED:
+            self.logger.error(
+                "Unable to set current due to the motor response not matching"
+                " the expected response."
+            )
+            return
         new_ic = np.min(
             [self._motor["DEFAULTS"]["max_idle_current"] * new_cur, ic],
         )
@@ -1695,6 +1713,12 @@ class Motor(EventActor):
         if self._lost_connection(curr):
             self.logger.error("Unable to set idle current due to a lost connection.")
             return
+        elif curr == self.ack_flags.MALFORMED:
+            self.logger.error(
+                "Unable to set idle current due to the motor response not"
+                " matching the expected response."
+            )
+            return
         new_ic = percent * curr
         self.send_command("idle_current", new_ic)
 
@@ -1729,10 +1753,24 @@ class Motor(EventActor):
         if self._lost_connection(ic):
             self.logger.error("Unable to set position due to a lost connection.")
             return
+        elif ic == self.ack_flags.MALFORMED:
+            self.logger.error(
+                "Unable to confirm set position due to the motor response"
+                " not matching the expected response."
+            )
+            return
+
         curr = self.send_command("current")
         if self._lost_connection(curr):
             self.logger.error("Unable to set position due to a lost connection.")
             return
+        elif curr == self.ack_flags.MALFORMED:
+            self.logger.error(
+                "Unable to confirm set position due to motor response"
+                " not matching the expected response."
+            )
+            return
+
         self.set_current(1)
         self.set_idle_current(self._motor["DEFAULTS"]["max_idle_current"])
 
