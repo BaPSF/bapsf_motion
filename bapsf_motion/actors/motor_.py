@@ -1251,7 +1251,8 @@ class Motor(EventActor):
 
             self._update_status(connected=False)
             self.connect()
-            self.socket.sendall(cmd_str)
+            if self.status["connected"]:
+                self.socket.sendall(cmd_str)
 
     def _recv(self) -> AnyStr:
         """
