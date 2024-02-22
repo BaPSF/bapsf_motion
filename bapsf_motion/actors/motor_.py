@@ -977,24 +977,36 @@ class Motor(EventActor):
             cmd_str = self._process_command(command, *args)
             recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
 
-            if not self.status["connected"]:
-                # connection reestablished ... the motor buffer my have old
-                # commands in it, so we need to empty the buffer so new sent
-                # and received commands are synced
-                self._update_status(connected=True)
+            if recv_str == self.ack_flags.LOST_CONNECTION:
+                raise ConnectionError("Lost connection to motor.")
 
-                _ack = self._send_raw_command("SK")  # kill
-                _bs = self._send_raw_command("BS")  # check contents of buffer
-                while "BS" not in _bs:
-                    # Note:  this will not be an infinite loop, if the buffer
-                    #        size is zero and we missed the response, then
-                    #        self._recv will issue a TimeoutError
-                    _bs = self._recv().decode("ASCII")
+            _rtn = self._process_command_return(command, recv_str)
 
-                # resend original command after buffer was cleared
-                _rtn = self._send_command(command, *args)
-                self.logger.info("Connection re-established.")
-            else:
+            if (
+                len(args) == 0
+                and (_rtn == self.ack_flags.ACK or _rtn == self.ack_flags.ACK_QUEUED)
+                and self._commands[command]["recv"] is not None
+            ):
+                # command had NO arguments and expected a response with data
+                # suspecting the command got buffered and acknowledge, and the
+                # real data is coming in a followup communication
+                _rtn = self.ack_flags.MALFORMED
+
+            if _rtn != self.ack_flags.MALFORMED:
+                return _rtn
+
+            while _rtn == self.ack_flags.MALFORMED:
+                # command and motor buffer have come out of sync
+                #
+                # Note:  this will not be an infinite loop, if the buffer
+                #        size is zero and we missed the response, then
+                #        self._recv will issue a TimeoutError
+
+                recv = self._recv()
+                if recv == self.ack_flags.LOST_CONNECTION:
+                    _rtn = self.ack_flags.LOST_CONNECTION
+                    break
+                recv_str = recv.decode("ASCII")
                 _rtn = self._process_command_return(command, recv_str)
 
         except (ConnectionError, TimeoutError, OSError) as err:
