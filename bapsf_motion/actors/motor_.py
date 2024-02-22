@@ -996,13 +996,16 @@ class Motor(EventActor):
                 self.logger.info("Connection re-established.")
             else:
                 _rtn = self._process_command_return(command, recv_str)
+
         except (ConnectionError, TimeoutError, OSError) as err:
             # Note: if the Ack/Nack protocol is not properly set (see method
             #       read_and_set_protocol(), then TimeoutErrors can occur
             #       even if the connection is still established.
             #
-            self.logger.error(f"{err.__class__.__name__}: {err}")
-            self.logger.error(f"Last command '{command}' was not executed.")
+            self.logger.error(
+                f"Last command '{command}' was not executed.",
+                exc_info=err,
+            )
 
             _rtn = self.ack_flags.LOST_CONNECTION
             self._update_status(connected=False)
@@ -1229,7 +1232,7 @@ class Motor(EventActor):
         try:
             self.socket.sendall(cmd_str)
         except (ConnectionError, OSError) as err:
-            self.logger.error(f"{err.__class__.__name__}: {err}")
+            self.logger.error(f"Unable to send command {cmd_str}.", exc_info=err)
             if err.errno == errno.EPIPE:
                 self.logger.error(
                     "It appears the server (motor) has closed the connection."
