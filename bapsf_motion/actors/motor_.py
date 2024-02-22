@@ -1202,8 +1202,11 @@ class Motor(EventActor):
 
         """
         self._send(cmd)
-        data = self._recv()
-        return data.decode("ASCII")
+
+        if not self.status["connected"]:
+            return self.ack_flags.LOST_CONNECTION
+
+        return self._recv().decode("ASCII")
 
     def _send(self, cmd: str):
         """
