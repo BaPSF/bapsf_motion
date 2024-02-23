@@ -1218,10 +1218,15 @@ class Motor(EventActor):
         """
         self._send(cmd)
 
-        if not self.status["connected"]:
+        try:
+            return self._recv().decode("ASCII")
+        except TimeoutError as err:
+            self.logger.warning(
+                f"Lost connection while trying to receive response to "
+                f"commend '{cmd}'.",
+                exc_info=err,
+            )
             return self.ack_flags.LOST_CONNECTION
-
-        return self._recv().decode("ASCII")
 
     def _send(self, cmd: str):
         """
