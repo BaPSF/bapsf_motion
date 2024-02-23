@@ -980,7 +980,7 @@ class Motor(EventActor):
             if recv_str == self.ack_flags.LOST_CONNECTION:
                 raise ConnectionError("Lost connection to motor.")
 
-            _rtn = self._process_command_return(command, recv_str)
+            _rtn = self._process_command_return_string(command, recv_str)
 
             if (
                 len(args) == 0
@@ -1007,7 +1007,7 @@ class Motor(EventActor):
                     _rtn = self.ack_flags.LOST_CONNECTION
                     break
                 recv_str = recv.decode("ASCII")
-                _rtn = self._process_command_return(command, recv_str)
+                _rtn = self._process_command_return_string(command, recv_str)
 
         except (ConnectionError, TimeoutError, OSError) as err:
             # Note: if the Ack/Nack protocol is not properly set (see method
@@ -1128,7 +1128,7 @@ class Motor(EventActor):
 
         return cmd_str + processor(args[0])
 
-    def _process_command_return(self, command: str, rtn_str: str) -> Any:
+    def _process_command_return_string(self, command: str, rtn_str: str) -> Any:
         """
         Process the returned string from the sent motor command.  The
         regular expression pattern for matching the returned string
@@ -1153,7 +1153,7 @@ class Motor(EventActor):
         Examples
         --------
 
-        >>> self._process_command_return("speed", "VE 5.500")
+        >>> self._process_command_return_string("speed", "VE 5.500")
         5.5
 
         """
