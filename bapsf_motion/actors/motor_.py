@@ -1248,6 +1248,7 @@ class Motor(EventActor):
         _eom = b"\r"  # end of message
 
         cmd_str = _header + bytes(cmd.encode("ASCII")) + _eom
+        self.logger.debug(f"Sending command string '{cmd_str}'.")
         try:
             self.socket.sendall(cmd_str)
         except (ConnectionError, OSError) as err:
@@ -1309,6 +1310,7 @@ class Motor(EventActor):
                 msg = msg.split(_eom)[0]
                 break
 
+        self.logger.debug(f"Received string '{msg}'.")
         return msg
 
     def retrieve_motor_status(self, direct_send=False):
