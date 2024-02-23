@@ -980,34 +980,7 @@ class Motor(EventActor):
             if recv_str == self.ack_flags.LOST_CONNECTION:
                 raise ConnectionError("Lost connection to motor.")
 
-            _rtn = self._process_command_return_string(command, recv_str)
-
-            if (
-                len(args) == 0
-                and (_rtn == self.ack_flags.ACK or _rtn == self.ack_flags.ACK_QUEUED)
-                and self._commands[command]["recv"] is not None
-            ):
-                # command had NO arguments and expected a response with data
-                # suspecting the command got buffered and acknowledge, and the
-                # real data is coming in a followup communication
-                _rtn = self.ack_flags.MALFORMED
-
-            if _rtn != self.ack_flags.MALFORMED:
-                return _rtn
-
-            while _rtn == self.ack_flags.MALFORMED:
-                # command and motor buffer have come out of sync
-                #
-                # Note:  this will not be an infinite loop, if the buffer
-                #        size is zero and we missed the response, then
-                #        self._recv will issue a TimeoutError
-
-                recv = self._recv()
-                if recv == self.ack_flags.LOST_CONNECTION:
-                    _rtn = self.ack_flags.LOST_CONNECTION
-                    break
-                recv_str = recv.decode("ASCII")
-                _rtn = self._process_command_return_string(command, recv_str)
+            _rtn = self._process_command_return(command, *args, recv_str=recv_str)
 
         except (ConnectionError, TimeoutError, OSError) as err:
             # Note: if the Ack/Nack protocol is not properly set (see method
@@ -1196,6 +1169,35 @@ class Motor(EventActor):
             return rtn * units
 
         return rtn
+
+    def _process_command_return(self, command: str, *args, recv_str: str) -> Any:
+        _rtn = self._process_command_return_string(command, recv_str)
+
+        if (
+                len(args) == 0
+                and (_rtn == self.ack_flags.ACK or _rtn == self.ack_flags.ACK_QUEUED)
+                and self._commands[command]["recv"] is not None
+        ):
+            # command had NO arguments and expected a response with data
+            # suspecting the command got buffered and acknowledge, and the
+            # real data is coming in a followup communication
+            _rtn = self.ack_flags.MALFORMED
+
+        if _rtn != self.ack_flags.MALFORMED:
+            return _rtn
+
+        while _rtn == self.ack_flags.MALFORMED:
+            # command and motor buffer have come out of sync
+            #
+            # Note:  this will not be an infinite loop, if the buffer
+            #        size is zero and we missed the response, then
+            #        self._recv will issue a TimeoutError
+
+            recv = self._recv()
+            recv_str = recv.decode("ASCII")
+            _rtn = self._process_command_return(command, *args, recv_str=recv_str)
+
+        return _rtn
 
     def _send_raw_command(self, cmd: str):
         """
