@@ -2,6 +2,9 @@
 # is created.  For more information see:
 #
 #   https://help.github.com/en/actions/language-and-framework-guides/using-python-with-github-actions#publishing-to-package-registries
+#
+# PyPI's instructions on creating a new project
+#   https://packaging.python.org/en/latest/guides/publishing-package-distribution-releases-using-github-actions-ci-cd-workflows/#configuring-trusted-publishing
 
 # This workflow uses actions that are not certified by GitHub.
 # They are provided by a third-party and are governed by
