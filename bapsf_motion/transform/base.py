@@ -222,6 +222,22 @@ class BaseTransform(ABC):
     def _validate_matrix_to_motion_space(self):
         self._validate_matrix_method("_matrix_to_motion_space")
 
+    def _condition_matrix(
+        self, points: np.ndarray, matrix: np.ndarray
+    ) -> np.ndarray:
+        if not isinstance(points, np.ndarray):
+            points = self._condition_points(points)
+
+        if matrix.ndim == 2 and points.shape[1] == 1:
+            matrix = matrix[..., np.newaxis]
+
+        # do NOT need to do any other conditioning since
+        # _validate_matrix_to_drive and _validate_matrix_to_motion_space
+        # ensures the associated matrix methods are behaving correctly
+        # before the object is instantiated
+
+        return matrix
+
     def _condition_points(self, points):
         # make sure points is a numpy array
         if not isinstance(points, np.ndarray):
@@ -306,9 +322,7 @@ class BaseTransform(ABC):
             else self._matrix_to_motion_space(points)
         )
 
-        if _matrix.shape == tuple(2 * [self.naxes + 1]):
-            return _matrix[..., np.newaxis]
-        return _matrix
+        return self._condition_matrix(points, _matrix)
 
     def _convert(self, points, to_coords="drive"):
         r"""
