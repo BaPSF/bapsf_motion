@@ -420,6 +420,10 @@ class LaPDXYTransform(base.BaseTransform):
         if not isinstance(points, np.ndarray):
             points = np.array(points)
 
+        # TODO: for some reason the matrix creation is behaving differently
+        #       base on the number of points supplied...this might be due
+        #       to how the matrices are constructed and/or the recent
+        #       implementation of BaseTransfrom._condition_points()
         matrix = self._matrix(points, to_coords=to_coords)
 
         # if points.ndim == 1:
