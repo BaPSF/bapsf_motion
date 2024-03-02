@@ -90,22 +90,7 @@ class BaseTransform(ABC):
 
         """
 
-        # make sure points is a numpy array
-        if not isinstance(points, np.ndarray):
-            points = np.array(points)
-
-        # make sure points is always an M X N matrix
-        if points.ndim == 1 and self.naxes == 1:
-            points = points[np.newaxis, ...]
-        elif points.ndim == 1:
-            points = points[..., np.newaxis]
-
-        # points always needs to be 2D
-        if points.ndim != 2:
-            raise ValueError(
-                f"Expected a 2D array for 'points', but got a {points.ndim}-D"
-                f"array."
-            )
+        points = self._condition_points(points)
 
         # validate to_coords
         valid_coords = {"drive", "mspace", "motion_space", "motion space"}
@@ -236,6 +221,31 @@ class BaseTransform(ABC):
 
     def _validate_matrix_to_motion_space(self):
         self._validate_matrix_method("_matrix_to_motion_space")
+
+    def _condition_points(self, points):
+        # make sure points is a numpy array
+        if not isinstance(points, np.ndarray):
+            points = np.array(points)
+
+        # make sure points is always an M X N matrix
+        if points.ndim == 1 and points.size == self.naxes:
+            # single point was given
+            points = points[..., np.newaxis]
+        elif points.ndim != 2:
+            raise ValueError(
+                f"Expected a 2D array of shape ({self.naxes}, N) for "
+                f"'points', but got a {points.ndim}-D array."
+            )
+        elif self.naxes not in points.shape:
+            raise ValueError(
+                f"Expected a 2D array of shape ({self.naxes}, N) for "
+                f"'points', but got shape {points.shape}."
+            )
+        elif points.shape[0] != self.naxes:
+            # dimensions are flipped from expected
+            points = np.swapaxes(points, 0, 1)
+
+        return points
 
     def _matrix(self, points, to_coords="drive") -> np.ndarray:
         r"""
