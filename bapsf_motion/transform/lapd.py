@@ -240,21 +240,21 @@ class LaPDXYTransform(base.BaseTransform):
         return inputs
 
     def _matrix(self, points, to_coords="drive") -> np.ndarray:
-        if not isinstance(points, np.ndarray):
-            points = np.array(points)
-
-        points = points.squeeze()
-        if points.ndim not in (1, 2):
-            raise ValueError(
-                f"Expected given 'points' to ndims 1 or 2, got {points.ndim}."
-            )
-        elif points.ndim == 1 and points.size != 2:
-            # a single point must have both x and y values
-            raise ValueError
-        elif points.ndim == 2 and points.shape[1] != 2:
-            # if an array of points is given then the second dimension
-            # must give x and y values
-            raise ValueError
+        # if not isinstance(points, np.ndarray):
+        #     points = np.array(points)
+        #
+        # points = points.squeeze()
+        # if points.ndim not in (1, 2):
+        #     raise ValueError(
+        #         f"Expected given 'points' to ndims 1 or 2, got {points.ndim}."
+        #     )
+        # elif points.ndim == 1 and points.size != 2:
+        #     # a single point must have both x and y values
+        #     raise ValueError
+        # elif points.ndim == 2 and points.shape[1] != 2:
+        #     # if an array of points is given then the second dimension
+        #     # must give x and y values
+        #     raise ValueError
 
         return super()._matrix(points, to_coords=to_coords)
 
@@ -416,9 +416,14 @@ class LaPDXYTransform(base.BaseTransform):
 
         matrix = self._matrix(points, to_coords=to_coords)
 
-        if points.ndim == 1:
-            points = np.concatenate((points, [1]))
-            return np.matmul(matrix, points)[:2]
+        # if points.ndim == 1:
+        #     points = np.concatenate((points, [1]))
+        #     return np.matmul(matrix, points)[:2]
+        #
+        # points = np.concatenate(
+        #     (points, np.ones((points.shape[0], 1))),
+        #     axis=1,
+        # )
 
         points = np.concatenate(
             (points, np.ones((points.shape[0], 1))),
