@@ -261,6 +261,8 @@ class LaPDXYTransform(base.BaseTransform):
     def _matrix_to_motion_space(self, points: np.ndarray):
         # given points are in drive (e0, e1) coordinates
 
+        points = np.swapaxes(points, 0, 1)
+
         # polarity needs to be adjusted first, since the parameters for
         # the following transformation matrices depend on the adjusted
         # coordinate space
@@ -325,7 +327,7 @@ class LaPDXYTransform(base.BaseTransform):
         #         ),
         #     ),
         # )
-        return np.matmul(
+        matrix = np.matmul(
             T_mpolarity,
             np.matmul(
                 T3,
@@ -338,9 +340,12 @@ class LaPDXYTransform(base.BaseTransform):
                 ),
             ),
         )
+        return np.moveaxis(matrix, 0, -1)
 
     def _matrix_to_drive(self, points):
         # given points are in motion space "LaPD" (x, y) coordinates
+
+        points = np.swapaxes(points, 0, 1)
 
         # polarity needs to be adjusted first, since the parameters for
         # the following transformation matrices depend on the adjusted
@@ -396,7 +401,7 @@ class LaPDXYTransform(base.BaseTransform):
         #         ),
         #     ),
         # )
-        return np.matmul(
+        matrix = np.matmul(
             T_dpolarity,
             np.matmul(
                 T4,
@@ -409,6 +414,7 @@ class LaPDXYTransform(base.BaseTransform):
                 ),
             ),
         )
+        return np.moveaxis(matrix, 0, -1)
 
     def _convert(self, points, to_coords="drive"):
         if not isinstance(points, np.ndarray):
@@ -426,10 +432,11 @@ class LaPDXYTransform(base.BaseTransform):
         # )
 
         points = np.concatenate(
-            (points, np.ones((points.shape[0], 1))),
-            axis=1,
+            (points, np.ones((1, points.shape[1]))),
+            axis=0,
         )
-        return np.einsum("kmn,kn->km", matrix, points)[..., :2]
+
+        return np.einsum("nmk,nk->mk", matrix, points)[:-1, ...]
 
     @property
     def pivot_to_center(self) -> float:
