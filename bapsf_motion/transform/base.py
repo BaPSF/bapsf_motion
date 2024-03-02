@@ -57,22 +57,8 @@ class BaseTransform(ABC):
         self.dependencies = []  # type: List[BaseTransform]
 
         # validate matrix
-        matrix = self._matrix(
-            np.array([0.0] * len(self._axes))[..., np.newaxis]
-        )
-        if not isinstance(matrix, np.ndarray):
-            raise TypeError
-        elif matrix.shape != tuple(2 * [len(self._axes) + 1]) + (1,):
-            # matrix needs to be square with each dimension being one size
-            # larger than the number axes the matrix transforms...the last
-            # dimensions allows for shift translations
-            raise ValueError(f"matrix.shape = {matrix.shape}")
-        elif self._dimensionality > 0 and self._dimensionality != len(self._axes):
-            raise ValueError(
-                f"The transform was design for probe drives with "
-                f"{self._dimensionality} axes, but was given a probe drive "
-                f"with {len(self._axes)} axes."
-            )
+        self._validate_matrix_to_drive()
+        self._validate_matrix_to_motion_space()
 
     def __call__(self, points, to_coords="drive"):
         r"""
@@ -212,6 +198,44 @@ class BaseTransform(ABC):
             instantiation.
         """
         ...
+
+    def _validate_matrix_method(self, method_name: str):
+        method = getattr(self, method_name)
+        matrix = method(np.zeros((self.naxes, self.naxes+2)))
+
+        if not isinstance(matrix, np.ndarray):
+            raise TypeError(
+                f"The {method_name} is supposed to return a numpy array,"
+                f"got type {type(matrix)}."
+            )
+        elif matrix.ndim != 3:
+            raise ValueError(
+                f"The '{method_name}' method is not returning an "
+                "expected matrix,  expected a 3-D matrix and got a "
+                f"{matrix.ndim}-D matrix."
+            )
+        elif matrix.shape != (self.naxes+1, self.naxes+1, self.naxes+2):
+            shape_str = []
+            for ii in range(3):
+                size = (
+                    "N"
+                    if matrix.shape[ii] == self.naxes+2
+                    else f"M{matrix.shape[ii]-self.naxes:+d}"
+                )
+                shape_str.append(size)
+            shape_str = f"({', '.join(shape_str)})"
+
+            raise ValueError(
+                f"The '{method_name}' method is not returning an "
+                "expected matrix,  expected a matrix with shape "
+                f"(M+1, M+1, N) and got {shape_str}."
+            )
+
+    def _validate_matrix_to_drive(self):
+        self._validate_matrix_method("_matrix_to_drive")
+
+    def _validate_matrix_to_motion_space(self):
+        self._validate_matrix_method("_matrix_to_motion_space")
 
     def _matrix(self, points, to_coords="drive") -> np.ndarray:
         r"""
