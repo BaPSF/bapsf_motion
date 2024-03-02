@@ -107,18 +107,19 @@ class BaseTransform(ABC):
 
         tr_points = self._convert(points, to_coords=to_coords)
 
-        if tr_points.ndim not in (1, 2):
-            ValueError(
-                "Something went wrong! The coordinate transformed points "
-                "do not share the same dimensionality as 'points'.  The"
-                " is likely a developer error and not a user error.  "
-                "Please post an issue on the bapsf_motion GitHub "
-                "repo, https://github.com/BaPSF/bapsf_motion/issues."
-            )
-        elif tr_points.ndim == 1 and self.naxes == 1:
-            tr_points = tr_points[np.newaxis, ...]
-        elif tr_points.ndim == 1:
-            tr_points = tr_points[..., np.newaxis]
+        # TODO: MARK FOR DELETION
+        # if tr_points.ndim not in (1, 2):
+        #     ValueError(
+        #         "Something went wrong! The coordinate transformed points "
+        #         "do not share the same dimensionality as 'points'.  The"
+        #         " is likely a developer error and not a user error.  "
+        #         "Please post an issue on the bapsf_motion GitHub "
+        #         "repo, https://github.com/BaPSF/bapsf_motion/issues."
+        #     )
+        # elif tr_points.ndim == 1 and self.naxes == 1:
+        #     tr_points = tr_points[np.newaxis, ...]
+        # elif tr_points.ndim == 1:
+        #     tr_points = tr_points[..., np.newaxis]
 
         return tr_points
 
