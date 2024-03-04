@@ -213,7 +213,7 @@ class BaseTransform(ABC):
             raise ValueError(
                 f"The '{method_name}' method is not returning an "
                 "expected matrix,  expected a matrix with shape "
-                f"(M+1, M+1, N) and got {shape_str}."
+                f"(N, M+1, M+1) and got {shape_str}."
             )
 
     def _validate_matrix_to_drive(self):
