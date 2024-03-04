@@ -231,29 +231,80 @@ class LaPDXYTransform(base.BaseTransform):
 
         return inputs
 
-    def matrix(self, points, to_coords="drive") -> np.ndarray:
-        # if not isinstance(points, np.ndarray):
-        #     points = np.array(points)
-        #
-        # points = points.squeeze()
-        # if points.ndim not in (1, 2):
-        #     raise ValueError(
-        #         f"Expected given 'points' to ndims 1 or 2, got {points.ndim}."
-        #     )
-        # elif points.ndim == 1 and points.size != 2:
-        #     # a single point must have both x and y values
-        #     raise ValueError
-        # elif points.ndim == 2 and points.shape[1] != 2:
-        #     # if an array of points is given then the second dimension
-        #     # must give x and y values
-        #     raise ValueError
+    def _matrix_to_drive(self, points):
+        # given points are in motion space "LaPD" (x, y) coordinates
 
-        return super().matrix(points, to_coords=to_coords)
+        # polarity needs to be adjusted first, since the parameters for
+        # the following transformation matrices depend on the adjusted
+        # coordinate space
+        points = self.mspace_polarity * points  # type: np.ndarray
+
+        # need to handle when x_L = pivot_to_center
+        # since alpha can never be 90deg we don't need to worry about that case
+        alpha = np.arctan(points[..., 1] / (self.pivot_to_center + points[..., 0]))
+
+        npoints = 1 if points.ndim == 1 else points.shape[0]
+
+        # transform motion space coords to motion space side pivot coords
+        T1 = np.zeros((npoints, 3, 3)).squeeze()
+        T1[..., 0, 0] = 1.0
+        T1[..., 0, 2] = self.pivot_to_center
+        T1[..., 1, 1] = 1.0
+        T1[..., 2, 2] = 1.0
+
+        # transform motion space side pivot coords to drive side pivot coords
+        T2 = np.zeros((npoints, 3, 3)).squeeze()
+        T2[..., 0, 0] = 1.0
+        T2[..., 0, 2] = -(self.pivot_to_drive + self.pivot_to_center) * np.cos(alpha)
+        T2[..., 1, 1] = 1.0
+        T2[..., 1, 2] = -(self.pivot_to_drive + self.pivot_to_center) * np.sin(alpha)
+        T2[..., 2, 2] = 1.0
+
+        # transform drive side pivot coords to drive axes
+        T3 = np.zeros((npoints, 3, 3)).squeeze()
+        T3[..., 0, 0] = 1 / np.cos(alpha)
+        T3[..., 0, 2] = self.pivot_to_drive
+        T3[..., 1, 2] = -self.pivot_to_drive * np.tan(alpha)
+        T3[..., 2, 2] = 1.0
+
+        # handle the probe axis to drive axis parallel offset
+        T4 = np.zeros((npoints, 3, 3)).squeeze()
+        T4[..., 0, 0] = 1.0
+        # T4[..., 0, 2] = self.probe_axis_offset * np.tan(-alpha)
+        T4[..., 1, 1] = 1.0
+        T4[..., 1, 2] = -self.probe_axis_offset * ((1 / np.cos(-alpha)) - 1)
+        T4[..., 2, 2] = 1.0
+
+        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
+        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
+
+        # return np.matmul(
+        #     T_dpolarity,
+        #     np.matmul(
+        #         T3,
+        #         np.matmul(
+        #             T2,
+        #             np.matmul(T1, T_mpolarity),
+        #         ),
+        #     ),
+        # )
+        matrix = np.matmul(
+            T_dpolarity,
+            np.matmul(
+                T4,
+                np.matmul(
+                    T3,
+                    np.matmul(
+                        T2,
+                        np.matmul(T1, T_mpolarity),
+                    ),
+                ),
+            ),
+        )
+        return matrix
 
     def _matrix_to_motion_space(self, points: np.ndarray):
         # given points are in drive (e0, e1) coordinates
-
-        points = np.swapaxes(points, 0, 1)
 
         # polarity needs to be adjusted first, since the parameters for
         # the following transformation matrices depend on the adjusted
@@ -332,107 +383,7 @@ class LaPDXYTransform(base.BaseTransform):
                 ),
             ),
         )
-        return np.moveaxis(matrix, 0, -1)
-
-    def _matrix_to_drive(self, points):
-        # given points are in motion space "LaPD" (x, y) coordinates
-
-        points = np.swapaxes(points, 0, 1)
-
-        # polarity needs to be adjusted first, since the parameters for
-        # the following transformation matrices depend on the adjusted
-        # coordinate space
-        points = self.mspace_polarity * points  # type: np.ndarray
-
-        # need to handle when x_L = pivot_to_center
-        # since alpha can never be 90deg we don't need to worry about that case
-        alpha = np.arctan(points[..., 1] / (self.pivot_to_center + points[..., 0]))
-
-        npoints = 1 if points.ndim == 1 else points.shape[0]
-
-        # transform motion space coords to motion space side pivot coords
-        T1 = np.zeros((npoints, 3, 3)).squeeze()
-        T1[..., 0, 0] = 1.0
-        T1[..., 0, 2] = self.pivot_to_center
-        T1[..., 1, 1] = 1.0
-        T1[..., 2, 2] = 1.0
-
-        # transform motion space side pivot coords to drive side pivot coords
-        T2 = np.zeros((npoints, 3, 3)).squeeze()
-        T2[..., 0, 0] = 1.0
-        T2[..., 0, 2] = -(self.pivot_to_drive + self.pivot_to_center) * np.cos(alpha)
-        T2[..., 1, 1] = 1.0
-        T2[..., 1, 2] = -(self.pivot_to_drive + self.pivot_to_center) * np.sin(alpha)
-        T2[..., 2, 2] = 1.0
-
-        # transform drive side pivot coords to drive axes
-        T3 = np.zeros((npoints, 3, 3)).squeeze()
-        T3[..., 0, 0] = 1 / np.cos(alpha)
-        T3[..., 0, 2] = self.pivot_to_drive
-        T3[..., 1, 2] = -self.pivot_to_drive * np.tan(alpha)
-        T3[..., 2, 2] = 1.0
-
-        # handle the probe axis to drive axis parallel offset
-        T4 = np.zeros((npoints, 3, 3)).squeeze()
-        T4[..., 0, 0] = 1.0
-        # T4[..., 0, 2] = self.probe_axis_offset * np.tan(-alpha)
-        T4[..., 1, 1] = 1.0
-        T4[..., 1, 2] = -self.probe_axis_offset * ((1 / np.cos(-alpha)) - 1)
-        T4[..., 2, 2] = 1.0
-
-        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
-        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
-
-        # return np.matmul(
-        #     T_dpolarity,
-        #     np.matmul(
-        #         T3,
-        #         np.matmul(
-        #             T2,
-        #             np.matmul(T1, T_mpolarity),
-        #         ),
-        #     ),
-        # )
-        matrix = np.matmul(
-            T_dpolarity,
-            np.matmul(
-                T4,
-                np.matmul(
-                    T3,
-                    np.matmul(
-                        T2,
-                        np.matmul(T1, T_mpolarity),
-                    ),
-                ),
-            ),
-        )
-        return np.moveaxis(matrix, 0, -1)
-
-    def _convert(self, points, to_coords="drive"):
-        if not isinstance(points, np.ndarray):
-            points = np.array(points)
-
-        # TODO: for some reason the matrix creation is behaving differently
-        #       base on the number of points supplied...this might be due
-        #       to how the matrices are constructed and/or the recent
-        #       implementation of BaseTransfrom._condition_points()
-        matrix = self.matrix(points, to_coords=to_coords)
-
-        # if points.ndim == 1:
-        #     points = np.concatenate((points, [1]))
-        #     return np.matmul(matrix, points)[:2]
-        #
-        # points = np.concatenate(
-        #     (points, np.ones((points.shape[0], 1))),
-        #     axis=1,
-        # )
-
-        points = np.concatenate(
-            (points, np.ones((1, points.shape[1]))),
-            axis=0,
-        )
-
-        return np.einsum("nmk,nk->mk", matrix, points)[:-1, ...]
+        return matrix
 
     @property
     def pivot_to_center(self) -> float:
