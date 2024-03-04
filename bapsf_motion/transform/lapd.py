@@ -191,14 +191,6 @@ class LaPDXYTransform(base.BaseTransform):
             mspace_polarity=mspace_polarity,
         )
 
-        # naxes = len(self.axes) if self._drive is None else self._drive.naxes
-        #
-        # if naxes != 2:
-        #     raise ValueError(
-        #         f"The LaPDXYTransform requires two axes to operate on, the "
-        #         f"specified probe drive has {drive.naxes} axes."
-        #     )
-
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
 
         for key in {"pivot_to_center", "pivot_to_drive", "probe_axis_offset"}:
