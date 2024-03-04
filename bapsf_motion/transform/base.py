@@ -374,10 +374,6 @@ class BaseTransform(ABC):
 
         matrix = self.matrix(points, to_coords=to_coords)
 
-        if points.shape[1] == 1:
-            points = np.concatenate((points[..., 0], [1]))
-            return np.matmul(matrix, points)[:-1]
-
         # add in extra dimension for the translation axis
         points = np.concatenate(
             (points, np.ones((points.shape[0], 1))),
