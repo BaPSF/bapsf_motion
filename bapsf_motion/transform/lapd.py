@@ -310,80 +310,36 @@ class LaPDXYTransform(base.BaseTransform):
         # the following transformation matrices depend on the adjusted
         # coordinate space
         points = self.drive_polarity * points  # type: np.ndarray
-        points[..., 1] = points[..., 1] - self.probe_axis_offset
+        npoints = points.shape[0]
 
-        gamma = np.arctan(points[..., 1] / self.pivot_to_drive)
-        beta = np.arcsin(
-            self.probe_axis_offset / np.sqrt(
-                self.pivot_to_drive**2 + points[..., 1]**2
-            )
+        sine_alpha = self.probe_axis_offset / np.sqrt(
+            self.pivot_to_drive**2
+            + (-self.probe_axis_offset + points[..., 1])**2
         )
-        theta = gamma + beta
-        alpha = np.pi - theta
 
-        # theta = np.arctan(points[..., 1] / self.pivot_to_drive)
-        # alpha = np.pi - theta
+        tan_beta = (-self.probe_axis_offset + points[..., 1]) / -self.pivot_to_drive
 
-        npoints = 1 if points.ndim == 1 else points.shape[0]
+        # alpha = arcsine( sine_alpha )
+        # beta = pi + arctan( tan_beta )
+        # theta = beta - alpha
+        # theta2 = theta - pi
 
-        # handle the probe axis to drive axis parallel offset
+        theta = np.arctan(tan_beta) - np.arcsin(sine_alpha)
+
         T0 = np.zeros((npoints, 3, 3)).squeeze()
-        T0[..., 0, 0] = 1.0
-        # T0[..., 0, 2] = -self.probe_axis_offset * np.tan(theta)
-        T0[..., 1, 1] = 1.0
-        T0[..., 1, 2] = self.probe_axis_offset * ((1 / np.cos(theta)) - 1)
+        T0[..., 0, 0] = np.cos(theta)
+        T0[..., 0, 2] = -self.pivot_to_center * (1 - np.cos(theta))
+        T0[..., 1, 0] = np.sin(theta)
+        T0[..., 1, 2] = self.pivot_to_center * np.sin(theta)
         T0[..., 2, 2] = 1.0
-
-        # transform drive axes to drive side pivot coords
-        T1 = np.zeros((npoints, 3, 3)).squeeze()
-        T1[..., 0, 0] = np.cos(theta)
-        T1[..., 0, 2] = -self.pivot_to_drive * np.cos(theta)
-        T1[..., 1, 0] = -np.sin(theta)
-        T1[..., 1, 2] = self.pivot_to_drive * np.sin(theta)
-        T1[..., 2, 2] = 1.0
-
-        # transform drive side pivot coords to motion space side pivot coords
-        T2 = np.zeros((npoints, 3, 3)).squeeze()
-        T2[..., 0, 0] = 1.0
-        T2[..., 0, 2] = -(self.pivot_to_drive + self.pivot_to_center) * np.cos(alpha)
-        T2[..., 1, 1] = 1.0
-        T2[..., 1, 2] = -(self.pivot_to_drive + self.pivot_to_center) * np.sin(alpha)
-        T2[..., 2, 2] = 1.0
-
-        # transform motion space side pivot coords to motion space coords
-        T3 = np.zeros((npoints, 3, 3)).squeeze()
-        T3[..., 0, 0] = 1.0
-        T3[..., 0, 2] = -self.pivot_to_center
-        T3[..., 1, 1] = 1.0
-        T3[..., 2, 2] = 1.0
 
         T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
         T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
 
-        # return np.matmul(
-        #     T_mpolarity,
-        #     np.matmul(
-        #         T3,
-        #         np.matmul(
-        #             T2,
-        #             np.matmul(T1, T_dpolarity),
-        #         ),
-        #     ),
-        # )
-        matrix = np.matmul(
+        return np.matmul(
             T_mpolarity,
-            np.matmul(
-                T3,
-                np.matmul(
-                    T2,
-                    np.matmul(
-                        T1,
-                        np.matmul(T0, T_dpolarity),
-                    ),
-                ),
-            ),
+            np.matmul(T0, T_dpolarity),
         )
-        return matrix
 
     @property
     def pivot_to_center(self) -> float:
