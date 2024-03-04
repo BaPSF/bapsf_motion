@@ -90,8 +90,6 @@ class BaseTransform(ABC):
 
         """
 
-        points = self._condition_points(points)
-
         # validate to_coords
         valid_coords = {"drive", "mspace", "motion_space", "motion space"}
         if not isinstance(to_coords, str):
@@ -105,6 +103,7 @@ class BaseTransform(ABC):
                 f"{valid_coords}, but got {to_coords}."
             )
 
+        points = self._condition_points(points)
         tr_points = self._convert(points, to_coords=to_coords)
 
         # TODO: MARK FOR DELETION
@@ -318,6 +317,7 @@ class BaseTransform(ABC):
         # 2. __call__ has conditioned points, so it will always be M x N
         # 3. __call__ has validated to_coords
 
+        points = self._condition_points(points)
         _matrix = (
             self._matrix_to_drive(points) if to_coords == "drive"
             else self._matrix_to_motion_space(points)
