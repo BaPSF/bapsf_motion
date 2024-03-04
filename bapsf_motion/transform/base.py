@@ -69,7 +69,7 @@ class BaseTransform(ABC):
         points: :term:`array_like`
             A single point or array of points for which the
             transformation will be generated.  The array of points
-            needs to be of size :math:`M` or :math:`M \times N` where
+            needs to be of size :math:`M` or :math:`N \times M` where
             :math:`M` is the dimensionality of the :term:`motion space`
             and :math:`N` is the number of points to be transformed.
 
@@ -200,7 +200,7 @@ class BaseTransform(ABC):
                 "expected matrix,  expected a 3-D matrix and got a "
                 f"{matrix.ndim}-D matrix."
             )
-        elif matrix.shape != (self.naxes+1, self.naxes+1, self.naxes+2):
+        elif matrix.shape != (self.naxes+2, self.naxes+1, self.naxes+1):
             shape_str = []
             for ii in range(3):
                 size = (
@@ -229,8 +229,8 @@ class BaseTransform(ABC):
         if not isinstance(points, np.ndarray):
             points = self._condition_points(points)
 
-        if matrix.ndim == 2 and points.shape[1] == 1:
-            matrix = matrix[..., np.newaxis]
+        if matrix.ndim == 2 and points.shape[0] == 1:
+            matrix = matrix[np.newaxis, ...]
 
         # do NOT need to do any other conditioning since
         # _validate_matrix_to_drive and _validate_matrix_to_motion_space
@@ -244,21 +244,21 @@ class BaseTransform(ABC):
         if not isinstance(points, np.ndarray):
             points = np.array(points)
 
-        # make sure points is always an M X N matrix
+        # make sure points is always an N X M matrix
         if points.ndim == 1 and points.size == self.naxes:
             # single point was given
-            points = points[..., np.newaxis]
+            points = points[np.newaxis, ...]
         elif points.ndim != 2:
             raise ValueError(
-                f"Expected a 2D array of shape ({self.naxes}, N) for "
+                f"Expected a 2D array of shape (N, {self.naxes}) for "
                 f"'points', but got a {points.ndim}-D array."
             )
         elif self.naxes not in points.shape:
             raise ValueError(
-                f"Expected a 2D array of shape ({self.naxes}, N) for "
+                f"Expected a 2D array of shape (N, {self.naxes}) for "
                 f"'points', but got shape {points.shape}."
             )
-        elif points.shape[0] != self.naxes:
+        elif points.shape[1] != self.naxes:
             # dimensions are flipped from expected
             points = np.swapaxes(points, 0, 1)
 
@@ -274,7 +274,7 @@ class BaseTransform(ABC):
         points: :term:`array_like`
             A single point or array of points for which the
             transformation matrix will be generated.  The array of
-            points needs to be of size :math:`M` or :math:`M \times N`
+            points needs to be of size :math:`M` or :math:`N \times M`
             where :math:`M` is the dimensionality of the
             :term:`motion space` and :math:`N` is the number of points
             to be transformed.
@@ -291,7 +291,7 @@ class BaseTransform(ABC):
         -------
         matrix: :term:`array_like`
             A transformation matrix of size
-            :math:`M+1 \times M+1 \times N`.  The :math:`M+1`
+            :math:`N \times M+1 \times M+1`.  The :math:`M+1`
             dimensionality allows for the inclusion of a dimension
             for coordinate translations.
 
@@ -299,14 +299,14 @@ class BaseTransform(ABC):
         -----
 
         The generated matrix must have a dimensionality of
-        :math:`M+1 \times M+1 \times N` where :math:`M` is the
+        :math:`N \times M+1 \times M+1` where :math:`M` is the
         dimensionality of the :term:`motion space` and
         :math:`N` is the number of points passed in.  The +1 in the
         transformation matrix dimensionality corresponds to a dimension
         that allows for translational shifts in the coordinate
         transformation.  For example, if a 2D probe drive is being used
         then the generated matrix for a single point would have a size
-        of :math:`3 \times 3 \times 1`.
+        of :math:`1 \times 3 \times 3`.
 
         The matrix generation takes a ``points`` argument because not
         all transformations are agnostic of the starting location, for
@@ -335,7 +335,7 @@ class BaseTransform(ABC):
         points: :term:`array_like`
             A single point or array of points for which the
             transformation will be generated.  The array of points
-            needs to be of size :math:`M` or :math:`M \times N` where
+            needs to be of size :math:`M` or :math:`N \times M` where
             :math:`M` is the dimensionality of the :term:`motion space`
             and :math:`N` is the number of points to be transformed.
 
@@ -397,7 +397,7 @@ class BaseTransform(ABC):
             A single point or array of points in the motion space
             coordinate system for which the transformation matrix will
             be generated.  The array of points needs to be of size
-            :math:`M` or :math:`M \times N` where :math:`M` is the
+            :math:`M` or :math:`N \times M` where :math:`M` is the
             dimensionality of the :term:`motion space` and :math:`N` is
             the number of points to be transformed.
 
@@ -405,7 +405,7 @@ class BaseTransform(ABC):
         -------
         matrix: :term:`array_like`
             A transformation matrix of size
-            :math:`M+1 \times M+1 \times N`.  The :math:`M+1`
+            :math:`N \times M+1 \times M+1`.  The :math:`M+1`
             dimensionality allows for the inclusion of a dimension
             for coordinate translations.
 
@@ -413,14 +413,14 @@ class BaseTransform(ABC):
         -----
 
         The generated matrix must have a dimensionality of
-        :math:`M+1 \times M+1 \times N` where :math:`M` is the
+        :math:`N \times M+1 \times M+1` where :math:`M` is the
         dimensionality of the :term:`motion space` and
         :math:`N` is the number of points passed in.  The +1 in the
         transformation matrix dimensionality corresponds to a dimension
         that allows for translational shifts in the coordinate
         transformation.  For example, if a 2D probe drive is being used
         then the generated matrix for a single point would have a size
-        of :math:`3 \times 3 \times 1`.
+        of :math:`1 \times 3 \times 3`.
 
         The matrix generation takes a ``points`` argument because not
         all transformations are agnostic of the starting location, for
@@ -454,7 +454,7 @@ class BaseTransform(ABC):
             A single point or array of points in the probe drive
             coordinate system for which the transformation matrix will
             be generated.  The array of points needs to be of size
-            :math:`M` or :math:`M \times N` where :math:`M` is the
+            :math:`M` or :math:`N \times M` where :math:`M` is the
             dimensionality of the :term:`motion space` and :math:`N` is
             the number of points to be transformed.
 
@@ -462,7 +462,7 @@ class BaseTransform(ABC):
         -------
         matrix: :term:`array_like`
             A transformation matrix of size
-            :math:`M+1 \times M+1 \times N`.  The :math:`M+1`
+            :math:`N \times M+1 \times M+1`.  The :math:`M+1`
             dimensionality allows for the inclusion of a dimension
             for coordinate translations.
 
@@ -470,14 +470,14 @@ class BaseTransform(ABC):
         -----
 
         The generated matrix must have a dimensionality of
-        :math:`M+1 \times M+1 \times N` where :math:`M` is the
+        :math:`N \times M+1 \times M+1` where :math:`M` is the
         dimensionality of the :term:`motion space` and
         :math:`N` is the number of points passed in.  The +1 in the
         transformation matrix dimensionality corresponds to a dimension
         that allows for translational shifts in the coordinate
         transformation.  For example, if a 2D probe drive is being used
         then the generated matrix for a single point would have a size
-        of :math:`3 \times 3 \times 1`.
+        of :math:`1 \times 3 \times 3`.
 
         The matrix generation takes a ``points`` argument because not
         all transformations are agnostic of the starting location, for
