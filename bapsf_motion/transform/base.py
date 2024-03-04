@@ -263,7 +263,7 @@ class BaseTransform(ABC):
 
         return points
 
-    def _matrix(self, points, to_coords="drive") -> np.ndarray:
+    def matrix(self, points, to_coords="drive") -> np.ndarray:
         r"""
         The transformation matrix used to transform from probe drive
         coordinates to motion space coordinates, and vice versa.
@@ -313,7 +313,7 @@ class BaseTransform(ABC):
         """
         # Developer Notes:
         # 1. Call sequences goes
-        #    __call__ -> _convert -> _matrix
+        #    __call__ -> _convert -> matrix
         # 2. __call__ has conditioned points, so it will always be M x N
         # 3. __call__ has validated to_coords
 
@@ -369,10 +369,10 @@ class BaseTransform(ABC):
         # TODO: this convert function still need to be test to show
         #       that it'll work for N-dimensions...I stole this from
         #       LaPDXYTransform.convert() so it works in a world where
-        #       the generated matrix _matrix() is 3x3 but the points/positions
+        #       the generated matrix matrix() is 3x3 but the points/positions
         #       are only given as a 2-element vector
 
-        matrix = self._matrix(points, to_coords=to_coords)
+        matrix = self.matrix(points, to_coords=to_coords)
 
         if points.shape[1] == 1:
             points = np.concatenate((points[..., 0], [1]))
@@ -428,7 +428,7 @@ class BaseTransform(ABC):
         """
         # Developer Notes:
         # 1. Call sequences goes
-        #    __call__ -> _convert -> _matrix -> _matrix_to_drive
+        #    __call__ -> _convert -> matrix -> _matrix_to_drive
         # 2. Proper conditioning of points has already been done s.t. an
         #    M x N numpy array will always be passed in...this could only NOT
         #    be the case if the subclass overrides methods upstream in the call
@@ -485,7 +485,7 @@ class BaseTransform(ABC):
         """
         # Developer Notes:
         # 1. Call sequences goes
-        #    __call__ -> _convert -> _matrix -> _matrix_to_motion_space
+        #    __call__ -> _convert -> matrix -> _matrix_to_motion_space
         # 2. Proper conditioning of points has already been done s.t. an
         #    M x N numpy array will always be passed in...this could only NOT
         #    be the case if the subclass overrides methods upstream in the call

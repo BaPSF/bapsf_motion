@@ -239,7 +239,7 @@ class LaPDXYTransform(base.BaseTransform):
 
         return inputs
 
-    def _matrix(self, points, to_coords="drive") -> np.ndarray:
+    def matrix(self, points, to_coords="drive") -> np.ndarray:
         # if not isinstance(points, np.ndarray):
         #     points = np.array(points)
         #
@@ -256,7 +256,7 @@ class LaPDXYTransform(base.BaseTransform):
         #     # must give x and y values
         #     raise ValueError
 
-        return super()._matrix(points, to_coords=to_coords)
+        return super().matrix(points, to_coords=to_coords)
 
     def _matrix_to_motion_space(self, points: np.ndarray):
         # given points are in drive (e0, e1) coordinates
@@ -424,7 +424,7 @@ class LaPDXYTransform(base.BaseTransform):
         #       base on the number of points supplied...this might be due
         #       to how the matrices are constructed and/or the recent
         #       implementation of BaseTransfrom._condition_points()
-        matrix = self._matrix(points, to_coords=to_coords)
+        matrix = self.matrix(points, to_coords=to_coords)
 
         # if points.ndim == 1:
         #     points = np.concatenate((points, [1]))
