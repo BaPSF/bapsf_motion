@@ -186,7 +186,7 @@ class BaseTransform(ABC):
 
     def _validate_matrix_method(self, method_name: str):
         method = getattr(self, method_name)
-        matrix = method(np.zeros((self.naxes, self.naxes+2)))
+        matrix = method(np.zeros((self.naxes+2, self.naxes)))
 
         if not isinstance(matrix, np.ndarray):
             raise TypeError(
