@@ -2381,7 +2381,7 @@ class AxisControlWidget(QWidget):
     @property
     def position(self) -> u.Quantity:
         position = self.mg.position
-        val = position.value[self.axis_index][0]
+        val = position.value[self.axis_index]
         unit = position.unit
         return val * unit
 

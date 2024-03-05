@@ -60,7 +60,7 @@ class BaseTransform(ABC):
         self._validate_matrix_to_drive()
         self._validate_matrix_to_motion_space()
 
-    def __call__(self, points, to_coords="drive"):
+    def __call__(self, points, to_coords="drive") -> np.ndarray:
         r"""
         Perform a coordinate transformation on the supplied ``points``.
 

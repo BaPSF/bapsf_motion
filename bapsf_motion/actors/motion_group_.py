@@ -903,7 +903,7 @@ class MotionGroup(EventActor):
         pos = self.transform(
             dr_pos.value.tolist(),
             to_coords="motion_space",
-        )
+        ).squeeze()
         return pos * dr_pos.unit
 
     def stop(self):
@@ -929,7 +929,7 @@ class MotionGroup(EventActor):
         if isinstance(pos, u.Quantity):
             pos = pos.value
 
-        dr_pos = self.transform(pos, to_coords="drive")
+        dr_pos = self.transform(pos, to_coords="drive").squeeze()
         return self.drive.move_to(pos=dr_pos, axis=axis)
 
     def move_ml(self, index: int):
