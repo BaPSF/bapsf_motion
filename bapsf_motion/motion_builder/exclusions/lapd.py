@@ -255,6 +255,23 @@ class LaPDXYExclusion(BaseExclusion):
                 f"expected a value between (-180, 360) degrees."
             )
 
+    def _get_exclusion_by_name(self, name: str):
+        """Get a composed exclusion layer from a given ``name``."""
+        if not isinstance(name, str):
+            raise ValueError(
+                "Can not retrieve exclusion since supplied name is not"
+                f" a string, got type {type(name)}."
+            )
+
+        for ex in self.composed_exclusions:
+            if ex.name == name:
+                return ex
+
+        raise ValueError(
+            f"Supplied exclusion name '{name}' was not found among "
+            f"composed exclusions."
+        )
+
     def _combine_exclusions(self):
         """Combine all sub-exclusions into one exclusion array."""
         exclusion = None
