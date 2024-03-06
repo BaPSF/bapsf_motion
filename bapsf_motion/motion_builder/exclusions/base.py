@@ -194,6 +194,8 @@ class BaseExclusion(ABC, MBItem):
                 f"To get the exclusion matrix use the 'ex.exclusion' property."
             )
 
+        self.composed_exclusions.clear()
+
         self._ds[self.name] = self._generate_exclusion()
 
     def update_global_mask(self):
