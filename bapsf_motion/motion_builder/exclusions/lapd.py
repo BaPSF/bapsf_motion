@@ -42,7 +42,7 @@ class LaPDXYExclusion(BaseExclusion):
         A variable indicating which port the probe is located at.  A
         value can be a string of
         :math:`\in` :math:`\{`\ e, east, t, top, w, west, b, bot,
-        bottom\ :math:`\}` (case insensitive) or an angle
+        bottom\ :math:`\}` (case-insensitive) or an angle
         :math:`\in [0,360)`.  An East port would correspond to an
         angle of `0` and a Top port corresponds to an angle of `90`.
         An angle port can be indicated by using the corresponding
