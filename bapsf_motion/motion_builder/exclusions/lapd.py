@@ -205,6 +205,16 @@ class LaPDXYExclusion(BaseExclusion):
         """
         return self.inputs["include_cone"]
 
+    @property
+    def insertion_point(self) -> np.ndarray:
+        """(X, Y) location of the pivot, probe-insertion point."""
+        return np.array(
+            [
+                self.pivot_radius * np.cos(np.deg2rad(self.port_location)),
+                self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
+            ],
+        )
+
     def _validate_inputs(self):
         """Validate input arguments."""
         # TODO: fill-out ValueError messages
