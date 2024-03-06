@@ -127,6 +127,18 @@ class BaseExclusion(ABC, MBItem):
         """
         return self._inputs
 
+    @MBItem.name.setter
+    def name(self, name: str):
+        if not self.skip_ds_add:
+            # The exclusion name is a part of the Dataset management,
+            # so we can NOT/ should NOT rename it
+            return
+        elif not isinstance(name, str):
+            return
+
+        self._name = name
+        self._name_pattern = re.compile(rf"{name}(?P<number>[0-9]+)")
+
     @abstractmethod
     def _generate_exclusion(self) -> Union[np.ndarray, xr.DataArray]:
         """
