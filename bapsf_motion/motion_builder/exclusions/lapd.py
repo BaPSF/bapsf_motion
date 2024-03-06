@@ -274,15 +274,19 @@ class LaPDXYExclusion(BaseExclusion):
 
     def _combine_exclusions(self):
         """Combine all sub-exclusions into one exclusion array."""
-        exclusion = None
+        ex1 = self._get_exclusion_by_name("chamber")
+        ex2 = self._get_exclusion_by_name("divider_port")
+
+        exclusion = np.logical_or(ex1.exclusion, ex2.exclusion)
+
         for ex in self.composed_exclusions:
-            if exclusion is None:
-                exclusion = ex.exclusion
-            else:
-                exclusion = np.logical_and(
-                    exclusion,
-                    ex.exclusion,
-                )
+            if ex.name in {"chamber", "divider_port"}:
+                continue
+            exclusion = np.logical_and(
+                exclusion,
+                ex.exclusion,
+            )
+
         return exclusion
 
     def _generate_exclusion(self):
