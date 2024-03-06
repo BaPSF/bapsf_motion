@@ -290,15 +290,15 @@ class LaPDXYExclusion(BaseExclusion):
         Generate and return the boolean mask corresponding to the
         exclusion configuration.
         """
-        self.composed_exclusions.append(
-            CircularExclusion(
-                self._ds,
-                skip_ds_add=True,
-                radius=0.5 * self.diameter,
-                center=(0.0, 0.0),
-                exclude="outside",
-            )
+        ex = CircularExclusion(
+            self._ds,
+            skip_ds_add=True,
+            radius=0.5 * self.diameter,
+            center=(0.0, 0.0),
+            exclude="outside",
         )
+        ex.name = "chamber"
+        self.composed_exclusions.append(ex)
 
         if not self.include_cone:
             return self._combine_exclusions()
@@ -308,12 +308,7 @@ class LaPDXYExclusion(BaseExclusion):
         # - P' is considered a point in the pivot (port) coordinate system
         theta = np.radians(self.port_location)
         alpha = 0.5 * np.radians(self.cone_full_angle)
-        pivot_xy = np.array(
-            [
-                self.pivot_radius * np.cos(theta),
-                self.pivot_radius * np.sin(theta),
-            ],
-        )
+        pivot_xy = self.insertion_point
 
         # rotation matrix to go P -> P'
         rot_matrix = np.array(
@@ -345,13 +340,45 @@ class LaPDXYExclusion(BaseExclusion):
             axis = 0 if np.abs(exc_dir[0]) > np.abs(exc_dir[1]) else 1
             exclude = f"+e{axis}" if exc_dir[axis] > 0 else f"-e{axis}"
 
-            self.composed_exclusions.append(
-                DividerExclusion(
-                    self._ds,
-                    skip_ds_add=True,
-                    mb=(slope, intercept),
-                    exclude=exclude,
-                )
+            ex = DividerExclusion(
+                self._ds,
+                skip_ds_add=True,
+                mb=(slope, intercept),
+                exclude=exclude,
             )
+            ex.name = f"divider_{key}"
+            self.composed_exclusions.append(ex)
+
+        # divider representing the port opening
+        radius = 0.5 * self.diameter
+        beta = np.arcsin(self.pivot_radius * np.sin(alpha) / radius)
+        if np.abs(beta) < np.pi / 2:
+            beta = np.pi - beta
+        beta = np.pi - beta - alpha
+        pt1 = radius * np.array([np.cos(theta + beta), np.sin(theta + beta)])
+        pt2 = radius * np.array([np.cos(theta - beta), np.sin(theta - beta)])
+        slope = (
+            np.inf
+            if np.equal(pt1[0], pt2[0])
+            else (pt1[1] - pt2[1]) / (pt1[0] - pt2[0])
+        )
+        intercept = pt1[0] if np.isinf(slope) else pt1[1] - slope * pt1[0]
+        if np.abs(pivot_xy[0]) / radius > .1:
+            sign = f"{pivot_xy[0]:+.1f}"[0]
+            sign = "-" if sign == "+" else "+"
+            exclude = f"{sign}e0"
+        else:
+            sign = f"{pivot_xy[1]:+.1f}"[0]
+            sign = "-" if sign == "+" else "+"
+            exclude = f"{sign}e1"
+
+        ex = DividerExclusion(
+            self._ds,
+            skip_ds_add=True,
+            mb=(slope, intercept),
+            exclude=exclude,
+        )
+        ex.name = f"divider_port"
+        self.composed_exclusions.append(ex)
 
         return self._combine_exclusions()
