@@ -1,5 +1,5 @@
 """Module that defines the `BaseExclusion` abstract class."""
-__all__ = ["BaseExclusion"]
+__all__ = ["BaseExclusion", "GovernExclusion"]
 
 import numpy as np
 import re
@@ -213,3 +213,27 @@ class BaseExclusion(ABC, MBItem):
             self.mask,
             self.exclusion,
         )
+
+
+class GovernExclusion(BaseExclusion, ABC):
+    def update_global_mask(self):
+        """
+        Update the global :attr:`mask` to include the exclusions from
+        this :term:`exclusion layer`.
+        """
+        if self.skip_ds_add:
+            raise RuntimeError(
+                f"For exclusion {self.name} skip_ds_add={self.skip_ds_add} and thus "
+                f"the exclusion can not be merged into the global maks."
+            )
+
+        govern_mask = self.govern_mask(self.mask)
+
+        self._ds[self.mask_name] = np.logical_and(
+            self.mask,
+            govern_mask,
+        )
+
+    @abstractmethod
+    def govern_mask(self, mask: xr.DataArray) -> xr.DataArray:
+        ...
