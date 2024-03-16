@@ -10,14 +10,14 @@ import xarray as xr
 from numbers import Real
 from typing import Union
 
-from bapsf_motion.motion_builder.exclusions.base import BaseExclusion
+from bapsf_motion.motion_builder.exclusions.base import GovernExclusion
 from bapsf_motion.motion_builder.exclusions.circular import CircularExclusion
 from bapsf_motion.motion_builder.exclusions.divider import DividerExclusion
 from bapsf_motion.motion_builder.exclusions.helpers import register_exclusion
 
 
 @register_exclusion
-class LaPDXYExclusion(BaseExclusion):
+class LaPDXYExclusion(GovernExclusion):
     r"""
     Class for defining the :term`LaPD` :term:`exclusion layer` in a XY
     :term:`motion space`.  This class setups up the typical XY
@@ -386,3 +386,6 @@ class LaPDXYExclusion(BaseExclusion):
         self.composed_exclusions.append(ex)
 
         return self._combine_exclusions()
+
+    def govern_mask(self, mask: xr.DataArray) -> xr.DataArray:
+        return self.exclusion
