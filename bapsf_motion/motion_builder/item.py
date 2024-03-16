@@ -4,6 +4,7 @@ Module containing the definition of
 """
 __all__ = ["MBItem"]
 
+import numpy as np
 import re
 import xarray as xr
 
@@ -121,6 +122,15 @@ class MBItem:
         the number of axes of the :term:`probe drive`.
         """
         return len(self.mspace_dims)
+
+    @property
+    def mask_resolution(self):
+        res = []
+        for dim in self.mspace_dims:
+            res.append(
+                np.average(np.diff(self.mspace_coords[dim]))
+            )
+        return tuple(res)
 
     @staticmethod
     def _validate_ds(ds: xr.Dataset) -> xr.Dataset:
