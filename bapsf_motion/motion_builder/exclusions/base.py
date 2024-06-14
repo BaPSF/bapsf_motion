@@ -1,5 +1,5 @@
 """Module that defines the `BaseExclusion` abstract class."""
-__all__ = ["BaseExclusion"]
+__all__ = ["BaseExclusion", "GovernExclusion"]
 
 import numpy as np
 import re
@@ -127,6 +127,18 @@ class BaseExclusion(ABC, MBItem):
         """
         return self._inputs
 
+    @MBItem.name.setter
+    def name(self, name: str):
+        if not self.skip_ds_add:
+            # The exclusion name is a part of the Dataset management,
+            # so we can NOT/ should NOT rename it
+            return
+        elif not isinstance(name, str):
+            return
+
+        self._name = name
+        self._name_pattern = re.compile(rf"{name}(?P<number>[0-9]+)")
+
     @abstractmethod
     def _generate_exclusion(self) -> Union[np.ndarray, xr.DataArray]:
         """
@@ -182,6 +194,8 @@ class BaseExclusion(ABC, MBItem):
                 f"To get the exclusion matrix use the 'ex.exclusion' property."
             )
 
+        self.composed_exclusions.clear()
+
         self._ds[self.name] = self._generate_exclusion()
 
     def update_global_mask(self):
@@ -199,3 +213,27 @@ class BaseExclusion(ABC, MBItem):
             self.mask,
             self.exclusion,
         )
+
+
+class GovernExclusion(BaseExclusion, ABC):
+    def update_global_mask(self):
+        """
+        Update the global :attr:`mask` to include the exclusions from
+        this :term:`exclusion layer`.
+        """
+        if self.skip_ds_add:
+            raise RuntimeError(
+                f"For exclusion {self.name} skip_ds_add={self.skip_ds_add} and thus "
+                f"the exclusion can not be merged into the global maks."
+            )
+
+        govern_mask = self.govern_mask(self.mask)
+
+        self._ds[self.mask_name] = np.logical_and(
+            self.mask,
+            govern_mask,
+        )
+
+    @abstractmethod
+    def govern_mask(self, mask: xr.DataArray) -> xr.DataArray:
+        ...
