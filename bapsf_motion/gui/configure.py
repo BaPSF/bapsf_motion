@@ -43,6 +43,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QStackedWidget,
     QComboBox,
+    QApplication,
 )
 from typing import Any, Dict, List, Union, Optional
 
@@ -3617,12 +3618,17 @@ class ConfigureGUI(QMainWindow):
         event.accept()
 
 
+class ConfigureApp(QApplication):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setStyle("Fusion")
+        self._window = ConfigureGUI()
+        self._window.show()
+        self._window.activateWindow()
+
+
 if __name__ == "__main__":
-    from PySide6.QtWidgets import QApplication
-
-    app = QApplication([])
-
-    window = ConfigureGUI()
-    window.show()
-
+    app = ConfigureApp([])
     app.exec()
