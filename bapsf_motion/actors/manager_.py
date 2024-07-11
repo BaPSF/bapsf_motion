@@ -254,7 +254,7 @@ class RunManagerConfig(UserDict):
 
     @property
     def as_toml_string(self) -> str:
-        return "[run]\n" + toml.as_toml_string(self)
+        return toml.as_toml_string({"run": self})
 
     def update_run_name(self, name: str):
         if not isinstance(name, str):
