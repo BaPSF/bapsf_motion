@@ -654,7 +654,7 @@ class MotionGroupConfig(UserDict):
 
     @property
     def as_toml_string(self) -> str:
-        return "[motion_group]\n" + toml.as_toml_string(self)
+        return toml.as_toml_string({"motion_group": self})
 
 
 class MotionGroup(EventActor):
