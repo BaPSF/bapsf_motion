@@ -8,7 +8,7 @@ import numpy as np
 import xarray as xr
 
 from numbers import Real
-from typing import Union
+from typing import Tuple, Union
 
 from bapsf_motion.motion_builder.exclusions.base import GovernExclusion
 from bapsf_motion.motion_builder.exclusions.circular import CircularExclusion
@@ -387,5 +387,123 @@ class LaPDXYExclusion(GovernExclusion):
 
         return self._combine_exclusions()
 
+    @staticmethod
+    def _add_to_edge_pool(edge, epool=None) -> Tuple[int, np.ndarray]:
+        # edge.shape == (2, 2)
+        # index_1 -> edge point, 0 = start and 1 = stop
+        # index_2 -> edge coordinate (0, 1) = (x, y)
+        if epool is None:
+            epool = np.array(edge)[np.newaxis, ...]
+        else:
+            epool = np.concatenate(
+                (epool, np.array(edge)[np.newaxis, ...]),
+                axis=0,
+            )
+
+        return epool.shape[0] - 1, epool
+
+    def _build_edge_pool(self, mask: xr.DataArray) -> np.ndarray:
+        res = self.mask_resolution
+        pool = None
+        x_key, y_key = self.mspace_dims
+        x_coord = self.mspace_coords[x_key]
+        y_coord = self.mspace_coords[y_key]
+
+        # gather vertical edges
+        edge_indices = np.where(np.diff(mask, axis=0))
+        ix_array = np.unique(edge_indices[0])
+
+        for ix in ix_array:
+            iy_array = edge_indices[1][edge_indices[0] == ix]
+
+            x = x_coord[ix] + 0.5 * res[0]
+
+            if iy_array.size == 1:
+                iy = iy_array[0]
+
+                edge = np.array(
+                    [
+                        [x, y_coord[iy] - 0.5 * res[1]],
+                        [x, y_coord[iy] + 0.5 * res[1]],
+                    ]
+                )
+                eid, pool = self._add_to_edge_pool(edge, pool)
+            else:
+                jumps = np.where(np.diff(iy_array) != 1)[0]
+
+                starts = np.array([0])
+                starts = np.concatenate((starts, jumps + 1))
+                starts = iy_array[starts]
+
+                stops = np.concatenate((jumps, [iy_array.size - 1]))
+                stops = iy_array[stops]
+
+                for iy_start, iy_stop in zip(starts, stops):
+                    edge = np.array(
+                        [
+                            [x, y_coord[iy_start] - 0.5 * res[1]],
+                            [x, y_coord[iy_stop] + 0.5 * res[1]],
+                        ]
+                    )
+                    eid, pool = self._add_to_edge_pool(edge, pool)
+
+        # gather horizontal edges
+        edge_indices = np.where(np.diff(mask, axis=1))
+        iy_array = np.unique(edge_indices[1])
+
+        for iy in iy_array:
+            ix_array = edge_indices[0][edge_indices[1] == iy]
+
+            y = y_coord[iy] + 0.5 * res[1]
+
+            if ix_array.size == 1:
+                ix = ix_array[0]
+
+                edge = np.array(
+                    [
+                        [x_coord[ix] - 0.5 * res[0], y],
+                        [x_coord[ix] + 0.5 * res[0], y],
+                    ]
+                )
+                eid, pool = self._add_to_edge_pool(edge, pool)
+            else:
+                jumps = np.where(np.diff(ix_array) != 1)[0]
+
+                starts = np.array([0])
+                starts = np.concatenate((starts, jumps + 1))
+                starts = ix_array[starts]
+
+                stops = np.concatenate((jumps, [ix_array.size - 1]))
+                stops = ix_array[stops]
+
+                for ix_start, ix_stop in zip(starts, stops):
+                    edge = np.array(
+                        [
+                            [x_coord[ix_start] - 0.5 * res[0], y],
+                            [x_coord[ix_stop] + 0.5 * res[0], y],
+                        ]
+                    )
+                    eid, pool = self._add_to_edge_pool(edge, pool)
+
+        # TODO: add perimeter edges
+
+        return pool
+
+    # def _shorten_rays_to_nearest_impact(self, rays, edge_pool) -> np.ndarray:
+    #     edge_vectors = edge_pool[..., 1, :] - edge_pool[..., 0, :]
+    #
+    #     mu_array = (cd
+    #         np.cross(edge_pool[..., 0, :] - self.insertion_point, edge_vectors) / np.cross(rays, edge_vectors[:, np.newaxis, ...]).swapaxes(0, 1)
+    #     )
+    #
+    #     return rays
+
+
     def govern_mask(self, mask: xr.DataArray) -> xr.DataArray:
-        return self.exclusion
+        mask = np.logical_and(mask, self.exclusion)
+
+        edge_pool = self._build_edge_pool(mask)
+        corner_rays = edge_pool.reshape(-1, 2) - self.insertion_point
+        # corner_rays = self._shorten_rays_to_nearest_impact(corner_rays, edge_pool)
+
+        return mask
