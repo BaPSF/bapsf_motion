@@ -181,6 +181,7 @@ class LaPDXYTransform(base.BaseTransform):
         probe_axis_offset: float,
         drive_polarity: Tuple[int, int] = (1, 1),
         mspace_polarity: Tuple[int, int] = (-1, 1),
+        droop_correct: bool = False,
     ):
         super().__init__(
             drive,
@@ -189,6 +190,7 @@ class LaPDXYTransform(base.BaseTransform):
             probe_axis_offset=probe_axis_offset,
             drive_polarity=drive_polarity,
             mspace_polarity=mspace_polarity,
+            droop_correct=droop_correct,
         )
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
@@ -228,6 +230,12 @@ class LaPDXYTransform(base.BaseTransform):
                     "axes, array has values not equal to 1 or -1."
                 )
             inputs[key] = polarity
+
+        if not isinstance(inputs["droop_correct"], bool):
+            raise TypeError(
+                f"Keyword 'droop_correct' expected type bool, "
+                f"got type {type(inputs["droop_correct"])}."
+            )
 
         return inputs
 
@@ -360,3 +368,7 @@ class LaPDXYTransform(base.BaseTransform):
         coordinate movement.
         """
         return self.inputs["mspace_polarity"]
+
+    @property
+    def droop_correct(self) -> bool:
+        return self.inputs["droop_correct"]
