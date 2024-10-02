@@ -193,6 +193,18 @@ class LaPDXYTransform(base.BaseTransform):
             droop_correct=droop_correct,
         )
 
+    def __call__(self, points, to_coords="drive") -> np.ndarray:
+        if not self.droop_correct:
+            return super().__call__(points=points, to_coords=to_coords)
+
+        if to_coords == "drive":
+            # need to convert motion space coordinates to non-droop
+            # scenario before doing matrix multiplication
+            points = self._condition_points(points)
+            
+        else:
+            ...
+
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
 
         for key in {"pivot_to_center", "pivot_to_drive", "probe_axis_offset"}:
