@@ -270,6 +270,12 @@ class LaPDXYTransform(base.BaseTransform):
         points = self.drive_polarity * points  # type: np.ndarray
         npoints = points.shape[0]
 
+        # Angle Defs:
+        # - theta = angle between the horizontal and the probe shaft
+        # - beta = angle between the horizontal and the probe drive pivot
+        #          point on e1 (the vertical axis)
+        # - alpha = beta - theta
+
         sine_alpha = self.probe_axis_offset / np.sqrt(
             self.pivot_to_drive**2
             + (-self.probe_axis_offset + points[..., 1])**2
