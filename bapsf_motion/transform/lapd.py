@@ -203,7 +203,7 @@ class LaPDXYTransform(base.BaseTransform):
             points = self._condition_points(points)
             
         else:
-            ...
+            tr_points = self._convert(points, to_coords=to_coords)
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
 
@@ -246,7 +246,7 @@ class LaPDXYTransform(base.BaseTransform):
         if not isinstance(inputs["droop_correct"], bool):
             raise TypeError(
                 f"Keyword 'droop_correct' expected type bool, "
-                f"got type {type(inputs["droop_correct"])}."
+                f"got type {type(inputs['droop_correct'])}."
             )
 
         return inputs
