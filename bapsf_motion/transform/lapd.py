@@ -381,6 +381,30 @@ class LaPDXYTransform(base.BaseTransform):
 
         return droop_points
 
+    def _droop_correct_to_drive(self, points: np.ndarray):
+        # there's no known solution in this direction, so we must iterate
+        # - points is considered to be droop LaPD coords
+        # - need to determine non-droop LaPD coords
+
+        # 1. backtrack coordinates to the ball valve pivot
+        ndroop_points = np.empty_like(points)
+        ndroop_points[...] = points[...]
+        # _sign = 1 if self.deployed_side == "East" else -1
+
+
+
+        # 2. make an educated guess and iterate until we find the
+        #    reasonable non-droop coords
+        #    Notes for guessing:
+        #      - non-droop y will always be higher than the droop y
+        #      - non-droop x < droop x for theta > 0
+        #      - non-droop x == droop x for theta = 0
+        #      - non-droop x > droop x for theta < 0
+        #
+        # 3. go back to LaPD coords (non-droop coords)
+
+        return
+
     @property
     def pivot_to_center(self) -> float:
         """
