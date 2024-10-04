@@ -191,6 +191,7 @@ class LaPDXYTransform(base.BaseTransform):
             drive_polarity=drive_polarity,
             mspace_polarity=mspace_polarity,
             droop_correct=droop_correct,
+            deployed_side="East",
         )
 
     def __call__(self, points, to_coords="drive") -> np.ndarray:
@@ -214,6 +215,9 @@ class LaPDXYTransform(base.BaseTransform):
                     f"Keyword '{key}' expected type float or int, "
                     f"got type {type(val)}."
                 )
+            elif key == "pivot_to_center":
+                inputs["deployed_side"] = "East" if val >= 0.0 else "West"
+                inputs["pivot_to_center"] = np.abs(val)
             elif val < 0.0:
                 # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
                 #       "probe_axis_offset"
@@ -384,3 +388,7 @@ class LaPDXYTransform(base.BaseTransform):
     @property
     def droop_correct(self) -> bool:
         return self.inputs["droop_correct"]
+
+    @property
+    def deployed_side(self):
+        return self.inputs["deployed_side"]
