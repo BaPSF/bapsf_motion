@@ -203,8 +203,11 @@ class LaPDXYTransform(base.BaseTransform):
             # scenario before doing matrix multiplication
             points = self._condition_points(points)
             
-        else:
-            tr_points = self._convert(points, to_coords=to_coords)
+        else:  # to motion space
+            tr_points = super().__call__(points=points, to_coords=to_coords)
+            tr_points = self._droop_correct_to_motion_space(tr_points)
+
+        return tr_points
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
 
