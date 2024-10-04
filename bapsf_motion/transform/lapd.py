@@ -202,9 +202,11 @@ class LaPDXYTransform(base.BaseTransform):
             # need to convert motion space coordinates to non-droop
             # scenario before doing matrix multiplication
             points = self._condition_points(points)
+            points = self._droop_correct_to_drive(points)
+
+        tr_points = super().__call__(points=points, to_coords=to_coords)
             
-        else:  # to motion space
-            tr_points = super().__call__(points=points, to_coords=to_coords)
+        if to_coords != "drive":  # to motion space
             tr_points = self._droop_correct_to_motion_space(tr_points)
 
         return tr_points
@@ -391,7 +393,7 @@ class LaPDXYTransform(base.BaseTransform):
         ndroop_points[...] = points[...]
         # _sign = 1 if self.deployed_side == "East" else -1
 
-
+        test_points = self._droop_correct_to_motion_space(ndroop_points)
 
         # 2. make an educated guess and iterate until we find the
         #    reasonable non-droop coords
@@ -401,9 +403,21 @@ class LaPDXYTransform(base.BaseTransform):
         #      - non-droop x == droop x for theta = 0
         #      - non-droop x > droop x for theta < 0
         #
+        i = 0
+        while not np.allclose(test_points, points, rtol=0, atol=1e-8):
+            i += 1
+            ndroop_points[..., 0] += -1.5 * (test_points[..., 0] - points[..., 0])
+            ndroop_points[..., 1] += -1.5 * (test_points[..., 1] - points[..., 1])
+
+            test_points = self._droop_correct_to_motion_space(ndroop_points)
+
+            if i == 100:
+                print(i)
+                break
+
         # 3. go back to LaPD coords (non-droop coords)
 
-        return
+        return ndroop_points
 
     @property
     def pivot_to_center(self) -> float:
