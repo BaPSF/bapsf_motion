@@ -329,6 +329,55 @@ class LaPDXYTransform(base.BaseTransform):
             np.matmul(T0, T_dpolarity),
         )
 
+    def _droop_correct_to_motion_space(self, points: np.ndarray):
+        # droop = (a3 * r**3 + a2 * r**2 + a1 * r + a0) * r cos(theta)
+        #
+        # - points should be in non-drooped LaPD coordinates
+        # - coeffs = [a0, a1, a2, a3]
+        # - these coefficients are for a coordinate system using
+        #   physical units of cm
+        #
+        coeffs = [6.209e-06, -2.211e-07, 2.084e-09, -5.491e-09]
+        droop_points = np.zeros_like(points)
+
+        # 1. backtrack coordinates to the ball valve pivot
+        #    - Ball Valve Y -> LaPD Y
+        #    - Ball Valve X -> | pivot_to_center - LaPD X |
+        _sign = 1 if self.deployed_side == "East" else -1
+        droop_points[..., 0] = np.absolute(_sign * self.pivot_to_center - points[..., 0])
+        droop_points[..., 1] = points[..., 1]
+
+        # 2. calculate r and theta (w.r.t. the ball valve)
+        #    - rt => (radius, theta)
+        points_rt = np.empty_like(points)
+        points_rt[..., 0] = np.linalg.norm(droop_points, axis=1)
+        points_rt[..., 1] = np.tan(droop_points[..., 1] / droop_points[..., 0])
+
+        # 3. calculate dx and dy of the droop
+        #    - delta will always be negative in the ball valve coords
+        #    - dx > 0 for theta > 0
+        #    - dx = 0 for theta = 0
+        #    - dx < 0 for theta < 0
+        #    - dy < 0 always
+        #
+        delta = (
+            coeffs[3] * droop_points[..., 0]**3
+            + coeffs[2] * droop_points[..., 0]**2
+            + coeffs[1] * droop_points[..., 0]
+            + coeffs[0]
+        ) * droop_points[..., 0]
+        dx = -delta[...] * np.sin(points_rt[..., 1])
+        dy = delta[...] * np.cos(points_rt[..., 1])
+
+        # 4. "correct" to droop coords
+        droop_points[..., 0] += dx
+        droop_points[..., 1] += dy
+
+        # 5. translate back to LaPD coords
+        droop_points[..., 0] = _sign * (self.pivot_to_center - droop_points[..., 0])
+
+        return droop_points
+
     @property
     def pivot_to_center(self) -> float:
         """
