@@ -15,24 +15,13 @@ from collections import UserDict
 from pathlib import Path
 
 from bapsf_motion.utils import exceptions, toml
+from bapsf_motion.utils.units_ import units, counts, steps, rev
 
 _HERE = Path(__file__).resolve().parent
 _EXAMPLES = (_HERE / ".." / "examples").resolve()
 
 #: Regular expression pattern for parsing IPv4 addresses
 ipv4_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
-
-#: Base unit for encoders.
-counts = units.def_unit("counts", namespace=units.__dict__)
-
-#: Base unit for stepper motors.
-steps = units.def_unit("steps", namespace=units.__dict__)
-
-#: An unit for the instance of revolving.
-rev = units.def_unit("rev", namespace=units.__dict__)
-
-for _u in {counts, steps, rev}:
-    units.add_enabled_units(_u)
 
 
 class SimpleSignal:
