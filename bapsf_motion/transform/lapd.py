@@ -4,11 +4,12 @@ __transformer__ = ["LaPDXYTransform"]
 
 import numpy as np
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Union
 from warnings import warn
 
 from bapsf_motion.transform import base
 from bapsf_motion.transform.helpers import register_transform
+from bapsf_motion.transform.lapd_droop import LaPDXYDroopCorrect, DroopCorrectABC
 
 
 @register_transform
@@ -204,12 +205,29 @@ class LaPDXYTransform(base.BaseTransform):
             # need to convert motion space coordinates to non-droop
             # scenario before doing matrix multiplication
             points = self._condition_points(points)
-            points = self._droop_correct_to_drive(points)
+
+            # 1. convert to ball valve coords
+            _sign = 1 if self.deployed_side == "East" else -1
+            points[..., 0] = np.absolute(_sign * self.pivot_to_center - points[..., 0])
+
+            # 2. droop correct to non-droop coords
+            points = self.droop_correct(points, to_points="non-droop")
+
+            # 3. back to LaPD coords
+            points[..., 0] = _sign * (self.pivot_to_center - points[..., 0])
 
         tr_points = super().__call__(points=points, to_coords=to_coords)
             
         if to_coords != "drive":  # to motion space
-            tr_points = self._droop_correct_to_motion_space(tr_points)
+            # 1. convert to ball valve coords
+            _sign = 1 if self.deployed_side == "East" else -1
+            tr_points[..., 0] = np.absolute(_sign * self.pivot_to_center - tr_points[..., 0])
+
+            # 2. droop correct to droop coords
+            tr_points = self.droop_correct(tr_points, to_points="droop")
+
+            # 3. back to LaPD coords
+            tr_points[..., 0] = _sign * (self.pivot_to_center - tr_points[..., 0])
 
         return tr_points
 
@@ -264,6 +282,13 @@ class LaPDXYTransform(base.BaseTransform):
                 f"Keyword 'droop_correct' expected type bool, "
                 f"got type {type(inputs['droop_correct'])}."
             )
+        elif inputs["droop_correct"]:
+            inputs["droop_correct"] = LaPDXYDroopCorrect(
+                drive=self._drive,
+                pivot_to_feedthru=inputs["pivot_to_feedthru"],
+            )
+        else:
+            inputs["droop_correct"] = None
 
         return inputs
 
@@ -341,91 +366,6 @@ class LaPDXYTransform(base.BaseTransform):
             np.matmul(T0, T_dpolarity),
         )
 
-    def _droop_correct_to_motion_space(self, points: np.ndarray):
-        # droop = (a3 * r**3 + a2 * r**2 + a1 * r + a0) * r cos(theta)
-        #
-        # - points should be in non-drooped LaPD coordinates
-        # - coeffs = [a0, a1, a2, a3]
-        # - these coefficients are for a coordinate system using
-        #   physical units of cm
-        #
-        coeffs = [6.209e-06, -2.211e-07, 2.084e-09, -5.491e-09]
-        droop_points = np.zeros_like(points)
-
-        # 1. backtrack coordinates to the ball valve pivot
-        #    - Ball Valve Y -> LaPD Y
-        #    - Ball Valve X -> | pivot_to_center - LaPD X |
-        _sign = 1 if self.deployed_side == "East" else -1
-        droop_points[..., 0] = np.absolute(_sign * self.pivot_to_center - points[..., 0])
-        droop_points[..., 1] = points[..., 1]
-
-        # 2. calculate r and theta (w.r.t. the ball valve)
-        #    - rt => (radius, theta)
-        points_rt = np.empty_like(points)
-        points_rt[..., 0] = np.linalg.norm(droop_points, axis=1)
-        points_rt[..., 1] = np.tan(droop_points[..., 1] / droop_points[..., 0])
-
-        # 3. calculate dx and dy of the droop
-        #    - delta will always be negative in the ball valve coords
-        #    - dx > 0 for theta > 0
-        #    - dx = 0 for theta = 0
-        #    - dx < 0 for theta < 0
-        #    - dy < 0 always
-        #
-        delta = (
-            coeffs[3] * droop_points[..., 0]**3
-            + coeffs[2] * droop_points[..., 0]**2
-            + coeffs[1] * droop_points[..., 0]
-            + coeffs[0]
-        ) * droop_points[..., 0]
-        dx = -delta[...] * np.sin(points_rt[..., 1])
-        dy = delta[...] * np.cos(points_rt[..., 1])
-
-        # 4. "correct" to droop coords
-        droop_points[..., 0] += dx
-        droop_points[..., 1] += dy
-
-        # 5. translate back to LaPD coords
-        droop_points[..., 0] = _sign * (self.pivot_to_center - droop_points[..., 0])
-
-        return droop_points
-
-    def _droop_correct_to_drive(self, points: np.ndarray):
-        # there's no known solution in this direction, so we must iterate
-        # - points is considered to be droop LaPD coords
-        # - need to determine non-droop LaPD coords
-
-        # 1. backtrack coordinates to the ball valve pivot
-        ndroop_points = np.empty_like(points)
-        ndroop_points[...] = points[...]
-        # _sign = 1 if self.deployed_side == "East" else -1
-
-        test_points = self._droop_correct_to_motion_space(ndroop_points)
-
-        # 2. make an educated guess and iterate until we find the
-        #    reasonable non-droop coords
-        #    Notes for guessing:
-        #      - non-droop y will always be higher than the droop y
-        #      - non-droop x < droop x for theta > 0
-        #      - non-droop x == droop x for theta = 0
-        #      - non-droop x > droop x for theta < 0
-        #
-        i = 0
-        while not np.allclose(test_points, points, rtol=0, atol=1e-8):
-            i += 1
-            ndroop_points[..., 0] += -1.5 * (test_points[..., 0] - points[..., 0])
-            ndroop_points[..., 1] += -1.5 * (test_points[..., 1] - points[..., 1])
-
-            test_points = self._droop_correct_to_motion_space(ndroop_points)
-
-            if i == 100:
-                print(i)
-                break
-
-        # 3. go back to LaPD coords (non-droop coords)
-
-        return ndroop_points
-
     @property
     def pivot_to_center(self) -> float:
         """
@@ -487,7 +427,7 @@ class LaPDXYTransform(base.BaseTransform):
         return self.inputs["mspace_polarity"]
 
     @property
-    def droop_correct(self) -> bool:
+    def droop_correct(self) -> Union[DroopCorrectABC, None]:
         return self.inputs["droop_correct"]
 
     @property
