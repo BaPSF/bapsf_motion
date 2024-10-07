@@ -1,4 +1,4 @@
-__all__ = ["DroopCorrectABC"]
+__all__ = ["DroopCorrectABC", "LaPDXYDroopCorrect"]
 
 import astropy.units as u
 
