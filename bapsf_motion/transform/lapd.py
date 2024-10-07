@@ -198,12 +198,13 @@ class LaPDXYTransform(base.BaseTransform):
         )
 
     def __call__(self, points, to_coords="drive") -> np.ndarray:
-        if not self.droop_correct:
+        if self.droop_correct is None:
             return super().__call__(points=points, to_coords=to_coords)
 
         if to_coords == "drive":
-            # need to convert motion space coordinates to non-droop
-            # scenario before doing matrix multiplication
+            # - points is in LaPD motion space coordinates
+            # - need to convert motion space coordinates to non-droop
+            #   scenario before doing matrix multiplication
             points = self._condition_points(points)
 
             # 1. convert to ball valve coords
@@ -219,9 +220,13 @@ class LaPDXYTransform(base.BaseTransform):
         tr_points = super().__call__(points=points, to_coords=to_coords)
             
         if to_coords != "drive":  # to motion space
+            # - tr_points is in LaPD motion space coordinates
+            # - need to convert motion space coordinates to droop scenario
             # 1. convert to ball valve coords
             _sign = 1 if self.deployed_side == "East" else -1
-            tr_points[..., 0] = np.absolute(_sign * self.pivot_to_center - tr_points[..., 0])
+            tr_points[..., 0] = np.absolute(
+                _sign * self.pivot_to_center - tr_points[..., 0]
+            )
 
             # 2. droop correct to droop coords
             tr_points = self.droop_correct(tr_points, to_points="droop")
