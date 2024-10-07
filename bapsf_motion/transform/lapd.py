@@ -443,6 +443,10 @@ class LaPDXYTransform(base.BaseTransform):
         return self.inputs["pivot_to_drive"]
 
     @property
+    def pivot_to_feedthru(self) -> float:
+        return self.inputs["pivot_to_feedthru"]
+
+    @property
     def probe_axis_offset(self) -> float:
         """
         Perpendicular distance from the center line of the probe shaft
