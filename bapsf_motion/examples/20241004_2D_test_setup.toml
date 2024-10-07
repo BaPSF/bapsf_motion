@@ -27,6 +27,8 @@ drive_polarity = [1, 1]
 pivot_to_center = 62.948  # 53.55 cm + 2.54 cm + 2.5 in
 probe_axis_offset = 20.5
 pivot_to_drive = 112.7624  # 0.81 in + 22 cm + .75" + 82.5cm + 4.3cm
+pivot_to_feedthru = 21.6574  # 19.6 cm + 0.81"
+droop_correct = true
 
 #[run.motion_group.0.transform]
 #type = "identity"
