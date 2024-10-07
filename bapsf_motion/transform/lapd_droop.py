@@ -3,7 +3,10 @@ __all__ = ["DroopCorrectABC"]
 import astropy.units as u
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, List, Union
+from warnings import warn
+
+import numpy as np
 
 from bapsf_motion.actors.drive_ import Drive
 
@@ -16,7 +19,7 @@ class DroopCorrectABC(ABC):
 
     def __init__(self, drive: Drive, **kwargs):
         if isinstance(drive, Drive):
-            self._drive = drive
+            self._drive = drive  # type: Union[Drive, None]
             self._axes = list(range(drive.naxes))
         elif (
                 isinstance(drive, (list, tuple))
@@ -42,8 +45,27 @@ class DroopCorrectABC(ABC):
         # self.dependencies = []  # type: List[BaseTransform]
 
         # validate matrix
-        self._validate_matrix_to_drive()
-        self._validate_matrix_to_motion_space()
+        # self._validate_matrix_to_drive()
+        # self._validate_matrix_to_motion_space()
+
+    def __call__(self, points, to_points) -> np.ndarray:
+        # validate to_coords
+        valid_to_points = {"droop", "nondroop", "ndroop", "non-droop"}
+        if not isinstance(to_points, str):
+            raise TypeError(
+                f"For argument 'to_points' expected type string, got type "
+                f"{type(to_points)}."
+            )
+        elif to_points not in valid_to_points:
+            raise ValueError(
+                f"For argument 'to_points' expected a string value in "
+                f"{valid_to_points}, but got {to_points}."
+            )
+
+        points = self._condition_points(points)
+        adjusted_points = self._convert(points, to_points=to_points)
+
+        return adjusted_points
 
     @property
     def axes(self):
@@ -69,6 +91,10 @@ class DroopCorrectABC(ABC):
         """
         return self._dimensionality
 
+    @property
+    def drive(self) -> Union[Drive, None]:
+        return self._drive
+
     @abstractmethod
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -83,5 +109,44 @@ class DroopCorrectABC(ABC):
         ...
 
     @abstractmethod
-    def _convert_to_droop(self, ):
+    def _convert_to_droop_points(self, points: np.ndarray) -> np.ndarray:
+        ...
+
+    @abstractmethod
+    def _convert_to_nondroop_points(self, points: np.ndarray) -> np.ndarray:
+        ...
+
+    def _condition_points(self, points):
+        # make sure points is a numpy array
+        if not isinstance(points, np.ndarray):
+            points = np.array(points)
+
+        # make sure points is always an N X M matrix
+        if points.ndim == 1 and points.size == self.naxes:
+            # single point was given
+            points = points[np.newaxis, ...]
+        elif points.ndim != 2:
+            raise ValueError(
+                f"Expected a 2D array of shape (N, {self.naxes}) for "
+                f"'points', but got a {points.ndim}-D array."
+            )
+        elif self.naxes not in points.shape:
+            raise ValueError(
+                f"Expected a 2D array of shape (N, {self.naxes}) for "
+                f"'points', but got shape {points.shape}."
+            )
+        elif points.shape[1] != self.naxes:
+            # dimensions are flipped from expected
+            points = np.swapaxes(points, 0, 1)
+
+        return points
+
+    def _convert(self, points, to_points):
+
+        if to_points == "droop":
+            adjusted_points = self._convert_to_droop_points(points)
+        else:  # non-droop points
+            adjusted_points = self._convert_to_nondroop_points(points)
+
+        return adjusted_points
 
