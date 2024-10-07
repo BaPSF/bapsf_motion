@@ -178,6 +178,7 @@ class LaPDXYTransform(base.BaseTransform):
         *,
         pivot_to_center: float,
         pivot_to_drive: float,
+        pivot_to_feedthru: float,
         probe_axis_offset: float,
         drive_polarity: Tuple[int, int] = (1, 1),
         mspace_polarity: Tuple[int, int] = (-1, 1),
@@ -187,6 +188,7 @@ class LaPDXYTransform(base.BaseTransform):
             drive,
             pivot_to_center=pivot_to_center,
             pivot_to_drive=pivot_to_drive,
+            pivot_to_feedthru=pivot_to_feedthru,
             probe_axis_offset=probe_axis_offset,
             drive_polarity=drive_polarity,
             mspace_polarity=mspace_polarity,
@@ -213,7 +215,12 @@ class LaPDXYTransform(base.BaseTransform):
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
 
-        for key in {"pivot_to_center", "pivot_to_drive", "probe_axis_offset"}:
+        for key in {
+            "pivot_to_center",
+            "pivot_to_drive",
+            "pivot_to_feedthru",
+            "probe_axis_offset",
+        }:
             val = inputs[key]
             if not isinstance(val, (float, np.floating, int, np.integer)):
                 raise TypeError(
