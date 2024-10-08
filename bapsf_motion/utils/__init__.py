@@ -1,3 +1,4 @@
+"""Utility functionality for `bapsf_motion`."""
 __all__ = [
     "counts",
     "steps",

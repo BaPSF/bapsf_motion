@@ -949,6 +949,7 @@ class MotionGroup(EventActor):
         return self.move_to(pos=pos)
 
     def set_zero(self):
+        """Make current motion space position zero."""
         # transform do not necessarily map the motion space zero to the
         # zero of the probe drive space
         #

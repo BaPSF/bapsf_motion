@@ -1,3 +1,4 @@
+"""Functionality for configuring `astropy.units` for `bapsf_motion`."""
 __all__ = ["units", "counts", "steps", "rev"]
 from astropy import units
 
