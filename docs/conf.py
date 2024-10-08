@@ -535,4 +535,3 @@ nbsphinx_prolog = r"""
 def setup(app: Sphinx) -> None:
     app.add_config_value("revision", "", True)
     app.add_css_file("css/overrides.css", priority=600)
-    app.set_html_assets_policy("always")
