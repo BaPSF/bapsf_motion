@@ -309,9 +309,6 @@ hoverxref_role_types = {
     "term": "tooltip",
 }
 
-sphinx_tabs_disable_tab_closing = True
-sphinx_tabs_disable_css_loading = False
-
 # Using sphinx.ext.extlinks lets us simplify the process of creating
 # links to commonly used external sites. The key of the extlink becomes
 # a new role, and the corresponding tuple contains the base url and the
