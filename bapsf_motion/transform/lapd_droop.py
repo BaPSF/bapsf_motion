@@ -260,11 +260,12 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         # probe shaft
         #
         # convert points to the fit units
-        _points = self._convert_to_fit_units(points)
+        _points = points.copy()
+        _points = self._convert_to_fit_units(_points)
 
         # Calculate radius and theta
         #    - rt => (radius, theta)
-        points_rt = np.empty_like(points)
+        points_rt = np.empty_like(_points)
         points_rt[..., 0] = np.linalg.norm(_points, axis=1) + self.pivot_to_feedthru
         points_rt[..., 1] = np.tan(_points[..., 1] / _points[..., 0])
 
