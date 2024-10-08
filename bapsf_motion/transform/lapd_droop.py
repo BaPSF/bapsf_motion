@@ -1,3 +1,6 @@
+"""
+Module that defines the LaPD related probe droop correction classes.
+"""
 __all__ = ["DroopCorrectABC", "LaPDXYDroopCorrect"]
 
 import astropy.units as u
