@@ -1,4 +1,4 @@
-"""Module that defines the `LaPDXYTransform` abstract class."""
+"""Module that defines the LaPD related tranform classes."""
 __all__ = ["LaPDXYTransform"]
 __transformer__ = ["LaPDXYTransform"]
 
@@ -28,11 +28,17 @@ class LaPDXYTransform(base.BaseTransform):
 
     pivot_to_center: `float`
         Distance from the center of the :term:`LaPD` to the center
-        "pivot" point of the ball valve.
+        "pivot" point of the ball valve.  A positive value indicates
+        the probe drive is set up on the East side of the LaPD and a
+        negative value indicates the West side.
 
     pivot_to_drive: `float`
         Distance from the center line of the :term:`probe drive`
         vertical axis to the center "pivot" point of the ball valve.
+
+    pivot_to_feedthru: `float`
+        Distance from the center "pivot" point of the ball valve to the
+        nearest face of the probe drive feed-through.
 
     probe_axis_offset: `float`
         Perpendicular distance from the center line of the probe shaft
@@ -61,6 +67,14 @@ class LaPDXYTransform(base.BaseTransform):
         inward probe drive movement corresponds to +X LaPD coordinate
         movement.  (DEFAULT: ``(-1, 1)``)
 
+    droop_correct : bool
+        Set `True` for the coordinate transform to correct for the
+        droop of a probe shaft.  This will use
+        `~bapsf_motion.transform.lapd_droop.LaPDXYDroopCorrect` to
+        correct for the droop of a stainless steel 304 probe shaft of
+        size .375" OD x 0.035" wall.  Set `False` for no droop
+        correction.  (DEFAULT: `False`)
+
     Examples
     --------
 
@@ -76,6 +90,7 @@ class LaPDXYTransform(base.BaseTransform):
               drive,
               pivot_to_center = 62.94,
               pivot_to_drive = 133.51,
+              pivot_to_feedthru = 21.6,
               probe_axis_offset = 20.16,
               drive_polarity = (1, 1),
               mspace_polarity = (-1, 1),
@@ -89,6 +104,7 @@ class LaPDXYTransform(base.BaseTransform):
               **{
                   "pivot_to_center": 62.94,
                   "pivot_to_drive": 133.51,
+                  "pivot_to_feedthru": 21.6,
                   "probe_axis_offset": 20.16,
                   "drive_polarity": (1, 1),
                   "mspace_polarity": (-1, 1),
@@ -101,6 +117,7 @@ class LaPDXYTransform(base.BaseTransform):
           type = "lapd_xy"
           pivot_to_center = 62.94
           pivot_to_drive = 133.51
+          pivot_to_feedthru = 21.6
           probe_axis_offset = 20.16
           drive_polarity = (1, 1)
           mspace_polarity = (-1, 1)
@@ -111,6 +128,7 @@ class LaPDXYTransform(base.BaseTransform):
               "type": "lapd_xy",
               "pivot_to_center": 62.94,
               "pivot_to_drive": 133.51,
+              "pivot_to_feedthru": 21.6,
               "probe_axis_offset": 20.16,
               "drive_polarity": (1, 1),
               "mspace_polarity": (-1, 1),
@@ -124,8 +142,9 @@ class LaPDXYTransform(base.BaseTransform):
 
           tr = LaPDXYTransform(
               drive,
-              pivot_to_center = 62.94,
+              pivot_to_center = -62.94,
               pivot_to_drive = 133.51,
+              pivot_to_feedthru = 21.6,
               probe_axis_offset = 20.16,
               drive_polarity = (1, -1),
               mspace_polarity = (1, 1),
@@ -137,8 +156,9 @@ class LaPDXYTransform(base.BaseTransform):
               drive,
               tr_type = "lapd_xy",
               **{
-                  "pivot_to_center": 62.94,
+                  "pivot_to_center": -62.94,
                   "pivot_to_drive": 133.51,
+                  "pivot_to_feedthru": 21.6,
                   "probe_axis_offset": 20.16,
                   "drive_polarity": (1, -1),
                   "mspace_polarity": (1, 1),
@@ -149,8 +169,9 @@ class LaPDXYTransform(base.BaseTransform):
 
           [...transform]
           type = "lapd_xy"
-          pivot_to_center = 62.94
+          pivot_to_center = -62.94
           pivot_to_drive = 133.51
+          pivot_to_feedthru = 21.6
           probe_axis_offset = 20.16
           drive_polarity = (1, -1)
           mspace_polarity = (1, 1)
@@ -159,8 +180,9 @@ class LaPDXYTransform(base.BaseTransform):
 
           config["transform"] = {
               "type": "lapd_xy",
-              "pivot_to_center": 62.94,
+              "pivot_to_center": -62.94,
               "pivot_to_drive": 133.51,
+              "pivot_to_feedthru": 21.6,
               "probe_axis_offset": 20.16,
               "drive_polarity": (1, -1),
               "mspace_polarity": (1, 1),
