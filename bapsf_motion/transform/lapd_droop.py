@@ -188,7 +188,10 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         #        ds = (a3 * r**3 + a2 * r**2 + a1 * r + a0) r cos(theta)
         #
         # coeffs = [a0, a1, a2, a3]
-        self._coeffs = np.array([6.209e-06, -2.211e-07, 2.084e-09, -5.491e-09])
+        # self._coeffs = np.array([6.209e-06, -2.211e-07, 2.084e-09, -5.491e-09])
+        self._coeffs = np.array(
+            [6.208863E-06, -2.210800E-07, 2.083731E-09, -5.490692E-09]
+        )
 
     @property
     def pivot_to_feedthru(self):
