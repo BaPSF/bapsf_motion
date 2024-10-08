@@ -288,8 +288,9 @@ class LaPDXYTransform(base.BaseTransform):
                 f"got type {type(inputs['droop_correct'])}."
             )
         elif inputs["droop_correct"]:
+            _drive = self._drive if self._drive is not None else self.axes
             inputs["droop_correct"] = LaPDXYDroopCorrect(
-                drive=self._drive,
+                drive=_drive,
                 pivot_to_feedthru=inputs["pivot_to_feedthru"],
             )
         else:
