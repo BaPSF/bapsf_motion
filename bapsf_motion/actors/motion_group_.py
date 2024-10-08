@@ -948,6 +948,14 @@ class MotionGroup(EventActor):
 
         return self.move_to(pos=pos)
 
+    def set_zero(self):
+        # transform do not necessarily map the motion space zero to the
+        # zero of the probe drive space
+        #
+        drive_zero_point = self.transform([0.0, 0.0], to_coords="drive")
+        drive_zero_point = drive_zero_point.squeeze()
+        self.drive.send_command("set_position", *drive_zero_point)
+
     @property
     def is_moving(self):
         return any([ax.is_moving for ax in self.drive.axes])
