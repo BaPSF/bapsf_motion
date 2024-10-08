@@ -15,6 +15,18 @@ from bapsf_motion.actors.drive_ import Drive
 
 
 class DroopCorrectABC(ABC):
+    """
+    Abstract base class for probe droop correction classes.
+
+    Parameters
+    ----------
+    drive: |Drive|
+        The instance of |Drive| the droop correction will be working
+        with.
+
+    kwargs:
+        Keyword arguments that are specific to the subclass.
+    """
     _probe_shaft_od = NotImplemented  # type: u.Quantity
     _probe_shaft_wall = NotImplemented  # type: u.Quantity
     _probe_shaft_material = NotImplementedError  # type: str
@@ -48,6 +60,36 @@ class DroopCorrectABC(ABC):
         #       and _convert_to_nondroop_points()
 
     def __call__(self, points, to_points) -> np.ndarray:
+        """
+        Adjust ``points`` from a non-droop position to a droop position,
+        and vice versa. ``points`` need to be giving in coordinates
+        with respect to the ball valve pivot, and NOT the LaPD
+        coordinate system.
+
+        Parameters
+        ----------
+        points : :term:`array-like`
+            A single point or array of points for which the droop /
+            non-droop correction will be applied.  These points must
+            be given in a coordinate system with respect to the ball
+            valve pivot, and NOT the LaPD coordinate system.  The array
+            of points needs to be of size :math:`M` or
+            :math:`N \times M` where :math:`M` is the dimensionality of
+            the :term:`motion space` and :math:`N` is the number of
+            points to be transformed.
+
+        to_points : str
+            If ``"droop"``, then adjust ``points`` from a non-droop
+            position to a droop position.  If ``"non-droop"``, then
+            adjust ``points`` from a droop position to a non-droop.
+
+        Returns
+        -------
+        adjusted_points: :term:`array_like`
+            Droop / non-droop adjusted points.  Will have the same
+            dimensionality as ``points``.
+
+        """
         # validate to_coords
         valid_to_points = {"droop", "nondroop", "ndroop", "non-droop"}
         if not isinstance(to_points, str):
@@ -84,14 +126,17 @@ class DroopCorrectABC(ABC):
     @property
     def dimensionality(self) -> int:
         """
-        The designed dimensionality of the transform.  If ``-1``, then
-        the transform does not have a fixed dimensionality, and it can
-        morph to the associated |Drive|.
+        The designed dimensionality of the droop correction.  If ``-1``,
+        then the transform does not have a fixed dimensionality, and it
+        can morph to the associated |Drive|.
         """
         return self._dimensionality
 
     @property
     def drive(self) -> Union[Drive, None]:
+        """
+        The |Drive| the droop / non-droop correction will be working on.
+        """
         return self._drive
 
     @abstractmethod
@@ -109,13 +154,63 @@ class DroopCorrectABC(ABC):
 
     @abstractmethod
     def _convert_to_droop_points(self, points: np.ndarray) -> np.ndarray:
+        """
+        Convert given non-droop ``points`` into their droop
+        counterparts.
+
+        Parameters
+        ----------
+        points : :term:`array-like`
+            A single point or array of points for which the droop
+            correction will be applied.  These points must
+            be given in a coordinate system with respect to the ball
+            valve pivot, and NOT the LaPD coordinate system.  The array
+            of points needs to be of size :math:`M` or
+            :math:`N \times M` where :math:`M` is the dimensionality of
+            the :term:`motion space` and :math:`N` is the number of
+            points to be transformed.
+
+        Returns
+        -------
+        adjusted_points: :term:`array_like`
+            Droop adjusted points.  Will have the same dimensionality
+            as ``points``.
+
+        """
         ...
 
     @abstractmethod
     def _convert_to_nondroop_points(self, points: np.ndarray) -> np.ndarray:
+        """
+        Convert given droop ``points`` into their non-droop
+        counterparts.
+
+        Parameters
+        ----------
+        points : :term:`array-like`
+            A single point or array of points for which the non-droop
+            correction will be applied.  These points must
+            be given in a coordinate system with respect to the ball
+            valve pivot, and NOT the LaPD coordinate system.  The array
+            of points needs to be of size :math:`M` or
+            :math:`N \times M` where :math:`M` is the dimensionality of
+            the :term:`motion space` and :math:`N` is the number of
+            points to be transformed.
+
+        Returns
+        -------
+        adjusted_points: :term:`array_like`
+            Non-droop adjusted points.  Will have the same dimensionality
+            as ``points``.
+
+        """
         ...
 
     def _condition_points(self, points):
+        """
+        Condition / validate ``points`` to be compatible with the
+        functionality of this class.
+        """
         # make sure points is a numpy array
         if not isinstance(points, np.ndarray):
             points = np.array(points)
@@ -141,6 +236,7 @@ class DroopCorrectABC(ABC):
         return points
 
     def _convert(self, points, to_points):
+        """Adjust ``points`` to their droop / non-droop counterparts."""
 
         if to_points == "droop":
             adjusted_points = self._convert_to_droop_points(points)
