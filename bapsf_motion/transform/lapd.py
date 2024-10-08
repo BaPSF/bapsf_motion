@@ -1,4 +1,4 @@
-"""Module that defines the LaPD related tranform classes."""
+"""Module that defines the LaPD related transform classes."""
 __all__ = ["LaPDXYTransform"]
 __transformer__ = ["LaPDXYTransform"]
 
