@@ -42,7 +42,8 @@ class DroopCorrectABC(ABC):
         self.inputs = self._validate_inputs(kwargs)
         # self._config_keys = {"type"}.union(set(self.inputs.keys()))
 
-        # self.dependencies = []  # type: List[BaseTransform]
+        # TODO: add some methods to validate _convert_to_droop_points()
+        #       and _convert_to_nondroop_points()
 
         # validate matrix
         # self._validate_matrix_to_drive()
