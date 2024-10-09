@@ -160,6 +160,9 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
           architecture: ${{ matrix.architecture }}
+      - name: Platform architecture
+        run: |
+          python -c "import platform; print(platform.machine())"
       - name: Install 'bapsf_motion' dependencies
         if: ${{ matrix.architecture == 'x64' }}
         run: |
