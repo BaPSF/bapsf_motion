@@ -59,7 +59,7 @@ class DroopCorrectABC(ABC):
         # TODO: add some methods to validate _convert_to_droop_points()
         #       and _convert_to_nondroop_points()
 
-    def __call__(self, points, to_points) -> np.ndarray:
+    def __call__(self, points: np.ndarray, to_points: str) -> np.ndarray:
         """
         Adjust ``points`` from a non-droop position to a droop position,
         and vice versa. ``points`` need to be giving in coordinates
