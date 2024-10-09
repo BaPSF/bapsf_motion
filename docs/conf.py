@@ -478,7 +478,7 @@ texinfo_documents = [
 # -- NBSphinx options
 
 if os.environ.get("READTHEDOCS"):
-    nbsphinx_kernel_name = "python-upstream-dev"
+    nbsphinx_kernel_name = "Python 3 (ipykernel)"
 
 nbsphinx_allow_errors = True
 nbsphinx_thumbnails = {
