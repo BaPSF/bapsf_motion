@@ -329,7 +329,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
 
         .. math::
 
-           ds = \left( \right) * r * cos(\theta)
+           ds = ( a_3 r^3 + a_2 r^2 + a_1 r + a_0 ) r cos(\theta)
 
     """
     _probe_shaft_od = 0.375 * u.imperial.inch
