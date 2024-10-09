@@ -261,13 +261,15 @@ class BaseTransform(ABC):
             # dimensions are flipped from expected
             points = np.swapaxes(points, 0, 1)
 
-        if points.dtype not in (np.integer, np.floating):
+        if np.issubdtype(points.dtype, np.floating):
+            pass
+        if np.issubdtype(points.dtype, np.integer):
+            points = points.astype(np.float64)
+        else:
             raise ValueError(
-                "Expected a 2D array of dtype integer or flaoting, but "
+                "Expected a 2D array of dtype integer or floating, but "
                 f"got dtype {points.dtype}."
             )
-        elif points.dtype == np.integer:
-            points = points.astype(np.float64)
 
         return points
 
