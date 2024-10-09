@@ -256,7 +256,7 @@ class DroopCorrectABC(ABC):
 
         if np.issubdtype(points.dtype, np.floating):
             pass
-        if np.issubdtype(points.dtype, np.integer):
+        elif np.issubdtype(points.dtype, np.integer):
             points = points.astype(np.float64)
         else:
             raise ValueError(
