@@ -217,7 +217,6 @@ exclude_patterns = [
     "**.ipynb_checkpoints",
     "common_links.rst",
     "**Untitled*",
-    "notebooks",
 ]
 
 html_extra_path = ["robots.txt"]
@@ -478,6 +477,7 @@ texinfo_documents = [
 
 # -- NBSphinx options
 
+nbsphinx_allow_errors = True
 nbsphinx_thumbnails = {
     "notebooks/*": "_static/BaPSF_Logo_White_RGB.png",
     "notebooks/*/*": "_static/BaPSF_Logo_White_RGB.png",
