@@ -383,7 +383,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
 
     @property
     def coefficients(self) -> np.ndarray:
-        """
+        r"""
         Coefficients for the droop correction polynomial.
 
         .. math::
