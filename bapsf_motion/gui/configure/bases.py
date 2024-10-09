@@ -3,18 +3,9 @@ __all__ = ["_ConfigOverlay", "_OverlayWidget",]
 import logging
 
 from abc import abstractmethod
-from PySide6.QtCore import (
-    Qt,
-    Signal,
-)
-from PySide6.QtGui import (
-    QColor,
-    QPainter,
-)
-from PySide6.QtWidgets import (
-    QWidget,
-    QSizePolicy,
-)
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QColor, QPainter
+from PySide6.QtWidgets import QWidget, QSizePolicy
 from typing import Union
 
 from bapsf_motion.actors import MotionGroup
