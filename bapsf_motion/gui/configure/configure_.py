@@ -3615,14 +3615,3 @@ class ConfigureGUI(QMainWindow):
             self.rm.terminate()
 
         event.accept()
-
-
-if __name__ == "__main__":
-    from PySide6.QtWidgets import QApplication
-
-    app = QApplication([])
-
-    window = ConfigureGUI()
-    window.show()
-
-    app.exec()
