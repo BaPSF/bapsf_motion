@@ -482,8 +482,8 @@ if os.environ.get("READTHEDOCS"):
 
 nbsphinx_allow_errors = True
 nbsphinx_thumbnails = {
-    "notebooks/*": "_static/BaPSF_Logo_White_RGB.png",
-    "notebooks/*/*": "_static/BaPSF_Logo_White_RGB.png",
+    "notebooks/*": "_static/BaPSF_Logo_Color_RGB.png",
+    "notebooks/*/*": "_static/BaPSF_Logo_Color_RGB.png",
 }
 
 # adapted from
