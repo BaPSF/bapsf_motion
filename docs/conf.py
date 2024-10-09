@@ -477,6 +477,9 @@ texinfo_documents = [
 
 # -- NBSphinx options
 
+if os.environ.get("READTHEDOCS"):
+    nbsphinx_kernel_name = "python3"
+
 nbsphinx_allow_errors = True
 nbsphinx_thumbnails = {
     "notebooks/*": "_static/BaPSF_Logo_Color_RGB.png",
