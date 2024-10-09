@@ -21,3 +21,5 @@ python:
     - requirements: requirements/docs.txt
     - method: pip
       path: .
+    - method: pip
+      path: ipykernel  # needed for nbsphinx on RTD
