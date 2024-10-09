@@ -375,15 +375,28 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
 
     @property
     def pivot_to_feedthru(self):
+        """
+        Distance from the ball valve pivot to the probe drive vacuum
+        feed-through.
+        """
         return self.inputs["pivot_to_feedthru"]
 
     @property
     def coefficients(self) -> np.ndarray:
+        """
+        Coefficients for the droop correction polynomial.
+
+        .. math::
+
+           ds = ( a_3 r^3 + a_2 r^2 + a_1 r + a_0 ) r cos(\theta)
+
+        ``coefficients = [a0, a1, a2, a3]``
+        """
         return self._coeffs
 
     def _convert_to_fit_units(self, points: np.ndarray) -> np.ndarray:
         # scale points from the deployed dive units to the units used
-        # for determining the droop fit
+        # for determining the droop fit (i.e. the Solidworks FEA)
         #
         if self._drive is None:
             return points
@@ -400,7 +413,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
 
     def _convert_to_deployed_units(self, points: np.ndarray) -> np.ndarray:
         # scale points from the units used for determining the droop fit
-        # to the deployed dive units
+        # (i.e. the Solidworks FEA) to the deployed dive units
         #
         if self._drive is None:
             return points
@@ -470,9 +483,6 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         # Adjust to droop coords
         _points[..., 0] += dx
         _points[..., 1] += dy
-
-        # 5. translate back to LaPD coords
-        # droop_points[..., 0] = _sign * (self.pivot_to_center - droop_points[..., 0])
 
         return self._convert_to_deployed_units(_points)
 
