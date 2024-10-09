@@ -133,6 +133,27 @@ class DroopCorrectABC(ABC):
         return self._dimensionality
 
     @property
+    def probe_shaft_od(self) -> u.Quantity:
+        """
+        Outer diameter (OD) of the probe shaft associated with the droop
+        correction."""
+        return self._probe_shaft_od
+
+    @property
+    def probe_shaft_wall(self) -> u.Quantity:
+        """
+        Wall thickness of the probe shaft associated with the droop
+        correction."""
+        return self._probe_shaft_wall
+
+    @property
+    def probe_shaft_material(self) -> str:
+        """
+        Material of the probe shaft associated with the droop
+        correction."""
+        return self._probe_shaft_material
+
+    @property
     def drive(self) -> Union[Drive, None]:
         """
         The |Drive| the droop / non-droop correction will be working on.
