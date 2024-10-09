@@ -1,5 +1,5 @@
 # these are dependencies required to use the package on a 32-bit version of Python
 # pandas 2.1+ does NOT successfully install on a 32-bit python while on a 64-bt platform
 pandas <= 2.0.3
-matplotlib >= 3.3.0, <= 3.9.0
+matplotlib >= 3.3.0, < 3.9.0
 -r install.txt
