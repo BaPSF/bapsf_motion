@@ -2,3 +2,7 @@
 .rst-content div.code-tab div[class^="highlight"] {
   margin-bottom: 1px
 }
+
+.rst-content div.nbsphinx-gallery a {
+  background-color: rgb(240, 240, 225)
+}
