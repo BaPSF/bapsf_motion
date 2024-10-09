@@ -4,28 +4,20 @@ Notebook Examples
 =================
 
 .. contents::
-    :local:
-
-General Notebooks
------------------
-
-.. nbgallery::
-    :glob:
-
-    notebooks/*
+   :local:
 
 Motion Builder Notebooks
 ------------------------
 
 .. nbgallery::
-    :glob:
+   :glob:
 
-    notebooks/motion_list/*
+   notebooks/motion_list/*
 
 Transform Notebooks
 -------------------
 
 .. nbgallery::
-    :glob:
+   :glob:
 
-    notebooks/transform/*
+   notebooks/transform/*

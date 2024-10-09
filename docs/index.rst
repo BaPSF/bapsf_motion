@@ -12,7 +12,7 @@ BaPSF Motion Documentation
    :caption: First Steps
    :maxdepth: 1
 
-   Notebooks <notebooks>
+   Notebooks <notebooks_>
    toml/index
    available_transformers
 
