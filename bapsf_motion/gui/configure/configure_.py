@@ -59,6 +59,7 @@ from bapsf_motion.actors import (
     Axis,
 )
 from bapsf_motion.gui.configure.bases import _OverlayWidget
+from bapsf_motion.gui.configure.helpers import gui_logger as _logger
 from bapsf_motion.gui.widgets import (
     QLogger,
     StyleButton,
@@ -80,8 +81,6 @@ from bapsf_motion.utils import units as u
 # noqa
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
-
-_logger = logging.getLogger("GUI")
 
 
 class _ConfigOverlay(_OverlayWidget):
