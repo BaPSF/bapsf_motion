@@ -325,6 +325,12 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
                                      -_    |
                                        -  <-
 
+      * The fitted polynomial for the droop correction is
+
+        .. math::
+
+           ds = \left( \right) * r * cos(\theta)
+
     """
     _probe_shaft_od = 0.375 * u.imperial.inch
     _probe_shaft_wall = 0.035 * u.imperial.inch
