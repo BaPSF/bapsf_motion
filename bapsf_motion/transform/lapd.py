@@ -207,6 +207,7 @@ class LaPDXYTransform(base.BaseTransform):
         mspace_polarity: Tuple[int, int] = (-1, 1),
         droop_correct: bool = False,
     ):
+        self._droop_correct_callable = None
         super().__init__(
             drive,
             pivot_to_center=pivot_to_center,
@@ -311,12 +312,10 @@ class LaPDXYTransform(base.BaseTransform):
             )
         elif inputs["droop_correct"]:
             _drive = self._drive if self._drive is not None else self.axes
-            inputs["droop_correct"] = LaPDXYDroopCorrect(
+            self._droop_correct_callable = LaPDXYDroopCorrect(
                 drive=_drive,
                 pivot_to_feedthru=inputs["pivot_to_feedthru"],
             )
-        else:
-            inputs["droop_correct"] = None
 
         return inputs
 
@@ -456,7 +455,8 @@ class LaPDXYTransform(base.BaseTransform):
 
     @property
     def droop_correct(self) -> Union[DroopCorrectABC, None]:
-        return self.inputs["droop_correct"]
+        # return self.inputs["droop_correct"]
+        return self._droop_correct_callable
 
     @property
     def deployed_side(self):
