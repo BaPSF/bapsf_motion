@@ -521,12 +521,19 @@ class Motor(EventActor):
 
         self._pause_heartbeat = False
 
-        super().__init__(
-            name=name,
-            logger=logger,
-            loop=loop,
-            auto_run=auto_run,
-        )
+        try:
+            super().__init__(
+                name=name,
+                logger=logger,
+                loop=loop,
+                auto_run=False,
+            )
+        except ConnectionError as err:
+            self.logger.warning("Unable to connect to motor.", exc_info=err)
+            self.terminate(delay_loop_stop=True)
+
+        if not self.terminated:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         # actions to be done during object instantiation, but before
@@ -1018,6 +1025,12 @@ class Motor(EventActor):
         thread_id: int
             ID of the thread the calling functionality is operating in.
         """
+        if self.terminated:
+            raise RuntimeError(
+                f"Can not send command {command} to motor, since the "
+                f"motor has been terminated."
+            )
+
         if self._commands[command]["method_command"]:
             # execute respectively named method
             meth = getattr(self, command)

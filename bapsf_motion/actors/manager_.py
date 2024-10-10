@@ -329,7 +329,8 @@ class RunManager(EventActor):
             return
 
         for mg in self.mgs.values():
-            mg.run()
+            if not mg.terminated:
+                mg.run()
     
     @property
     def mgs(self) -> Dict[Union[str, int], MotionGroup]:

@@ -96,7 +96,10 @@ class Drive(EventActor):
 
         self._axes = tuple(axis_objs)
 
-        self.run(auto_run=auto_run)
+        if any(ax.terminated for ax in self._axes):
+            self.terminate(delay_loop_stop=True)
+        else:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         return
@@ -188,6 +191,7 @@ class Drive(EventActor):
         ``settings`` dictionary.  The key-value pairs defined in
         ``settings`` can only match those of |Axis| input arguments.
         """
+
         ax = Axis(
             **{
                 **settings,
