@@ -32,17 +32,17 @@ from PySide6.QtWidgets import (
 from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors import RunManager, MotionGroup
-from bapsf_motion.gui.configure.helpers import gui_logger as _logger
+from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
-from bapsf_motion.gui.widgets import  QLogger, StyleButton, VLinePlain
-from bapsf_motion.utils import toml
+from bapsf_motion.gui.widgets import QLogger, StyleButton, VLinePlain
+from bapsf_motion.utils import toml, _deepcopy_dict
 
 
 class RunWidget(QWidget):
     def __init__(self, parent: "ConfigureGUI"):
         super().__init__(parent=parent)
 
-        self._logger = _logger
+        self._logger = gui_logger
 
         # Define BUTTONS
 
@@ -259,8 +259,9 @@ class ConfigureGUI(QMainWindow):
         self._mg_being_modified = None  # type: MotionGroup
 
         # setup logger
+        self._logging_config_dict = _deepcopy_dict(gui_logger_config_dict)
         logging.config.dictConfig(self._logging_config_dict)
-        self._logger = _logger
+        self._logger = gui_logger
         self._rm_logger = logging.getLogger("RM")
 
         self._define_main_window()
@@ -344,49 +345,8 @@ class ConfigureGUI(QMainWindow):
         self._rm = new_rm
 
     @property
-    def _logging_config_dict(self):
-        return {
-            "version": 1,
-            "disable_existing_loggers": False,
-            "formatters": {
-                "default": {
-                    "class": "logging.Formatter",
-                    "format": "%(asctime)s - [%(levelname)s] { %(name)s }  %(message)s",
-                    "datefmt": "%H:%M:%S",
-                },
-            },
-            "handlers": {
-                "stdout": {
-                    "class": "logging.StreamHandler",
-                    "level": "WARNING",
-                    "formatter": "default",
-                    "stream": "ext://sys.stdout",
-                },
-                "stderr": {
-                    "class": "logging.StreamHandler",
-                    "level": "ERROR",
-                    "formatter": "default",
-                    "stream": "ext://sys.stderr",
-                },
-            },
-            "loggers": {
-                "": {  # root logger
-                    "level": "WARNING",
-                    "handlers": ["stderr", "stdout"],
-                    "propagate": True,
-                },
-                "GUI": {
-                    "level": "DEBUG",
-                    "handlers": [],
-                    "propagate": True,
-                },
-                "RM": {
-                    "level": "DEBUG",
-                    "handlers": [],
-                    "propagate": True,
-                },
-            },
-        }
+    def logging_config_dict(self):
+        return self._logging_config_dict
 
     def replace_rm(self, config):
         if isinstance(self.rm, RunManager):
