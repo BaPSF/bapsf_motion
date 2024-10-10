@@ -488,7 +488,9 @@ class MGWidget(QWidget):
     mg_loop = asyncio.new_event_loop()
 
     def __init__(
-        self, starting_mg: MotionGroup = None, parent: "configure_.ConfigureGUI" = None
+        self,
+        mg_config: MotionGroupConfig = None,
+        parent: "configure_.ConfigureGUI" = None,
     ):
         super().__init__(parent=parent)
 
@@ -498,8 +500,8 @@ class MGWidget(QWidget):
         self._mg_index = None
 
         self._mg_config = None
-        if isinstance(starting_mg, MotionGroup):
-            self._mg_config = _deepcopy_dict(starting_mg.config)
+        if isinstance(mg_config, MotionGroupConfig):
+            self._mg_config = _deepcopy_dict(mg_config)
 
         # Define BUTTONS
 

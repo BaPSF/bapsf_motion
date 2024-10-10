@@ -481,7 +481,7 @@ class ConfigureGUI(QMainWindow):
             self._mg_being_modified = None
 
     def _spawn_mg_widget(self, mg: MotionGroup = None):
-        self._mg_widget = MGWidget(mg, parent=self)
+        self._mg_widget = MGWidget(mg.config, parent=self)
         self._mg_widget.closing.connect(self._switch_stack)
         self._mg_widget.returnConfig.connect(self.add_mg_to_rm)
         self._mg_widget.discard_btn.clicked.connect(self._restart_motion_group)
