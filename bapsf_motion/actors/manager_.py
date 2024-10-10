@@ -46,6 +46,10 @@ class RunManagerConfig(UserDict):
                     config = toml.load(f)
             else:
                 config = toml.loads(config)
+        elif isinstance(config, Path):
+            # path to TOML file
+            with open(config, "rb") as f:
+                config = toml.load(f)
         elif not isinstance(config, dict):
             raise TypeError(
                 f"Expected 'config' to be of type dict, got type {type(config)}."
