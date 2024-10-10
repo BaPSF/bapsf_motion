@@ -126,6 +126,8 @@ class EventActor(BaseActor, ABC):
 
         super().__init__(name=name, logger=logger)
 
+        self._terminated = False
+
         self._thread = None
         self._loop = self.setup_event_loop(loop)
         self._tasks = None
@@ -134,6 +136,11 @@ class EventActor(BaseActor, ABC):
         self._initialize_tasks()
 
         self.run(auto_run)
+
+    @property
+    def terminated(self):
+        """Indicates if the actor has been terminated."""
+        return self._terminated
 
     @property
     def tasks(self) -> List[asyncio.Task]:
@@ -269,6 +276,8 @@ class EventActor(BaseActor, ABC):
         for task in list(self.tasks):
             self.loop.call_soon_threadsafe(task.cancel)
             self.tasks.remove(task)
+
+        self._terminated = True
 
         if delay_loop_stop:
             return
