@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QComboBox,
 )
-from typing import Dict, Optional, Union
+from typing import Any, Dict, Optional, Union
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
