@@ -31,7 +31,7 @@ from PySide6.QtWidgets import (
 )
 from typing import Any, Dict, Optional, Union
 
-from bapsf_motion.actors import RunManager, MotionGroup
+from bapsf_motion.actors import RunManager, RunManagerConfig, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 from bapsf_motion.gui.widgets import QLogger, StyleButton, VLinePlain
@@ -250,7 +250,7 @@ class ConfigureGUI(QMainWindow):
     def __init__(
         self,
         *,
-        config: Optional[Path] = None,
+        config: Union[Path, str, Dict[str, Any], RunManagerConfig] = None,
         defaults: Optional[Path] = None,
     ):
         super().__init__()
@@ -284,7 +284,13 @@ class ConfigureGUI(QMainWindow):
 
         self._connect_signals()
 
-        self.replace_rm({"name": "A New Run"})
+        if isinstance(config, Path) and not config.exists():
+            config = None
+
+        if config is None:
+            config = {"name": "A New Run"}
+
+        self.replace_rm(config=config)
 
     def _connect_signals(self):
         # Note: _mg_widget signals are connected in _spawn_mg_widget()
