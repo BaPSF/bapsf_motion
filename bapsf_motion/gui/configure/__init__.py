@@ -31,6 +31,8 @@ if __name__ == "__main__":
 
     if args.config_file is not None and not args.config_file.exists():
         args.config_file = None
+    elif args.config_file is not None:
+        args.config_file = args.config_file.resolve()
 
     app = QApplication([])
 
