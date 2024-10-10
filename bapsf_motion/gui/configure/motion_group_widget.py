@@ -207,6 +207,9 @@ class AxisControlWidget(QWidget):
         self.mg.move_to(position)
 
     def _update_display_of_axis_status(self):
+        if self._mg.terminated:
+            return
+
         # pos = self.axis.motor.status["position"]
         pos = self.position
         self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
@@ -462,7 +465,7 @@ class DriveControlWidget(QWidget):
             acw.link_axis(self.mg, ii)
             acw.show()
 
-        self.setEnabled(True)
+        self.setEnabled(not self._mg.terminated)
 
     def unlink_motion_group(self):
         for ii, acw in enumerate(self._axis_control_widgets):
