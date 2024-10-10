@@ -253,6 +253,7 @@ class EventActor(BaseActor, ABC):
             is only made available to help with subclassing.
             (DEFAULT: `True`)
         """
+        self._terminated = False
         if self.loop is None or self.loop.is_running() or not auto_run:
             return
 
