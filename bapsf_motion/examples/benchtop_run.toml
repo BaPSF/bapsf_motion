@@ -7,11 +7,11 @@ name = "Bench Test"
 [run.mg.drive]
 name = "1-and-1"
 axes.0.name = "X"
-axes.0.ip = "192.168.6.103"
+axes.0.ip = "192.168.6.104"
 axes.0.units = "cm"
 axes.0.units_per_rev = 0.254
 axes.1.name = "Y"
-axes.1.ip = "192.168.6.104"
+axes.1.ip = "192.168.6.103"
 axes.1.units = "cm"
 axes.1.units_per_rev = 0.254
 
