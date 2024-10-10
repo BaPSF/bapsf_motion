@@ -29,7 +29,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QStackedWidget,
 )
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors import RunManager, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger as _logger
@@ -247,7 +247,12 @@ class ConfigureGUI(QMainWindow):
     _OPENED_FILE = None  # type: Union[Path, None]
     configChanged = Signal()
 
-    def __init__(self):
+    def __init__(
+        self,
+        *,
+        config: Optional[Path] = None,
+        defaults: Optional[Path] = None,
+    ):
         super().__init__()
 
         self._rm = None  # type: RunManager

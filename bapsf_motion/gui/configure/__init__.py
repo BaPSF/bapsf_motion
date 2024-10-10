@@ -34,7 +34,10 @@ if __name__ == "__main__":
 
     app = QApplication([])
 
-    window = ConfigureGUI()
+    window = ConfigureGUI(
+        config=args.config_file,
+        defaults=args.defaults_file,
+    )
     window.show()
 
     app.exec()
