@@ -10,6 +10,7 @@ import logging
 
 from collections import UserDict
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, Union
 
 from bapsf_motion.actors.base import EventActor
@@ -28,7 +29,7 @@ class RunManagerConfig(UserDict):
 
     def __init__(
         self,
-        config: Union[str, Dict[str, Any], "RunManagerConfig"],
+        config: Union[str, Dict[str, Any], "RunManagerConfig", Path],
         logger: logging.Logger = None,
     ):
         self.logger = logging.getLogger("RM_config") if logger is None else logger
@@ -39,8 +40,12 @@ class RunManagerConfig(UserDict):
             # This should never happen ...
             pass
         elif isinstance(config, str):
-            # Assume config is a TOML like string
-            config = toml.loads(config)
+            # could be path to TOML file or a TOML like string
+            if Path(config).exists():
+                with open(config, "rb") as f:
+                    config = toml.load(f)
+            else:
+                config = toml.loads(config)
         elif not isinstance(config, dict):
             raise TypeError(
                 f"Expected 'config' to be of type dict, got type {type(config)}."
@@ -269,7 +274,7 @@ class RunManagerConfig(UserDict):
 class RunManager(EventActor):
     def __init__(
         self,
-        config: Union[str, Dict[str, Any]],
+        config: Union[str, Dict[str, Any], RunManagerConfig, Path],
         *,
         # logger: logging.Logger = None,
         # loop: asyncio.AbstractEventLoop = None,
