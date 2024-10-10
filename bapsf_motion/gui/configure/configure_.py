@@ -462,7 +462,10 @@ class ConfigureGUI(QMainWindow):
         item = self._run_widget.mg_list_widget.currentItem()
         key, mg_name = self._get_mg_name_from_list_name(item.text())
         mg = self.rm.mgs[key]
-        mg.terminate(delay_loop_stop=True)
+
+        if not mg.terminated:
+            mg.terminate(delay_loop_stop=True)
+
         self._mg_being_modified = mg
         self._spawn_mg_widget(mg)
         self._mg_widget.mg_index = key
