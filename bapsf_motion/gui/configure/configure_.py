@@ -255,8 +255,8 @@ class ConfigureGUI(QMainWindow):
     ):
         super().__init__()
 
-        self._rm = None  # type: RunManager
-        self._mg_being_modified = None  # type: MotionGroup
+        self._rm = None  # type: Union[RunManager, None]
+        self._mg_being_modified = None  # type: Union[MotionGroup, None]
 
         # setup logger
         self._logging_config_dict = _deepcopy_dict(gui_logger_config_dict)
@@ -269,7 +269,7 @@ class ConfigureGUI(QMainWindow):
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
         self._run_widget = RunWidget(self)
-        self._mg_widget = None  # type: MGWidget
+        self._mg_widget = None  # type: Union[MGWidget, None]
 
         self._stacked_widget = QStackedWidget(parent=self)
         self._stacked_widget.addWidget(self._run_widget)
