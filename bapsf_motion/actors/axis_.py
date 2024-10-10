@@ -103,7 +103,10 @@ class Axis(EventActor):
             auto_run=False,
         )
 
-        self.run(auto_run=auto_run)
+        if self._motor.terminated:
+            self.terminate(delay_loop_stop=True)
+        else:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         return

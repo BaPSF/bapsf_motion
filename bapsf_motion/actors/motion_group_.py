@@ -752,7 +752,10 @@ class MotionGroup(EventActor):
         self._config.link_motion_builder(self.mb)
         self._config.link_transform(self.transform)
 
-        self.run(auto_run=auto_run)
+        if self._drive.terminated:
+            self.terminate(delay_loop_stop=True)
+        elif not self.terminated:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         return
@@ -801,6 +804,9 @@ class MotionGroup(EventActor):
                 exc_info=err,
             )
             self._drive = None
+
+        if self._drive.terminated:
+            self.terminate(delay_loop_stop=True)
 
         return self._drive
 
