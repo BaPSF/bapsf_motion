@@ -14,7 +14,7 @@ from PySide6.QtCore import (
     Signal,
     Slot,
 )
-from PySide6.QtGui import QCloseEvent
+from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtWidgets import (
     QMainWindow,
     QHBoxLayout,
@@ -28,8 +28,13 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QFileDialog,
     QStackedWidget,
+    QListWidgetItem,
 )
 from typing import Any, Dict, Optional, Union
+
+# noqa
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta
 
 from bapsf_motion.actors import RunManager, RunManagerConfig, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
@@ -427,12 +432,18 @@ class ConfigureGUI(QMainWindow):
         if self.rm.mgs is None or not self.rm.mgs:
             return
 
-        mg_labels = []
-        for key, val in self.rm.mgs.items():
-            label = self._generate_mg_list_name(key, val.config["name"])
-            mg_labels.append(label)
-
-        self._run_widget.mg_list_widget.addItems(mg_labels)
+        for key, mg in self.rm.mgs.items():
+            label = self._generate_mg_list_name(key, mg.config["name"])
+            self.logger.info(f"Adding to MG List - {label}")
+            _icon = (
+                qta.icon("fa5.window-close", color="red") if mg.terminated
+                else qta.icon("fa5.check-circle", color="green")
+            )  # type: QIcon
+            _item = QListWidgetItem(
+                _icon,
+                label,
+                listview=self._run_widget.mg_list_widget,
+            )
 
     def change_run_name(self):
         name = self._run_widget.run_name_widget.text()
