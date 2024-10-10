@@ -2,13 +2,8 @@ __all__ = ["AxisConfigWidget", "DriveConfigOverlay"]
 
 import asyncio
 
-from PySide6.QtCore import (
-    Qt,
-    Signal,
-)
-from PySide6.QtGui import (
-    QDoubleValidator,
-)
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
