@@ -777,6 +777,7 @@ class MGWidget(QWidget):
     def _change_drive(self, config: Dict[str, Any]):
         self.logger.info("Replacing the motion group's drive.")
         self.mg.replace_drive(config)
+        self.mg.run()
 
         self.mb_btn.setEnabled(True)
         self.transform_btn.setEnabled(True)
@@ -805,7 +806,7 @@ class MGWidget(QWidget):
         if self.mg.drive is None:
             return
 
-        self.mg.drive.run()
+        self.mg.run()
         self._refresh_drive_control()
         self.configChanged.emit()
 
