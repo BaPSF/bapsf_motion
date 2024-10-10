@@ -312,7 +312,7 @@ class AxisConfigWidget(QWidget):
 
         try:
             self.configChanged.disconnect()
-        except RuntimeError:
+        except (RuntimeError, RuntimeWarning):
             # everything already disconnected
             pass
 
@@ -687,7 +687,7 @@ class DriveConfigOverlay(_ConfigOverlay):
     def closeEvent(self, event):
         try:
             self.configChanged.disconnect()
-        except RuntimeError:
+        except (RuntimeError, RuntimeWarning):
             # everything already disconnected
             pass
 
