@@ -21,19 +21,17 @@ from typing import Any, Dict, Union
 import qtawesome as qta
 
 from bapsf_motion.actors import MotionGroup
+from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.widgets import HLinePlain, QLineEditSpecialized
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
 
-if False:
-    from bapsf_motion.gui.configure.configure_ import MGWidget
-
 
 class TransformConfigOverlay(_ConfigOverlay):
     registry = transform_registry
 
-    def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
+    def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
         super().__init__(mg, parent)
 
         self._transform = None

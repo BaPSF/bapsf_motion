@@ -25,6 +25,7 @@ from typing import Dict, Optional, Union
 import qtawesome as qta
 
 from bapsf_motion.actors import MotionGroup
+from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.widgets import (
     HLinePlain,
@@ -42,15 +43,12 @@ from bapsf_motion.utils import units as u
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
 
-if False:
-    from bapsf_motion.gui.configure.configure_ import MGWidget
-
 
 class MotionBuilderConfigOverlay(_ConfigOverlay):
     layer_registry = layer_registry
     exclusion_registry = exclusion_registry
 
-    def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
+    def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
         super().__init__(mg, parent)
 
         self._mb = None
@@ -69,7 +67,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # _params_input_widgets:
         #     dictionary of the actual widgets that control the _param_inputs
         #     values
-        self._param_inputs = {}  # type: Dict[str, Anay]
+        self._param_inputs = {}  # type: Dict[str, Any]
         self._params_widget = None  # type: Union[QWidget, None]
         self._params_field_widget = None  # type: Union[QWidget, None]
         self._params_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]

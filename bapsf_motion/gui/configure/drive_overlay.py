@@ -16,6 +16,7 @@ from PySide6.QtWidgets import (
 from typing import Any, Dict, List, Union
 
 from bapsf_motion.actors import Axis, Drive, MotionGroup
+from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.widgets import (
@@ -25,9 +26,6 @@ from bapsf_motion.gui.widgets import (
     StyleButton,
 )
 from bapsf_motion.utils import ipv4_pattern, _deepcopy_dict
-
-if False:
-    from bapsf_motion.gui.configure.configure_ import MGWidget
 
 
 class AxisConfigWidget(QWidget):
@@ -329,7 +327,7 @@ class AxisConfigWidget(QWidget):
 class DriveConfigOverlay(_ConfigOverlay):
     drive_loop = asyncio.new_event_loop()
 
-    def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
+    def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
         super().__init__(mg, parent)
 
         self._drive_handlers = []
