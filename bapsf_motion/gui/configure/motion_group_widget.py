@@ -111,6 +111,7 @@ class AxisControlWidget(QWidget):
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
+        _txt.setValidator(QDoubleValidator(decimals=2))
         self.jog_delta_label = _txt
 
         # Define ADVANCED WIDGETS
@@ -122,6 +123,7 @@ class AxisControlWidget(QWidget):
         self.jog_forward_btn.clicked.connect(self._jog_forward)
         self.jog_backward_btn.clicked.connect(self._jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
+        self.jog_delta_label.editingFinished.connect(self._validate_jog_value)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -220,6 +222,12 @@ class AxisControlWidget(QWidget):
         limits = self.axis.motor.status["limits"]
         self.limit_fwd_btn.setChecked(limits["CW"])
         self.limit_bwd_btn.setChecked(limits["CCW"])
+
+    def _validate_jog_value(self):
+        _txt = self.jog_delta_label.text()
+        val = 0.0 if _txt == "" else float(_txt)
+        val = abs(val)
+        self.jog_delta_label.setText(f"{val:.2f}")
 
     def _zero_axis(self):
         self.axis.send_command("zero")
