@@ -841,7 +841,7 @@ class MGWidget(QWidget):
         try:
             mg = MotionGroup(
                 config=self.mg_config,
-                logger=self.logger,
+                logger=logging.getLogger(f"{self.logger.name}.MGW"),
                 loop=self.mg_loop,
                 auto_run=True,
             )

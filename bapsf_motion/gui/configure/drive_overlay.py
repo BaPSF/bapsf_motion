@@ -1,6 +1,7 @@
 __all__ = ["AxisConfigWidget", "DriveConfigOverlay"]
 
 import asyncio
+import logging
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QDoubleValidator
@@ -244,7 +245,7 @@ class AxisConfigWidget(QWidget):
         try:
             axis = Axis(
                 **self.axis_config,
-                logger=self.logger,
+                logger=logging.getLogger(f"{self.logger.name}.AC"),
                 loop=self.axis_loop,
                 auto_run=True,
             )
@@ -634,7 +635,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             drive = Drive(
                 name=config["name"],
                 axes=list(config["axes"].values()),
-                logger=self.logger,
+                logger=logging.getLogger(f"{self.logger.name}.DC"),
                 loop=self.drive_loop,
                 auto_run=False,
             )
