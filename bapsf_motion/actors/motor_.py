@@ -566,6 +566,7 @@ class Motor(EventActor):
             or self.heartbeat_task.cancelled()
         ):
             self._configure_before_run()
+            self._initialize_tasks()
 
         super().run(auto_run=auto_run)
 
