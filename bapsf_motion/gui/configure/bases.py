@@ -83,7 +83,7 @@ class _ConfigOverlay(_OverlayWidget):
     configChanged = Signal()
     returnConfig = Signal(object)
 
-    def __init__(self, mg: MotionGroup, parent: "MGWidget" = None):
+    def __init__(self, mg: Union[MotionGroup, None], parent: "MGWidget" = None):
         super().__init__(parent=parent)
 
         self._logger = gui_logger
