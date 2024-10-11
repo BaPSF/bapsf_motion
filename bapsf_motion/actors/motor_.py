@@ -576,7 +576,7 @@ class Motor(EventActor):
             "thread": None,
             "socket": None,
             "tasks": None,
-            "max_connection_attempts": 3,
+            "max_connection_attempts": 1,
             "heartrate": _HeartRate(),  # in seconds
             "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
         }
