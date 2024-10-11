@@ -557,6 +557,9 @@ class Motor(EventActor):
 
     def run(self, auto_run=True):
 
+        # if actor was terminated, actor is restarting
+        self._terminated = False
+
         if (
             self.heartbeat_task is None
             or self.heartbeat_task.done()
