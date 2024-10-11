@@ -778,9 +778,12 @@ class MGWidget(QWidget):
 
     @Slot(object)
     def _change_drive(self, config: Dict[str, Any]):
-        self.logger.info("Replacing the motion group's drive.")
-        self.mg.replace_drive(config)
-        self.mg.run()
+        self.logger.info(f"Replacing the motion group's drive with config...\n{config}")
+        mg_config = _deepcopy_dict(self.mg_config)
+        mg_config["drive"] = config
+        self._mg_config = mg_config
+
+        self._spawn_motion_group()
 
         self.mb_btn.setEnabled(True)
         self.transform_btn.setEnabled(True)
