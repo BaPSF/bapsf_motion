@@ -230,7 +230,8 @@ class AxisControlWidget(QWidget):
         self.jog_delta_label.setText(f"{val:.2f}")
 
     def _zero_axis(self):
-        self.axis.send_command("zero")
+        self.logger.info(f"Setting zero of axis {self.axis_index}")
+        self.mg.set_zero(axis=self.axis_index)
 
     def link_axis(self, mg: MotionGroup, ax_index: int):
         if (
@@ -445,7 +446,7 @@ class DriveControlWidget(QWidget):
         self.mg.stop()
 
     def _zero_drive(self):
-        self.mg.drive.send_command("zero")
+        self.mg.set_zero()
 
     def link_motion_group(self, mg):
         if not isinstance(mg, MotionGroup):
