@@ -957,12 +957,35 @@ class MotionGroup(EventActor):
 
         return self.move_to(pos=pos)
 
-    def set_zero(self):
-        """Make current motion space position zero."""
-        # transform do not necessarily map the motion space zero to the
+    def set_zero(self, axis: Optional[int] = None):
+        """
+        Make current motion space position zero.
+
+        Parameters
+        ----------
+        axis: `int`, optional
+            If `None` (DEFAULT), then all axes will be set to zero.  If
+            `int`, then the axis corresponding to that index will be
+            set to zero.
+
+        """
+        # transform does not necessarily map the motion space zero to the
         # zero of the probe drive space
         #
-        drive_zero_point = self.transform([0.0, 0.0], to_coords="drive")
+        if isinstance(axis, int):
+            raise TypeError(f"Expected axis to be of type int, got type {type(axis)}.")
+        elif axis < 0 or axis > self.drive.naxes:
+            raise ValueError(
+                f"Axis index {axis} is out of range [0, {self.drive.naxes-1}]."
+            )
+
+        if axis is None:
+            pos = [0] * self.drive.naxes
+        else:
+            pos = self.position.value
+            pos[axis] = 0
+
+        drive_zero_point = self.transform(pos, to_coords="drive")
         drive_zero_point = drive_zero_point.squeeze()
         self.drive.send_command("set_position", *drive_zero_point)
 
