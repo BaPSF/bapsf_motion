@@ -850,9 +850,11 @@ class Motor(EventActor):
         """
         if (
             self.loop.is_running()
+            and self.heartbeat_task is not None
             and not self.heartbeat_task.done()
             and not self.heartbeat_task.cancelled()
         ):
+            # read from status if the heartbeat is operational
             return self.status["position"]
 
         pos = self.send_command("get_position")
