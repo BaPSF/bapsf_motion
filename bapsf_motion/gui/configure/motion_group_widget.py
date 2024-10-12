@@ -894,6 +894,9 @@ class MGWidget(QWidget):
         # Terminate MG before returning config so we do not risk having
         # conflicting MGs communicating with the motors
         if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
+            # disable the Drive control widget, so we do not risk creating
+            # extra events while terminating
+            self.drive_control_widget.setEnabled(False)
             self.mg.terminate(delay_loop_stop=True)
 
         self.returnConfig.emit(index, config)
@@ -905,6 +908,10 @@ class MGWidget(QWidget):
             self.configChanged.disconnect()
         except RuntimeError:
             pass
+
+        # disable the Drive control widget, so we do not risk creating
+        # extra events while terminating
+        self.drive_control_widget.setEnabled(False)
 
         if self._overlay_widget is not None:
             self._overlay_widget.close()
