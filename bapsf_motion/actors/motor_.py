@@ -1545,25 +1545,23 @@ class Motor(EventActor):
 
     def terminate(self, delay_loop_stop=False):
         self.logger.info("Terminating motor")
-        super().terminate(delay_loop_stop=True)
-        self._heartbeat_task = None
 
-        # TODO: add additional motor shutdown tasks (i.e. stop and disable)
+        # disconnect all signals before terminating
+        self.status_changed.disconnect_all()
+        self.movement_started.disconnect_all()
+        self.movement_finished.disconnect_all()
+
+        if not self.terminated:
+            self.stop()
+            self.disable()
+
+        super().terminate(delay_loop_stop=delay_loop_stop)
+        self._heartbeat_task = None
 
         try:
             self.socket.close()
         except AttributeError:
             pass
-
-        if delay_loop_stop:
-            return
-
-        # if we're stopping the loop, then all tasks need to be cancelled
-        for task in asyncio.all_tasks(self.loop):
-            if not task.done() or not task.cancelled():
-                self.loop.call_soon_threadsafe(task.cancel)
-
-        self.loop.call_soon_threadsafe(self.loop.stop)
 
     def stop(self):
         """Stop motor movement."""
