@@ -37,7 +37,7 @@ class AckFlags(Enum):
 
 
 class _HeartRate(NamedTuple):
-    BASE = 2.0  # seconds
+    BASE = 1.5  # seconds
     ACTIVE = 0.2
     SEARCHING = 3.0
     PAUSE = 5.0
