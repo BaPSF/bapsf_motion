@@ -890,6 +890,12 @@ class MGWidget(QWidget):
         self.logger.info(
             f"New MotionGroup configuration is being returned, {config}."
         )
+
+        # Terminate MG before returning config so we do not risk having
+        # conflicting MGs communicating with the motors
+        if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
+            self.mg.terminate(delay_loop_stop=True)
+
         self.returnConfig.emit(index, config)
         self.close()
 
@@ -903,7 +909,7 @@ class MGWidget(QWidget):
         if self._overlay_widget is not None:
             self._overlay_widget.close()
 
-        if isinstance(self.mg, MotionGroup):
+        if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
             self.mg.terminate(delay_loop_stop=True)
 
         self.mg_loop.call_soon_threadsafe(self.mg_loop.stop)
