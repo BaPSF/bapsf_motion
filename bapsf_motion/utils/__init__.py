@@ -39,14 +39,13 @@ class SimpleSignal:
             self.handlers.append(func)
 
     def disconnect(self, func=None):
-        if func is None:
-            self._handlers = None
-            return
-
         try:
             self.handlers.remove(func)
         except ValueError:
             pass
+
+    def disconnect_all(self):
+        self._handlers = None
 
     def emit(self):
         for handler in self.handlers:
