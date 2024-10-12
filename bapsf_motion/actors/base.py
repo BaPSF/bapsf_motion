@@ -8,8 +8,10 @@ __actors__ = ["BaseActor", "EventActor"]
 import asyncio
 import logging
 import threading
+import time
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
 
@@ -289,6 +291,17 @@ class EventActor(BaseActor, ABC):
             self.loop.call_soon_threadsafe(task.cancel)
             self.tasks.remove(task)
 
+        tstart = datetime.now()
+        while len(self.tasks) != 0:
+            for task in list(self.tasks):
+                if task.done() or task.cancelled():
+                    self.tasks.remove(task)
+
+            if (datetime.now() - tstart).microseconds > 6000000:
+                break
+            else:
+                time.sleep(0.1)
+
         self._terminated = True
 
         if delay_loop_stop:
@@ -298,5 +311,16 @@ class EventActor(BaseActor, ABC):
         for task in asyncio.all_tasks(self.loop):
             if not task.done() or not task.cancelled():
                 self.loop.call_soon_threadsafe(task.cancel)
+
+        tstart = datetime.now()
+        while any(
+            not (task.done() or task.cancelled())
+            for task in asyncio.all_tasks(self.loop)
+        ):
+            # continue waiting for all tasks to be cancelled
+            if (datetime.now() - tstart).microseconds > 6000000:
+                break
+            else:
+                time.sleep(0.1)
 
         self.loop.call_soon_threadsafe(self.loop.stop)
