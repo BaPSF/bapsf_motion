@@ -876,6 +876,10 @@ class Motor(EventActor):
         elif self.heartbeat_task.done():
             # remove task from task list
             self.tasks.remove(self._heartbeat_task)
+        else:
+            # val is a new task and heartbeat is still running...stop old heartbeat
+            self.loop.call_soon_threadsafe(self._heartbeat_task.cancel)
+            self.tasks.remove(self._heartbeat_task)
 
         self._heartbeat_task = val
         self.tasks.append(self._heartbeat_task)
