@@ -1638,7 +1638,7 @@ class Motor(EventActor):
 
             self.logger.warning("Moving off limits - enable limits")
             self.send_command("define_limits", 1)
-            self.sleep(4 * self.heartrate.active)
+            self.sleep(4 * self.heartrate.ACTIVE)
 
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
             if self._lost_connection(alarm_msg):
