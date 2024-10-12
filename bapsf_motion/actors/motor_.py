@@ -1508,7 +1508,11 @@ class Motor(EventActor):
         old_HR = self.heartrate.BASE
         beats = 0
         while True:
-            if self._pause_heartbeat:
+            if self.terminated:
+                # Motor is terminated or being terminated, so end the coroutine
+                # immediately so the associated Task can be cancelled/stopped.
+                continue
+            elif self._pause_heartbeat:
                 await asyncio.sleep(self.heartrate.PAUSE)
                 continue
             elif not self.status["connected"]:
