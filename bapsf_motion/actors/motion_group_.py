@@ -709,6 +709,7 @@ class MotionGroup(EventActor):
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
         build_mode: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
 
         self._drive = None
@@ -723,6 +724,7 @@ class MotionGroup(EventActor):
             logger=logger,
             loop=loop,
             auto_run=False,
+            parent=parent,
         )
         self.name = "MG"
 
@@ -795,6 +797,7 @@ class MotionGroup(EventActor):
                 logger=self.logger,
                 loop=self.loop,
                 auto_run=False,
+                parent=self,
                 **_config_inputs,
             )
             self._drive = dr

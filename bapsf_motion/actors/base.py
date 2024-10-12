@@ -122,7 +122,12 @@ class EventActor(BaseActor, ABC):
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
+
+        if parent is not None and not isinstance(parent, EventActor):
+            parent = None
+        self._parent = parent
 
         super().__init__(name=name, logger=logger)
 
@@ -136,6 +141,10 @@ class EventActor(BaseActor, ABC):
         self._initialize_tasks()
 
         self.run(auto_run)
+
+    @property
+    def parent(self) -> Optional["EventActor"]:
+        return self._parent
 
     @property
     def terminated(self):
@@ -180,8 +189,10 @@ class EventActor(BaseActor, ABC):
         if self.loop is None or not self.loop.is_running():
             # no loop has been created or loop is not running
             return None
-        elif self._thread is not None:
-            return self._thread.ident
+        elif self.thread is not None:
+            return self.thread.ident
+        elif self.parent is not None and self.parent.thread is not None:
+            return self.parent.thread.ident
 
         # get thread id from inside the event loop
         future = asyncio.run_coroutine_threadsafe(

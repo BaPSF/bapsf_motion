@@ -504,6 +504,7 @@ class Motor(EventActor):
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
 
         self._heartbeat_task = None
@@ -527,6 +528,7 @@ class Motor(EventActor):
                 logger=logger,
                 loop=loop,
                 auto_run=False,
+                parent=parent,
             )
         except ConnectionError as err:
             self.logger.warning("Unable to connect to motor.", exc_info=err)

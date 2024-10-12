@@ -77,6 +77,7 @@ class Drive(EventActor):
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
         self._axes = None
 
@@ -85,6 +86,7 @@ class Drive(EventActor):
             logger=logger,
             loop=loop,
             auto_run=False,
+            parent=parent,
         )
 
         axes = self._validate_axes(axes)
@@ -198,6 +200,7 @@ class Drive(EventActor):
                 "logger": self.logger,
                 "loop": self._loop,
                 "auto_run": False,
+                "parent": self,
             },
         )
 

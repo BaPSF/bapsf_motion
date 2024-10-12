@@ -8,7 +8,7 @@ __actors__ = ["Axis"]
 import asyncio
 import logging
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motor_ import Motor
@@ -82,6 +82,7 @@ class Axis(EventActor):
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
         # TODO: update units so inches can be used
         self._motor = None
@@ -93,6 +94,7 @@ class Axis(EventActor):
             logger=logger,
             loop=loop,
             auto_run=False,
+            parent=parent,
         )
 
         self._motor = Motor(
@@ -101,6 +103,7 @@ class Axis(EventActor):
             logger=self.logger,
             loop=self.loop,
             auto_run=False,
+            parent=self,
         )
 
         if self._motor.terminated:

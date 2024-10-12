@@ -11,7 +11,7 @@ import logging
 from collections import UserDict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motion_group_ import (
@@ -284,6 +284,7 @@ class RunManager(EventActor):
         # loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
         build_mode: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
         self._mgs = None
         self._config = None
@@ -292,6 +293,7 @@ class RunManager(EventActor):
         super().__init__(
             logger=logger,
             auto_run=False,
+            parent=parent
         )
         self.name = "RM"
 
@@ -354,7 +356,8 @@ class RunManager(EventActor):
             config=config,
             logger=self.logger,
             loop=self.loop,
-            auto_run=False
+            auto_run=False,
+            parent=self,
         )
 
     @property
