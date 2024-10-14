@@ -491,6 +491,19 @@ class ConfigureGUI(QMainWindow):
 
         return self._mg_widget
 
+    def _switch_stack(self):
+        _w = self._stacked_widget.currentWidget()
+        if isinstance(_w, RunWidget):
+            self._stacked_widget.addWidget(self._mg_widget)
+            self._stacked_widget.setCurrentWidget(self._mg_widget)
+        else:
+            # the stack widget is the MGWidget instance
+            self._stacked_widget.removeWidget(_w)
+            self._stacked_widget.setCurrentIndex(0)
+            _w.close()
+            _w.deleteLater()
+            self._mg_widget = None
+
     @Slot(int, object)
     def add_mg_to_rm(self, index: int, mg_config: Dict[str, Any]):
         index = None if index == -1 else index
@@ -516,19 +529,6 @@ class ConfigureGUI(QMainWindow):
             if match is None
             else (int(match.group("index")), match.group("name"))
         )
-
-    def _switch_stack(self):
-        _w = self._stacked_widget.currentWidget()
-        if isinstance(_w, RunWidget):
-            self._stacked_widget.addWidget(self._mg_widget)
-            self._stacked_widget.setCurrentWidget(self._mg_widget)
-        else:
-            # the stack widget is the MGWidget instance
-            self._stacked_widget.removeWidget(_w)
-            self._stacked_widget.setCurrentIndex(0)
-            _w.close()
-            _w.deleteLater()
-            self._mg_widget = None
 
     def closeEvent(self, event: "QCloseEvent") -> None:
         self.logger.info("Closing ConfigureGUI")
