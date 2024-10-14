@@ -118,7 +118,9 @@ class Drive(EventActor):
         for ax in self.axes:
             ax.run(auto_run=auto_run)
 
-    def _validate_axes(self, settings: List[Dict[str, Any]]) -> Tuple[Dict[str, Any]]:
+    def _validate_axes(
+        self, settings: List[Dict[str, Any]]
+    ) -> Tuple[Dict[str, Any], ...]:
         """
         Validate the |Axis| arguments for all axes defined in
         ``settings``.
@@ -240,7 +242,7 @@ class Drive(EventActor):
         return len(self.axes)
 
     @property
-    def anames(self) -> Tuple[str]:
+    def anames(self) -> Tuple[str, ...]:
         """Tuple of the names of the defined axes."""
         return tuple(ax.name for ax in self.axes)
 
