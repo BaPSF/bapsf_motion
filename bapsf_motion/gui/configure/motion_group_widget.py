@@ -6,6 +6,7 @@ import logging
 from PySide6.QtCore import Qt, Signal, Slot, QSize
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
+    QComboBox,
     QHBoxLayout,
     QLabel,
     QWidget,
@@ -553,11 +554,25 @@ class MGWidget(QWidget):
         self.quick_mg_btn = _btn
         self.quick_mg_btn.setVisible(False)
 
-        _btn = StyleButton("Configure DRIVE")
-        _btn.setFixedHeight(32)
-        font = _btn.font()
+        _w = QComboBox(parent=self)
+        _w.setEditable(False)
+        font = _w.font()
         font.setPointSize(16)
-        _btn.setFont(font)
+        _w.setFont(font)
+        self.drive_dropdown = _w
+        self._populate_drive_dropdown()
+
+        _btn = StyleButton(
+            qta.icon("fa.gear", color="#2980b9"),
+            "",
+            parent=self,
+        )
+        _btn.setFixedHeight(32)
+        _btn.setFixedWidth(32)
+        _btn.setIconSize(QSize(24, 24))
+        # font = _btn.font()
+        # font.setPointSize(16)
+        # _btn.setFont(font)
         self.drive_btn = _btn
 
         _btn = StyleButton("Motion Builder")
@@ -690,11 +705,15 @@ class MGWidget(QWidget):
         sub_layout.addWidget(name_label)
         sub_layout.addWidget(self.mg_name_widget)
 
+        drive_sub_layout = QHBoxLayout()
+        drive_sub_layout.addWidget(self.drive_dropdown)
+        drive_sub_layout.addWidget(self.drive_btn)
+
         layout = QVBoxLayout()
         layout.addSpacing(18)
         layout.addLayout(sub_layout)
         layout.addSpacing(18)
-        layout.addWidget(self.drive_btn)
+        layout.addLayout(drive_sub_layout)
         layout.addWidget(self.mb_btn)
         layout.addWidget(self.transform_btn)
         layout.addStretch()
