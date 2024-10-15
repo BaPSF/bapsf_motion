@@ -523,8 +523,9 @@ class ConfigureGUI(QMainWindow):
         self._defaults = defaults
 
     def _spawn_mg_widget(self, mg: MotionGroup = None):
+        config = None if not isinstance(mg, MotionGroup) else mg.config
         self._mg_widget = MGWidget(
-            mg_config=mg.config,
+            mg_config=config,
             defaults=self.defaults,
             parent=self,
         )
