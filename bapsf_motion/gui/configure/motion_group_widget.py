@@ -890,7 +890,7 @@ class MGWidget(QWidget):
             f"New MotionGroup configuration is being returned, {config}."
         )
 
-        # Terminate MG before returning config so we do not risk having
+        # Terminate MG before returning config, so we do not risk having
         # conflicting MGs communicating with the motors
         if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
             # disable the Drive control widget, so we do not risk creating
