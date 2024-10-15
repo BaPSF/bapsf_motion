@@ -609,7 +609,7 @@ class MGWidget(QWidget):
         font.setPointSize(16)
         _w.setFont(font)
         self.transform_dropdown = _w
-        # self._populate_transform_dropdown()
+        self._populate_transform_dropdown()
 
         _btn = GearButton(parent=self)
         _btn.setEnabled(False)
@@ -863,6 +863,13 @@ class MGWidget(QWidget):
 
         # set default drive
         self.drive_dropdown.setCurrentIndex(0)
+
+    def _populate_transform_dropdown(self):
+        for item in self.transform_defaults:
+            self.transform_dropdown.addItem(item[0])
+
+        # set default drive
+        self.transform_dropdown.setCurrentIndex(0)
 
     def _popup_drive_configuration(self):
         self._overlay_setup(
