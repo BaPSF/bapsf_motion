@@ -26,8 +26,10 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    if not args.defaults_file.exists():
+    if args.defaults_file is not None and not args.defaults_file.exists():
         args.defaults_file = None
+    elif args.defaults_file is not None:
+        args.defaults_file = args.defaults_file.resolve()
 
     if args.config_file is not None and not args.config_file.exists():
         args.config_file = None
