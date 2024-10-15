@@ -100,7 +100,8 @@ class Axis(EventActor):
         self._motor = None
         self._spawn_motor(ip=ip)
 
-        if isinstance(self._motor, Motor) and not self._motor.terminated:
+        if isinstance(self._motor, Motor) and self._motor.terminated:
+            # terminate self if Motor is terminated
             self.terminate(delay_loop_stop=True)
         else:
             self.run(auto_run=auto_run)
