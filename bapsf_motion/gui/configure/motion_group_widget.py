@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
@@ -523,6 +523,8 @@ class MGWidget(QWidget):
         self._drive_defaults = None
         self._build_drive_defaults()
 
+        self._transform_defaults = None
+
         # Define BUTTONS
 
         _btn = StyleButton("Add / Update")
@@ -864,8 +866,12 @@ class MGWidget(QWidget):
         super().resizeEvent(event)
 
     @property
-    def drive_defaults(self):
+    def drive_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
         return self._drive_defaults
+
+    @property
+    def transform_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
+        return self._transform_defaults
 
     @property
     def logger(self) -> logging.Logger:
