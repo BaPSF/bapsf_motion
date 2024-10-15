@@ -754,7 +754,8 @@ class MotionGroup(EventActor):
         self._config.link_motion_builder(self.mb)
         self._config.link_transform(self.transform)
 
-        if self._drive.terminated:
+        if isinstance(self._drive, Drive) and self._drive.terminated:
+            # terminate self if Drive is terminated
             self.terminate(delay_loop_stop=True)
         elif not self.terminated:
             self.run(auto_run=auto_run)
