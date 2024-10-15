@@ -485,11 +485,18 @@ class ConfigureGUI(QMainWindow):
         self.rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
-        if self._mg_being_modified is not None:
-            self.logger.info(f"Restarting motion group '{self._mg_being_modified.name}'.")
-            self._mg_being_modified.run()
-            self._mg_being_modified = None
     def _restart_run_manager(self):
+        if isinstance(self.rm, RunManager) and not self.rm.terminated:
+            # RunManager is still running, no need to restart
+            return
+
+        if not isinstance(self.rm, RunManager):
+            # No RunManager to restart
+            return
+
+        self.replace_rm(self.rm.config)
+
+        self._mg_being_modified = None
 
     def _set_defaults(self, defaults: Union[Path, str, Dict[str, Any], None]):
         if defaults is None:
