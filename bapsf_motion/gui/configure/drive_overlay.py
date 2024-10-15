@@ -317,7 +317,7 @@ class AxisConfigWidget(QWidget):
             # everything already disconnected
             pass
 
-        if isinstance(self.axis, Axis):
+        if isinstance(self.axis, Axis) and not self.axis.terminated:
             self.axis.terminate(delay_loop_stop=True)
 
         loop_safe_stop(self.axis_loop)
