@@ -533,11 +533,15 @@ class ConfigureGUI(QMainWindow):
     def closeEvent(self, event: "QCloseEvent") -> None:
         self.logger.info("Closing ConfigureGUI")
 
-        self._run_widget.close()
+        self.configChanged.disconnect()
+
+        if isinstance(self.rm, RunManager) and not self.rm.terminated:
+            self.rm.terminate()
+            self.rm = None
+
         if isinstance(self._mg_widget, MGWidget):
             self._mg_widget.close()
 
-        if self.rm is not None:
-            self.rm.terminate()
+        self._run_widget.close()
 
         event.accept()
