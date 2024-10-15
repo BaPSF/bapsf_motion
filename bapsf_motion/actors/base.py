@@ -291,13 +291,20 @@ class EventActor(BaseActor, ABC):
         """
         for task in list(self.tasks):
             self.loop.call_soon_threadsafe(task.cancel)
-            self.tasks.remove(task)
+            try:
+                self.tasks.remove(task)
+            except ValueError:
+                # a remove callback was set up on this task
+                pass
 
         tstart = datetime.now()
         while len(self.tasks) != 0:
             for task in list(self.tasks):
                 if task.done() or task.cancelled():
-                    self.tasks.remove(task)
+                    try:
+                        self.tasks.remove(task)
+                    except ValueError:
+                        pass
 
             if (datetime.now() - tstart).total_seconds() > 6.0:
                 break
