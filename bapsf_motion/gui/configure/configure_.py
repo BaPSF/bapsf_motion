@@ -256,7 +256,7 @@ class ConfigureGUI(QMainWindow):
         self,
         *,
         config: Union[Path, str, Dict[str, Any], RunManagerConfig] = None,
-        defaults: Optional[Path] = None,
+        defaults: Union[Path, str, Dict[str, Any], None] = None,
     ):
         super().__init__()
 
