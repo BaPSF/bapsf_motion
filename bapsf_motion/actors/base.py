@@ -297,7 +297,7 @@ class EventActor(BaseActor, ABC):
                 if task.done() or task.cancelled():
                     self.tasks.remove(task)
 
-            if (datetime.now() - tstart).microseconds > 6000000:
+            if (datetime.now() - tstart).total_seconds() > 6.0:
                 break
             else:
                 time.sleep(0.1)
