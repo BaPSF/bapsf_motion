@@ -667,7 +667,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.drive_config = config
 
     def return_and_close(self):
-        config = self.drive_config
+        config = _deepcopy_dict(self.drive_config)
 
         self.configChanged.disconnect()
         self.drive.terminate(delay_loop_stop=True)
@@ -693,11 +693,11 @@ class DriveConfigOverlay(_ConfigOverlay):
             # everything already disconnected
             pass
 
+        if isinstance(self.drive, Drive) and not self.drive.terminated:
+            self.drive.terminate(delay_loop_stop=True)
+
         for axw in self.axis_widgets:
             axw.close()
-
-        if isinstance(self.drive, Drive):
-            self.drive.terminate(delay_loop_stop=True)
 
         loop_safe_stop(self.drive_loop)
 
