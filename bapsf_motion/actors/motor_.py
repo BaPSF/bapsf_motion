@@ -543,14 +543,14 @@ class Motor(EventActor):
 
         self.connect()
 
-        self.start_heartbeat()
-        self._pause_heartbeat = True
+        # self.start_heartbeat()
+        # self._pause_heartbeat = True
 
         self._configure_motor()
         self._get_motor_parameters()
         self.send_command("retrieve_motor_status")
 
-        self._pause_heartbeat = False
+        # self._pause_heartbeat = False
 
     def _initialize_tasks(self):
         # The heartbeat task was initialized in _configure_before_run
