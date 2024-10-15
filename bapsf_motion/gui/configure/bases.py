@@ -11,9 +11,7 @@ from typing import Union
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.widgets import StyleButton
-
-if False:
-    from bapsf_motion.gui.configure.configure_ import MGWidget
+from bapsf_motion.gui.configure import motion_group_widget as mgw
 
 
 class _OverlayWidget(QWidget):
@@ -83,7 +81,7 @@ class _ConfigOverlay(_OverlayWidget):
     configChanged = Signal()
     returnConfig = Signal(object)
 
-    def __init__(self, mg: Union[MotionGroup, None], parent: "MGWidget" = None):
+    def __init__(self, mg: Union[MotionGroup, None], parent: "mgw.MGWidget" = None):
         super().__init__(parent=parent)
 
         self._logger = gui_logger
