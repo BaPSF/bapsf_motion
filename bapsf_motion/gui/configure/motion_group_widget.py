@@ -764,6 +764,9 @@ class MGWidget(QWidget):
         for item in self.drive_defaults:
             self.drive_dropdown.addItem(item[0])
 
+        # set default drive
+        self.drive_dropdown.setCurrentIndex(0)
+
 
     def _popup_drive_configuration(self):
         self._overlay_setup(
