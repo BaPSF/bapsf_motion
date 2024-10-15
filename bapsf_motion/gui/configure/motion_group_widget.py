@@ -912,11 +912,11 @@ class MGWidget(QWidget):
         # extra events while terminating
         self.drive_control_widget.setEnabled(False)
 
-        if self._overlay_widget is not None:
-            self._overlay_widget.close()
-
         if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
             self.mg.terminate(delay_loop_stop=True)
+
+        if self._overlay_widget is not None:
+            self._overlay_widget.close()
 
         loop_safe_stop(self.mg_loop)
         self.closing.emit()
