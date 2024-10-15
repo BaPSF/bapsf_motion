@@ -1,10 +1,14 @@
 """This module contains custom Qt buttons."""
-__all__ = ["LED", "StopButton", "StyleButton"]
+__all__ = ["GearButton", "LED", "StopButton", "StyleButton"]
 
 import math
 
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtCore import QSize
+
+# noqa
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta
 
 
 class LED(QPushButton):
@@ -179,6 +183,22 @@ class StyleButton(QPushButton):
             self._checked_style = new_style
 
         self._resetStyleSheet()
+
+
+class GearButton(StyleButton):
+    def __init__(self, color: str = "#2980b9", parent=None):
+        super().__init__(
+            qta.icon("fa.gear", color=color),
+            "",
+            parent=parent,
+        )
+
+        self._size = 32
+        self._icon_size = 24
+
+        self.setFixedWidth(self._size)
+        self.setFixedHeight(self._size)
+        self.setIconSize(QSize(self._icon_size, self._icon_size))
 
 
 class StopButton(QPushButton):
