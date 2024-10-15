@@ -727,7 +727,7 @@ class MGWidget(QWidget):
 
         if self._defaults is None or "drive" not in self._defaults:
             self._drive_defaults = [("Custom Drive", {})]
-            return
+            return self._drive_defaults
 
         _drive_defaults = {"Custom Drive": {}}
         _defaults = _deepcopy_dict(self._defaults["drive"])  # type: dict
@@ -757,6 +757,8 @@ class MGWidget(QWidget):
                 self._drive_defaults.insert(0, (key, val))
             else:
                 self._drive_defaults.append((key, val))
+
+        return self._drive_defaults
 
     def _populate_drive_dropdown(self):
         for item in self.drive_defaults:
