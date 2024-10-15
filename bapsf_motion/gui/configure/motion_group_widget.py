@@ -517,6 +517,8 @@ class MGWidget(QWidget):
             self._mg_config = _deepcopy_dict(mg_config)
 
         self._defaults = None if defaults is None else _deepcopy_dict(defaults)
+        self._drive_defaults = None
+        self._build_drive_defaults()
 
         # Define BUTTONS
 
@@ -701,6 +703,41 @@ class MGWidget(QWidget):
 
     def _define_mspace_display_layout(self):
         ...
+
+    def _build_drive_defaults(self):
+
+        if self._defaults is None or "drive" not in self._defaults:
+            self._drive_defaults = [("Custom Drive", {})]
+            return
+
+        _drive_defaults = {"Custom Drive": {}}
+        _defaults = _deepcopy_dict(self._defaults["drive"])  # type: dict
+        if "default" in _defaults:
+            default_name = _defaults.pop("default")
+        else:
+            default_name = "Custom Drive"
+
+        if "name" in _defaults.keys():
+            # only one drive defined
+            _name = _defaults["name"]
+            if _name not in _drive_defaults.keys():
+                _drive_defaults[_name] = _deepcopy_dict(_defaults)
+        else:
+            for key, entry in _defaults.items():
+                _name = entry["name"]
+                if _name in _drive_defaults.keys():
+                    # do not add duplicate defaults
+                    continue
+
+                _drive_defaults[_name] = _deepcopy_dict(entry)
+
+        # convert to list of 2-element tuples
+        self._drive_defaults = []
+        for key, val in _drive_defaults.items():
+            if key == default_name:
+                self._drive_defaults.insert(0, (key, val))
+            else:
+                self._drive_defaults.append((key, val))
 
     def _popup_drive_configuration(self):
         self._overlay_setup(
