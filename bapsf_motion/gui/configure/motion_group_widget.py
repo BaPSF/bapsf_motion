@@ -821,9 +821,8 @@ class MGWidget(QWidget):
         if self.mg.drive is None:
             return
 
-        self.mg.run()
-        self._refresh_drive_control()
-        self.configChanged.emit()
+        drive_config = self.mg.drive.config
+        self._change_drive(drive_config)
 
     def _refresh_drive_control(self):
         self.logger.info("Refreshing drive control widget.")
