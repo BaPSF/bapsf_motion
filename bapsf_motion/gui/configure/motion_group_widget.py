@@ -31,7 +31,7 @@ from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.widgets import HLinePlain, StyleButton
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
-from bapsf_motion.utils import _deepcopy_dict, loop_safe_stop, toml
+from bapsf_motion.utils import _deepcopy_dict, loop_safe_stop, toml, dict_equal
 from bapsf_motion.utils import units as u
 
 
@@ -633,6 +633,7 @@ class MGWidget(QWidget):
         self.configChanged.connect(self._update_toml_widget)
         self.configChanged.connect(self._update_mg_name_widget)
         self.configChanged.connect(self._validate_motion_group)
+        self.configChanged.connect(self._update_drive_dropdown)
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
@@ -905,6 +906,30 @@ class MGWidget(QWidget):
             return
 
         self.drive_control_widget.link_motion_group(self.mg)
+
+    def _update_drive_dropdown(self):
+        custom_drive_index = self.drive_dropdown.findText("Custom Drive")
+        if custom_drive_index == -1:
+            raise ValueError("Custom Drive not found")
+
+        if "drive" not in self.mg_config:
+            self.drive_dropdown.setCurrentIndex(custom_drive_index)
+            return
+
+        drive_config = self.mg_config["drive"]
+        self.logger.warning(f"Drive config...\n{drive_config}")
+        name = drive_config["name"]
+        index = self.drive_dropdown.findText(name)
+
+        if index == -1:
+            self.drive_dropdown.setCurrentIndex(custom_drive_index)
+            return
+
+        drive_config_default = self.drive_defaults[index][1]
+        if dict_equal(drive_config, drive_config_default):
+            self.drive_dropdown.setCurrentIndex(index)
+        else:
+            self.drive_dropdown.setCurrentIndex(custom_drive_index)
 
     def _update_toml_widget(self):
         self.toml_widget.setText(toml.as_toml_string(self.mg_config))
