@@ -97,14 +97,8 @@ class Axis(EventActor):
             parent=parent,
         )
 
-        self._motor = Motor(
-            ip=ip,
-            name="motor",
-            logger=self.logger,
-            loop=self.loop,
-            auto_run=False,
-            parent=self,
-        )
+        self._motor = None
+        self._spawn_motor(ip=ip)
 
         if self._motor.terminated:
             self.terminate(delay_loop_stop=True)
@@ -118,6 +112,11 @@ class Axis(EventActor):
         return
 
     def run(self, auto_run=True):
+        if self.terminated:
+            # we are restarting
+            self._terminated = False
+            self._spawn_motor(ip=self.config["ip"])
+
         super().run(auto_run=auto_run)
 
         if self.motor is None:
@@ -128,6 +127,19 @@ class Axis(EventActor):
     def terminate(self, delay_loop_stop=False):
         self.motor.terminate(delay_loop_stop=True)
         super().terminate(delay_loop_stop=delay_loop_stop)
+
+    def _spawn_motor(self, ip):
+        if isinstance(self.motor, Motor) and not self.terminated:
+            self.motor.terminate(delay_loop_stop=True)
+
+        self._motor = Motor(
+            ip=ip,
+            name="motor",
+            logger=self.logger,
+            loop=self.loop,
+            auto_run=False,
+            parent=self,
+        )
 
     @property
     def config(self) -> Dict[str, Any]:
