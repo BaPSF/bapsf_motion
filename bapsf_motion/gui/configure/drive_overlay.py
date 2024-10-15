@@ -385,9 +385,17 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._connect_signals()
 
+        _drive_config = None
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
             self.mg.drive.terminate(delay_loop_stop=True)
-            self.drive_config = _deepcopy_dict(self.mg.drive.config)
+            _drive_config = _deepcopy_dict(self.mg.drive.config)
+        elif (
+            isinstance(self.parent(), mgw.MGWidget)
+            and "drive" in self.parent()._initial_mg_config
+        ):
+            _drive_config = _deepcopy_dict(self.parent()._initial_mg_config["drive"])
+
+        self.drive_config = _drive_config
 
     def _connect_signals(self):
         super()._connect_signals()
