@@ -959,6 +959,11 @@ class MGWidget(QWidget):
 
         drive_config = self.mg_config["drive"]
         self.logger.warning(f"Drive config...\n{drive_config}")
+        if "name" not in drive_config:
+            # this could happen if MGWidget is instantiated with an
+            # invalid drive config or None
+            self.drive_dropdown.setCurrentIndex(custom_drive_index)
+            return
         name = drive_config["name"]
         index = self.drive_dropdown.findText(name)
 
