@@ -14,6 +14,8 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
 
+from bapsf_motion.utils import loop_safe_stop
+
 
 # TODO: create an EventActor for an actor that utilizes asyncio event loops
 #       - EventActor should inherit from BaseActor and ABC
@@ -307,20 +309,4 @@ class EventActor(BaseActor, ABC):
         if delay_loop_stop:
             return
 
-        # if we're stopping the loop, then all tasks need to be cancelled
-        for task in asyncio.all_tasks(self.loop):
-            if not task.done() or not task.cancelled():
-                self.loop.call_soon_threadsafe(task.cancel)
-
-        tstart = datetime.now()
-        while any(
-            not (task.done() or task.cancelled())
-            for task in asyncio.all_tasks(self.loop)
-        ):
-            # continue waiting for all tasks to be cancelled
-            if (datetime.now() - tstart).microseconds > 6000000:
-                break
-            else:
-                time.sleep(0.1)
-
-        self.loop.call_soon_threadsafe(self.loop.stop)
+        loop_safe_stop(self.loop)

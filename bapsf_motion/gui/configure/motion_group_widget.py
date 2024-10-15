@@ -30,7 +30,7 @@ from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.widgets import HLinePlain, StyleButton
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
-from bapsf_motion.utils import _deepcopy_dict
+from bapsf_motion.utils import _deepcopy_dict, loop_safe_stop, toml
 from bapsf_motion.utils import units as u
 
 
@@ -919,6 +919,6 @@ class MGWidget(QWidget):
         if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
             self.mg.terminate(delay_loop_stop=True)
 
-        self.mg_loop.call_soon_threadsafe(self.mg_loop.stop)
+        loop_safe_stop(self.mg_loop)
         self.closing.emit()
         event.accept()

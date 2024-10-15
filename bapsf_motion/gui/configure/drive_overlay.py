@@ -26,7 +26,7 @@ from bapsf_motion.gui.widgets import (
     LED,
     StyleButton,
 )
-from bapsf_motion.utils import ipv4_pattern, _deepcopy_dict
+from bapsf_motion.utils import ipv4_pattern, _deepcopy_dict, loop_safe_stop
 
 
 class AxisConfigWidget(QWidget):
@@ -320,7 +320,7 @@ class AxisConfigWidget(QWidget):
         if isinstance(self.axis, Axis):
             self.axis.terminate(delay_loop_stop=True)
 
-        self.axis_loop.call_soon_threadsafe(self.axis_loop.stop)
+        loop_safe_stop(self.axis_loop)
 
         event.accept()
 
@@ -698,6 +698,6 @@ class DriveConfigOverlay(_ConfigOverlay):
         if isinstance(self.drive, Drive):
             self.drive.terminate(delay_loop_stop=True)
 
-        self.drive_loop.call_soon_threadsafe(self.drive_loop.stop)
+        loop_safe_stop(self.drive_loop)
 
         super().closeEvent(event)
