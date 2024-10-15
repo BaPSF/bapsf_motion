@@ -758,6 +758,11 @@ class MGWidget(QWidget):
             else:
                 self._drive_defaults.append((key, val))
 
+    def _populate_drive_dropdown(self):
+        for item in self.drive_defaults:
+            self.drive_dropdown.addItem(item[0])
+
+
     def _popup_drive_configuration(self):
         self._overlay_setup(
             DriveConfigOverlay(self.mg, parent=self)
