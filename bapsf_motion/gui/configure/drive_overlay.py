@@ -36,7 +36,7 @@ class AxisConfigWidget(QWidget):
     def __init__(self, name, parent=None):
         super().__init__(parent=parent)
 
-        self._logger = gui_logger
+        self._logger = logging.getLogger(f"{gui_logger.name}.ACW")
         self._ip_handlers = []
 
         self._axis_config = {
@@ -330,6 +330,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
     def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
         super().__init__(mg, parent)
+        self._logger = logging.getLogger(f"{self.logger.name}.DCO")
 
         self._drive_handlers = []
 
