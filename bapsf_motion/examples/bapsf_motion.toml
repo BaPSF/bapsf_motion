@@ -3,14 +3,25 @@ default = "benchtop_2D"
 
 [bapsf_motion.defaults.drive.0]
 name = "benchtop_2D"
-axis.0.name = "X"
-axis.0.ip = "192.168.6.104"
-axis.0.units = "cm"
-axis.0.units_per_rev = 0.254
-axis.1.name = "Y"
-axis.1.ip = "192.168.6.103"
-axis.1.units = "cm"
-axis.1.units_per_rev = 0.254
+axes.0.name = "X"
+axes.0.ip = "192.168.6.104"
+axes.0.units = "cm"
+axes.0.units_per_rev = 0.254
+axes.1.name = "Y"
+axes.1.ip = "192.168.6.103"
+axes.1.units = "cm"
+axes.1.units_per_rev = 0.254
+
+[bapsf_motion.defaults.drive.1]
+name = "Plastic Room XY"
+axes.0.name = "X"
+axes.0.ip = "192.168.0.90"
+axes.0.units = "cm"
+axes.0.units_per_rev = 0.254
+axes.1.name = "Y"
+axes.1.ip = "192.168.0.140"
+axes.1.units = "cm"
+axes.1.units_per_rev = 0.508
 
 [bapsf_motion.defaults.transform]
 default = "identity"
