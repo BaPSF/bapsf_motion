@@ -549,6 +549,7 @@ class MGWidget(QWidget):
         _btn.setFont(font)
         _btn.setEnabled(False)
         self.quick_mg_btn = _btn
+        self.quick_mg_btn.setVisible(False)
 
         _btn = StyleButton("Configure DRIVE")
         _btn.setFixedHeight(32)
