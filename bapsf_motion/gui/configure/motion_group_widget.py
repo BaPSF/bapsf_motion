@@ -815,6 +815,10 @@ class MGWidget(QWidget):
         super().resizeEvent(event)
 
     @property
+    def drive_defaults(self):
+        return self._drive_defaults
+
+    @property
     def logger(self) -> logging.Logger:
         return self._logger
 
