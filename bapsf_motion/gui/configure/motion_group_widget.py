@@ -620,6 +620,15 @@ class MGWidget(QWidget):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
+        # if MGWidget launched without a drive then use a default
+        # drive (if defined)
+        if (
+                "drive" not in self.mg_config
+                and self.drive_defaults[0][0] != "Custom Drive"
+        ):
+            self._mg_config["drive"] = _deepcopy_dict(self.drive_defaults[0][1])
+        self._initial_mg_config = _deepcopy_dict(self._mg_config)
+
         self._spawn_motion_group()
         self._refresh_drive_control()
 
