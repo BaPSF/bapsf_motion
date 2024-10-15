@@ -14,7 +14,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QLineEdit,
 )
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
@@ -833,7 +833,7 @@ class MGWidget(QWidget):
         self.drive_control_widget.link_motion_group(self.mg)
 
     def _update_toml_widget(self):
-        self.toml_widget.setText(self.mg_config.as_toml_string)
+        self.toml_widget.setText(toml.as_toml_string(self.mg_config))
 
     def _update_mg_name_widget(self):
         self.mg_name_widget.setText(self.mg_config["name"])
