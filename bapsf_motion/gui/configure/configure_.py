@@ -485,11 +485,11 @@ class ConfigureGUI(QMainWindow):
         self.rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
-    def _restart_motion_group(self):
         if self._mg_being_modified is not None:
             self.logger.info(f"Restarting motion group '{self._mg_being_modified.name}'.")
             self._mg_being_modified.run()
             self._mg_being_modified = None
+    def _restart_run_manager(self):
 
     def _set_defaults(self, defaults: Union[Path, str, Dict[str, Any], None]):
         if defaults is None:
@@ -531,7 +531,7 @@ class ConfigureGUI(QMainWindow):
         )
         self._mg_widget.closing.connect(self._switch_stack)
         self._mg_widget.returnConfig.connect(self.add_mg_to_rm)
-        self._mg_widget.discard_btn.clicked.connect(self._restart_motion_group)
+        self._mg_widget.discard_btn.clicked.connect(self._restart_run_manager)
 
         return self._mg_widget
 
