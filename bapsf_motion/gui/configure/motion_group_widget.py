@@ -501,8 +501,9 @@ class MGWidget(QWidget):
 
     def __init__(
         self,
-        mg_config: MotionGroupConfig = None,
-        parent: "configure_.ConfigureGUI" = None,
+        mg_config: Optional[MotionGroupConfig] = None,
+        defaults: Optional[Dict[str, Any]] = None,
+        parent: Optional["configure_.ConfigureGUI"] = None,
     ):
         super().__init__(parent=parent)
 
@@ -514,6 +515,8 @@ class MGWidget(QWidget):
         self._mg_config = None
         if isinstance(mg_config, MotionGroupConfig):
             self._mg_config = _deepcopy_dict(mg_config)
+
+        self._defaults = None if defaults is None else _deepcopy_dict(defaults)
 
         # Define BUTTONS
 
