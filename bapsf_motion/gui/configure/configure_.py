@@ -568,9 +568,10 @@ class ConfigureGUI(QMainWindow):
         self.logger.info(
             f"Adding MotionGroup to the run: index = '{index}', config = {mg_config}."
         )
+
         self.rm.add_motion_group(config=mg_config, identifier=index)
+        self._restart_run_manager()
         self._mg_being_modified = None
-        self.configChanged.emit()
 
     @staticmethod
     def _generate_mg_list_name(index, mg_name):
