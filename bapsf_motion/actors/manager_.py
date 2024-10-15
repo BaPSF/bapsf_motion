@@ -37,8 +37,12 @@ class RunManagerConfig(UserDict):
         # Make sure config is the right type, and is a dict by the
         # end of ths code block
         if isinstance(config, RunManagerConfig):
-            # This should never happen ...
-            pass
+            # This could happen when creating a new RunManger from an
+            # old / terminated RunManager
+            #
+            # we need to deep copy to avoid passing around actor objects
+            # from the old config
+            config = _deepcopy_dict(config)
         elif isinstance(config, str):
             # could be path to TOML file or a TOML like string
             if Path(config).exists():
