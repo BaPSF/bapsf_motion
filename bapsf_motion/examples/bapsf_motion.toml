@@ -1,0 +1,45 @@
+[bapsf_motion.defaults.drive]
+default = "benchtop_2D"
+
+[bapsf_motion.defaults.drive.0]
+name = "benchtop_2D"
+axis.0.name = "X"
+axis.0.ip = "192.168.6.104"
+axis.0.units = "cm"
+axis.0.units_per_rev = 0.254
+axis.1.name = "Y"
+axis.1.ip = "192.168.6.103"
+axis.1.units = "cm"
+axis.1.units_per_rev = 0.254
+
+[bapsf_motion.defaults.transform]
+default = "identity"
+
+[bapsf_motion.defaults.transform.0]
+name = "LaPD East - Generic XY"
+type = "lapd_xy"
+mspace_polarity = [-1, 1]
+drive_polarity = [1, 1]
+pivot_to_center = 62.948  # 53.55 cm + 2.54 cm + 2.5 in
+probe_axis_offset = 20.5
+pivot_to_drive = 112.7624  # 0.81 in + 22 cm + .75" + 82.5cm + 4.3cm
+pivot_to_feedthru = 21.6574  # 19.6 cm + 0.81"
+droop_correct = true
+
+[bapsf_motion.defaults.motion_builder]
+default = "LaPD East - Generic XY"
+
+[bapsf_motion.defaults.motion_builder.0]
+name = "LaPD East - Generic XY"
+space.0.label = "X"
+space.0.range = [-55, 55]
+space.0.num = 440
+space.1.label = "Y"
+space.1.range = [-55, 55]
+space.1.num = 440
+exclusion.0.type = "lapd_xy"
+exclusion.0.port_location = "East"
+exclusion.0.diameter = 80
+exclusion.0.pivot_radius = 58.771
+exclusion.0.full_cone_angle = 60
+
