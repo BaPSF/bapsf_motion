@@ -531,6 +531,12 @@ class ConfigureGUI(QMainWindow):
 
     def _spawn_mg_widget(self, mg: MotionGroup = None):
         config = None if not isinstance(mg, MotionGroup) else mg.config
+
+        # terminate RunManager so we can avoid communication issue during
+        # MotionGroup configuration
+        if isinstance(self.rm, RunManager) and not self.rm.terminated:
+            self.rm.terminate()
+
         self._mg_widget = MGWidget(
             mg_config=config,
             defaults=self.defaults,
