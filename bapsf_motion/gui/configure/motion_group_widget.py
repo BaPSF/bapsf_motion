@@ -524,6 +524,7 @@ class MGWidget(QWidget):
         self._build_drive_defaults()
 
         self._transform_defaults = None
+        self._build_transform_defaults()
 
         # Define BUTTONS
 
@@ -806,6 +807,55 @@ class MGWidget(QWidget):
                 self._drive_defaults.append((key, val))
 
         return self._drive_defaults
+
+    def _build_transform_defaults(self):
+        _defaults_dict = {}
+        for tr_name in self.transform_registry.available_transforms:
+            inputs = self.transform_registry.get_input_parameters(tr_name)
+            _dict = {"type": tr_name}
+            for key, val in inputs.items():
+                _dict[key] = (
+                    "" if val["param"].default is val["param"].empty
+                    else val["param"].default
+                )
+            _defaults_dict[tr_name] = _dict
+
+        default_key = "identity"
+        if self._defaults is not None or "transform" in self._defaults:
+            _defaults = _deepcopy_dict(self._defaults["transform"])
+            default_key = _defaults.pop("default", default_key)
+
+            if "name" in _defaults.keys():
+                # only one transform defined
+                _name = _defaults.pop("name")
+                if "type" in _defaults or _defaults["type"] in _defaults_dict:
+                    _defaults[_name] = _deepcopy_dict(_defaults)
+            else:
+                for key, val in _defaults.items():
+                    if (
+                        "name" not in val
+                        or "type" not in val
+                        or val["type"] not in _defaults_dict
+                    ):
+                        continue
+
+                    _name = val.pop("name")
+                    _defaults_dict[_name] = _deepcopy_dict(val)
+
+        if default_key not in _defaults_dict:
+            default_key = "identity"
+
+        # convert to list of 2-element tuples
+        self._transform_defaults = []
+        for key, val in _defaults_dict.items():
+            if key == default_key:
+                self._transform_defaults.insert(0, (key, val))
+            else:
+                self._transform_defaults.append((key, val))
+
+        self.logger.info(f"-- Transform defaults ...\n{_defaults_dict}")
+
+        return self._transform_defaults
 
     def _populate_drive_dropdown(self):
         for item in self.drive_defaults:
