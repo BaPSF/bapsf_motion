@@ -507,7 +507,7 @@ class Motor(EventActor):
         parent: Optional["EventActor"] = None,
     ):
 
-        self._heartbeat_task = None
+        self._heartbeat_task = []
 
         self._setup = self._setup_defaults.copy()
         self._motor = self._motor_defaults.copy()
@@ -863,26 +863,49 @@ class Motor(EventActor):
             return pos
 
     @property
-    def heartbeat_task(self) -> asyncio.Task:
+    def heartbeat_task(self) -> Union[asyncio.Task, None]:
         """The `asyncio.Task` associated with the motor's heartbeat."""
-        return self._heartbeat_task
+        if self._heartbeat_task is None:
+            self._heartbeat_task = []
+            return
+        elif len(self._heartbeat_task) == 0:
+            return
+
+        return self._heartbeat_task[0]
 
     @heartbeat_task.setter
-    def heartbeat_task(self, val):
+    def heartbeat_task(self, val: asyncio.Task):
         if not isinstance(val, asyncio.Task):
             return
         elif self.heartbeat_task is None:
             pass
-        elif self.heartbeat_task.done():
+        elif self.heartbeat_task.done() or self.heartbeat_task.cancelled():
             # remove task from task list
-            self.tasks.remove(self._heartbeat_task)
+            # self.tasks.remove(self.heartbeat_task)
+            self._heartbeat_task = []
         else:
             # val is a new task and heartbeat is still running...stop old heartbeat
-            self.loop.call_soon_threadsafe(self._heartbeat_task.cancel)
-            self.tasks.remove(self._heartbeat_task)
+            self.loop.call_soon_threadsafe(self.heartbeat_task.cancel)
+            # self.tasks.remove(self._heartbeat_task)
 
-        self._heartbeat_task = val
-        self.tasks.append(self._heartbeat_task)
+        self._heartbeat_task = [val]
+        self.tasks.append(val)
+        val.add_done_callback(self._heartbeat_task_done_callback)
+
+    def _heartbeat_task_done_callback(self, task: asyncio.Task):
+        """Callback to clean up references to the heartbeat task."""
+        try:
+            self.tasks.remove(task)
+        except ValueError:
+            pass
+
+        if self.heartbeat_task is None:
+            return
+
+        try:
+            self._heartbeat_task.remove(task)
+        except ValueError:
+            pass
 
     def start_heartbeat(self):
         """Start or restart the heartbeat `asyncio.Task`."""
