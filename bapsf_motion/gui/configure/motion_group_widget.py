@@ -28,7 +28,7 @@ from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
-from bapsf_motion.gui.widgets import HLinePlain, StyleButton
+from bapsf_motion.gui.widgets import GearButton, HLinePlain, StyleButton
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.utils import _deepcopy_dict, loop_safe_stop, toml, dict_equal
@@ -554,6 +554,13 @@ class MGWidget(QWidget):
         self.quick_mg_btn = _btn
         self.quick_mg_btn.setVisible(False)
 
+        _icon = QLabel(parent=self)
+        _icon.setPixmap(qta.icon("mdi.steering").pixmap(24, 24))
+        _icon.setMaximumWidth(32)
+        _icon.setMaximumHeight(32)
+        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.drive_label = _icon
+
         _w = QComboBox(parent=self)
         _w.setEditable(False)
         font = _w.font()
@@ -562,32 +569,44 @@ class MGWidget(QWidget):
         self.drive_dropdown = _w
         self._populate_drive_dropdown()
 
-        _btn = StyleButton(
-            qta.icon("fa.gear", color="#2980b9"),
-            "",
-            parent=self,
-        )
-        _btn.setFixedHeight(32)
-        _btn.setFixedWidth(32)
-        _btn.setIconSize(QSize(24, 24))
-        # font = _btn.font()
-        # font.setPointSize(16)
-        # _btn.setFont(font)
+        _btn = GearButton(parent=self)
         self.drive_btn = _btn
 
-        _btn = StyleButton("Motion Builder")
-        _btn.setFixedHeight(32)
-        font = _btn.font()
+        _icon = QLabel(parent=self)
+        _icon.setPixmap(qta.icon("mdi.motion").pixmap(24, 24))
+        _icon.setMaximumWidth(32)
+        _icon.setMaximumHeight(32)
+        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.mb_label = _icon
+
+        _w = QComboBox(parent=self)
+        _w.setEditable(False)
+        font = _w.font()
         font.setPointSize(16)
-        _btn.setFont(font)
+        _w.setFont(font)
+        self.mb_dropdown = _w
+        # self._populate_mb_dropdown()
+
+        _btn = GearButton(parent=self)
         _btn.setEnabled(False)
         self.mb_btn = _btn
 
-        _btn = StyleButton("Set Transformer")
-        _btn.setFixedHeight(32)
-        font = _btn.font()
+        _icon = QLabel(parent=self)
+        _icon.setPixmap(qta.icon("fa5s.exchange-alt").pixmap(24, 24))
+        _icon.setMaximumWidth(32)
+        _icon.setMaximumHeight(32)
+        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        self.transform_label = _icon
+
+        _w = QComboBox(parent=self)
+        _w.setEditable(False)
+        font = _w.font()
         font.setPointSize(16)
-        _btn.setFont(font)
+        _w.setFont(font)
+        self.transform_dropdown = _w
+        # self._populate_transform_dropdown()
+
+        _btn = GearButton(parent=self)
         _btn.setEnabled(False)
         self.transform_btn = _btn
 
@@ -719,16 +738,27 @@ class MGWidget(QWidget):
         sub_layout.addWidget(self.mg_name_widget)
 
         drive_sub_layout = QHBoxLayout()
+        drive_sub_layout.addWidget(self.drive_label)
         drive_sub_layout.addWidget(self.drive_dropdown)
         drive_sub_layout.addWidget(self.drive_btn)
+
+        mb_sub_layout = QHBoxLayout()
+        mb_sub_layout.addWidget(self.mb_label)
+        mb_sub_layout.addWidget(self.mb_dropdown)
+        mb_sub_layout.addWidget(self.mb_btn)
+
+        transform_sub_layout = QHBoxLayout()
+        transform_sub_layout.addWidget(self.transform_label)
+        transform_sub_layout.addWidget(self.transform_dropdown)
+        transform_sub_layout.addWidget(self.transform_btn)
 
         layout = QVBoxLayout()
         layout.addSpacing(18)
         layout.addLayout(sub_layout)
         layout.addSpacing(18)
         layout.addLayout(drive_sub_layout)
-        layout.addWidget(self.mb_btn)
-        layout.addWidget(self.transform_btn)
+        layout.addLayout(mb_sub_layout)
+        layout.addLayout(transform_sub_layout)
         layout.addStretch()
 
         return layout
@@ -779,7 +809,6 @@ class MGWidget(QWidget):
 
         # set default drive
         self.drive_dropdown.setCurrentIndex(0)
-
 
     def _popup_drive_configuration(self):
         self._overlay_setup(
