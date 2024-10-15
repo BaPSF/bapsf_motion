@@ -269,6 +269,8 @@ class ConfigureGUI(QMainWindow):
         self._logger = gui_logger
         self._rm_logger = logging.getLogger("RM")
 
+        # setup defaults
+        self._defaults = None
         self._define_main_window()
 
         # define "important" qt widgets
@@ -337,6 +339,10 @@ class ConfigureGUI(QMainWindow):
         layout.addWidget(self._log_widget)
 
         return layout
+
+    @property
+    def defaults(self) -> Dict[str, Any]:
+        return self._defaults
 
     @property
     def logger(self) -> logging.Logger:
