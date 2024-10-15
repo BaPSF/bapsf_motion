@@ -9,11 +9,11 @@ from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
-    QWidget,
+    QLineEdit,
     QSizePolicy,
     QTextEdit,
     QVBoxLayout,
-    QLineEdit,
+    QWidget,
 )
 from typing import Any, Dict, List, Optional, Union
 
