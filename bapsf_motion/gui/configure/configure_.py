@@ -271,6 +271,8 @@ class ConfigureGUI(QMainWindow):
 
         # setup defaults
         self._defaults = None
+        self._set_defaults(defaults=defaults)
+
         self._define_main_window()
 
         # define "important" qt widgets
@@ -488,6 +490,37 @@ class ConfigureGUI(QMainWindow):
             self.logger.info(f"Restarting motion group '{self._mg_being_modified.name}'.")
             self._mg_being_modified.run()
             self._mg_being_modified = None
+
+    def _set_defaults(self, defaults: Union[Path, str, Dict[str, Any], None]):
+        if defaults is None:
+            self._defaults = None
+            return
+        elif isinstance(defaults, str):
+            # could be path to TOML file or a TOML like string
+            if Path(defaults).exists():
+                with open(defaults, "rb") as f:
+                    defaults = toml.load(f)
+            else:
+                defaults = toml.loads(defaults)
+        elif isinstance(defaults, Path):
+            # path to TOML file
+            with open(defaults, "rb") as f:
+                defaults = toml.load(f)
+        elif not isinstance(defaults, dict):
+            raise TypeError(
+                f"Expected 'defaults' to be of type dict, got type {type(defaults)}."
+            )
+
+        if "bapsf_motion" not in defaults.keys():
+            # dictionary does not contain a setup for bapsf_motion
+            defaults = None
+        elif "defaults" not in defaults["bapsf_motion"].keys():
+            # dictionary does not contain a defaults setup for bapsf_motion
+            defaults = None
+        else:
+            defaults = defaults["bapsf_motion"]["defaults"]
+
+        self._defaults = defaults
 
     def _spawn_mg_widget(self, mg: MotionGroup = None):
         self._mg_widget = MGWidget(mg.config, parent=self)
