@@ -31,6 +31,7 @@ from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.widgets import GearButton, HLinePlain, StyleButton
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
+from bapsf_motion.transform.helpers import transform_registry
 from bapsf_motion.utils import _deepcopy_dict, loop_safe_stop, toml, dict_equal
 from bapsf_motion.utils import units as u
 
@@ -499,6 +500,7 @@ class MGWidget(QWidget):
     returnConfig = Signal(int, object)
 
     mg_loop = asyncio.new_event_loop()
+    transform_registry = transform_registry
 
     def __init__(
         self,
