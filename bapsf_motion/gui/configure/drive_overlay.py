@@ -389,10 +389,14 @@ class DriveConfigOverlay(_ConfigOverlay):
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
             self.mg.drive.terminate(delay_loop_stop=True)
             _drive_config = _deepcopy_dict(self.mg.drive.config)
-        elif (
-            isinstance(self.parent(), mgw.MGWidget)
-            and "drive" in self.parent()._initial_mg_config
-        ):
+        elif not isinstance(self.parent(), mgw.MGWidget):
+            pass
+        elif self.parent().drive_dropdown.currentText != "Custom Drive":
+            index = self.parent().drive_dropdown.currentIndex
+            _drive_config = _deepcopy_dict(
+                self.parent().drive_defaults[index][1]
+            )
+        elif "drive" in self.parent()._initial_mg_config:
             _drive_config = _deepcopy_dict(self.parent()._initial_mg_config["drive"])
 
         self.drive_config = _drive_config
