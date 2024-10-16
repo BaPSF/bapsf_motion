@@ -687,6 +687,9 @@ class MGWidget(QWidget):
         self.drive_dropdown.currentIndexChanged.connect(
             self._drive_dropdown_new_selection
         )
+        self.transform_dropdown.currentIndexChanged.connect(
+            self._transform_dropdown_new_selection
+        )
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
@@ -1228,6 +1231,33 @@ class MGWidget(QWidget):
 
         drive_config = _deepcopy_dict(self.drive_defaults[index][1])
         self._change_drive(drive_config)
+
+    @Slot(int)
+    def _transform_dropdown_new_selection(self, index):
+        self.logger.warning(f"New selections in transform dropdown {index}")
+
+        tr_name = self.transform_dropdown.currentText()
+
+        if tr_name == "Custom Transform":
+            # custom transform can be anything, change nothing
+            return
+
+        tr_config = None
+        for _name, _config in self.transform_defaults:
+            if tr_name != _name:
+                continue
+
+            tr_config = _deepcopy_dict(_config)
+            break
+
+        self.logger.info(f"Selected config...\n{tr_config}")
+        # if tr_config is None:
+        #     # could not find the default config
+        #     self._update_transform_dropdown()
+
+        # self.transform_registry.get_transform(tr_config["type"])
+
+        # self._change_transform(tr_config)
 
     def return_and_close(self):
         config = _deepcopy_dict(self.mg.config)
