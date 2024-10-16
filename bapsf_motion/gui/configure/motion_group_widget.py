@@ -671,6 +671,8 @@ class MGWidget(QWidget):
         self.configChanged.connect(self._validate_motion_group)
         self.configChanged.connect(self._update_drive_dropdown)
 
+        self.drive_dropdown.currentIndexChanged.connect(self._drive_dropdown_new_selection)
+
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
 
@@ -982,7 +984,7 @@ class MGWidget(QWidget):
     def _change_drive(self, config: Dict[str, Any]):
         self.logger.info(f"Replacing the motion group's drive with config...\n{config}")
         mg_config = _deepcopy_dict(self.mg_config)
-        mg_config["drive"] = config
+        mg_config["drive"] = _deepcopy_dict(config)
         self._mg_config = mg_config
 
         self._spawn_motion_group()
@@ -1035,7 +1037,6 @@ class MGWidget(QWidget):
             return
 
         drive_config = self.mg_config["drive"]
-        self.logger.warning(f"Drive config...\n{drive_config}")
         if "name" not in drive_config:
             # this could happen if MGWidget is instantiated with an
             # invalid drive config or None
@@ -1103,6 +1104,16 @@ class MGWidget(QWidget):
         self.drive_control_widget.setEnabled(True)
         self.mb_btn.setEnabled(True)
         self.transform_btn.setEnabled(True)
+
+    @Slot(int)
+    def _drive_dropdown_new_selection(self, index):
+        self.logger.warning(f"New selections in drive dropdown {index}")
+        if self.drive_dropdown.currentText() == "Custom Drive":
+            # custom drive can be anything, change nothing
+            return
+
+        drive_config = _deepcopy_dict(self.drive_defaults[index][1])
+        self._change_drive(drive_config)
 
     def return_and_close(self):
         config = _deepcopy_dict(self.mg.config)
