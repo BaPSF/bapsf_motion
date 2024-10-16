@@ -1109,6 +1109,28 @@ class MGWidget(QWidget):
         else:
             self.drive_dropdown.setCurrentIndex(custom_drive_index)
 
+    def _update_transform_dropdown(self):
+        # identity_transform_index = self.transform_dropdown.findText("identity")
+        #
+        # if "transform" not in self.mg_config:
+        #     self.transform_dropdown.setCurrentIndex(identity_transform_index)
+        #     return
+        #
+        # tr_config = self.mg_config["transform"]
+        # if len(tr_config) == 0:
+        #     # this could happen if MGWidget is instantiated with an
+        #     # invalid transform config or None
+        #     self.transform_dropdown.setCurrentIndex(identity_transform_index)
+        #     return
+        #
+        # _type = tr_config["type"]
+        # index = self.transform_dropdown.findText(_type)
+        # if index == -1:
+        #     self.transform_dropdown.setCurrentIndex(identity_transform_index)
+        #     return
+        # self.transform_dropdown.setCurrentIndex(index)
+        self._populate_transform_dropdown()
+
     def _update_toml_widget(self):
         self.toml_widget.setText(toml.as_toml_string(self.mg_config))
 
