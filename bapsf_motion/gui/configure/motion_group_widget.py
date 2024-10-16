@@ -571,6 +571,9 @@ class MGWidget(QWidget):
         font = _w.font()
         font.setPointSize(16)
         _w.setFont(font)
+        _w.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
         self._drive_dropdown = _w
         self._populate_drive_dropdown()
 
@@ -589,6 +592,9 @@ class MGWidget(QWidget):
         font = _w.font()
         font.setPointSize(16)
         _w.setFont(font)
+        _w.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
         self._mb_dropdown = _w
         # self._populate_mb_dropdown()
 
@@ -608,6 +614,9 @@ class MGWidget(QWidget):
         font = _w.font()
         font.setPointSize(16)
         _w.setFont(font)
+        _w.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
         self._transform_dropdown = _w
         self._populate_transform_dropdown()
 
