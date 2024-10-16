@@ -219,9 +219,11 @@ class GearValidButton(StyleButton):
 
     def set_valid(self):
         self._is_valid = True
+        self._change_validation_icon()
 
     def set_invalid(self):
         self._is_valid = False
+        self._change_validation_icon()
 
     @property
     def is_valid(self):
