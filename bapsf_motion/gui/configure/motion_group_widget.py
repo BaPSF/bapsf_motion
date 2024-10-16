@@ -28,7 +28,7 @@ from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
-from bapsf_motion.gui.widgets import GearButton, HLinePlain, StyleButton
+from bapsf_motion.gui.widgets import GearValidButton, HLinePlain, StyleButton
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry
@@ -577,7 +577,7 @@ class MGWidget(QWidget):
         self._drive_dropdown = _w
         self._populate_drive_dropdown()
 
-        _btn = GearButton(parent=self)
+        _btn = GearValidButton(parent=self)
         self.drive_btn = _btn
 
         _icon = QLabel(parent=self)
@@ -598,7 +598,7 @@ class MGWidget(QWidget):
         self._mb_dropdown = _w
         # self._populate_mb_dropdown()
 
-        _btn = GearButton(parent=self)
+        _btn = GearValidButton(parent=self)
         _btn.setEnabled(False)
         self.mb_btn = _btn
 
@@ -620,7 +620,7 @@ class MGWidget(QWidget):
         self._transform_dropdown = _w
         self._populate_transform_dropdown()
 
-        _btn = GearButton(parent=self)
+        _btn = GearValidButton(parent=self)
         _btn.setEnabled(False)
         self.transform_btn = _btn
 
