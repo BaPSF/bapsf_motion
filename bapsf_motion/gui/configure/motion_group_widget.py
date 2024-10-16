@@ -571,7 +571,7 @@ class MGWidget(QWidget):
         font = _w.font()
         font.setPointSize(16)
         _w.setFont(font)
-        self.drive_dropdown = _w
+        self._drive_dropdown = _w
         self._populate_drive_dropdown()
 
         _btn = GearButton(parent=self)
@@ -589,7 +589,7 @@ class MGWidget(QWidget):
         font = _w.font()
         font.setPointSize(16)
         _w.setFont(font)
-        self.mb_dropdown = _w
+        self._mb_dropdown = _w
         # self._populate_mb_dropdown()
 
         _btn = GearButton(parent=self)
@@ -608,7 +608,7 @@ class MGWidget(QWidget):
         font = _w.font()
         font.setPointSize(16)
         _w.setFont(font)
-        self.transform_dropdown = _w
+        self._transform_dropdown = _w
         self._populate_transform_dropdown()
 
         _btn = GearButton(parent=self)
@@ -921,6 +921,18 @@ class MGWidget(QWidget):
         if self._overlay_shown:
             self._overlay_widget.resize(event.size())
         super().resizeEvent(event)
+
+    @property
+    def drive_dropdown(self) -> QComboBox:
+        return self._drive_dropdown
+
+    @property
+    def mb_dropdown(self) -> QComboBox:
+        return self._mb_dropdown
+
+    @property
+    def transform_dropdown(self) -> QComboBox:
+        return self._transform_dropdown
 
     @property
     def drive_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
