@@ -832,7 +832,7 @@ class MGWidget(QWidget):
             _defaults_dict[tr_name] = _dict
 
         default_key = "identity"
-        if self._defaults is not None or "transform" in self._defaults:
+        if isinstance(self._defaults, dict) and "transform" in self._defaults:
             _defaults = _deepcopy_dict(self._defaults["transform"])
             default_key = _defaults.pop("default", default_key)
 
@@ -840,7 +840,10 @@ class MGWidget(QWidget):
                 # only one transform defined
                 _name = _defaults.pop("name")
                 if "type" in _defaults or _defaults["type"] in _defaults_dict:
-                    _defaults[_name] = _deepcopy_dict(_defaults)
+                    _type = _defaults["type"]
+                    _defaults_dict[_name] = {
+                        **_defaults_dict[_type], **_deepcopy_dict(_defaults)
+                    }
             else:
                 for key, val in _defaults.items():
                     if (
@@ -851,20 +854,25 @@ class MGWidget(QWidget):
                         continue
 
                     _name = val.pop("name")
-                    _defaults_dict[_name] = _deepcopy_dict(val)
+                    _type = val["type"]
+                    _defaults_dict[_name] = {
+                        **_defaults_dict[_type], **_deepcopy_dict(val)
+                    }
 
         if default_key not in _defaults_dict:
             default_key = "identity"
 
         # convert to list of 2-element tuples
-        self._transform_defaults = []
+        self._transform_defaults = [("Custom Transform", {})]
         for key, val in _defaults_dict.items():
             if key == default_key:
                 self._transform_defaults.insert(0, (key, val))
+            elif key == "identity":
+                # Note: if default_key == "identity" then identity will be
+                #       inserted at index 0
+                self._transform_defaults.insert(1, (key, val))
             else:
                 self._transform_defaults.append((key, val))
-
-        self.logger.info(f"-- Transform defaults ...\n{_defaults_dict}")
 
         return self._transform_defaults
 
