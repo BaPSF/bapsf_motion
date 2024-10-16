@@ -884,11 +884,48 @@ class MGWidget(QWidget):
         self.drive_dropdown.setCurrentIndex(0)
 
     def _populate_transform_dropdown(self):
-        for item in self.transform_defaults:
-            self.transform_dropdown.addItem(item[0])
+        self.transform_dropdown.clear()
 
-        # set default drive
-        self.transform_dropdown.setCurrentIndex(0)
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
+            naxes = self.mg.drive.naxes
+        else:
+            naxes = -1
+        allowed_transforms = self.transform_registry.get_names_by_dimensionality(naxes)
+        self.logger.info(f"Allowed Transforms...{allowed_transforms}")
+
+        for tr_name, tr_config in self.transform_defaults:
+            if (
+                tr_name != "Custom Transform"
+                and tr_config["type"] not in allowed_transforms
+            ):
+                continue
+
+            self.transform_dropdown.addItem(tr_name)
+
+        # set default transform
+        if (
+            not isinstance(self.mg, MotionGroup)
+            or not isinstance(self.mg.transform, BaseTransform)
+        ):
+            self.transform_dropdown.setCurrentIndex(0)
+            return
+
+        _type = self.mg.transform.transform_type
+        _config = _deepcopy_dict(self.mg.transform.config)
+        for tr_name, tr_default_config in self.transform_defaults:
+            if tr_name == "Custom Transform" or _type != tr_default_config["type"]:
+                continue
+
+            if dict_equal(_deepcopy_dict(_config), tr_default_config):
+                index = self.transform_dropdown.findText(tr_name)
+                if index == -1:
+                    # this should not happen
+                    break
+                self.transform_dropdown.setCurrentIndex(index)
+                return
+
+        index = self.transform_dropdown.findText("Custom Transform")
+        self.transform_dropdown.setCurrentIndex(index)
 
     def _popup_drive_configuration(self):
         self._overlay_setup(
