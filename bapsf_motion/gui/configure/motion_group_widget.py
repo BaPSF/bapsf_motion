@@ -661,8 +661,11 @@ class MGWidget(QWidget):
         ):
             self._mg_config["drive"] = _deepcopy_dict(self.drive_defaults[0][1])
 
+        # if MGWidget launched without a transform then use a default
+        # transform
         if "transform" not in self.mg_config:
-            self._mg_config["transform"] = {"type": "identity"}
+            self._mg_config["transform"] = _deepcopy_dict(self.transform_defaults[0][1])
+
         self._initial_mg_config = _deepcopy_dict(self._mg_config)
 
         self._spawn_motion_group()
