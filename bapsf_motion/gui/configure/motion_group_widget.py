@@ -679,8 +679,11 @@ class MGWidget(QWidget):
         self.configChanged.connect(self._update_mg_name_widget)
         self.configChanged.connect(self._validate_motion_group)
         self.configChanged.connect(self._update_drive_dropdown)
+        self.configChanged.connect(self._update_transform_dropdown)
 
-        self.drive_dropdown.currentIndexChanged.connect(self._drive_dropdown_new_selection)
+        self.drive_dropdown.currentIndexChanged.connect(
+            self._drive_dropdown_new_selection
+        )
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
