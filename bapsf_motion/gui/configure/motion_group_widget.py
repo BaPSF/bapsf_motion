@@ -1167,20 +1167,51 @@ class MGWidget(QWidget):
     def _validate_motion_group(self):
         if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
             self.done_btn.setEnabled(False)
+
+            self.mb_dropdown.setEnabled(False)
             self.mb_btn.setEnabled(False)
+            self.mb_btn.set_invalid()
+
+            self.transform_dropdown.setEnabled(False)
             self.transform_btn.setEnabled(False)
+            self.transform_btn.set_invalid()
+
+            self.drive_btn.set_invalid()
             self.drive_control_widget.setEnabled(False)
             return
-        elif not isinstance(self.mg.mb, MotionBuilder):
-            self.done_btn.setEnabled(False)
-        elif not isinstance(self.mg.transform, BaseTransform):
+
+        if isinstance(self.mg.drive, Drive):
+            if self.mg.drive.terminated:
+                self.drive_btn.set_invalid()
+            else:
+                self.drive_btn.set_valid()
+
+            self.mb_dropdown.setEnabled(True)
+            self.mb_btn.setEnabled(True)
+
+            self.transform_dropdown.setEnabled(True)
+            self.transform_btn.setEnabled(True)
+
+        if not isinstance(self.mg.mb, MotionBuilder):
+            self.mb_btn.set_invalid()
             self.done_btn.setEnabled(False)
         else:
-            self.done_btn.setEnabled(True)
+            self.mb_btn.set_valid()
+
+        if not isinstance(self.mg.transform, BaseTransform):
+            self.transform_btn.set_invalid()
+            self.done_btn.setEnabled(False)
+        else:
+            self.transform_btn.set_valid()
 
         self.drive_control_widget.setEnabled(True)
-        self.mb_btn.setEnabled(True)
-        self.transform_btn.setEnabled(True)
+
+        if (
+            self.drive_btn.is_valid
+            and self.mb_btn.is_valid
+            and self.transform_btn.is_valid
+        ):
+            self.done_btn.setEnabled(True)
 
     @Slot(int)
     def _drive_dropdown_new_selection(self, index):
