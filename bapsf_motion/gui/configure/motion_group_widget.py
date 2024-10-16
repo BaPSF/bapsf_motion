@@ -1079,7 +1079,8 @@ class MGWidget(QWidget):
 
         if isinstance(self.mg, MotionGroup):
             self.mg.terminate(delay_loop_stop=True)
-            self._set_mg(None)
+            # self._set_mg(None)
+            self._mg = None
 
         try:
             mg = MotionGroup(
