@@ -1,5 +1,5 @@
 """This module contains custom Qt buttons."""
-__all__ = ["GearButton", "LED", "StopButton", "StyleButton"]
+__all__ = ["GearButton", "GearValidButton", "LED", "StopButton", "StyleButton"]
 
 import math
 
@@ -199,6 +199,37 @@ class GearButton(StyleButton):
         self.setFixedWidth(self._size)
         self.setFixedHeight(self._size)
         self.setIconSize(QSize(self._icon_size, self._icon_size))
+
+
+class GearValidButton(StyleButton):
+    def __init__(self, parent=None):
+
+        self._valid_icon = qta.icon("fa.gear", color="green")
+        self._invalid_icon = qta.icon("fa.gear", color="red")
+        self._is_valid = False
+
+        super().__init__(self._invalid_icon, "", parent=parent)
+
+        self._size = 32
+        self._icon_size = 24
+
+        self.setFixedWidth(self._size)
+        self.setFixedHeight(self._size)
+        self.setIconSize(QSize(self._icon_size, self._icon_size))
+
+    def set_valid(self):
+        self._is_valid = True
+
+    def set_invalid(self):
+        self._is_valid = False
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    def _change_validation_icon(self):
+        _icon = self._valid_icon if self.is_valid else self._invalid_icon
+        self.setIcon(_icon)
 
 
 class StopButton(QPushButton):
