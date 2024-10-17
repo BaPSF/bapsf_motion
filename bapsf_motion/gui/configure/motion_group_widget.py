@@ -965,6 +965,8 @@ class MGWidget(QWidget):
 
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
             naxes = self.mg.drive.naxes
+        elif "drive" in self.mg_config and "axes" in self.mg_config["drive"]:
+            naxes = len(self.mg_config["drive"]["axes"])
         else:
             naxes = -1
         allowed_transforms = self.transform_registry.get_names_by_dimensionality(naxes)
