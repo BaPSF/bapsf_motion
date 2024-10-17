@@ -668,7 +668,19 @@ class MGWidget(QWidget):
         # if MGWidget launched without a transform then use a default
         # transform
         if "transform" not in self.mg_config:
-            self._mg_config["transform"] = _deepcopy_dict(self.transform_defaults[0][1])
+            self._populate_transform_dropdown()
+
+            self.transform_dropdown.blockSignals(True)
+            self.transform_dropdown.setCurrentIndex(0)
+            self.transform_dropdown.blockSignals(False)
+
+            tr_default_name = self.transform_dropdown.currentText()
+            tr_config = {}
+            for tr_name, tr_config in self.transform_defaults:
+                if tr_name == tr_default_name:
+                    break
+
+            self._mg_config["transform"] = tr_config
 
         self._initial_mg_config = _deepcopy_dict(self._mg_config)
 
