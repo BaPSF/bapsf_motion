@@ -619,7 +619,7 @@ class MGWidget(QWidget):
             QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
         )
         self._mb_dropdown = _w
-        # self._populate_mb_dropdown()
+        self._populate_mb_dropdown()
 
         _btn = GearValidButton(parent=self)
         _btn.setEnabled(False)
@@ -949,6 +949,87 @@ class MGWidget(QWidget):
 
         # set default drive
         self.drive_dropdown.setCurrentIndex(0)
+
+    def _populate_mb_dropdown(self):
+        self.logger.info("Populating Motion Builder dropdown")
+
+        mb_name_stored = (
+            None if self.mb_dropdown.count() == 0
+            else self.mb_dropdown.currentText()
+        )
+
+        # Block signals when repopulating the dropdown
+        self.mb_dropdown.blockSignals(True)
+
+        self.mb_dropdown.clear()
+
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
+            naxes = self.mg.drive.naxes
+        elif "drive" in self.mg_config and "axes" in self.mg_config["drive"]:
+            naxes = len(self.mg_config["drive"]["axes"])
+        else:
+            naxes = -1
+
+        # populate dropdown
+        for mb_name, mb_config in self.mb_defaults:
+            index = self.mb_dropdown.findText(mb_name)
+            if index != -1:
+                # motion builder already in dropdown
+                continue
+
+            if mb_name == "Custom Motion Builder":
+                pass
+            elif naxes == -1:
+                # drive is not validated, so we do not know its dimensionality
+                # we can only allow 'Custom Motion Builder' at this point
+                continue
+            elif naxes != len(mb_config["space"]):
+                # mb dimensionality does not match drive dimensionality
+                continue
+
+            self.mb_dropdown.addItem(mb_name)
+
+        if mb_name_stored is not None:
+            index = self.mb_dropdown.findText(mb_name_stored)
+
+            if index != -1:
+                self.mb_dropdown.setCurrentIndex(index)
+                self.mb_dropdown.blockSignals(False)
+                return
+
+        self.mb_dropdown.blockSignals(False)
+
+        # set default transform
+        if (
+            "motion_builder" in self.mg_config
+            and bool(self.mg_config["motion_builder"])
+        ):
+            _config = _deepcopy_dict(self.mg_config["motion_builder"])
+            pass
+        elif (
+            not isinstance(self.mg, MotionGroup)
+            or not isinstance(self.mg.mb, MotionBuilder)
+        ):
+            self.mb_dropdown.setCurrentIndex(0)
+            return
+        else:
+            _config = _deepcopy_dict(self.mg.mb.config)
+
+        for mb_name, mb_default_config in self.mb_defaults:
+            if mb_name == "Custom Motion Builder":
+                continue
+
+            if dict_equal(_deepcopy_dict(_config), mb_default_config):
+                index = self.mb_dropdown.findText(mb_name)
+                if index == -1:
+                    # this should not happen
+                    break
+
+                self.mb_dropdown.setCurrentIndex(index)
+                return
+
+        index = self.mb_dropdown.findText("Custom Motion Builder")
+        self.mb_dropdown.setCurrentIndex(index)
 
     def _populate_transform_dropdown(self):
 
