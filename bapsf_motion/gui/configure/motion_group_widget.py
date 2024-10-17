@@ -803,11 +803,9 @@ class MGWidget(QWidget):
 
         _drive_defaults = {"Custom Drive": {}}
         _defaults = _deepcopy_dict(self._defaults["drive"])  # type: dict
-        if "default" in _defaults:
-            default_name = _defaults.pop("default")
-        else:
-            default_name = "Custom Drive"
+        default_name = _defaults.pop("default", "Custom Drive")
 
+        # populate defaults dict
         if "name" in _defaults.keys():
             # only one drive defined
             _name = _defaults["name"]
