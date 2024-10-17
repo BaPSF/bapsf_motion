@@ -698,6 +698,7 @@ class MGWidget(QWidget):
         self.configChanged.connect(self._update_mg_name_widget)
         self.configChanged.connect(self._validate_motion_group)
         self.configChanged.connect(self._update_drive_dropdown)
+        self.configChanged.connect(self._update_mb_dropdown)
         self.configChanged.connect(self._update_transform_dropdown)
 
         self.drive_dropdown.currentIndexChanged.connect(
@@ -1297,6 +1298,9 @@ class MGWidget(QWidget):
             self.drive_dropdown.setCurrentIndex(index)
         else:
             self.drive_dropdown.setCurrentIndex(custom_drive_index)
+
+    def _update_mb_dropdown(self):
+        self._populate_mb_dropdown()
 
     def _update_transform_dropdown(self):
         self._populate_transform_dropdown()
