@@ -1272,7 +1272,7 @@ class MGWidget(QWidget):
     @Slot(object)
     def _change_motion_builder(self, config: Dict[str, Any]):
         self.logger.info("Replacing the motion group's motion builder.")
-        self.mg.replace_motion_builder(config)
+        self.mg.replace_motion_builder(_deepcopy_dict(config))
         self.configChanged.emit()
 
     def _rerun_drive(self):
