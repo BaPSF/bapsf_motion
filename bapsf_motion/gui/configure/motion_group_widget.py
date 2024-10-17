@@ -680,7 +680,7 @@ class MGWidget(QWidget):
                 if tr_name == tr_default_name:
                     break
 
-            self._mg_config["transform"] = tr_config
+            self._mg_config["transform"] = _deepcopy_dict(tr_config)
 
         self._initial_mg_config = _deepcopy_dict(self._mg_config)
 
