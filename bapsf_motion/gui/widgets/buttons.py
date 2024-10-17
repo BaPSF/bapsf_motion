@@ -203,9 +203,11 @@ class GearButton(StyleButton):
 
 class GearValidButton(StyleButton):
     def __init__(self, parent=None):
+        self._valid_color = "#499C54"  # rgb(14, 212, 0)
+        self._invalid_color = "#C75450"  # rgb(13, 88, 0)
 
-        self._valid_icon = qta.icon("fa.gear", color="green")
-        self._invalid_icon = qta.icon("fa.gear", color="red")
+        self._valid_icon = qta.icon("fa.gear", color=self._valid_color)
+        self._invalid_icon = qta.icon("fa.gear", color=self._invalid_color)
         self._is_valid = False
 
         super().__init__(self._invalid_icon, "", parent=parent)
