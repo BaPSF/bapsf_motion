@@ -526,6 +526,26 @@ class MGWidget(QWidget):
         self._transform_defaults = None
         self._build_transform_defaults()
 
+        # Define TEXT WIDGETS
+
+        _widget = QTextEdit()
+        _widget.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        _widget.setReadOnly(True)
+        _widget.font().setPointSize(14)
+        _widget.font().setFamily("Courier New")
+        _widget.setMinimumWidth(350)
+        self.toml_widget = _widget
+
+        _widget = QLineEdit()
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setMinimumWidth(220)
+        self.mg_name_widget = _widget
+
         # Define BUTTONS
 
         _btn = StyleButton("Add / Update")
@@ -623,25 +643,6 @@ class MGWidget(QWidget):
         _btn = GearValidButton(parent=self)
         _btn.setEnabled(False)
         self.transform_btn = _btn
-
-        # Define TEXT WIDGETS
-        _widget = QTextEdit()
-        _widget.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-        )
-        _widget.setReadOnly(True)
-        _widget.font().setPointSize(14)
-        _widget.font().setFamily("Courier New")
-        _widget.setMinimumWidth(350)
-        self.toml_widget = _widget
-
-        _widget = QLineEdit()
-        font = _widget.font()
-        font.setPointSize(16)
-        _widget.setFont(font)
-        _widget.setMinimumWidth(220)
-        self.mg_name_widget = _widget
 
         # Define ADVANCED WIDGETS
         self._overlay_widget = None  # type: Union[_ConfigOverlay, None]
