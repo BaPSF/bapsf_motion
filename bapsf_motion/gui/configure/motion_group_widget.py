@@ -1252,6 +1252,9 @@ class MGWidget(QWidget):
         tr_name = self.transform_dropdown.currentText()
         self.logger.warning(f"New selections in transform dropdown {index} '{tr_name}'")
 
+        if index == -1:
+            return
+
         tr_name = self.transform_dropdown.currentText()
 
         if tr_name == "Custom Transform":
