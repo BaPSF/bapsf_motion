@@ -933,7 +933,6 @@ class MGWidget(QWidget):
         if self.transform_dropdown.count() != 0:
             # we are repopulating and need to reset dropdown to current position
             tr_name_stored = self.transform_dropdown.currentText()
-            self.logger.info(f"Current TD '{tr_name_stored}'")
         else:
             tr_name_stored = None
 
@@ -969,7 +968,6 @@ class MGWidget(QWidget):
             index = self.transform_dropdown.findText(tr_name_stored)
 
             if index != -1:
-                self.logger.info(f"1 Set TD {index} '{tr_name_stored}'")
                 self.transform_dropdown.setCurrentIndex(index)
                 self.transform_dropdown.blockSignals(False)
                 return
