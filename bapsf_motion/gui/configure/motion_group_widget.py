@@ -1202,6 +1202,30 @@ class MGWidget(QWidget):
         self.mg.config["name"] = self.mg_name_widget.text()
         self.configChanged.emit()
 
+    @staticmethod
+    def _spawn_motion_builder(config: Dict[str, Any]) -> Union[MotionBuilder, None]:
+        """Return an instance of |MotionBuilder|."""
+        if config is None or not config:
+            return None
+
+        # initialize the motion builder object
+        mb_config = config.copy()
+
+        for key in {"name", "user"}:
+            mb_config.pop(key, None)
+
+        _inputs = {}
+        for key, _kwarg in zip(
+                ("space", "layer", "exclusion"),
+                ("space", "layers", "exclusions"),
+        ):
+            try:
+                _inputs[_kwarg] = list(mb_config.pop(key).values())
+            except KeyError:
+                continue
+
+        return MotionBuilder(**_inputs)
+
     def _spawn_motion_group(self):
         self.logger.info("Spawning Motion Group")
 
