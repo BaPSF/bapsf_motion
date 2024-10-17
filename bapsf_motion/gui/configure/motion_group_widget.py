@@ -1261,7 +1261,10 @@ class MGWidget(QWidget):
             self.mb_btn.set_invalid()
             self.done_btn.setEnabled(False)
         else:
-            self.mb_btn.set_valid()
+            if "layer" not in self.mg.mb.config:
+                self.mb_btn.set_invalid()
+            else:
+                self.mb_btn.set_valid()
 
         if not isinstance(self.mg.transform, BaseTransform):
             self.transform_btn.set_invalid()
