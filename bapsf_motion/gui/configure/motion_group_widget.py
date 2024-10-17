@@ -1103,12 +1103,6 @@ class MGWidget(QWidget):
 
         self.mg.replace_transform(_deepcopy_dict(config))
 
-        if "transform" not in self.mg_config:
-            self.transform_btn.set_invalid()
-        elif not dict_equal(config, self.mg_config["transform"]):
-            self.mg.replace_transform({})
-            self.transform_btn.set_invalid()
-
         self.configChanged.emit()
 
     @Slot(object)
@@ -1215,16 +1209,18 @@ class MGWidget(QWidget):
             return
 
         if isinstance(self.mg.drive, Drive):
-            if self.mg.drive.terminated:
-                self.drive_btn.set_invalid()
-            else:
-                self.drive_btn.set_valid()
-
             self.mb_dropdown.setEnabled(True)
             self.mb_btn.setEnabled(True)
 
             self.transform_dropdown.setEnabled(True)
             self.transform_btn.setEnabled(True)
+
+            if not self.mg.drive.terminated:
+                self.drive_btn.set_valid()
+            else:
+                self.drive_control_widget.setEnabled(False)
+                self._spawn_motion_group()
+                return
 
         if not isinstance(self.mg.mb, MotionBuilder):
             self.mb_btn.set_invalid()
@@ -1235,10 +1231,11 @@ class MGWidget(QWidget):
         if not isinstance(self.mg.transform, BaseTransform):
             self.transform_btn.set_invalid()
             self.done_btn.setEnabled(False)
+
+            self.drive_control_widget.setEnabled(False)
         else:
             self.transform_btn.set_valid()
-
-        self.drive_control_widget.setEnabled(True)
+            self.drive_control_widget.setEnabled(True)
 
         if (
             self.drive_btn.is_valid
