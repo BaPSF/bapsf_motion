@@ -526,6 +526,9 @@ class MGWidget(QWidget):
         self._transform_defaults = None
         self._build_transform_defaults()
 
+        self._mb_defaults = None
+        self._build_mb_defaults()
+
         # Define TEXT WIDGETS
 
         _widget = QTextEdit()
@@ -828,6 +831,40 @@ class MGWidget(QWidget):
                 self._drive_defaults.append((key, val))
 
         return self._drive_defaults
+
+    def _build_mb_defaults(self):
+        if self._defaults is None or "motion_builder" not in self._defaults:
+            self._mb_defaults = [("Custom Motion Builder", {})]
+            return self._mb_defaults
+
+        _mb_defaults_dict = {"Custom Motion Builder": {}}
+        _defaults = _deepcopy_dict(self._defaults["motion_builder"])
+        default_name = _defaults.pop("default", "Custom Motion Builder")
+
+        # populate defaults dict
+        if "name" in _defaults:
+            # only one mg defined
+            _name = _defaults["name"]
+            if _name not in _mb_defaults_dict:
+                _mb_defaults_dict[_name] = _deepcopy_dict(_defaults)
+        else:
+            for key, entry in _defaults.items():
+                _name = entry["name"]
+                if _name in _mb_defaults_dict:
+                    # do not add duplicate defaults
+                    continue
+
+                _mb_defaults_dict[_name] = _deepcopy_dict(entry)
+
+        # convert to list of 2-element tuples
+        self._mb_defaults = []
+        for key, val in _mb_defaults_dict.items():
+            if key == default_name:
+                self._mb_defaults.insert(0, (key, val))
+            else:
+                self._mb_defaults.append((key, val))
+
+        return self._mb_defaults
 
     def _build_transform_defaults(self):
         _defaults_dict = {}
