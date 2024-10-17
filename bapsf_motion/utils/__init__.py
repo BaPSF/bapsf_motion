@@ -108,6 +108,9 @@ def _deepcopy_dict(item):
 
 
 def dict_equal(d1, d2):
+    if set(d1) != set(d2):
+        return False
+
     for key, val in d1.items():
         if key not in d2:
             return False
