@@ -905,12 +905,19 @@ class MGWidget(QWidget):
         else:
             naxes = -1
         allowed_transforms = self.transform_registry.get_names_by_dimensionality(naxes)
-        self.logger.info(f"Allowed Transforms...{allowed_transforms}")
 
+        # populate dropdown
         for tr_name, tr_config in self.transform_defaults:
-            if (
-                tr_name != "Custom Transform"
-                and tr_config["type"] not in allowed_transforms
+            index = self.transform_dropdown.findText(tr_name)
+            if index != -1:
+                # transform already in dropdown
+                continue
+
+            if tr_name == "Custom Transform":
+                pass
+            elif (
+                "type" not in tr_config
+                or tr_config["type"] not in allowed_transforms
             ):
                 continue
 
@@ -937,6 +944,7 @@ class MGWidget(QWidget):
                 if index == -1:
                     # this should not happen
                     break
+
                 self.transform_dropdown.setCurrentIndex(index)
                 return
 
