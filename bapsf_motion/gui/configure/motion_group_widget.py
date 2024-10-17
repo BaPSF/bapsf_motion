@@ -722,6 +722,9 @@ class MGWidget(QWidget):
         self.drive_dropdown.currentIndexChanged.connect(
             self._drive_dropdown_new_selection
         )
+        self.mb_dropdown.currentIndexChanged.connect(
+            self._mb_dropdown_new_selection
+        )
         self.transform_dropdown.currentIndexChanged.connect(
             self._transform_dropdown_new_selection
         )
@@ -1447,6 +1450,54 @@ class MGWidget(QWidget):
 
         drive_config = _deepcopy_dict(self.drive_defaults[index][1])
         self._change_drive(drive_config)
+
+    @Slot(int)
+    def _mb_dropdown_new_selection(self, index):
+        mb_name = self.mb_dropdown.currentText()
+        self.logger.warning(
+            f"New selections in motion builder dropdown {index} '{mb_name}'"
+        )
+
+        if index == -1:
+            return
+        elif mb_name == "Custom Motion Builder":
+            # custom transform can be anything, change nothing
+            return
+
+        mb_default_config = None  # type: Union[Dict[str, Any], None]
+        for _name, _config in self.mb_defaults:
+            if mb_name != _name:
+                continue
+
+            mb_default_config = _deepcopy_dict(_config)
+            break
+
+        self.logger.info(f"New MB config...\n{mb_default_config}")
+        self.logger.info(
+            f"mb_default_config is None = {mb_default_config is None}\n"
+            f"'motion_builder' in self.mg_config = {'motion_builder' in self.mg_config}\n"
+        )
+        if mb_default_config is None:
+            # could not find the default config
+            self._update_mb_dropdown()
+            return
+        elif (
+            "motion_builder" in self.mg_config
+            and dict_equal(
+                mb_default_config,
+                _deepcopy_dict(self.mg_config["motion_builder"]),
+            )
+        ):
+            self.logger.info(
+                "Selected transform is already in use\n"
+                f"selected = {mb_default_config}\n"
+                f"old = {_deepcopy_dict(self.mg_config['motion_builder'])}"
+            )
+            # selected transform is already deployed
+            return
+
+        self.logger.info("Changing MB config...")
+        self._change_motion_builder(mb_default_config)
 
     @Slot(int)
     def _transform_dropdown_new_selection(self, index):
