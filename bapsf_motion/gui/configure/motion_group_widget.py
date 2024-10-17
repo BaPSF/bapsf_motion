@@ -1407,6 +1407,7 @@ class MGWidget(QWidget):
                 self.drive_btn.set_valid()
             else:
                 self.drive_control_widget.setEnabled(False)
+                self.done_btn.setEnabled(False)
                 self._spawn_motion_group()
                 return
 
@@ -1434,6 +1435,8 @@ class MGWidget(QWidget):
             and self.transform_btn.is_valid
         ):
             self.done_btn.setEnabled(True)
+        else:
+            self.done_btn.setEnabled(False)
 
     @Slot(int)
     def _drive_dropdown_new_selection(self, index):
