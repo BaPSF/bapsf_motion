@@ -1261,29 +1261,39 @@ class MGWidget(QWidget):
 
         if index == -1:
             return
-
-        tr_name = self.transform_dropdown.currentText()
-
-        if tr_name == "Custom Transform":
+        elif tr_name == "Custom Transform":
             # custom transform can be anything, change nothing
             return
 
-        tr_config = None
+        tr_default_config = None  # type: Union[Dict[str, Any], None]
         for _name, _config in self.transform_defaults:
             if tr_name != _name:
                 continue
 
-            tr_config = _deepcopy_dict(_config)
+            tr_default_config = _deepcopy_dict(_config)
             break
 
-        self.logger.info(f"Selected config...\n{tr_config}")
-        # if tr_config is None:
-        #     # could not find the default config
-        #     self._update_transform_dropdown()
+        if tr_default_config is None:
+            # could not find the default config
+            self._update_transform_dropdown()
+            return
+        elif (
+            tr_name == tr_default_config["type"]
+            and any(val == "" for val in tr_default_config.values())
+        ):
+            # This is a not fully defined transform type
+            self._change_transform({})
+            return
+        elif (
+            "transform" in self.mg_config
+            and "type" in self.mg_config["transform"]
+            and tr_default_config["type"] == self.mg_config["transform"]["type"]
+            and dict_equal(tr_default_config, _deepcopy_dict(self.mg_config["transform"]))
+        ):
+            # selected transform is already deployed
+            return
 
-        # self.transform_registry.get_transform(tr_config["type"])
-
-        # self._change_transform(tr_config)
+        self._change_transform(tr_default_config)
 
     def return_and_close(self):
         config = _deepcopy_dict(self.mg.config)
