@@ -893,6 +893,10 @@ class MGWidget(QWidget):
         self.drive_dropdown.setCurrentIndex(0)
 
     def _populate_transform_dropdown(self):
+
+        # Block signals when repopulating the dropdown
+        self.transform_dropdown.blockSignals(True)
+
         self.transform_dropdown.clear()
 
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
@@ -910,6 +914,8 @@ class MGWidget(QWidget):
                 continue
 
             self.transform_dropdown.addItem(tr_name)
+
+        self.transform_dropdown.blockSignals(False)
 
         # set default transform
         if (
