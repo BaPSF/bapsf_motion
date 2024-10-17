@@ -841,18 +841,28 @@ class MGWidget(QWidget):
 
         # populate defaults dict
         if "name" in _defaults:
-            # only one mg defined
-            _name = _defaults["name"]
-            if _name not in _mb_defaults_dict:
-                _mb_defaults_dict[_name] = _deepcopy_dict(_defaults)
-        else:
-            for key, entry in _defaults.items():
-                _name = entry["name"]
-                if _name in _mb_defaults_dict:
-                    # do not add duplicate defaults
+            # only one mb defined
+            _defaults = {0: _defaults}
+
+        for key, entry in _defaults.items():
+            if "name" not in entry:
+                continue
+
+            _name = entry["name"]
+            if _name in _mb_defaults_dict or "space" not in entry:
+                # do not add duplicate defaults
+                continue
+
+            try:
+                mb = self._spawn_motion_builder(entry)
+
+                if not isinstance(mb, MotionBuilder):
                     continue
 
-                _mb_defaults_dict[_name] = _deepcopy_dict(entry)
+                _mb_defaults_dict[_name] = _deepcopy_dict(mb.config)
+                del mb
+            except Exception:  # noqa
+                continue
 
         # convert to list of 2-element tuples
         self._mb_defaults = []
