@@ -1068,6 +1068,10 @@ class MGWidget(QWidget):
         return self._drive_defaults
 
     @property
+    def mb_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
+        return self._mb_defaults
+
+    @property
     def transform_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
         return self._transform_defaults
 
