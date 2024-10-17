@@ -52,7 +52,7 @@ exclusion.0.type = "lapd_xy"
 exclusion.0.port_location = "East"
 exclusion.0.diameter = 80
 exclusion.0.pivot_radius = 58.771
-exclusion.0.full_cone_angle = 60
+exclusion.0.cone_full_angle = 60
 
 [bapsf_motion.defaults.motion_builder.1]
 name = "East 20x20 - Generic XY"
@@ -66,7 +66,7 @@ exclusion.0.type = "lapd_xy"
 exclusion.0.port_location = "East"
 exclusion.0.diameter = 80
 exclusion.0.pivot_radius = 58.771
-exclusion.0.full_cone_angle = 60
+exclusion.0.cone_full_angle = 60
 layer.0.type = "grid"
 layer.0.limits = [[-20, 20], [-20,20]]
 layer.0.steps = [41, 41]
