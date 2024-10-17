@@ -1078,8 +1078,15 @@ class MGWidget(QWidget):
 
     @Slot(object)
     def _change_transform(self, config: Dict[str, Any]):
-        self.logger.info("Replacing the motion group's transform.")
-        self.mg.replace_transform(config)
+        self.logger.info(f"Replacing the motion group's transform...\n{config}")
+        self.mg.replace_transform(_deepcopy_dict(config))
+
+        if "transform" not in self.mg_config:
+            self.transform_btn.set_invalid()
+        elif not dict_equal(config, self.mg_config["transform"]):
+            self.mg.replace_transform({})
+            self.transform_btn.set_invalid()
+
         self.configChanged.emit()
 
     @Slot(object)
