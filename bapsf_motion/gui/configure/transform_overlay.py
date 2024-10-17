@@ -26,6 +26,7 @@ from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.widgets import HLinePlain, QLineEditSpecialized
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
+from bapsf_motion.utils import _deepcopy_dict
 
 
 class TransformConfigOverlay(_ConfigOverlay):
@@ -38,6 +39,20 @@ class TransformConfigOverlay(_ConfigOverlay):
         self._params_widget = None  # type: Union[None, QWidget]
         self._transform_inputs = None
 
+        # determine starting transform
+        if isinstance(self.mg.transform, BaseTransform):
+            tr_type = self.mg.transform.transform_type
+        elif isinstance(parent, mgw.MGWidget):
+            tr_name = parent.transform_dropdown.currentText()
+            tr_type = "identity"
+            for name, config in parent.transform_defaults:
+                if name == tr_name:
+                    tr_type = config["type"]
+                    self._transform_inputs = _deepcopy_dict(config)
+                    break
+        else:
+            tr_type = "identity"
+
         # Define BUTTONS
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
@@ -48,7 +63,7 @@ class TransformConfigOverlay(_ConfigOverlay):
             list(self.registry.get_names_by_dimensionality(self._mg.drive.naxes))
         )
         _w.setEditable(False)
-        _w.setCurrentText(self._mg.transform.transform_type)
+        _w.setCurrentText(tr_type)
         font = _w.font()
         font.setPointSize(18)
         _w.setFont(font)
@@ -66,7 +81,7 @@ class TransformConfigOverlay(_ConfigOverlay):
     def _define_layout(self):
 
         self._params_widget = self._define_params_widget(
-            self.transform.transform_type
+            self.combo_widget.currentText()
         )
 
         layout = QVBoxLayout()
@@ -98,7 +113,10 @@ class TransformConfigOverlay(_ConfigOverlay):
         """
         The transform object that been constructed for :attr:`mg`.
         """
-        if self._transform is None:
+        if (
+            self._transform is None
+            and bool(self.mg.config["transform"])
+        ):
             return self.mg.transform
 
         return self._transform
@@ -121,7 +139,17 @@ class TransformConfigOverlay(_ConfigOverlay):
     def _define_params_widget(self, tr_type: str):
         # re-initialized the transform_inputs dictionary
         params = self.registry.get_input_parameters(tr_type)
-        if self.transform.transform_type == tr_type:
+
+        if (
+            self.transform_inputs is not None
+            and "type" in self.transform_inputs
+            and tr_type == self.transform_inputs["type"]
+        ):
+            self._transform_inputs.pop("type")
+        elif (
+            isinstance(self.transform, BaseTransform)
+            and self.transform.transform_type == tr_type
+        ):
             self._transform_inputs = {**self.transform.config}
             self._transform_inputs.pop("type")
         else:
