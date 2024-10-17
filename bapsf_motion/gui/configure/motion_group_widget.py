@@ -682,6 +682,24 @@ class MGWidget(QWidget):
 
             self._mg_config["transform"] = _deepcopy_dict(tr_config)
 
+        # if MGWidget launched without a motion builder then use a default
+        # motion builder
+        if "motion_builder" not in self.mg_config:
+            self.logger.info("INIT - Setting initial motion builder")
+            self._populate_mb_dropdown()
+
+            self.mb_dropdown.blockSignals(True)
+            self.mb_dropdown.setCurrentIndex(0)
+            self.mb_dropdown.blockSignals(True)
+
+            mb_default_name = self.mb_dropdown.currentText()
+            mb_config = {}
+            for mb_name, mb_config in self.mb_defaults:
+                if mb_name == mb_default_name:
+                    break
+
+            self._mg_config["motion_builder"] = _deepcopy_dict(mb_config)
+
         self._initial_mg_config = _deepcopy_dict(self._mg_config)
 
         self._spawn_motion_group()
