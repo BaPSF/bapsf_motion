@@ -10,7 +10,8 @@ import logging
 
 from collections import UserDict
 from datetime import datetime, timezone
-from typing import Any, Dict, Union
+from pathlib import Path
+from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motion_group_ import (
@@ -28,7 +29,7 @@ class RunManagerConfig(UserDict):
 
     def __init__(
         self,
-        config: Union[str, Dict[str, Any], "RunManagerConfig"],
+        config: Union[str, Dict[str, Any], "RunManagerConfig", Path],
         logger: logging.Logger = None,
     ):
         self.logger = logging.getLogger("RM_config") if logger is None else logger
@@ -36,11 +37,23 @@ class RunManagerConfig(UserDict):
         # Make sure config is the right type, and is a dict by the
         # end of ths code block
         if isinstance(config, RunManagerConfig):
-            # This should never happen ...
-            pass
+            # This could happen when creating a new RunManger from an
+            # old / terminated RunManager
+            #
+            # we need to deep copy to avoid passing around actor objects
+            # from the old config
+            config = _deepcopy_dict(config)
         elif isinstance(config, str):
-            # Assume config is a TOML like string
-            config = toml.loads(config)
+            # could be path to TOML file or a TOML like string
+            if Path(config).exists():
+                with open(config, "rb") as f:
+                    config = toml.load(f)
+            else:
+                config = toml.loads(config)
+        elif isinstance(config, Path):
+            # path to TOML file
+            with open(config, "rb") as f:
+                config = toml.load(f)
         elif not isinstance(config, dict):
             raise TypeError(
                 f"Expected 'config' to be of type dict, got type {type(config)}."
@@ -269,12 +282,13 @@ class RunManagerConfig(UserDict):
 class RunManager(EventActor):
     def __init__(
         self,
-        config: Union[str, Dict[str, Any]],
+        config: Union[str, Dict[str, Any], RunManagerConfig, Path],
         *,
         # logger: logging.Logger = None,
         # loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
         build_mode: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
         self._mgs = None
         self._config = None
@@ -283,6 +297,7 @@ class RunManager(EventActor):
         super().__init__(
             logger=logger,
             auto_run=False,
+            parent=parent
         )
         self.name = "RM"
 
@@ -320,7 +335,8 @@ class RunManager(EventActor):
             return
 
         for mg in self.mgs.values():
-            mg.run()
+            if not mg.terminated:
+                mg.run()
     
     @property
     def mgs(self) -> Dict[Union[str, int], MotionGroup]:
@@ -344,7 +360,8 @@ class RunManager(EventActor):
             config=config,
             logger=self.logger,
             loop=self.loop,
-            auto_run=False
+            auto_run=False,
+            parent=self,
         )
 
     @property

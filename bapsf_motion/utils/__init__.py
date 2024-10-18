@@ -8,12 +8,18 @@ __all__ = [
     "units",
     "SimpleSignal",
     "toml",
+    "loop_safe_stop",
+    "dict_equal"
 ]
+import asyncio
 import re
+import time
 
 from astropy import units
 from collections import UserDict
+from datetime import datetime
 from pathlib import Path
+from typing import Optional
 
 from bapsf_motion.utils import exceptions, toml
 from bapsf_motion.utils.units_ import units, counts, steps, rev
@@ -39,14 +45,13 @@ class SimpleSignal:
             self.handlers.append(func)
 
     def disconnect(self, func=None):
-        if func is None:
-            self._handlers = None
-            return
-
         try:
             self.handlers.remove(func)
         except ValueError:
             pass
+
+    def disconnect_all(self):
+        self._handlers = None
 
     def emit(self):
         for handler in self.handlers:
@@ -100,3 +105,58 @@ def _deepcopy_dict(item):
         _copy[key] = val
 
     return _copy
+
+
+def dict_equal(d1, d2):
+    if set(d1) != set(d2):
+        return False
+
+    for key, val in d1.items():
+        if key not in d2:
+            return False
+
+        if isinstance(val, (dict, UserDict)):
+            equality = dict_equal(val, d2[key])
+            return equality
+
+        return val == d2[key]
+
+
+def loop_safe_stop(loop: asyncio.AbstractEventLoop, max_wait: Optional[float] = 6.0):
+    """
+    Safely cancel all tasks in the `event loop`_ ``loop`` and stop the
+    loop once the tasks are done.
+
+    Parameters
+    ----------
+    loop : `asyncio.AbstractEventLoop`
+        The `asyncio` `event loop`_ to be stopped.
+
+    max_wait : `float`, optional
+        Max wait time in seconds for tasks to finish before stopping
+        the event loop.
+
+    """
+    if loop.is_closed() or not loop.is_running():
+        return
+
+    if not isinstance(max_wait, (int, float)):
+        max_wait = 6.0
+
+    # if we're stopping the loop, then all tasks need to be cancelled
+    for task in asyncio.all_tasks(loop):
+        if not task.done() or not task.cancelled():
+            loop.call_soon_threadsafe(task.cancel)
+
+    tstart = datetime.now()
+    while any(
+            not (task.done() or task.cancelled())
+            for task in asyncio.all_tasks(loop)
+    ):
+        # continue waiting for all tasks to be cancelled
+        if (datetime.now() - tstart).total_seconds() > max_wait:
+            break
+        else:
+            time.sleep(0.1)
+
+    loop.call_soon_threadsafe(loop.stop)

@@ -709,6 +709,7 @@ class MotionGroup(EventActor):
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
         build_mode: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
 
         self._drive = None
@@ -723,6 +724,7 @@ class MotionGroup(EventActor):
             logger=logger,
             loop=loop,
             auto_run=False,
+            parent=parent,
         )
         self.name = "MG"
 
@@ -752,7 +754,11 @@ class MotionGroup(EventActor):
         self._config.link_motion_builder(self.mb)
         self._config.link_transform(self.transform)
 
-        self.run(auto_run=auto_run)
+        if isinstance(self._drive, Drive) and self._drive.terminated:
+            # terminate self if Drive is terminated
+            self.terminate(delay_loop_stop=True)
+        elif not self.terminated:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         return
@@ -792,6 +798,7 @@ class MotionGroup(EventActor):
                 logger=self.logger,
                 loop=self.loop,
                 auto_run=False,
+                parent=self,
                 **_config_inputs,
             )
             self._drive = dr
@@ -801,6 +808,12 @@ class MotionGroup(EventActor):
                 exc_info=err,
             )
             self._drive = None
+
+        if self._drive.terminated or self.terminated:
+            # 1. terminated self if the new drive is terminated
+            # 2. terminate drive if self is already terminated (it's up
+            #    to the caller to re-run the motion group)
+            self.terminate(delay_loop_stop=True)
 
         return self._drive
 
@@ -948,12 +961,39 @@ class MotionGroup(EventActor):
 
         return self.move_to(pos=pos)
 
-    def set_zero(self):
-        """Make current motion space position zero."""
-        # transform do not necessarily map the motion space zero to the
+    def set_zero(self, axis: Optional[int] = None):
+        """
+        Make current motion space position zero.
+
+        Parameters
+        ----------
+        axis: `int`, optional
+            If `None` (DEFAULT), then all axes will be set to zero.  If
+            `int`, then the axis corresponding to that index will be
+            set to zero.
+
+        """
+        # transform does not necessarily map the motion space zero to the
         # zero of the probe drive space
         #
-        drive_zero_point = self.transform([0.0, 0.0], to_coords="drive")
+        if axis is None:
+            pass
+        elif not isinstance(axis, int):
+            raise TypeError(
+                f"Expected axis to be of type int or None, got type {type(axis)}."
+            )
+        elif axis < 0 or axis > self.drive.naxes:
+            raise ValueError(
+                f"Axis index {axis} is out of range [0, {self.drive.naxes-1}]."
+            )
+
+        if axis is None:
+            pos = [0] * self.drive.naxes
+        else:
+            pos = self.position.value
+            pos[axis] = 0
+
+        drive_zero_point = self.transform(pos, to_coords="drive")
         drive_zero_point = drive_zero_point.squeeze()
         self.drive.send_command("set_position", *drive_zero_point)
 

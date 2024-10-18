@@ -1,0 +1,83 @@
+[bapsf_motion.defaults.drive]
+default = "benchtop_2D"
+
+[bapsf_motion.defaults.drive.0]
+name = "benchtop_2D"
+axes.0.name = "X"
+axes.0.ip = "192.168.6.104"
+axes.0.units = "cm"
+axes.0.units_per_rev = 0.254
+axes.1.name = "Y"
+axes.1.ip = "192.168.6.103"
+axes.1.units = "cm"
+axes.1.units_per_rev = 0.254
+
+[bapsf_motion.defaults.drive.1]
+name = "Plastic Room XY"
+axes.0.name = "X"
+axes.0.ip = "192.168.0.90"
+axes.0.units = "cm"
+axes.0.units_per_rev = 0.254
+axes.1.name = "Y"
+axes.1.ip = "192.168.0.140"
+axes.1.units = "cm"
+axes.1.units_per_rev = 0.508
+
+[bapsf_motion.defaults.transform]
+default = "identity"
+
+[bapsf_motion.defaults.transform.0]
+name = "East - Generic XY"
+type = "lapd_xy"
+mspace_polarity = [-1, 1]
+drive_polarity = [1, 1]
+pivot_to_center = 62.948  # 53.55 cm + 2.54 cm + 2.5 in
+probe_axis_offset = 19.5
+pivot_to_drive = 112.7624  # 0.81 in + 22 cm + .75" + 82.5cm + 4.3cm
+pivot_to_feedthru = 21.6574  # 19.6 cm + 0.81"
+droop_correct = true
+
+[bapsf_motion.defaults.transform.1]
+name = "Plastic Room XY"
+type = "lapd_xy"
+mspace_polarity = [-1, 1]
+drive_polarity = [1, 1]
+pivot_to_center = 62.948  # 53.55 cm + 2.54 cm + 2.5 in
+probe_axis_offset = 19.5
+pivot_to_drive = 112.7624  # 0.81 in + 22 cm + .75" + 82.5cm + 4.3cm
+pivot_to_feedthru = 21.6574  # 19.6 cm + 0.81"
+droop_correct = true
+
+[bapsf_motion.defaults.motion_builder]
+default = "East - Generic XY"
+
+[bapsf_motion.defaults.motion_builder.0]
+name = "East - Generic XY"
+space.0.label = "X"
+space.0.range = [-55, 55]
+space.0.num = 440
+space.1.label = "Y"
+space.1.range = [-55, 55]
+space.1.num = 440
+exclusion.0.type = "lapd_xy"
+exclusion.0.port_location = "East"
+exclusion.0.diameter = 80
+exclusion.0.pivot_radius = 58.771
+exclusion.0.cone_full_angle = 60
+
+[bapsf_motion.defaults.motion_builder.1]
+name = "East 20x20 - Generic XY"
+space.0.label = "X"
+space.0.range = [-55, 55]
+space.0.num = 440
+space.1.label = "Y"
+space.1.range = [-55, 55]
+space.1.num = 440
+exclusion.0.type = "lapd_xy"
+exclusion.0.port_location = "East"
+exclusion.0.diameter = 80
+exclusion.0.pivot_radius = 58.771
+exclusion.0.cone_full_angle = 60
+layer.0.type = "grid"
+layer.0.limits = [[-20, 20], [-20,20]]
+layer.0.steps = [41, 41]
