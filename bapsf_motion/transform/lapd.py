@@ -207,6 +207,8 @@ class LaPDXYTransform(base.BaseTransform):
         mspace_polarity: Tuple[int, int] = (-1, 1),
         droop_correct: bool = False,
     ):
+        self._droop_correct_callable = None
+        self._deployed_side = None
         super().__init__(
             drive,
             pivot_to_center=pivot_to_center,
@@ -216,7 +218,6 @@ class LaPDXYTransform(base.BaseTransform):
             drive_polarity=drive_polarity,
             mspace_polarity=mspace_polarity,
             droop_correct=droop_correct,
-            deployed_side="East",
         )
 
     def __call__(self, points, to_coords="drive") -> np.ndarray:
@@ -273,7 +274,7 @@ class LaPDXYTransform(base.BaseTransform):
                     f"got type {type(val)}."
                 )
             elif key == "pivot_to_center":
-                inputs["deployed_side"] = "East" if val >= 0.0 else "West"
+                self._deployed_side = "East" if val >= 0.0 else "West"
                 inputs["pivot_to_center"] = np.abs(val)
             elif val < 0.0:
                 # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
@@ -311,12 +312,10 @@ class LaPDXYTransform(base.BaseTransform):
             )
         elif inputs["droop_correct"]:
             _drive = self._drive if self._drive is not None else self.axes
-            inputs["droop_correct"] = LaPDXYDroopCorrect(
+            self._droop_correct_callable = LaPDXYDroopCorrect(
                 drive=_drive,
                 pivot_to_feedthru=inputs["pivot_to_feedthru"],
             )
-        else:
-            inputs["droop_correct"] = None
 
         return inputs
 
@@ -456,8 +455,9 @@ class LaPDXYTransform(base.BaseTransform):
 
     @property
     def droop_correct(self) -> Union[DroopCorrectABC, None]:
-        return self.inputs["droop_correct"]
+        # return self.inputs["droop_correct"]
+        return self._droop_correct_callable
 
     @property
     def deployed_side(self):
-        return self.inputs["deployed_side"]
+        return self._deployed_side

@@ -1,10 +1,14 @@
 """This module contains custom Qt buttons."""
-__all__ = ["LED", "StopButton", "StyleButton"]
+__all__ = ["GearButton", "GearValidButton", "LED", "StopButton", "StyleButton"]
 
 import math
 
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtCore import QSize
+
+# noqa
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta
 
 
 class LED(QPushButton):
@@ -179,6 +183,57 @@ class StyleButton(QPushButton):
             self._checked_style = new_style
 
         self._resetStyleSheet()
+
+
+class GearButton(StyleButton):
+    def __init__(self, color: str = "#2980b9", parent=None):
+        super().__init__(
+            qta.icon("fa.gear", color=color),
+            "",
+            parent=parent,
+        )
+
+        self._size = 32
+        self._icon_size = 24
+
+        self.setFixedWidth(self._size)
+        self.setFixedHeight(self._size)
+        self.setIconSize(QSize(self._icon_size, self._icon_size))
+
+
+class GearValidButton(StyleButton):
+    def __init__(self, parent=None):
+        self._valid_color = "#499C54"  # rgb(14, 212, 0)
+        self._invalid_color = "#C75450"  # rgb(13, 88, 0)
+
+        self._valid_icon = qta.icon("fa.gear", color=self._valid_color)
+        self._invalid_icon = qta.icon("fa.gear", color=self._invalid_color)
+        self._is_valid = False
+
+        super().__init__(self._invalid_icon, "", parent=parent)
+
+        self._size = 32
+        self._icon_size = 24
+
+        self.setFixedWidth(self._size)
+        self.setFixedHeight(self._size)
+        self.setIconSize(QSize(self._icon_size, self._icon_size))
+
+    def set_valid(self):
+        self._is_valid = True
+        self._change_validation_icon()
+
+    def set_invalid(self):
+        self._is_valid = False
+        self._change_validation_icon()
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    def _change_validation_icon(self):
+        _icon = self._valid_icon if self.is_valid else self._invalid_icon
+        self.setIcon(_icon)
 
 
 class StopButton(QPushButton):
