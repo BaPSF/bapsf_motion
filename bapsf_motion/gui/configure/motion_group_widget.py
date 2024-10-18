@@ -1411,13 +1411,6 @@ class MGWidget(QWidget):
         vmg_name = self._validate_motion_group_name()
 
         vdrive = self._validate_drive()
-        if (
-            not vdrive
-            and isinstance(self.mg.drive, Drive)
-            and self.mg.drive.terminated
-        ):
-            self._spawn_motion_group()
-            return
 
         if not isinstance(self.mg.mb, MotionBuilder):
             self.mb_btn.set_invalid()
