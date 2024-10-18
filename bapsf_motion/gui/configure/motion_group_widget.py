@@ -1410,35 +1410,14 @@ class MGWidget(QWidget):
         self.logger.info("Validating motion group")
         vmg_name = self._validate_motion_group_name()
 
-        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
-            self.done_btn.setEnabled(False)
-
-            self.mb_dropdown.setEnabled(False)
-            self.mb_btn.setEnabled(False)
-            self.mb_btn.set_invalid()
-
-            self.transform_dropdown.setEnabled(False)
-            self.transform_btn.setEnabled(False)
-            self.transform_btn.set_invalid()
-
-            self.drive_btn.set_invalid()
-            self.drive_control_widget.setEnabled(False)
+        vdrive = self._validate_drive()
+        if (
+            not vdrive
+            and isinstance(self.mg.drive, Drive)
+            and self.mg.drive.terminated
+        ):
+            self._spawn_motion_group()
             return
-
-        if isinstance(self.mg.drive, Drive):
-            self.mb_dropdown.setEnabled(True)
-            self.mb_btn.setEnabled(True)
-
-            self.transform_dropdown.setEnabled(True)
-            self.transform_btn.setEnabled(True)
-
-            if not self.mg.drive.terminated:
-                self.drive_btn.set_valid()
-            else:
-                self.drive_control_widget.setEnabled(False)
-                self.done_btn.setEnabled(False)
-                self._spawn_motion_group()
-                return
 
         if not isinstance(self.mg.mb, MotionBuilder):
             self.mb_btn.set_invalid()
@@ -1463,6 +1442,7 @@ class MGWidget(QWidget):
             and self.mb_btn.is_valid
             and self.transform_btn.is_valid
             and vmg_name
+            and vdrive
         ):
             self.done_btn.setEnabled(True)
         else:
@@ -1499,6 +1479,57 @@ class MGWidget(QWidget):
             )
             return False
 
+        return True
+
+    def _validate_drive(self) -> bool:
+        self.drive_btn.setToolTip("")
+
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
+            self.done_btn.setEnabled(False)
+
+            self.mb_dropdown.setEnabled(False)
+            self.mb_btn.setEnabled(False)
+            self.mb_btn.set_invalid()
+
+            self.transform_dropdown.setEnabled(False)
+            self.transform_btn.setEnabled(False)
+            self.transform_btn.set_invalid()
+
+            self.drive_btn.set_invalid()
+            self.drive_control_widget.setEnabled(False)
+
+            self.drive_btn.setToolTip("Drive is not fully configured.")
+            return False
+
+        self.mb_dropdown.setEnabled(True)
+        self.mb_btn.setEnabled(True)
+
+        self.transform_dropdown.setEnabled(True)
+        self.transform_btn.setEnabled(True)
+
+        if self.mg.drive.terminated:
+            self.drive_btn.set_invalid()
+            self.drive_control_widget.setEnabled(False)
+            self.done_btn.setEnabled(False)
+            self.drive_btn.setToolTip(
+                "Drive is terminated (i.e. not running). Try re-configuring."
+            )
+            return False
+
+        shared_ips = []
+        for ax in self.mg.drive.axes:
+            if ax.ip in self._deployed_restrictions["ips"]:
+                shared_ips.append(ax.ip)
+
+        if len(shared_ips) != 0:
+            self.drive_btn.set_invalid()
+            self.drive_btn.setToolTip(
+                "Configured drive shares IPs with drives that are already deployed.  "
+                f"Shared IPS are {', '.join(shared_ips)}"
+            )
+            return False
+
+        self.drive_btn.set_valid()
         return True
 
     @Slot(int)
