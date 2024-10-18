@@ -697,6 +697,9 @@ class Motor(EventActor):
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
 
+        # set a slower speed
+        self.send_command("speed", 4.0)
+
     def _read_and_set_protocol(self):
         """
         Read and set the motor protocol settings.  For proper
