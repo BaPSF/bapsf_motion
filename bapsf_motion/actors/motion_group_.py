@@ -976,8 +976,12 @@ class MotionGroup(EventActor):
         # transform does not necessarily map the motion space zero to the
         # zero of the probe drive space
         #
-        if isinstance(axis, int):
-            raise TypeError(f"Expected axis to be of type int, got type {type(axis)}.")
+        if axis is None:
+            pass
+        elif not isinstance(axis, int):
+            raise TypeError(
+                f"Expected axis to be of type int or None, got type {type(axis)}."
+            )
         elif axis < 0 or axis > self.drive.naxes:
             raise ValueError(
                 f"Axis index {axis} is out of range [0, {self.drive.naxes-1}]."
