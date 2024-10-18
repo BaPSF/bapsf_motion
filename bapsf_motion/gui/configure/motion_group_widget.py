@@ -21,7 +21,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta
 
-from bapsf_motion.actors import Axis, Drive, MotionGroup, MotionGroupConfig
+from bapsf_motion.actors import Axis, Drive, MotionGroup, MotionGroupConfig, RunManager
 from bapsf_motion.gui.configure import configure_
 from bapsf_motion.gui.configure.bases import _ConfigOverlay, _OverlayWidget
 from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
@@ -504,11 +504,17 @@ class MGWidget(QWidget):
 
     def __init__(
         self,
+        *,
         mg_config: Optional[MotionGroupConfig] = None,
         defaults: Optional[Dict[str, Any]] = None,
-        parent: Optional["configure_.ConfigureGUI"] = None,
+        parent: "configure_.ConfigureGUI",
     ):
         super().__init__(parent=parent)
+
+        # Note: have to keep reference to parent, since (for some unknown
+        #       reason) we are loosing reference to it...self.parent()
+        #       eventually becomes a QStackedWidget ??
+        self._parent = parent
 
         self._logger = gui_logger
 
@@ -1333,6 +1339,7 @@ class MGWidget(QWidget):
         self.mg_name_widget.setText(self.mg_config["name"])
 
     def _rename_motion_group(self):
+        self.logger.info("Renaming motion group")
         self.mg.config["name"] = self.mg_name_widget.text()
         self.configChanged.emit()
 
@@ -1384,6 +1391,9 @@ class MGWidget(QWidget):
         return mg
 
     def _validate_motion_group(self):
+        self.logger.info("Validating motion group")
+        vmg_name = self._validate_motion_group_name()
+
         if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
             self.done_btn.setEnabled(False)
 
@@ -1436,10 +1446,47 @@ class MGWidget(QWidget):
             self.drive_btn.is_valid
             and self.mb_btn.is_valid
             and self.transform_btn.is_valid
+            and vmg_name
         ):
             self.done_btn.setEnabled(True)
         else:
             self.done_btn.setEnabled(False)
+
+    def _validate_motion_group_name(self) -> bool:
+        self.logger.info("Validating motion group name")
+        mg_name = self.mg_name_widget.text()
+
+        # clear previous tooltips and actions
+        self.mg_name_widget.setToolTip("")
+        for action in self.mg_name_widget.actions():
+            self.mg_name_widget.removeAction(action)
+
+        if mg_name == "":
+            self.mg_name_widget.addAction(
+                qta.icon("fa5.window-close", color="red"),
+                QLineEdit.ActionPosition.LeadingPosition,
+            )
+            self.mg_name_widget.setToolTip("Must enter a non-null name.")
+            return False
+
+        if not isinstance(self._parent.rm, RunManager):
+            deployed_mg_names = []
+        else:
+            deployed_mg_names = [mg.config["name"] for mg in self._parent.rm.mgs.values()]
+
+        if mg_name in deployed_mg_names:
+            self.mg_name_widget.addAction(
+                qta.icon("fa5.window-close", color="red"),
+                QLineEdit.ActionPosition.LeadingPosition,
+            )
+            deployed_mg_names = [f"'{name}'" for name in deployed_mg_names]
+            self.mg_name_widget.setToolTip(
+                "Motion group must have a unique name.  The following names "
+                f"are already in used {', '.join(deployed_mg_names)}."
+            )
+            return False
+
+        return True
 
     @Slot(int)
     def _drive_dropdown_new_selection(self, index):
