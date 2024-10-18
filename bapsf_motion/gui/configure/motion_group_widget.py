@@ -516,6 +516,22 @@ class MGWidget(QWidget):
         #       eventually becomes a QStackedWidget ??
         self._parent = parent
 
+        # gather deployed restricted values
+        deployed_mg_names = []
+        deployed_ips = []
+        if isinstance(self._parent.rm, RunManager):
+            for mg in self._parent.rm.mgs.values():
+                deployed_mg_names.append(mg.config["name"])
+
+                for axis in mg.drive.axes:
+                    deployed_ips.append(axis.ip)
+
+        self._deployed_restrictions = {
+            "mg_names": deployed_mg_names,
+            "ips": deployed_ips,
+        }
+
+
         self._logger = gui_logger
 
         self._mg = None
@@ -1469,17 +1485,14 @@ class MGWidget(QWidget):
             self.mg_name_widget.setToolTip("Must enter a non-null name.")
             return False
 
-        if not isinstance(self._parent.rm, RunManager):
-            deployed_mg_names = []
-        else:
-            deployed_mg_names = [mg.config["name"] for mg in self._parent.rm.mgs.values()]
-
-        if mg_name in deployed_mg_names:
+        if mg_name in self._deployed_restrictions["mg_names"]:
             self.mg_name_widget.addAction(
                 qta.icon("fa5.window-close", color="red"),
                 QLineEdit.ActionPosition.LeadingPosition,
             )
-            deployed_mg_names = [f"'{name}'" for name in deployed_mg_names]
+            deployed_mg_names = [
+                f"'{name}'" for name in self._deployed_restrictions["mg_names"]
+            ]
             self.mg_name_widget.setToolTip(
                 "Motion group must have a unique name.  The following names "
                 f"are already in used {', '.join(deployed_mg_names)}."
