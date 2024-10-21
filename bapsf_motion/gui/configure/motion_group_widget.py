@@ -255,6 +255,7 @@ class AxisControlWidget(QWidget):
 
         self.axis_name_label.setText(self.axis.name)
         self.axis.motor.status_changed.connect(self._update_display_of_axis_status)
+        self.axis.motor.movement_finished.connect(self._update_display_of_axis_status)
         self._update_display_of_axis_status()
 
         self.axisLinked.emit()
@@ -263,6 +264,9 @@ class AxisControlWidget(QWidget):
         if self.axis is not None:
             # self.axis.terminate(delay_loop_stop=True)
             self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.movement_finished.disconnect(
+                self._update_display_of_axis_status
+            )
 
         self._mg = None
         self._axis_index = None
