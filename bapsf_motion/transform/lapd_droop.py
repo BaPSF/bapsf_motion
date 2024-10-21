@@ -293,6 +293,13 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         Distance from the center "pivot" point of the ball valve to the
         nearest face of the probe drive feed-through.
 
+    droop_scale : `float`
+        (DEFAULT ``1.0``)  A float `>= 0.0` indicating how much to scale
+        the droop calculation by.  A value of ``0`` would indicate no
+        droop.  A value betwen ``0`` and ``1`` indicates a droop less
+        than the default model.  A value of ``1`` indicates the default
+        model droop. A value ``> 1`` indicates more droop.
+
     Notes
     -----
 
@@ -339,10 +346,17 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
     _probe_shaft_material = "Stainless Steel 304"
     _dimensionality = 2
 
-    def __init__(self, drive: Drive, *, pivot_to_feedthru: float):
+    def __init__(
+        self,
+        drive: Drive,
+        *,
+        pivot_to_feedthru: float,
+        droop_scale: Union[int, float] = 1.0,
+    ) -> None:
         super().__init__(
             drive=drive,
             pivot_to_feedthru=pivot_to_feedthru,
+            droop_scale=droop_scale,
         )
 
         # this is the unit system used in generating the droop fit polynomial
@@ -373,7 +387,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         # self._coeffs = np.array([6.209e-06, -2.211e-07, 2.084e-09, -5.491e-09])
         self._coeffs = np.array(
             [6.208863E-06, -2.210800E-07, 2.083731E-09, -5.490692E-09]
-        )
+        ) * self.droop_scale
 
     @property
     def pivot_to_feedthru(self):
@@ -382,6 +396,14 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         feed-through.
         """
         return self.inputs["pivot_to_feedthru"]
+
+    @property
+    def droop_scale(self) -> float:
+        """
+        Scale value for how much to adjust the droop from the default
+        model.
+        """
+        return self.inputs["droop_scale"]
 
     @property
     def coefficients(self) -> np.ndarray:
@@ -431,7 +453,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         return points[..., :] * conversion_factor[:]
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
-        for key in {"pivot_to_feedthru"}:
+        for key in {"pivot_to_feedthru", "droop_scale"}:
             val = inputs[key]
             if not isinstance(val, (float, np.floating, int, np.integer)):
                 raise TypeError(
@@ -439,8 +461,6 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
                     f"got type {type(val)}."
                 )
             elif val < 0.0:
-                # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
-                #       "probe_axis_offset"
                 val = np.abs(val)
                 warn(
                     f"Keyword '{val}' is NOT supposed to be negative, "
