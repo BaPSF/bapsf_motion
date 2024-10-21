@@ -483,7 +483,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         #    - rt => (radius, theta)
         points_rt = np.empty_like(_points)
         points_rt[..., 0] = np.linalg.norm(_points, axis=1) + self.pivot_to_feedthru
-        points_rt[..., 1] = np.tan(_points[..., 1] / _points[..., 0])
+        points_rt[..., 1] = np.arctan(_points[..., 1] / _points[..., 0])
 
         # Calculate dx and dy of the droop
         #    - delta will always be negative in the ball valve coords
