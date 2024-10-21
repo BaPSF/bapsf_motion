@@ -296,7 +296,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
     droop_scale : `float`
         (DEFAULT ``1.0``)  A float `>= 0.0` indicating how much to scale
         the droop calculation by.  A value of ``0`` would indicate no
-        droop.  A value betwen ``0`` and ``1`` indicates a droop less
+        droop.  A value between ``0`` and ``1`` indicates a droop less
         than the default model.  A value of ``1`` indicates the default
         model droop. A value ``> 1`` indicates more droop.
 
