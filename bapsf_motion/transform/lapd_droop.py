@@ -384,9 +384,19 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         #        ds = (a3 * r**3 + a2 * r**2 + a1 * r + a0) r cos(theta)
         #
         # coeffs = [a0, a1, a2, a3]
+        # 20241021: the commented out coefficients where off by a factor
+        #           of 100 since I [Eriki] incorrectly fitted to
+        #           ds / (10 * r cost(theta) when ds was measured in mm
+        #           and r measured in cm
+        #           the fit should have been to (10 * ds) / r cos(that)
+        #
         # self._coeffs = np.array([6.209e-06, -2.211e-07, 2.084e-09, -5.491e-09])
+        # self._coeffs = np.array(
+        #     [6.208863E-06, -2.210800E-07, 2.083731E-09, -5.490692E-09]
+        # ) * self.droop_scale
+        #
         self._coeffs = np.array(
-            [6.208863E-06, -2.210800E-07, 2.083731E-09, -5.490692E-09]
+            [6.208863E-04, -2.210800E-05, 2.083731E-07, -5.490692E-07]
         ) * self.droop_scale
 
     @property
