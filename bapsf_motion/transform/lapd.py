@@ -75,6 +75,13 @@ class LaPDXYTransform(base.BaseTransform):
         size .375" OD x 0.035" wall.  Set `False` for no droop
         correction.  (DEFAULT: `False`)
 
+    droop_scale : `float`
+        (DEFAULT ``1.0``)  A float `>= 0.0` indicating how much to scale
+        the droop calculation by.  A value of ``0`` would indicate no
+        droop.  A value between ``0`` and ``1`` indicates a droop less
+        than the default model.  A value of ``1`` indicates the default
+        model droop. A value ``> 1`` indicates more droop.
+
     Examples
     --------
 
@@ -206,6 +213,7 @@ class LaPDXYTransform(base.BaseTransform):
         drive_polarity: Tuple[int, int] = (1, 1),
         mspace_polarity: Tuple[int, int] = (-1, 1),
         droop_correct: bool = False,
+        droop_scale: Union[int, float] = 1.0,
     ):
         self._droop_correct_callable = None
         self._deployed_side = None
@@ -218,6 +226,7 @@ class LaPDXYTransform(base.BaseTransform):
             drive_polarity=drive_polarity,
             mspace_polarity=mspace_polarity,
             droop_correct=droop_correct,
+            droop_scale=droop_scale,
         )
 
     def __call__(self, points, to_coords="drive") -> np.ndarray:
@@ -266,6 +275,7 @@ class LaPDXYTransform(base.BaseTransform):
             "pivot_to_drive",
             "pivot_to_feedthru",
             "probe_axis_offset",
+            "droop_scale",
         }:
             val = inputs[key]
             if not isinstance(val, (float, np.floating, int, np.integer)):
@@ -315,6 +325,7 @@ class LaPDXYTransform(base.BaseTransform):
             self._droop_correct_callable = LaPDXYDroopCorrect(
                 drive=_drive,
                 pivot_to_feedthru=inputs["pivot_to_feedthru"],
+                droop_scale=inputs["droop_scale"]
             )
 
         return inputs
@@ -455,8 +466,15 @@ class LaPDXYTransform(base.BaseTransform):
 
     @property
     def droop_correct(self) -> Union[DroopCorrectABC, None]:
-        # return self.inputs["droop_correct"]
         return self._droop_correct_callable
+
+    @property
+    def droop_scale(self) -> float:
+        """
+        Scale value for how much to adjust the droop from the default
+        model.
+        """
+        return self.inputs["droop_scale"]
 
     @property
     def deployed_side(self):
