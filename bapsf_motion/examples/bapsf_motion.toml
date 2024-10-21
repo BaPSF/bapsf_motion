@@ -36,6 +36,7 @@ probe_axis_offset = 19.5
 pivot_to_drive = 112.7624  # 0.81 in + 22 cm + .75" + 82.5cm + 4.3cm
 pivot_to_feedthru = 21.6574  # 19.6 cm + 0.81"
 droop_correct = true
+droop_scale = 1.0
 
 [bapsf_motion.defaults.transform.1]
 name = "Plastic Room XY"
@@ -47,6 +48,7 @@ probe_axis_offset = 19.5
 pivot_to_drive = 112.7624  # 0.81 in + 22 cm + .75" + 82.5cm + 4.3cm
 pivot_to_feedthru = 21.6574  # 19.6 cm + 0.81"
 droop_correct = true
+droop_scale = 1.0
 
 [bapsf_motion.defaults.motion_builder]
 default = "East - Generic XY"
