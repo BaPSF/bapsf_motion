@@ -2,6 +2,7 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
+import warnings
 
 from PySide6.QtCore import Qt, Signal, Slot, QSize
 from PySide6.QtGui import QDoubleValidator
@@ -41,6 +42,7 @@ class AxisControlWidget(QWidget):
     axisUnlinked = Signal()
     movementStarted = Signal(int)
     movementStopped = Signal(int)
+    axisStatusChanged = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -257,6 +259,7 @@ class AxisControlWidget(QWidget):
 
         self.axis_name_label.setText(self.axis.name)
         self.axis.motor.status_changed.connect(self._update_display_of_axis_status)
+        self.axis.motor.status_changed.connect(self.axisStatusChanged.emit)
         self.axis.motor.movement_started.connect(self._emit_movement_started)
         self.axis.motor.movement_finished.connect(self._emit_movement_finished)
         self.axis.motor.movement_finished.connect(self._update_display_of_axis_status)
@@ -268,6 +271,7 @@ class AxisControlWidget(QWidget):
         if self.axis is not None:
             # self.axis.terminate(delay_loop_stop=True)
             self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.status_changed.connect(self.axisStatusChanged.emit)
             self.axis.motor.movement_started.connect(self._emit_movement_started)
             self.axis.motor.movement_finished.connect(self._emit_movement_finished)
             self.axis.motor.movement_finished.disconnect(
@@ -289,6 +293,7 @@ class AxisControlWidget(QWidget):
 
         if isinstance(self.axis, Axis):
             self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.status_changed.disconnect(self.axisStatusChanged.emit)
             self.axis.motor.movement_started.connect(self._emit_movement_started)
             self.axis.motor.movement_finished.connect(self._emit_movement_finished)
             self.axis.motor.movement_finished.disconnect(
@@ -503,6 +508,7 @@ class DriveControlWidget(QWidget):
             acw.link_axis(self.mg, ii)
             acw.movementStarted.connect(self._drive_movement_started)
             acw.movementStopped.connect(self._drive_movement_finished)
+            acw.axisStatusChanged.connect(self._update_all_axis_displays)
             acw.show()
 
         self.setEnabled(not self._mg.terminated)
@@ -512,11 +518,27 @@ class DriveControlWidget(QWidget):
             visible = True if ii == 0 else False
 
             acw.unlink_axis()
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                acw.movementStarted.disconnect(self._drive_movement_started)
+                acw.movementStopped.disconnect(self._drive_movement_finished)
+                acw.axisStatusChanged.disconnect(self._update_all_axis_displays)
+
             acw.setVisible(visible)
 
         # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self.setEnabled(False)
+
+    def _update_all_axis_displays(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+            elif acw.axis.is_moving:
+                continue
+
+            acw._update_display_of_axis_status()
 
     @Slot(int)
     def _drive_movement_started(self, axis_index):
