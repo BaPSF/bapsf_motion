@@ -804,6 +804,7 @@ class MGWidget(QWidget):
         self.configChanged.connect(self._update_drive_dropdown)
         self.configChanged.connect(self._update_mb_dropdown)
         self.configChanged.connect(self._update_transform_dropdown)
+        self.configChanged.connect(self._update_drive_control_widget)
 
         self.drive_dropdown.currentIndexChanged.connect(
             self._drive_dropdown_new_selection
@@ -1420,6 +1421,12 @@ class MGWidget(QWidget):
 
     def _update_mg_name_widget(self):
         self.mg_name_widget.setText(self.mg_config["name"])
+
+    def _update_drive_control_widget(self):
+        if not self.drive_control_widget.isEnabled():
+            return
+
+        self.drive_control_widget._update_all_axis_displays()
 
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
