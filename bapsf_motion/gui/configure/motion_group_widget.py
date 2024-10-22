@@ -39,6 +39,8 @@ from bapsf_motion.utils import units as u
 class AxisControlWidget(QWidget):
     axisLinked = Signal()
     axisUnlinked = Signal()
+    movementStarted = Signal(int)
+    movementStopped = Signal(int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -255,6 +257,8 @@ class AxisControlWidget(QWidget):
 
         self.axis_name_label.setText(self.axis.name)
         self.axis.motor.status_changed.connect(self._update_display_of_axis_status)
+        self.axis.motor.movement_started.connect(self._emit_movement_started)
+        self.axis.motor.movement_finished.connect(self._emit_movement_finished)
         self.axis.motor.movement_finished.connect(self._update_display_of_axis_status)
         self._update_display_of_axis_status()
 
@@ -264,6 +268,8 @@ class AxisControlWidget(QWidget):
         if self.axis is not None:
             # self.axis.terminate(delay_loop_stop=True)
             self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.movement_started.connect(self._emit_movement_started)
+            self.axis.motor.movement_finished.connect(self._emit_movement_finished)
             self.axis.motor.movement_finished.disconnect(
                 self._update_display_of_axis_status
             )
@@ -272,12 +278,29 @@ class AxisControlWidget(QWidget):
         self._axis_index = None
         self.axisUnlinked.emit()
 
+    def _emit_movement_started(self):
+        self.movementStarted.emit(self.axis_index)
+
+    def _emit_movement_finished(self):
+        self.movementStopped.emit(self.axis_index)
+
     def closeEvent(self, event):
         self.logger.info("Closing AxisControlWidget")
+
+        if isinstance(self.axis, Axis):
+            self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.movement_started.connect(self._emit_movement_started)
+            self.axis.motor.movement_finished.connect(self._emit_movement_finished)
+            self.axis.motor.movement_finished.disconnect(
+                self._update_display_of_axis_status
+            )
+
         event.accept()
 
 
 class DriveControlWidget(QWidget):
+    movementStarted = Signal()
+    movementStopped = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -478,6 +501,8 @@ class DriveControlWidget(QWidget):
         for ii, ax in enumerate(self.mg.drive.axes):
             acw = self._axis_control_widgets[ii]
             acw.link_axis(self.mg, ii)
+            acw.movementStarted.connect(self._drive_movement_started)
+            acw.movementStopped.connect(self._drive_movement_finished)
             acw.show()
 
         self.setEnabled(not self._mg.terminated)
@@ -492,6 +517,20 @@ class DriveControlWidget(QWidget):
         # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self.setEnabled(False)
+
+    @Slot(int)
+    def _drive_movement_started(self, axis_index):
+        self.movementStarted.emit()
+
+    @Slot(int)
+    def _drive_movement_finished(self, axis_index):
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
+            return
+
+        is_moving = [ax.is_moving for ax in self.mg.drive.axes]
+        is_moving[axis_index] = False
+        if not any(is_moving):
+            self.movementStopped.emit()
 
     def closeEvent(self, event):
         self.logger.info("Closing DriveControlWidget")
@@ -534,7 +573,6 @@ class MGWidget(QWidget):
             "mg_names": deployed_mg_names,
             "ips": deployed_ips,
         }
-
 
         self._logger = gui_logger
 
@@ -754,6 +792,9 @@ class MGWidget(QWidget):
         self.transform_dropdown.currentIndexChanged.connect(
             self._transform_dropdown_new_selection
         )
+
+        self.drive_control_widget.movementStarted.connect(self.disable_config_controls)
+        self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
@@ -1627,6 +1668,26 @@ class MGWidget(QWidget):
             return
 
         self._change_transform(tr_default_config)
+
+    def disable_config_controls(self):
+        self.drive_dropdown.setEnabled(False)
+        self.drive_btn.setEnabled(False)
+
+        self.mb_dropdown.setEnabled(False)
+        self.mb_btn.setEnabled(False)
+
+        self.transform_dropdown.setEnabled(False)
+        self.transform_btn.setEnabled(False)
+
+    def enable_config_controls(self):
+        self.drive_dropdown.setEnabled(True)
+        self.drive_btn.setEnabled(True)
+
+        self.mb_dropdown.setEnabled(True)
+        self.mb_btn.setEnabled(True)
+
+        self.transform_dropdown.setEnabled(True)
+        self.transform_btn.setEnabled(True)
 
     def return_and_close(self):
         config = _deepcopy_dict(self.mg.config)
