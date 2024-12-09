@@ -149,3 +149,5 @@ auto_examples
 plasmapy/version.py
 tags
 docs/notebooks/*.md
+
+.git/

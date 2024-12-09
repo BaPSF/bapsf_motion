@@ -14,9 +14,9 @@ import socket
 import threading
 import time
 
-from collections import namedtuple, UserDict
+from collections import UserDict
 from enum import Enum
-from typing import Any, AnyStr, Callable, Dict, List, NamedTuple, Optional, Union
+from typing import Any, AnyStr, Callable, Dict, NamedTuple, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.utils import ipv4_pattern, SimpleSignal
@@ -37,7 +37,7 @@ class AckFlags(Enum):
 
 
 class _HeartRate(NamedTuple):
-    BASE = 2.0  # seconds
+    BASE = 1.5  # seconds
     ACTIVE = 0.2
     SEARCHING = 3.0
     PAUSE = 5.0
@@ -504,9 +504,10 @@ class Motor(EventActor):
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
 
-        self._heartbeat_task = None
+        self._heartbeat_task = []
 
         self._setup = self._setup_defaults.copy()
         self._motor = self._motor_defaults.copy()
@@ -521,12 +522,20 @@ class Motor(EventActor):
 
         self._pause_heartbeat = False
 
-        super().__init__(
-            name=name,
-            logger=logger,
-            loop=loop,
-            auto_run=auto_run,
-        )
+        try:
+            super().__init__(
+                name=name,
+                logger=logger,
+                loop=loop,
+                auto_run=False,
+                parent=parent,
+            )
+        except ConnectionError as err:
+            self.logger.warning("Unable to connect to motor.", exc_info=err)
+            self.terminate(delay_loop_stop=True)
+
+        if not self.terminated:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         # actions to be done during object instantiation, but before
@@ -534,14 +543,14 @@ class Motor(EventActor):
 
         self.connect()
 
-        self.start_heartbeat()
-        self._pause_heartbeat = True
+        # self.start_heartbeat()
+        # self._pause_heartbeat = True
 
         self._configure_motor()
         self._get_motor_parameters()
         self.send_command("retrieve_motor_status")
 
-        self._pause_heartbeat = False
+        # self._pause_heartbeat = False
 
     def _initialize_tasks(self):
         # The heartbeat task was initialized in _configure_before_run
@@ -550,12 +559,16 @@ class Motor(EventActor):
 
     def run(self, auto_run=True):
 
+        # if actor was terminated, actor is restarting
+        self._terminated = False
+
         if (
             self.heartbeat_task is None
             or self.heartbeat_task.done()
             or self.heartbeat_task.cancelled()
         ):
             self._configure_before_run()
+            self._initialize_tasks()
 
         super().run(auto_run=auto_run)
 
@@ -569,7 +582,7 @@ class Motor(EventActor):
             "thread": None,
             "socket": None,
             "tasks": None,
-            "max_connection_attempts": 3,
+            "max_connection_attempts": 1,
             "heartrate": _HeartRate(),  # in seconds
             "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
         }
@@ -683,6 +696,9 @@ class Motor(EventActor):
 
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
+
+        # set a slower speed
+        self.send_command("speed", 4.0)
 
     def _read_and_set_protocol(self):
         """
@@ -837,9 +853,11 @@ class Motor(EventActor):
         """
         if (
             self.loop.is_running()
+            and self.heartbeat_task is not None
             and not self.heartbeat_task.done()
             and not self.heartbeat_task.cancelled()
         ):
+            # read from status if the heartbeat is operational
             return self.status["position"]
 
         pos = self.send_command("get_position")
@@ -848,26 +866,57 @@ class Motor(EventActor):
             return pos
 
     @property
-    def heartbeat_task(self) -> asyncio.Task:
+    def heartbeat_task(self) -> Union[asyncio.Task, None]:
         """The `asyncio.Task` associated with the motor's heartbeat."""
-        return self._heartbeat_task
+        if self._heartbeat_task is None:
+            self._heartbeat_task = []
+            return
+        elif len(self._heartbeat_task) == 0:
+            return
+
+        return self._heartbeat_task[0]
 
     @heartbeat_task.setter
-    def heartbeat_task(self, val):
+    def heartbeat_task(self, val: asyncio.Task):
         if not isinstance(val, asyncio.Task):
             return
         elif self.heartbeat_task is None:
             pass
-        elif self.heartbeat_task.done():
+        elif self.heartbeat_task.done() or self.heartbeat_task.cancelled():
             # remove task from task list
-            self.tasks.remove(self._heartbeat_task)
+            # self.tasks.remove(self.heartbeat_task)
+            self._heartbeat_task = []
+        else:
+            # val is a new task and heartbeat is still running...stop old heartbeat
+            self.loop.call_soon_threadsafe(self.heartbeat_task.cancel)
+            # self.tasks.remove(self._heartbeat_task)
 
-        self._heartbeat_task = val
-        self.tasks.append(self._heartbeat_task)
+        self._heartbeat_task = [val]
+        self.tasks.append(val)
+        val.add_done_callback(self._heartbeat_task_done_callback)
+
+    def _heartbeat_task_done_callback(self, task: asyncio.Task):
+        """Callback to clean up references to the heartbeat task."""
+        try:
+            self.tasks.remove(task)
+        except ValueError:
+            pass
+
+        if self.heartbeat_task is None:
+            return
+
+        try:
+            self._heartbeat_task.remove(task)
+        except ValueError:
+            pass
 
     def start_heartbeat(self):
         """Start or restart the heartbeat `asyncio.Task`."""
-        if self.heartbeat_task is None or self.heartbeat_task.done():
+        if (
+            self.heartbeat_task is None
+            or self.heartbeat_task.done()
+            or self.heartbeat_task.cancelled()
+        ):
             self.heartbeat_task = self.loop.create_task(self._heartbeat())
 
     def _update_status(self, **values):
@@ -1018,6 +1067,12 @@ class Motor(EventActor):
         thread_id: int
             ID of the thread the calling functionality is operating in.
         """
+        if self.terminated:
+            raise RuntimeError(
+                f"Can not send command {command} to motor, since the "
+                f"motor has been terminated."
+            )
+
         if self._commands[command]["method_command"]:
             # execute respectively named method
             meth = getattr(self, command)
@@ -1485,7 +1540,11 @@ class Motor(EventActor):
         old_HR = self.heartrate.BASE
         beats = 0
         while True:
-            if self._pause_heartbeat:
+            if self.terminated:
+                # Motor is terminated or being terminated, so end the coroutine
+                # immediately so the associated Task can be cancelled/stopped.
+                continue
+            elif self._pause_heartbeat:
                 await asyncio.sleep(self.heartrate.PAUSE)
                 continue
             elif not self.status["connected"]:
@@ -1516,25 +1575,23 @@ class Motor(EventActor):
 
     def terminate(self, delay_loop_stop=False):
         self.logger.info("Terminating motor")
-        super().terminate(delay_loop_stop=True)
-        self._heartbeat_task = None
 
-        # TODO: add additional motor shutdown tasks (i.e. stop and disable)
+        # disconnect all signals before terminating
+        self.status_changed.disconnect_all()
+        self.movement_started.disconnect_all()
+        self.movement_finished.disconnect_all()
+
+        if not self.terminated and self._status["connected"]:
+            self.stop()
+            self.disable()
+
+        super().terminate(delay_loop_stop=delay_loop_stop)
+        self._heartbeat_task = None
 
         try:
             self.socket.close()
         except AttributeError:
             pass
-
-        if delay_loop_stop:
-            return
-
-        # if we're stopping the loop, then all tasks need to be cancelled
-        for task in asyncio.all_tasks(self.loop):
-            if not task.done() or not task.cancelled():
-                self.loop.call_soon_threadsafe(task.cancel)
-
-        self.loop.call_soon_threadsafe(self.loop.stop)
 
     def stop(self):
         """Stop motor movement."""
@@ -1619,7 +1676,7 @@ class Motor(EventActor):
 
             self.logger.warning("Moving off limits - enable limits")
             self.send_command("define_limits", 1)
-            self.sleep(4 * self.heartrate.active)
+            self.sleep(4 * self.heartrate.ACTIVE)
 
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
             if self._lost_connection(alarm_msg):

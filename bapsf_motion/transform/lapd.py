@@ -1,14 +1,15 @@
-"""Module that defines the `LaPDXYTransform` abstract class."""
+"""Module that defines the LaPD related transform classes."""
 __all__ = ["LaPDXYTransform"]
 __transformer__ = ["LaPDXYTransform"]
 
 import numpy as np
 
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Union
 from warnings import warn
 
 from bapsf_motion.transform import base
 from bapsf_motion.transform.helpers import register_transform
+from bapsf_motion.transform.lapd_droop import LaPDXYDroopCorrect, DroopCorrectABC
 
 
 @register_transform
@@ -27,11 +28,17 @@ class LaPDXYTransform(base.BaseTransform):
 
     pivot_to_center: `float`
         Distance from the center of the :term:`LaPD` to the center
-        "pivot" point of the ball valve.
+        "pivot" point of the ball valve.  A positive value indicates
+        the probe drive is set up on the East side of the LaPD and a
+        negative value indicates the West side.
 
     pivot_to_drive: `float`
         Distance from the center line of the :term:`probe drive`
         vertical axis to the center "pivot" point of the ball valve.
+
+    pivot_to_feedthru: `float`
+        Distance from the center "pivot" point of the ball valve to the
+        nearest face of the probe drive feed-through.
 
     probe_axis_offset: `float`
         Perpendicular distance from the center line of the probe shaft
@@ -60,6 +67,21 @@ class LaPDXYTransform(base.BaseTransform):
         inward probe drive movement corresponds to +X LaPD coordinate
         movement.  (DEFAULT: ``(-1, 1)``)
 
+    droop_correct : bool
+        Set `True` for the coordinate transform to correct for the
+        droop of a probe shaft.  This will use
+        `~bapsf_motion.transform.lapd_droop.LaPDXYDroopCorrect` to
+        correct for the droop of a stainless steel 304 probe shaft of
+        size .375" OD x 0.035" wall.  Set `False` for no droop
+        correction.  (DEFAULT: `False`)
+
+    droop_scale : `float`
+        (DEFAULT ``1.0``)  A float `>= 0.0` indicating how much to scale
+        the droop calculation by.  A value of ``0`` would indicate no
+        droop.  A value between ``0`` and ``1`` indicates a droop less
+        than the default model.  A value of ``1`` indicates the default
+        model droop. A value ``> 1`` indicates more droop.
+
     Examples
     --------
 
@@ -75,6 +97,7 @@ class LaPDXYTransform(base.BaseTransform):
               drive,
               pivot_to_center = 62.94,
               pivot_to_drive = 133.51,
+              pivot_to_feedthru = 21.6,
               probe_axis_offset = 20.16,
               drive_polarity = (1, 1),
               mspace_polarity = (-1, 1),
@@ -88,6 +111,7 @@ class LaPDXYTransform(base.BaseTransform):
               **{
                   "pivot_to_center": 62.94,
                   "pivot_to_drive": 133.51,
+                  "pivot_to_feedthru": 21.6,
                   "probe_axis_offset": 20.16,
                   "drive_polarity": (1, 1),
                   "mspace_polarity": (-1, 1),
@@ -100,6 +124,7 @@ class LaPDXYTransform(base.BaseTransform):
           type = "lapd_xy"
           pivot_to_center = 62.94
           pivot_to_drive = 133.51
+          pivot_to_feedthru = 21.6
           probe_axis_offset = 20.16
           drive_polarity = (1, 1)
           mspace_polarity = (-1, 1)
@@ -110,6 +135,7 @@ class LaPDXYTransform(base.BaseTransform):
               "type": "lapd_xy",
               "pivot_to_center": 62.94,
               "pivot_to_drive": 133.51,
+              "pivot_to_feedthru": 21.6,
               "probe_axis_offset": 20.16,
               "drive_polarity": (1, 1),
               "mspace_polarity": (-1, 1),
@@ -123,8 +149,9 @@ class LaPDXYTransform(base.BaseTransform):
 
           tr = LaPDXYTransform(
               drive,
-              pivot_to_center = 62.94,
+              pivot_to_center = -62.94,
               pivot_to_drive = 133.51,
+              pivot_to_feedthru = 21.6,
               probe_axis_offset = 20.16,
               drive_polarity = (1, -1),
               mspace_polarity = (1, 1),
@@ -136,8 +163,9 @@ class LaPDXYTransform(base.BaseTransform):
               drive,
               tr_type = "lapd_xy",
               **{
-                  "pivot_to_center": 62.94,
+                  "pivot_to_center": -62.94,
                   "pivot_to_drive": 133.51,
+                  "pivot_to_feedthru": 21.6,
                   "probe_axis_offset": 20.16,
                   "drive_polarity": (1, -1),
                   "mspace_polarity": (1, 1),
@@ -148,8 +176,9 @@ class LaPDXYTransform(base.BaseTransform):
 
           [...transform]
           type = "lapd_xy"
-          pivot_to_center = 62.94
+          pivot_to_center = -62.94
           pivot_to_drive = 133.51
+          pivot_to_feedthru = 21.6
           probe_axis_offset = 20.16
           drive_polarity = (1, -1)
           mspace_polarity = (1, 1)
@@ -158,8 +187,9 @@ class LaPDXYTransform(base.BaseTransform):
 
           config["transform"] = {
               "type": "lapd_xy",
-              "pivot_to_center": 62.94,
+              "pivot_to_center": -62.94,
               "pivot_to_drive": 133.51,
+              "pivot_to_feedthru": 21.6,
               "probe_axis_offset": 20.16,
               "drive_polarity": (1, -1),
               "mspace_polarity": (1, 1),
@@ -178,28 +208,84 @@ class LaPDXYTransform(base.BaseTransform):
         *,
         pivot_to_center: float,
         pivot_to_drive: float,
+        pivot_to_feedthru: float,
         probe_axis_offset: float,
         drive_polarity: Tuple[int, int] = (1, 1),
         mspace_polarity: Tuple[int, int] = (-1, 1),
+        droop_correct: bool = False,
+        droop_scale: Union[int, float] = 1.0,
     ):
+        self._droop_correct_callable = None
+        self._deployed_side = None
         super().__init__(
             drive,
             pivot_to_center=pivot_to_center,
             pivot_to_drive=pivot_to_drive,
+            pivot_to_feedthru=pivot_to_feedthru,
             probe_axis_offset=probe_axis_offset,
             drive_polarity=drive_polarity,
             mspace_polarity=mspace_polarity,
+            droop_correct=droop_correct,
+            droop_scale=droop_scale,
         )
+
+    def __call__(self, points, to_coords="drive") -> np.ndarray:
+        if self.droop_correct is None:
+            return super().__call__(points=points, to_coords=to_coords)
+
+        if to_coords == "drive":
+            # - points is in LaPD motion space coordinates
+            # - need to convert motion space coordinates to non-droop
+            #   scenario before doing matrix multiplication
+            points = self._condition_points(points)
+
+            # 1. convert to ball valve coords
+            _sign = 1 if self.deployed_side == "East" else -1
+            points[..., 0] = np.absolute(_sign * self.pivot_to_center - points[..., 0])
+
+            # 2. droop correct to non-droop coords
+            points = self.droop_correct(points, to_points="non-droop")
+
+            # 3. back to LaPD coords
+            points[..., 0] = _sign * (self.pivot_to_center - points[..., 0])
+
+        tr_points = super().__call__(points=points, to_coords=to_coords)
+            
+        if to_coords != "drive":  # to motion space
+            # - tr_points is in LaPD motion space coordinates
+            # - need to convert motion space coordinates to droop scenario
+            # 1. convert to ball valve coords
+            _sign = 1 if self.deployed_side == "East" else -1
+            tr_points[..., 0] = np.absolute(
+                _sign * self.pivot_to_center - tr_points[..., 0]
+            )
+
+            # 2. droop correct to droop coords
+            tr_points = self.droop_correct(tr_points, to_points="droop")
+
+            # 3. back to LaPD coords
+            tr_points[..., 0] = _sign * (self.pivot_to_center - tr_points[..., 0])
+
+        return tr_points
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
 
-        for key in {"pivot_to_center", "pivot_to_drive", "probe_axis_offset"}:
+        for key in {
+            "pivot_to_center",
+            "pivot_to_drive",
+            "pivot_to_feedthru",
+            "probe_axis_offset",
+            "droop_scale",
+        }:
             val = inputs[key]
             if not isinstance(val, (float, np.floating, int, np.integer)):
                 raise TypeError(
                     f"Keyword '{key}' expected type float or int, "
                     f"got type {type(val)}."
                 )
+            elif key == "pivot_to_center":
+                self._deployed_side = "East" if val >= 0.0 else "West"
+                inputs["pivot_to_center"] = np.abs(val)
             elif val < 0.0:
                 # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
                 #       "probe_axis_offset"
@@ -228,6 +314,19 @@ class LaPDXYTransform(base.BaseTransform):
                     "axes, array has values not equal to 1 or -1."
                 )
             inputs[key] = polarity
+
+        if not isinstance(inputs["droop_correct"], bool):
+            raise TypeError(
+                f"Keyword 'droop_correct' expected type bool, "
+                f"got type {type(inputs['droop_correct'])}."
+            )
+        elif inputs["droop_correct"]:
+            _drive = self._drive if self._drive is not None else self.axes
+            self._droop_correct_callable = LaPDXYDroopCorrect(
+                drive=_drive,
+                pivot_to_feedthru=inputs["pivot_to_feedthru"],
+                droop_scale=inputs["droop_scale"]
+            )
 
         return inputs
 
@@ -269,6 +368,12 @@ class LaPDXYTransform(base.BaseTransform):
         # coordinate space
         points = self.drive_polarity * points  # type: np.ndarray
         npoints = points.shape[0]
+
+        # Angle Defs:
+        # - theta = angle between the horizontal and the probe shaft
+        # - beta = angle between the horizontal and the probe drive pivot
+        #          point on e1 (the vertical axis)
+        # - alpha = beta - theta
 
         sine_alpha = self.probe_axis_offset / np.sqrt(
             self.pivot_to_drive**2
@@ -316,6 +421,10 @@ class LaPDXYTransform(base.BaseTransform):
         return self.inputs["pivot_to_drive"]
 
     @property
+    def pivot_to_feedthru(self) -> float:
+        return self.inputs["pivot_to_feedthru"]
+
+    @property
     def probe_axis_offset(self) -> float:
         """
         Perpendicular distance from the center line of the probe shaft
@@ -354,3 +463,19 @@ class LaPDXYTransform(base.BaseTransform):
         coordinate movement.
         """
         return self.inputs["mspace_polarity"]
+
+    @property
+    def droop_correct(self) -> Union[DroopCorrectABC, None]:
+        return self._droop_correct_callable
+
+    @property
+    def droop_scale(self) -> float:
+        """
+        Scale value for how much to adjust the droop from the default
+        model.
+        """
+        return self.inputs["droop_scale"]
+
+    @property
+    def deployed_side(self):
+        return self._deployed_side
