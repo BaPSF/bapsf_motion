@@ -7,6 +7,7 @@ __all__ = [
     "exclusion_registry",
     "register_exclusion",
     "BaseExclusion",
+    "GovernExclusion",
 ]
 __mexclusions__ = [
     "CircularExclusion",
@@ -15,7 +16,7 @@ __mexclusions__ = [
 ]
 __all__ += __mexclusions__
 
-from bapsf_motion.motion_builder.exclusions.base import BaseExclusion
+from bapsf_motion.motion_builder.exclusions.base import BaseExclusion, GovernExclusion
 from bapsf_motion.motion_builder.exclusions.circular import CircularExclusion
 from bapsf_motion.motion_builder.exclusions.divider import DividerExclusion
 from bapsf_motion.motion_builder.exclusions.helpers import (
