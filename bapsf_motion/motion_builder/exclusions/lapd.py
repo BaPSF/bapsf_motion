@@ -389,3 +389,18 @@ class LaPDXYExclusion(GovernExclusion):
 
     def govern_mask(self, mask: xr.DataArray) -> xr.DataArray:
         return self.exclusion
+    @staticmethod
+    def _add_to_edge_pool(edge, epool=None) -> Tuple[int, np.ndarray]:
+        # edge.shape == (2, 2)
+        # index_1 -> edge point, 0 = start and 1 = stop
+        # index_2 -> edge coordinate (0, 1) = (x, y)
+        if epool is None:
+            epool = np.array(edge)[np.newaxis, ...]
+        else:
+            epool = np.concatenate(
+                (epool, np.array(edge)[np.newaxis, ...]),
+                axis=0,
+            )
+
+        return epool.shape[0] - 1, epool
+
