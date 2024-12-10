@@ -417,17 +417,10 @@ class MotionBuilder(MBItem):
         """
         self.mask[...] = True
 
-        govern_exclusion = (
-            None
-            if not isinstance(self.exclusions[0], GovernExclusion)
-            else self.exclusions[0]
-        )
-        start_index = 0 if govern_exclusion is None else 1
-        for ex in self.exclusions[start_index:]:
+        # The govern exclusion is always set to index 0 in self.exclusions.
+        # Thus, iterate self.exclusions in reverse order.
+        for ex in reversed(self.exclusions):
             ex.update_global_mask()
-
-        if govern_exclusion is not None:
-            govern_exclusion.update_global_mask()
 
     def plot_mask(self):
         # TODO: define method to plot motion space mask, i.e. self.mask
