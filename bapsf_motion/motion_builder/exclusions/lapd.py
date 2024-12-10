@@ -387,8 +387,6 @@ class LaPDXYExclusion(GovernExclusion):
 
         return self._combine_exclusions()
 
-    def govern_mask(self, mask: xr.DataArray) -> xr.DataArray:
-        return self.exclusion
     @staticmethod
     def _add_to_edge_pool(edge, epool=None) -> Tuple[int, np.ndarray]:
         # edge.shape == (2, 2)
@@ -568,3 +566,7 @@ class LaPDXYExclusion(GovernExclusion):
         # corner_rays = self._shorten_rays_to_nearest_impact(corner_rays, edge_pool)
 
         return
+
+    def govern_mask(self) -> xr.DataArray:
+        shadow_mask = self.create_shadow_mask()
+        return np.logical_and(shadow_mask, self.exclusion)
