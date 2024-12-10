@@ -235,5 +235,5 @@ class GovernExclusion(BaseExclusion, ABC):
         )
 
     @abstractmethod
-    def govern_mask(self, mask: xr.DataArray) -> xr.DataArray:
+    def govern_mask(self) -> xr.DataArray:
         ...
