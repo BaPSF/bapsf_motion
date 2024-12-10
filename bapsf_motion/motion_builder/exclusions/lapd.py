@@ -497,3 +497,74 @@ class LaPDXYExclusion(GovernExclusion):
 
         return pool
 
+    def create_shadow_mask(self) -> xr.DataArray:
+        # we only want to shadow non-LaPDXYExclusion masks
+
+        # no other masks have been defined, so there is nothing to shadow
+        if np.all(self.mask):
+            return self.mask
+
+        # Build shadow mask
+        # 1. Collect a pool of points defining the start and stop of an edge (edge_pool)
+        # 2. Build an array of corner arrays that point from the insertion point to each edge point
+        # 3.
+
+        # Generate pool of edges
+        # - to pool contains the (x,y) locations for the starting and ending
+        #   points of an edge line segment
+        edge_pool = self._build_edge_pool(self.mask)
+
+        # collect unique edge points (i.e. unique (x,y) coords of edge
+        # segment start and stop locations)
+        edge_points = edge_pool.reshape(-1, 2)
+        edge_points = np.unique(edge_points, axis=0)
+
+        corner_rays = edge_points - self.insertion_point
+
+        # sort corner_rays and edge_points corresponding to the ray angle
+        delta = edge_points - self.insertion_point[np.newaxis, :]
+        perp_indices = np.where(delta[..., 0] == 0)[0]
+        if perp_indices.size > 0:
+            delta[perp_indices, 0] = 1  # dx
+            delta[perp_indices, 1] = np.inf * (
+                    delta[perp_indices, 1] / np.abs(delta[perp_indices, 1])
+            )  # dy
+        ray_angles = np.arctan(delta[..., 1] / delta[..., 0])
+        sort_i = np.argsort(ray_angles)
+        corner_rays = corner_rays[sort_i]
+        edge_points = edge_points[sort_i]
+
+        # compute vectors corresponding to the mask edges
+        edge_vectors = edge_pool[..., 1, :] - edge_pool[..., 0, :]
+
+        # determine if a corner_ray intersects an edge that is closer
+        # to the insertion point
+        # - solving the eqn:
+        #
+        #   insertion_point + mu * corner_ray = edge_pool[..., 0, :] + nu * edge_vector
+        #
+        #   * mu and nu are scalars
+        #   * if 0 < mu < 1 and 0 < nu < 1, then the corner_ray passes through a
+        #     closer edge to the insertion point
+        #
+        mu_array = (
+            np.cross(edge_pool[..., 0, :] - self.insertion_point, edge_vectors)
+            / np.cross(corner_rays, edge_vectors[:, np.newaxis, ...]).swapaxes(0, 1)
+        )
+        nu_array = (
+            np.cross(
+                (self.insertion_point - edge_pool[..., 0, :])[:, np.newaxis, ...],
+                corner_rays
+            ).swapaxes(0, 1)
+            / np.cross(edge_vectors[:, np.newaxis, ...], corner_rays).swapaxes(0, 1)
+        )
+        mu_condition = np.logical_and(mu_array > 0, mu_array < 1)
+        nu_condition = np.logical_and(nu_array >= 0, nu_array < 1)
+        intersection_mask = np.logical_and(mu_condition, nu_condition)
+
+        # TODO: MUST PICK UP HERE
+
+        # corner_rays = edge_pool.reshape(-1, 2) - self.insertion_point
+        # corner_rays = self._shorten_rays_to_nearest_impact(corner_rays, edge_pool)
+
+        return
