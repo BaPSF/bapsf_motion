@@ -169,6 +169,13 @@ class LaPDXYExclusion(GovernExclusion):
             skip_ds_add=skip_ds_add,
         )
 
+        self._insertion_point = np.array(
+            [
+                self.pivot_radius * np.cos(np.deg2rad(self.port_location)),
+                self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
+            ],
+        )
+
     @property
     def diameter(self) -> Real:
         """Diameter of the :term:`LaPD` chamber."""
@@ -214,6 +221,7 @@ class LaPDXYExclusion(GovernExclusion):
                 self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
             ],
         )
+        return self._insertion_point
 
     def _validate_inputs(self):
         """Validate input arguments."""
