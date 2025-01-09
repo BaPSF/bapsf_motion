@@ -176,6 +176,7 @@ class LaPDXYExclusion(GovernExclusion):
             ],
         )
         self._boundary_edges = self._build_boundary_edges()
+        self._insertion_edge_indices = self._determine_insertion_edge_indices()
 
     @property
     def diameter(self) -> Real:
@@ -232,6 +233,16 @@ class LaPDXYExclusion(GovernExclusion):
 
         """
         return self._boundary_edges
+
+    @property
+    def insertion_edge_indices(self) -> Tuple:
+        """
+        Tuple of `int` containing the indices of :attr:`boundary_edges`
+        that a probe would pass through when entering the motion space.
+        """
+        if self._insertion_edge_indices is None:
+            self._insertion_edge_indices = ()
+        return self._insertion_edge_indices
 
     def _validate_inputs(self):
         """Validate input arguments."""
@@ -308,6 +319,71 @@ class LaPDXYExclusion(GovernExclusion):
         _pool[3, 1, :] = [x_min, y_min]
 
         return _pool
+
+    def _determine_insertion_edge_indices(self):
+        # Determine the indices (of self.boundary_edges) that
+        # the probe drive would pass through when inserted into the
+        # motion space.
+        res = self.mask_resolution
+        x_key, y_key = self.mspace_dims
+        x_coord = self.mspace_coords[x_key]
+        y_coord = self.mspace_coords[y_key]
+
+        x_range = [x_coord[0] - 0.5 * res[0], x_coord[-1] + 0.5 * res[0]]
+        y_range = [y_coord[0] - 0.5 * res[1], y_coord[-1] + 0.5 * res[1]]
+
+        if (
+            (x_range[0] <= self.insertion_point[0] <= x_range[1])
+            and (y_range[0] <= self.insertion_point[1] <= y_range[1])
+        ):
+            # insertion point is within the motion space
+            return None
+
+        boundary_edges = self.boundary_edges
+        insertion_edge_indices = []
+
+        deltas = boundary_edges[..., 1, :] - boundary_edges[..., 0, :]
+
+        for _orientation, _index in zip(["horizontal", "vertical"], [1, 0]):
+            _indices = np.where(np.isclose(deltas[..., _index], 0))[0]
+            ii_min, ii_max = (
+                _indices
+                if (
+                    boundary_edges[_indices[0], 0, _index]
+                    < boundary_edges[_indices[1], 0, _index]
+                )
+                else (_indices[1], _indices[0])
+            )
+            if self.insertion_point[_index] > boundary_edges[ii_max, 0, _index]:
+                insertion_edge_indices.append(ii_max)
+            elif self.insertion_point[_index] < boundary_edges[ii_min, 0, _index]:
+                insertion_edge_indices.append(ii_min)
+
+        # # look at horizontal boundaries
+        # _indices = np.where(np.isclose(deltas[..., 1], 0))[0]
+        # ii_min, ii_max = (
+        #     _indices
+        #     if boundary_edges[_indices[0], 0, 1] < boundary_edges[_indices[1], 0, 1]
+        #     else (_indices[1], _indices[0])
+        # )
+        # if self.insertion_point[1] > boundary_edges[ii_max, 0, 1]:
+        #     insertion_edge_indices.append(ii_max)
+        # elif self.insertion_point[1] < boundary_edges[ii_min, 0, 1]:
+        #     insertion_edge_indices.append(ii_min)
+        #
+        # # look at vertical boundaries
+        # _indices = np.where(np.isclose(deltas[..., 0], 0))[0]
+        # ii_min, ii_max = (
+        #     _indices
+        #     if boundary_edges[_indices[0], 0, 0] < boundary_edges[_indices[1], 0, 0]
+        #     else (_indices[1], _indices[0])
+        # )
+        # if self.insertion_point[0] > boundary_edges[ii_max, 0, 0]:
+        #     insertion_edge_indices.append(ii_max)
+        # elif self.insertion_point[0] < boundary_edges[ii_min, 0, 0]:
+        #     insertion_edge_indices.append(ii_min)
+
+        return tuple(set(insertion_edge_indices))
 
     def _get_exclusion_by_name(self, name: str):
         """Get a composed exclusion layer from a given ``name``."""
