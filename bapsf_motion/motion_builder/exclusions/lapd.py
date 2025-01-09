@@ -175,7 +175,7 @@ class LaPDXYExclusion(GovernExclusion):
                 self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
             ],
         )
-        self._boundary_pool = self._build_boundary_pool()
+        self._boundary_edges = self._build_boundary_edges()
 
     @property
     def diameter(self) -> Real:
@@ -219,7 +219,7 @@ class LaPDXYExclusion(GovernExclusion):
         return self._insertion_point
 
     @property
-    def boundary_pool(self) -> np.ndarray:
+    def boundary_edges(self) -> np.ndarray:
         """
         `numpy` array containing the points that define the motion
         space boundary.
@@ -231,7 +231,7 @@ class LaPDXYExclusion(GovernExclusion):
         - ``index_2`` = 2 = (x, y) coordinates of the associated edge point
 
         """
-        return self._boundary_pool
+        return self._boundary_edges
 
     def _validate_inputs(self):
         """Validate input arguments."""
@@ -273,7 +273,7 @@ class LaPDXYExclusion(GovernExclusion):
                 f"expected a value between (-180, 360) degrees."
             )
 
-    def _build_boundary_pool(self):
+    def _build_boundary_edges(self):
         # Build an edge pool that defines the boundary of the motion space
         # - shape == (4, 2, 2)
         #   - index_0 = 4 = the boundary edge "ID"
