@@ -175,6 +175,7 @@ class LaPDXYExclusion(GovernExclusion):
                 self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
             ],
         )
+        self._boundary_pool = self._build_boundary_pool()
 
     @property
     def diameter(self) -> Real:
@@ -215,13 +216,22 @@ class LaPDXYExclusion(GovernExclusion):
     @property
     def insertion_point(self) -> np.ndarray:
         """(X, Y) location of the pivot, probe-insertion point."""
-        return np.array(
-            [
-                self.pivot_radius * np.cos(np.deg2rad(self.port_location)),
-                self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
-            ],
-        )
         return self._insertion_point
+
+    @property
+    def boundary_pool(self) -> np.ndarray:
+        """
+        `numpy` array containing the points that define the motion
+        space boundary.
+
+        ``boundary_pool.shape == (4, 2, 2)``
+
+        - ``index_0`` = 4 = the boundary edge "ID"
+        - ``index_1`` = 2 = start (0) and stop (1) points of the edge
+        - ``index_2`` = 2 = (x, y) coordinates of the associated edge point
+
+        """
+        return self._boundary_pool
 
     def _validate_inputs(self):
         """Validate input arguments."""
@@ -262,6 +272,42 @@ class LaPDXYExclusion(GovernExclusion):
                 f"The angular port location is {self.port_location}, "
                 f"expected a value between (-180, 360) degrees."
             )
+
+    def _build_boundary_pool(self):
+        # Build an edge pool that defines the boundary of the motion space
+        # - shape == (4, 2, 2)
+        #   - index_0 = 4 = the boundary edge "ID"
+        #   - index_1 = 2 = start (0) and stop (1) points of the edge
+        #   - index_2 = 2 = (x, y) coordinates of the associated edge point
+        res = self.mask_resolution
+        dx = 0.5 * res[0]
+        dy = 0.5 * res[1]
+
+        x_key, y_key = self.mspace_dims
+        x_min = self.mspace_coords[x_key][0] - dx
+        x_max = self.mspace_coords[x_key][-1] + dx
+        y_min = self.mspace_coords[y_key][0] - dy
+        y_max = self.mspace_coords[y_key][-1] + dy
+
+        _pool = np.zeros((4, 2, 2))
+
+        # lower horizontal
+        _pool[0, 0, :] = [x_min, y_min]
+        _pool[0, 1, :] = [x_max, y_min]
+
+        # right vertical
+        _pool[1, 0, :] = [x_max, y_min]
+        _pool[1, 1, :] = [x_max, y_max]
+
+        # upper horizontal
+        _pool[2, 0, :] = [x_max, y_max]
+        _pool[2, 1, :] = [x_min, y_max]
+
+        # left vertical
+        _pool[3, 0, :] = [x_min, y_max]
+        _pool[3, 1, :] = [x_min, y_min]
+
+        return _pool
 
     def _get_exclusion_by_name(self, name: str):
         """Get a composed exclusion layer from a given ``name``."""
