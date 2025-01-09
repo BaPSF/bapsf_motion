@@ -222,7 +222,7 @@ class LaPDXYExclusion(GovernExclusion):
     def boundary_edges(self) -> np.ndarray:
         """
         `numpy` array containing the points that define the motion
-        space boundary.
+        space boundary edges.
 
         ``boundary_pool.shape == (4, 2, 2)``
 
