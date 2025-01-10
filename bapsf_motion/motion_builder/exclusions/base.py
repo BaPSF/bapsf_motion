@@ -117,7 +117,8 @@ class BaseExclusion(ABC, MBItem):
         try:
             return self.item
         except KeyError:
-            return self._generate_exclusion()
+            self.regenerate_exclusion()
+            return self.item
 
     @property
     def inputs(self) -> Dict[str, Any]:
