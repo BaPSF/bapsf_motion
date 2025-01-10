@@ -210,10 +210,7 @@ class BaseExclusion(ABC, MBItem):
                 f"the exclusion can not be merged into the global maks."
             )
 
-        self._ds[self.mask_name] = np.logical_and(
-            self.mask,
-            self.exclusion,
-        )
+        self.mask[...] = np.logical_and(self.mask, self.exclusion)
 
 
 class GovernExclusion(BaseExclusion, ABC):
