@@ -61,7 +61,9 @@ class BaseExclusion(ABC, MBItem):
 
         self._validate_inputs()
 
+        self._stored_exclusion = None
         if self.skip_ds_add:
+            self._stored_exclusion = self._generate_exclusion()
             return
 
         # store this mask to the Dataset
@@ -114,6 +116,9 @@ class BaseExclusion(ABC, MBItem):
         An exclusion `~xarray.DataArray` is a boolean array the behaves
         like a mask to define where a probe can and can not be placed.
         """
+        if self.skip_ds_add:
+            return self._stored_exclusion
+
         try:
             return self.item
         except KeyError:
