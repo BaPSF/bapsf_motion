@@ -26,7 +26,7 @@ class Shadow2DExclusion(GovernExclusion):
         skip_ds_add: bool = False,
     ):
         # pre-define attributes that will be fully defined by self._validate_inputs()
-        self._boundary_edges = None
+        self._boundaries = None
         self._insertion_edge_indices = None
 
         super().__init__(
@@ -41,24 +41,24 @@ class Shadow2DExclusion(GovernExclusion):
         return self.inputs["source_point"]
 
     @property
-    def boundary_edges(self) -> np.ndarray:
+    def boundaries(self) -> np.ndarray:
         """
         `numpy` array containing the points that define the motion
-        space boundary edges.
+        space boundaries.
 
-        ``boundary_pool.shape == (4, 2, 2)``
+        ``boundaries.shape == (4, 2, 2)``
 
-        - ``index_0`` = 4 = the boundary edge "ID"
+        - ``index_0`` = 4 = the boundary side "ID"
         - ``index_1`` = 2 = start (0) and stop (1) points of the edge
         - ``index_2`` = 2 = (x, y) coordinates of the associated edge point
 
         """
-        return self._boundary_edges
+        return self._boundaries
 
     @property
     def insertion_edge_indices(self) -> Tuple:
         """
-        Tuple of `int` containing the indices of :attr:`boundary_edges`
+        Tuple of `int` containing the indices of :attr:`boundaries`
         that a probe would pass through when entering the motion space.
         """
         if self._insertion_edge_indices is None:
@@ -85,7 +85,7 @@ class Shadow2DExclusion(GovernExclusion):
         self.inputs["source_point"] = source_point
 
         # populate additional attributes
-        self._boundary_edges = self._build_boundary_edges()
+        self._boundaries = self._build_boundaries()
         self._insertion_edge_indices = self._determine_insertion_edge_indices()
 
     def _generate_exclusion(self) -> Union[np.ndarray, xr.DataArray]:
@@ -150,10 +150,10 @@ class Shadow2DExclusion(GovernExclusion):
 
         return epool.shape[0] - 1, epool
 
-    def _build_boundary_edges(self):
+    def _build_boundaries(self):
         # Build an edge pool that defines the boundary of the motion space
         # - shape == (4, 2, 2)
-        #   - index_0 = 4 = the boundary edge "ID"
+        #   - index_0 = 4 = the boundary side "ID"
         #   - index_1 = 2 = start (0) and stop (1) points of the edge
         #   - index_2 = 2 = (x, y) coordinates of the associated edge point
         res = self.mask_resolution
@@ -331,7 +331,7 @@ class Shadow2DExclusion(GovernExclusion):
 
         # gather motion space perimeter edges
         for ii in range(4):
-            boundary_edge = self.boundary_edges[ii, ...]
+            boundary_edge = self.boundaries[ii, ...]
             delta = boundary_edge[1, ...] - boundary_edge[0, ...]
             edge_type = "horizontal" if np.isclose(delta[1], 0) else "vertical"
 
@@ -471,7 +471,7 @@ class Shadow2DExclusion(GovernExclusion):
         return fan_rays
 
     def _determine_insertion_edge_indices(self):
-        # Determine the indices (of self.boundary_edges) that
+        # Determine the indices (of self.boundaries) that
         # the probe drive would pass through when inserted into the
         # motion space.
         res = self.mask_resolution
@@ -489,24 +489,24 @@ class Shadow2DExclusion(GovernExclusion):
             # insertion point is within the motion space
             return None
 
-        boundary_edges = self.boundary_edges
+        boundaries = self.boundaries
         insertion_edge_indices = []
 
-        deltas = boundary_edges[..., 1, :] - boundary_edges[..., 0, :]
+        deltas = boundaries[..., 1, :] - boundaries[..., 0, :]
 
         for _orientation, _index in zip(["horizontal", "vertical"], [1, 0]):
             _indices = np.where(np.isclose(deltas[..., _index], 0))[0]
             ii_min, ii_max = (
                 _indices
                 if (
-                    boundary_edges[_indices[0], 0, _index]
-                    < boundary_edges[_indices[1], 0, _index]
+                    boundaries[_indices[0], 0, _index]
+                    < boundaries[_indices[1], 0, _index]
                 )
                 else (_indices[1], _indices[0])
             )
-            if self.source_point[_index] > boundary_edges[ii_max, 0, _index]:
+            if self.source_point[_index] > boundaries[ii_max, 0, _index]:
                 insertion_edge_indices.append(ii_max)
-            elif self.source_point[_index] < boundary_edges[ii_min, 0, _index]:
+            elif self.source_point[_index] < boundaries[ii_min, 0, _index]:
                 insertion_edge_indices.append(ii_min)
 
         return tuple(set(insertion_edge_indices))
