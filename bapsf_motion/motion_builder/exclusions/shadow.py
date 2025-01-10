@@ -22,7 +22,7 @@ class Shadow2DExclusion(GovernExclusion):
         self,
         ds: xr.Dataset,
         *,
-        insertion_point: Union[List, Tuple, np.ndarray],
+        source_point: Union[List, Tuple, np.ndarray],
         skip_ds_add: bool = False,
     ):
         # pre-define attributes that will be fully defined by self._validate_inputs()
@@ -31,14 +31,14 @@ class Shadow2DExclusion(GovernExclusion):
 
         super().__init__(
             ds,
-            insertion_point=insertion_point,
+            source_point=source_point,
             skip_ds_add=skip_ds_add,
         )
 
     @property
-    def insertion_point(self) -> np.ndarray:
+    def source_point(self) -> np.ndarray:
         """(X, Y) location of the pivot, probe-insertion point."""
-        return self.inputs["insertion_point"]
+        return self.inputs["source_point"]
 
     @property
     def boundary_edges(self) -> np.ndarray:
@@ -67,22 +67,22 @@ class Shadow2DExclusion(GovernExclusion):
 
     def _validate_inputs(self):
         """Validate input arguments."""
-        insertion_point = self.inputs["insertion_point"]
+        source_point = self.inputs["source_point"]
 
-        if isinstance(insertion_point, (list, tuple)):
-            insertion_point = np.array(insertion_point)
+        if isinstance(source_point, (list, tuple)):
+            source_point = np.array(source_point)
 
-        if not isinstance(insertion_point, np.ndarray):
+        if not isinstance(source_point, np.ndarray):
             raise TypeError(
-                f"For argument insertion_point expected type numpy array, "
-                f"got type{type(insertion_point)}."
+                f"For argument source_point expected type numpy array, "
+                f"got type{type(source_point)}."
             )
-        elif insertion_point.ndim != 1 or insertion_point.size != 2:
+        elif source_point.ndim != 1 or source_point.size != 2:
             raise ValueError(
-                f"For argument insertion_point expected a 1D array of "
-                f"size 2, but shape {insertion_point.shape}."
+                f"For argument source_point expected a 1D array of "
+                f"size 2, but shape {source_point.shape}."
             )
-        self.inputs["insertion_point"] = insertion_point
+        self.inputs["source_point"] = source_point
 
         # populate additional attributes
         self._boundary_edges = self._build_boundary_edges()
@@ -101,12 +101,12 @@ class Shadow2DExclusion(GovernExclusion):
         if np.all(np.logical_not(self.mask)):
             return self.mask.copy()
 
-        # insertion_point is in motion space and sits in an excluded region
+        # source_point is in motion space and sits in an excluded region
         x_key, y_key = self.mspace_dims
         if (
             not bool(self.insertion_edge_indices)
             and not self.mask.sel(
-                **{x_key: self.insertion_point[0], y_key: self.insertion_point[1]}
+                **{x_key: self.source_point[0], y_key: self.source_point[1]}
             )
         ):
             _mask = self.mask.copy()
@@ -192,10 +192,10 @@ class Shadow2DExclusion(GovernExclusion):
         edge_points = edge_pool.reshape(-1, 2)
         edge_points = np.unique(edge_points, axis=0)
 
-        corner_rays = edge_points - self.insertion_point
+        corner_rays = edge_points - self.source_point
 
         # sort corner_rays and edge_points corresponding to the ray angle
-        delta = edge_points - self.insertion_point[np.newaxis, :]
+        delta = edge_points - self.source_point[np.newaxis, :]
         perp_indices = np.where(delta[..., 0] == 0)[0]
         if perp_indices.size > 0:
             delta[perp_indices, 0] = 1  # dx
@@ -219,19 +219,19 @@ class Shadow2DExclusion(GovernExclusion):
         # to the insertion point
         # - solving the eqn:
         #
-        #   insertion_point + mu * corner_ray = edge_pool[..., 0, :] + nu * edge_vector
+        #   source_point + mu * corner_ray = edge_pool[..., 0, :] + nu * edge_vector
         #
         #   * mu and nu are scalars
         #   * if 0 < mu < 1 and 0 < nu < 1, then the corner_ray passes through a
         #     closer edge to the insertion point
         #
         mu_array = (
-                np.cross(edge_pool[..., 0, :] - self.insertion_point, edge_vectors)
+                np.cross(edge_pool[..., 0, :] - self.source_point, edge_vectors)
                 / np.cross(corner_rays, edge_vectors[:, np.newaxis, ...]).swapaxes(0, 1)
         )
         nu_array = (
                 np.cross(
-                    (self.insertion_point - edge_pool[..., 0, :])[:, np.newaxis, ...],
+                    (self.source_point - edge_pool[..., 0, :])[:, np.newaxis, ...],
                     corner_rays
                 ).swapaxes(0, 1)
                 / np.cross(edge_vectors[:, np.newaxis, ...], corner_rays).swapaxes(0, 1)
@@ -425,13 +425,13 @@ class Shadow2DExclusion(GovernExclusion):
         edge_vectors = edge_pool[..., 1, :] - edge_pool[..., 0, :]
 
         mu_array = (
-            np.cross(edge_pool[..., 0, :] - self.insertion_point, edge_vectors)
+            np.cross(edge_pool[..., 0, :] - self.source_point, edge_vectors)
             / np.cross(fan_rays, edge_vectors[:, np.newaxis, ...]).swapaxes(0, 1)
         )
 
         nu_array = (
             np.cross(
-                (self.insertion_point - edge_pool[..., 0, :])[:, np.newaxis, ...],
+                (self.source_point - edge_pool[..., 0, :])[:, np.newaxis, ...],
                 fan_rays
             ).swapaxes(0, 1)
             / np.cross(edge_vectors[:, np.newaxis, ...], fan_rays).swapaxes(0, 1)
@@ -483,8 +483,8 @@ class Shadow2DExclusion(GovernExclusion):
         y_range = [y_coord[0] - 0.5 * res[1], y_coord[-1] + 0.5 * res[1]]
 
         if (
-            (x_range[0] <= self.insertion_point[0] <= x_range[1])
-            and (y_range[0] <= self.insertion_point[1] <= y_range[1])
+            (x_range[0] <= self.source_point[0] <= x_range[1])
+            and (y_range[0] <= self.source_point[1] <= y_range[1])
         ):
             # insertion point is within the motion space
             return None
@@ -504,9 +504,9 @@ class Shadow2DExclusion(GovernExclusion):
                 )
                 else (_indices[1], _indices[0])
             )
-            if self.insertion_point[_index] > boundary_edges[ii_max, 0, _index]:
+            if self.source_point[_index] > boundary_edges[ii_max, 0, _index]:
                 insertion_edge_indices.append(ii_max)
-            elif self.insertion_point[_index] < boundary_edges[ii_min, 0, _index]:
+            elif self.source_point[_index] < boundary_edges[ii_min, 0, _index]:
                 insertion_edge_indices.append(ii_min)
 
         return tuple(set(insertion_edge_indices))
@@ -531,10 +531,10 @@ class Shadow2DExclusion(GovernExclusion):
         y_coord = self.mspace_coords[y_key]
 
         rays = np.append(rays, rays[0, ...][None, ...], axis=0)
-        endpoints = rays + self.insertion_point[None, :]
+        endpoints = rays + self.source_point[None, :]
 
         triangles = np.zeros((rays.shape[0] - 1, 3, 2))
-        triangles[..., 0, :] = self.insertion_point
+        triangles[..., 0, :] = self.source_point
         triangles[..., 1, :] = endpoints[:-1, :]
         triangles[..., 2, :] = endpoints[1:, :]
 

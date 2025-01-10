@@ -403,6 +403,6 @@ class LaPDXYExclusion(GovernExclusion):
         ex = Shadow2DExclusion(
             self._ds,
             skip_ds_add=True,
-            insertion_point=self.insertion_point,
+            source_point=self.insertion_point,
         )
         return ex
