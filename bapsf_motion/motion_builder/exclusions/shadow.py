@@ -205,7 +205,6 @@ class Shadow2DExclusion(GovernExclusion):
         ray_angles = np.arctan(delta[..., 1] / delta[..., 0])
         sort_i = np.argsort(ray_angles)
         corner_rays = corner_rays[sort_i]
-        # edge_points = edge_points[sort_i]
 
         return corner_rays
 
