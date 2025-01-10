@@ -489,24 +489,23 @@ class Shadow2DExclusion(GovernExclusion):
             # insertion point is within the motion space
             return None
 
-        boundaries = self.boundaries
         insertion_edge_indices = []
 
-        deltas = boundaries[..., 1, :] - boundaries[..., 0, :]
+        deltas = self.boundaries[..., 1, :] - self.boundaries[..., 0, :]
 
         for _orientation, _index in zip(["horizontal", "vertical"], [1, 0]):
             _indices = np.where(np.isclose(deltas[..., _index], 0))[0]
             ii_min, ii_max = (
                 _indices
                 if (
-                    boundaries[_indices[0], 0, _index]
-                    < boundaries[_indices[1], 0, _index]
+                    self.boundaries[_indices[0], 0, _index]
+                    < self.boundaries[_indices[1], 0, _index]
                 )
                 else (_indices[1], _indices[0])
             )
-            if self.source_point[_index] > boundaries[ii_max, 0, _index]:
+            if self.source_point[_index] > self.boundaries[ii_max, 0, _index]:
                 insertion_edge_indices.append(ii_max)
-            elif self.source_point[_index] < boundaries[ii_min, 0, _index]:
+            elif self.source_point[_index] < self.boundaries[ii_min, 0, _index]:
                 insertion_edge_indices.append(ii_min)
 
         return tuple(set(insertion_edge_indices))
