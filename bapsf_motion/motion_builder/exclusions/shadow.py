@@ -331,14 +331,14 @@ class Shadow2DExclusion(GovernExclusion):
 
         # gather motion space perimeter edges
         for ii in range(4):
-            boundary_edge = self.boundaries[ii, ...]
-            delta = boundary_edge[1, ...] - boundary_edge[0, ...]
+            boundary_side = self.boundaries[ii, ...]
+            delta = boundary_side[1, ...] - boundary_side[0, ...]
             edge_type = "horizontal" if np.isclose(delta[1], 0) else "vertical"
 
             if edge_type == "horizontal":
-                edge_vals = mask.sel(**{y_key: boundary_edge[0, 1], "method": "nearest"})
+                edge_vals = mask.sel(**{y_key: boundary_side[0, 1], "method": "nearest"})
             else:
-                edge_vals = mask.sel(**{x_key: boundary_edge[0, 0], "method": "nearest"})
+                edge_vals = mask.sel(**{x_key: boundary_side[0, 0], "method": "nearest"})
 
             compare_val = ii in self.insertion_edge_indices
             _conditional_array = edge_vals if compare_val else np.logical_not(edge_vals)
@@ -348,7 +348,7 @@ class Shadow2DExclusion(GovernExclusion):
                 pass
             elif np.all(np.logical_not(_conditional_array)):
                 # whole side is an edge
-                eid, pool = self._add_to_edge_pool(boundary_edge, pool)
+                eid, pool = self._add_to_edge_pool(boundary_side, pool)
             else:
                 # array contain edges and non-edges
                 # False entries are edges
@@ -371,15 +371,15 @@ class Shadow2DExclusion(GovernExclusion):
                     if edge_type == "horizontal":
                         new_edge = np.array(
                             [
-                                [x_coord[istart] - 0.5 * res[0], boundary_edge[0, 1]],
-                                [x_coord[istop] + 0.5 * res[0], boundary_edge[0, 1]],
+                                [x_coord[istart] - 0.5 * res[0], boundary_side[0, 1]],
+                                [x_coord[istop] + 0.5 * res[0], boundary_side[0, 1]],
                             ],
                         )
                     else:
                         new_edge = np.array(
                             [
-                                [boundary_edge[0, 0], y_coord[istart] - 0.5 * res[1]],
-                                [boundary_edge[0, 0], y_coord[istop] + 0.5 * res[1]],
+                                [boundary_side[0, 0], y_coord[istart] - 0.5 * res[1]],
+                                [boundary_side[0, 0], y_coord[istop] + 0.5 * res[1]],
                             ],
                         )
 
