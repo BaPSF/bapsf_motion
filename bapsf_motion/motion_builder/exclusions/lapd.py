@@ -14,6 +14,7 @@ from bapsf_motion.motion_builder.exclusions.base import GovernExclusion
 from bapsf_motion.motion_builder.exclusions.circular import CircularExclusion
 from bapsf_motion.motion_builder.exclusions.divider import DividerExclusion
 from bapsf_motion.motion_builder.exclusions.helpers import register_exclusion
+from bapsf_motion.motion_builder.exclusions.shadow import Shadow2DExclusion
 
 
 @register_exclusion
@@ -159,6 +160,9 @@ class LaPDXYExclusion(GovernExclusion):
         include_cone: bool = True,
         skip_ds_add: bool = False,
     ):
+        # pre-define attributes that will be fully defined by self._validate_inputs()
+        self._insertion_point = None
+
         super().__init__(
             ds,
             diameter=diameter,
@@ -168,15 +172,6 @@ class LaPDXYExclusion(GovernExclusion):
             include_cone=include_cone,
             skip_ds_add=skip_ds_add,
         )
-
-        self._insertion_point = np.array(
-            [
-                self.pivot_radius * np.cos(np.deg2rad(self.port_location)),
-                self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
-            ],
-        )
-        self._boundary_edges = self._build_boundary_edges()
-        self._insertion_edge_indices = self._determine_insertion_edge_indices()
 
     @property
     def diameter(self) -> Real:
@@ -219,31 +214,6 @@ class LaPDXYExclusion(GovernExclusion):
         """(X, Y) location of the pivot, probe-insertion point."""
         return self._insertion_point
 
-    @property
-    def boundary_edges(self) -> np.ndarray:
-        """
-        `numpy` array containing the points that define the motion
-        space boundary edges.
-
-        ``boundary_pool.shape == (4, 2, 2)``
-
-        - ``index_0`` = 4 = the boundary edge "ID"
-        - ``index_1`` = 2 = start (0) and stop (1) points of the edge
-        - ``index_2`` = 2 = (x, y) coordinates of the associated edge point
-
-        """
-        return self._boundary_edges
-
-    @property
-    def insertion_edge_indices(self) -> Tuple:
-        """
-        Tuple of `int` containing the indices of :attr:`boundary_edges`
-        that a probe would pass through when entering the motion space.
-        """
-        if self._insertion_edge_indices is None:
-            self._insertion_edge_indices = ()
-        return self._insertion_edge_indices
-
     def _validate_inputs(self):
         """Validate input arguments."""
         # TODO: fill-out ValueError messages
@@ -284,133 +254,26 @@ class LaPDXYExclusion(GovernExclusion):
                 f"expected a value between (-180, 360) degrees."
             )
 
-    def _build_boundary_edges(self):
-        # Build an edge pool that defines the boundary of the motion space
-        # - shape == (4, 2, 2)
-        #   - index_0 = 4 = the boundary edge "ID"
-        #   - index_1 = 2 = start (0) and stop (1) points of the edge
-        #   - index_2 = 2 = (x, y) coordinates of the associated edge point
-        res = self.mask_resolution
-        dx = 0.5 * res[0]
-        dy = 0.5 * res[1]
-
-        x_key, y_key = self.mspace_dims
-        x_min = self.mspace_coords[x_key][0] - dx
-        x_max = self.mspace_coords[x_key][-1] + dx
-        y_min = self.mspace_coords[y_key][0] - dy
-        y_max = self.mspace_coords[y_key][-1] + dy
-
-        _pool = np.zeros((4, 2, 2))
-
-        # lower horizontal
-        _pool[0, 0, :] = [x_min, y_min]
-        _pool[0, 1, :] = [x_max, y_min]
-
-        # right vertical
-        _pool[1, 0, :] = [x_max, y_min]
-        _pool[1, 1, :] = [x_max, y_max]
-
-        # upper horizontal
-        _pool[2, 0, :] = [x_max, y_max]
-        _pool[2, 1, :] = [x_min, y_max]
-
-        # left vertical
-        _pool[3, 0, :] = [x_min, y_max]
-        _pool[3, 1, :] = [x_min, y_min]
-
-        return _pool
-
-    def _determine_insertion_edge_indices(self):
-        # Determine the indices (of self.boundary_edges) that
-        # the probe drive would pass through when inserted into the
-        # motion space.
-        res = self.mask_resolution
-        x_key, y_key = self.mspace_dims
-        x_coord = self.mspace_coords[x_key]
-        y_coord = self.mspace_coords[y_key]
-
-        x_range = [x_coord[0] - 0.5 * res[0], x_coord[-1] + 0.5 * res[0]]
-        y_range = [y_coord[0] - 0.5 * res[1], y_coord[-1] + 0.5 * res[1]]
-
-        if (
-            (x_range[0] <= self.insertion_point[0] <= x_range[1])
-            and (y_range[0] <= self.insertion_point[1] <= y_range[1])
-        ):
-            # insertion point is within the motion space
-            return None
-
-        boundary_edges = self.boundary_edges
-        insertion_edge_indices = []
-
-        deltas = boundary_edges[..., 1, :] - boundary_edges[..., 0, :]
-
-        for _orientation, _index in zip(["horizontal", "vertical"], [1, 0]):
-            _indices = np.where(np.isclose(deltas[..., _index], 0))[0]
-            ii_min, ii_max = (
-                _indices
-                if (
-                    boundary_edges[_indices[0], 0, _index]
-                    < boundary_edges[_indices[1], 0, _index]
-                )
-                else (_indices[1], _indices[0])
-            )
-            if self.insertion_point[_index] > boundary_edges[ii_max, 0, _index]:
-                insertion_edge_indices.append(ii_max)
-            elif self.insertion_point[_index] < boundary_edges[ii_min, 0, _index]:
-                insertion_edge_indices.append(ii_min)
-
-        # # look at horizontal boundaries
-        # _indices = np.where(np.isclose(deltas[..., 1], 0))[0]
-        # ii_min, ii_max = (
-        #     _indices
-        #     if boundary_edges[_indices[0], 0, 1] < boundary_edges[_indices[1], 0, 1]
-        #     else (_indices[1], _indices[0])
-        # )
-        # if self.insertion_point[1] > boundary_edges[ii_max, 0, 1]:
-        #     insertion_edge_indices.append(ii_max)
-        # elif self.insertion_point[1] < boundary_edges[ii_min, 0, 1]:
-        #     insertion_edge_indices.append(ii_min)
-        #
-        # # look at vertical boundaries
-        # _indices = np.where(np.isclose(deltas[..., 0], 0))[0]
-        # ii_min, ii_max = (
-        #     _indices
-        #     if boundary_edges[_indices[0], 0, 0] < boundary_edges[_indices[1], 0, 0]
-        #     else (_indices[1], _indices[0])
-        # )
-        # if self.insertion_point[0] > boundary_edges[ii_max, 0, 0]:
-        #     insertion_edge_indices.append(ii_max)
-        # elif self.insertion_point[0] < boundary_edges[ii_min, 0, 0]:
-        #     insertion_edge_indices.append(ii_min)
-
-        return tuple(set(insertion_edge_indices))
-
-    def _get_exclusion_by_name(self, name: str):
-        """Get a composed exclusion layer from a given ``name``."""
-        if not isinstance(name, str):
-            raise ValueError(
-                "Can not retrieve exclusion since supplied name is not"
-                f" a string, got type {type(name)}."
-            )
-
-        for ex in self.composed_exclusions:
-            if ex.name == name:
-                return ex
-
-        raise ValueError(
-            f"Supplied exclusion name '{name}' was not found among "
-            f"composed exclusions."
+        # populate additional attributes
+        self._insertion_point = np.array(
+            [
+                self.pivot_radius * np.cos(np.deg2rad(self.port_location)),
+                self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
+            ],
         )
 
     def _combine_exclusions(self):
         """Combine all sub-exclusions into one exclusion array."""
-        ex1 = self._get_exclusion_by_name("chamber")
-        ex2 = self._get_exclusion_by_name("divider_port")
+        ex1 = self.composed_exclusions["chamber"]
+        try:
+            ex2 = self.composed_exclusions["port"]
+            exclusion = np.logical_or(ex1.exclusion, ex2.exclusion)
+        except KeyError:
+            exclusion = ex1.exclusion
+            pass
 
-        exclusion = np.logical_or(ex1.exclusion, ex2.exclusion)
-
-        for ex in self.composed_exclusions:
-            if ex.name in {"chamber", "divider_port"}:
+        for ex_name, ex in self.composed_exclusions.items():
+            if ex_name in {"chamber", "port"}:
                 continue
             exclusion = np.logical_and(
                 exclusion,
@@ -424,6 +287,24 @@ class LaPDXYExclusion(GovernExclusion):
         Generate and return the boolean mask corresponding to the
         exclusion configuration.
         """
+        ex = self._generate_shadow_exclusion()
+        self.composed_exclusions["shadow"] = ex
+
+        ex = self._generate_chamber_exclusion()
+        self.composed_exclusions["chamber"] = ex
+
+        if not self.include_cone:
+            return self._combine_exclusions()
+
+        ex = self._generate_port_exclusion()
+        self.composed_exclusions["port"] = ex
+
+        exs = self._generate_cone_exclusions()
+        self.composed_exclusions.update(exs)
+
+        return self._combine_exclusions()
+
+    def _generate_chamber_exclusion(self):
         ex = CircularExclusion(
             self._ds,
             skip_ds_add=True,
@@ -431,12 +312,9 @@ class LaPDXYExclusion(GovernExclusion):
             center=(0.0, 0.0),
             exclude="outside",
         )
-        ex.name = "chamber"
-        self.composed_exclusions.append(ex)
+        return ex
 
-        if not self.include_cone:
-            return self._combine_exclusions()
-
+    def _generate_cone_exclusions(self):
         # determine slope for code exclusion
         # - P is considered a point in the LaPD coordinate system
         # - P' is considered a point in the pivot (port) coordinate system
@@ -462,6 +340,7 @@ class LaPDXYExclusion(GovernExclusion):
         }
 
         # unit vectors representing the cone trajectories in P
+        exclusions = {}
         for key, traj in cone_trajectories.items():
             p_traj = np.matmul(traj, inv_rot_matrix)
 
@@ -480,10 +359,16 @@ class LaPDXYExclusion(GovernExclusion):
                 mb=(slope, intercept),
                 exclude=exclude,
             )
-            ex.name = f"divider_{key}"
-            self.composed_exclusions.append(ex)
+            exclusions[f"divider_{key}"] = ex
 
+        return exclusions
+
+    def _generate_port_exclusion(self):
         # divider representing the port opening
+        theta = np.radians(self.port_location)
+        alpha = 0.5 * np.radians(self.cone_full_angle)
+        pivot_xy = self.insertion_point
+
         radius = 0.5 * self.diameter
         beta = np.arcsin(self.pivot_radius * np.sin(alpha) / radius)
         if np.abs(beta) < np.pi / 2:
@@ -512,242 +397,12 @@ class LaPDXYExclusion(GovernExclusion):
             mb=(slope, intercept),
             exclude=exclude,
         )
-        ex.name = f"divider_port"
-        self.composed_exclusions.append(ex)
+        return ex
 
-        return self._combine_exclusions()
-
-    @staticmethod
-    def _add_to_edge_pool(edge, epool=None) -> Tuple[int, np.ndarray]:
-        # edge.shape == (2, 2)
-        # index_1 -> edge point, 0 = start and 1 = stop
-        # index_2 -> edge coordinate (0, 1) = (x, y)
-        if epool is None:
-            epool = np.array(edge)[np.newaxis, ...]
-        else:
-            epool = np.concatenate(
-                (epool, np.array(edge)[np.newaxis, ...]),
-                axis=0,
-            )
-
-        return epool.shape[0] - 1, epool
-
-    def _build_edge_pool(self, mask: xr.DataArray) -> np.ndarray:
-        # Find the (x, y) coordinates for the starting and ending points
-        # of an edge in the mask array.  An edge occurs then neighboring
-        # cells change values (i.e. switch between True and False)
-        res = self.mask_resolution
-        pool = None
-        x_key, y_key = self.mspace_dims
-        x_coord = self.mspace_coords[x_key]
-        y_coord = self.mspace_coords[y_key]
-
-        # gather vertical edges
-        edge_indices = np.where(np.diff(mask, axis=0))
-        ix_array = np.unique(edge_indices[0])
-
-        for ix in ix_array:
-            iy_array = edge_indices[1][edge_indices[0] == ix]
-
-            x = x_coord[ix] + 0.5 * res[0]
-
-            if iy_array.size == 1:
-                iy = iy_array[0]
-
-                edge = np.array(
-                    [
-                        [x, y_coord[iy] - 0.5 * res[1]],
-                        [x, y_coord[iy] + 0.5 * res[1]],
-                    ]
-                )
-                eid, pool = self._add_to_edge_pool(edge, pool)
-            else:
-                jumps = np.where(np.diff(iy_array) != 1)[0]
-
-                starts = np.array([0])
-                starts = np.concatenate((starts, jumps + 1))
-                starts = iy_array[starts]
-
-                stops = np.concatenate((jumps, [iy_array.size - 1]))
-                stops = iy_array[stops]
-
-                for iy_start, iy_stop in zip(starts, stops):
-                    edge = np.array(
-                        [
-                            [x, y_coord[iy_start] - 0.5 * res[1]],
-                            [x, y_coord[iy_stop] + 0.5 * res[1]],
-                        ]
-                    )
-                    eid, pool = self._add_to_edge_pool(edge, pool)
-
-        # gather horizontal edges
-        edge_indices = np.where(np.diff(mask, axis=1))
-        iy_array = np.unique(edge_indices[1])
-
-        for iy in iy_array:
-            ix_array = edge_indices[0][edge_indices[1] == iy]
-
-            y = y_coord[iy] + 0.5 * res[1]
-
-            if ix_array.size == 1:
-                ix = ix_array[0]
-
-                edge = np.array(
-                    [
-                        [x_coord[ix] - 0.5 * res[0], y],
-                        [x_coord[ix] + 0.5 * res[0], y],
-                    ]
-                )
-                eid, pool = self._add_to_edge_pool(edge, pool)
-            else:
-                jumps = np.where(np.diff(ix_array) != 1)[0]
-
-                starts = np.array([0])
-                starts = np.concatenate((starts, jumps + 1))
-                starts = ix_array[starts]
-
-                stops = np.concatenate((jumps, [ix_array.size - 1]))
-                stops = ix_array[stops]
-
-                for ix_start, ix_stop in zip(starts, stops):
-                    edge = np.array(
-                        [
-                            [x_coord[ix_start] - 0.5 * res[0], y],
-                            [x_coord[ix_stop] + 0.5 * res[0], y],
-                        ]
-                    )
-                    eid, pool = self._add_to_edge_pool(edge, pool)
-
-        # gather motion space perimeter edges
-        for ii in range(4):
-            boundary_edge = self.boundary_edges[ii, ...]
-            delta = boundary_edge[1, ...] - boundary_edge[0, ...]
-            edge_type = "horizontal" if np.isclose(delta[1], 0) else "vertical"
-
-            if edge_type == "horizontal":
-                edge_vals = mask.sel(**{y_key: boundary_edge[0, 1], "method": "nearest"})
-            else:
-                edge_vals = mask.sel(**{x_key: boundary_edge[0, 0], "method": "nearest"})
-
-            compare_val = ii in self.insertion_edge_indices
-            _conditional_array = edge_vals if compare_val else np.logical_not(edge_vals)
-            if np.all(_conditional_array):
-                # perimeter side is not considered an "edge" (i.e. a boundary
-                # where True-False state switches
-                pass
-            elif np.all(np.logical_not(_conditional_array)):
-                # whole side is an edge
-                eid, pool = self._add_to_edge_pool(boundary_edge, pool)
-            else:
-                # array contain edges and non-edges
-                # False entries are edges
-                new_edge_indices = np.where(np.diff(_conditional_array))[0] + 1
-                if not _conditional_array[0]:
-                    # boundary side starts as a new edge ... this is not captured
-                    # by np.diff so manually add the first index
-                    new_edge_indices = np.insert(new_edge_indices, 0, 0)
-                if not _conditional_array[-1]:
-                    # boundary side ends as a new edge ... this is not captured
-                    # by np.diff so manually add the last index
-                    new_edge_indices = np.append(
-                        new_edge_indices, _conditional_array.size - 1
-                    )
-
-                for jj in range(0, new_edge_indices.size, 2):
-                    istart = new_edge_indices[jj]
-                    istop = new_edge_indices[jj + 1] - 1
-
-                    if edge_type == "horizontal":
-                        new_edge = np.array(
-                            [
-                                [x_coord[istart] - 0.5 * res[0], boundary_edge[0, 1]],
-                                [x_coord[istop] + 0.5 * res[0], boundary_edge[0, 1]],
-                            ],
-                        )
-                    else:
-                        new_edge = np.array(
-                            [
-                                [boundary_edge[0, 0], y_coord[istart] - 0.5 * res[1]],
-                                [boundary_edge[0, 0], y_coord[istop] + 0.5 * res[1]],
-                            ],
-                        )
-
-                    eid, pool = self._add_to_edge_pool(new_edge, pool)
-
-        return pool
-
-    def create_shadow_mask(self) -> xr.DataArray:
-        # we only want to shadow non-LaPDXYExclusion masks
-
-        # no other masks have been defined, so there is nothing to shadow
-        if np.all(self.mask):
-            return self.mask
-
-        # Build shadow mask
-        # 1. Collect a pool of points defining the start and stop of an edge (edge_pool)
-        # 2. Build an array of corner arrays that point from the insertion point to each edge point
-        # 3.
-
-        # Generate pool of edges
-        # - to pool contains the (x,y) locations for the starting and ending
-        #   points of an edge line segment
-        edge_pool = self._build_edge_pool(self.mask)
-
-        # collect unique edge points (i.e. unique (x,y) coords of edge
-        # segment start and stop locations)
-        edge_points = edge_pool.reshape(-1, 2)
-        edge_points = np.unique(edge_points, axis=0)
-
-        corner_rays = edge_points - self.insertion_point
-
-        # sort corner_rays and edge_points corresponding to the ray angle
-        delta = edge_points - self.insertion_point[np.newaxis, :]
-        perp_indices = np.where(delta[..., 0] == 0)[0]
-        if perp_indices.size > 0:
-            delta[perp_indices, 0] = 1  # dx
-            delta[perp_indices, 1] = np.inf * (
-                    delta[perp_indices, 1] / np.abs(delta[perp_indices, 1])
-            )  # dy
-        ray_angles = np.arctan(delta[..., 1] / delta[..., 0])
-        sort_i = np.argsort(ray_angles)
-        corner_rays = corner_rays[sort_i]
-        edge_points = edge_points[sort_i]
-
-        # compute vectors corresponding to the mask edges
-        edge_vectors = edge_pool[..., 1, :] - edge_pool[..., 0, :]
-
-        # determine if a corner_ray intersects an edge that is closer
-        # to the insertion point
-        # - solving the eqn:
-        #
-        #   insertion_point + mu * corner_ray = edge_pool[..., 0, :] + nu * edge_vector
-        #
-        #   * mu and nu are scalars
-        #   * if 0 < mu < 1 and 0 < nu < 1, then the corner_ray passes through a
-        #     closer edge to the insertion point
-        #
-        mu_array = (
-            np.cross(edge_pool[..., 0, :] - self.insertion_point, edge_vectors)
-            / np.cross(corner_rays, edge_vectors[:, np.newaxis, ...]).swapaxes(0, 1)
+    def _generate_shadow_exclusion(self):
+        ex = Shadow2DExclusion(
+            self._ds,
+            skip_ds_add=True,
+            insertion_point=self.insertion_point,
         )
-        nu_array = (
-            np.cross(
-                (self.insertion_point - edge_pool[..., 0, :])[:, np.newaxis, ...],
-                corner_rays
-            ).swapaxes(0, 1)
-            / np.cross(edge_vectors[:, np.newaxis, ...], corner_rays).swapaxes(0, 1)
-        )
-        mu_condition = np.logical_and(mu_array > 0, mu_array < 1)
-        nu_condition = np.logical_and(nu_array >= 0, nu_array < 1)
-        intersection_mask = np.logical_and(mu_condition, nu_condition)
-
-        # TODO: MUST PICK UP HERE
-
-        # corner_rays = edge_pool.reshape(-1, 2) - self.insertion_point
-        # corner_rays = self._shorten_rays_to_nearest_impact(corner_rays, edge_pool)
-
-        return
-
-    def govern_mask(self) -> xr.DataArray:
-        shadow_mask = self.create_shadow_mask()
-        return np.logical_and(shadow_mask, self.exclusion)
+        return ex
