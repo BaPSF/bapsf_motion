@@ -224,16 +224,14 @@ class Shadow2DExclusion(GovernExclusion):
         #   * if 0 < mu < 1 and 0 < nu < 1, then the corner_ray passes through a
         #     closer edge to the insertion point
         #
-        mu_array = (
-                np.cross(edge_pool[..., 0, :] - self.source_point, edge_vectors)
-                / np.cross(corner_rays, edge_vectors[:, np.newaxis, ...]).swapaxes(0, 1)
-        )
+        point_deltas = edge_pool[..., 0, :] - self.source_point
+        denominator = np.cross(
+            corner_rays, edge_vectors[:, np.newaxis, ...]
+        ).swapaxes(0, 1)
+        mu_array = np.cross(point_deltas, edge_vectors) / denominator
         nu_array = (
-                np.cross(
-                    (self.source_point - edge_pool[..., 0, :])[:, np.newaxis, ...],
-                    corner_rays
-                ).swapaxes(0, 1)
-                / np.cross(edge_vectors[:, np.newaxis, ...], corner_rays).swapaxes(0, 1)
+            np.cross(point_deltas[:, np.newaxis, ...], corner_rays).swapaxes(0, 1)
+            / denominator
         )
         mu_condition = np.logical_and(mu_array >= 0, mu_array < 1)
         nu_condition = np.logical_and(nu_array >= 0, nu_array <= 1)
