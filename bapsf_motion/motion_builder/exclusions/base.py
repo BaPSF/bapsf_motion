@@ -225,9 +225,4 @@ class GovernExclusion(BaseExclusion, ABC):
                 f"the exclusion can not be merged into the global maks."
             )
 
-        govern_mask = self.govern_mask()
-        self._ds[self.mask_name] = govern_mask
-
-    @abstractmethod
-    def govern_mask(self) -> xr.DataArray:
-        ...
+        self.mask[...] = self.exclusion[...]
