@@ -47,10 +47,10 @@ class BaseExclusion(ABC, MBItem):
         self._inputs = kwargs
         self.skip_ds_add = skip_ds_add
 
-        self.composed_exclusions = []  # type: List[BaseExclusion]
+        self.composed_exclusions = {}  # type: Dict[str, BaseExclusion]
         """
-        List of dependent :term:`motion exclusions` used to make this
-        more complex :term:`motion exclusion`.
+        Dictionary of dependent :term:`motion exclusions` used to make
+        this more complex :term:`motion exclusion`.
         """
 
         super().__init__(
