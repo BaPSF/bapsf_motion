@@ -182,3 +182,4 @@ class MBItem:
     def drop_vars(self, names: str, *, errors: ErrorOptions = "raise"):
         new_ds = self._ds.drop_vars(names, errors=errors)
         self._ds = new_ds
+    drop_vars.__doc__ = xr.Dataset.drop_vars.__doc__
