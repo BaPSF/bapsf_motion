@@ -394,44 +394,35 @@ class Shadow2DExclusion(GovernExclusion):
 
         # generate fanned rays
         delta_angle = (
-            0.02 * np.min(self.mask_resolution)
+            0.01 * np.min(self.mask_resolution)
             / np.linalg.norm(corner_rays, axis=1)
         )
 
-        fan_plus = np.linalg.norm(corner_rays, axis=1) * [
-            np.cos(corner_ray_angles + delta_angle),
-            np.sin(corner_ray_angles + delta_angle),
-        ]
-        fan_plus = fan_plus.swapaxes(0, 1)
+        fan_plus = np.array(
+            [
+                np.cos(corner_ray_angles + delta_angle),
+                np.sin(corner_ray_angles + delta_angle),
+            ],
+        ).swapaxes(0, 1)
 
-        fan_minus = np.linalg.norm(corner_rays, axis=1) * [
-            np.cos(corner_ray_angles - delta_angle),
-            np.sin(corner_ray_angles - delta_angle),
-        ]
-        fan_minus = fan_minus.swapaxes(0, 1)
+        fan_minus = np.array(
+            [
+                np.cos(corner_ray_angles - delta_angle),
+                np.sin(corner_ray_angles - delta_angle),
+            ],
+        ).swapaxes(0, 1)
 
         fan_rays = np.concatenate((fan_plus, fan_minus), axis=0)
-
-        # sort fan rays
-        ray_angles = np.arcsin(fan_rays[..., 1] / np.linalg.norm(fan_rays, axis=1))
-        ray_angles = np.where(fan_rays[..., 0] >= 0, ray_angles, np.pi - ray_angles)
-        sort_i = np.argsort(ray_angles)
-        fan_rays = fan_rays[sort_i]
 
         # project fan rays to the nearest edge
         edge_vectors = edge_pool[..., 1, :] - edge_pool[..., 0, :]
 
-        mu_array = (
-            np.cross(edge_pool[..., 0, :] - self.source_point, edge_vectors)
-            / np.cross(fan_rays, edge_vectors[:, np.newaxis, ...]).swapaxes(0, 1)
-        )
-
+        point_deltas = edge_pool[..., 0, :] - self.source_point
+        denominator = np.cross(fan_rays, edge_vectors[:, np.newaxis, ...]).swapaxes(0, 1)
+        mu_array = np.cross(point_deltas, edge_vectors) / denominator
         nu_array = (
-            np.cross(
-                (self.source_point - edge_pool[..., 0, :])[:, np.newaxis, ...],
-                fan_rays
-            ).swapaxes(0, 1)
-            / np.cross(edge_vectors[:, np.newaxis, ...], fan_rays).swapaxes(0, 1)
+            np.cross(point_deltas[:, np.newaxis, ...], fan_rays).swapaxes(0, 1)
+            / denominator
         )
 
         mu_condition = mu_array > 0
@@ -448,22 +439,30 @@ class Shadow2DExclusion(GovernExclusion):
 
         # filter close points before merging
         dx, dy = self.mask_resolution
-        mask1 = np.logical_and(
-            np.isclose(fan_rays[0::2, 0], corner_rays[..., 0], atol=.5 * dx),
-            np.isclose(fan_rays[0::2, 1], corner_rays[..., 1], atol=.5 * dy),
+        double_corner_rays = np.concatenate((corner_rays, corner_rays), axis=0)
+        mask = np.logical_and(
+            np.isclose(
+                fan_rays[..., 0],
+                double_corner_rays[..., 0],
+                atol=.5 * self.mask_resolution[0],
+            ),
+            np.isclose(
+                fan_rays[..., 1],
+                double_corner_rays[..., 1],
+                atol=.5 * self.mask_resolution[1],
+            ),
         )
-        mask2 = np.logical_and(
-            np.isclose(fan_rays[1::2, 0], corner_rays[..., 0], atol=.5 * dx),
-            np.isclose(fan_rays[1::2, 1], corner_rays[..., 1], atol=.5 * dy),
-        )
-        mask = np.ones((fan_rays.shape[0],), dtype="bool")
-        mask[0::2] = np.logical_not(mask1)
-        mask[1::2] = np.logical_not(mask2)
-        fan_rays = fan_rays[mask]
+        fan_rays = fan_rays[np.logical_not(mask)]
 
         # filter out np.inf rays
         finite_mask = np.all(np.isfinite(fan_rays), axis=1)
         fan_rays = fan_rays[finite_mask]
+
+        # sort fan rays
+        ray_angles = np.arcsin(fan_rays[..., 1] / np.linalg.norm(fan_rays, axis=1))
+        ray_angles = np.where(fan_rays[..., 0] >= 0, ray_angles, np.pi - ray_angles)
+        sort_i = np.argsort(ray_angles)
+        fan_rays = fan_rays[sort_i]
 
         return fan_rays
 
