@@ -69,7 +69,7 @@ class LaPDXYExclusion(GovernExclusion):
     .. note::
        The following examples include examples for direct instantiation,
        as well as configuration passing at the |MotionGroup| and
-       |Manager| levels.
+       |RunManager| levels.
 
     Assume we have a 2D motion space and want to create the default
     exclusion for a probe deployed on the East port.  This would look
