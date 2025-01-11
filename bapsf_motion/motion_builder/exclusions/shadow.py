@@ -15,6 +15,69 @@ from bapsf_motion.motion_builder.exclusions.helpers import register_exclusion
 
 @register_exclusion
 class Shadow2DExclusion(GovernExclusion):
+    r"""
+    Class for defining an :term:`exclusion layer` that shadows existing
+    exclusion layers in the :term:`motion builder`.  This is a
+    `~bapsf_motion.motion_builder.exclusions.base.GovernExclusion` that
+    operates on 2D :term:`motion space`\ 's and will replace the global
+    mask with its own.
+
+    **exclusion type:** ``'shadow_2d'``
+
+    Parameters
+    ----------
+    ds : `~xarray.DataSet`
+        The `xarray` `~xarray.Dataset` the motion builder configuration
+        is constructed in.
+
+    source_point : :term:`array-like`
+        An (x, y) coordinate for the "light" point source that shadows
+        the existing exclusion layers in the mask.
+
+    skip_ds_add: bool
+        If `True`, then skip generating the `~xarray.DataArray`
+        corresponding to the :term:`exclusion layer` and skip adding it
+        to the `~xarray.Dataset`. (DEFAULT: `False`)
+
+    Examples
+    --------
+
+    .. note::
+       The following examples include examples for direct instantiation,
+       as well as configuration passing at the |MotionGroup| and
+       |RunManager| levels.
+
+    Assume we have a 2D motion space that may or may not have additional
+    exclusion layers defined.  A configuration of `Shadow2dExclusion`
+    would look like:
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          el = Shadow2DExclusion(ds, source_point=[20, -20])
+
+       .. code-tab:: py Factory Function
+
+          el = exclusion_factory(
+              ds,
+              ex_type="shadow_2d",
+              source_point=[20, -20],
+          )
+
+       .. code-tab:: toml TOML
+
+          [...motion_builder.exclusions]
+          type = "shadow_2d"
+          source_point = [20, -20]
+
+       .. code-tab:: py Dict Entry
+
+          config["motion_builder"]["exclusions"] = {
+              "type": "shadow_2d",
+              "source_point": [20, -20],
+          }
+
+    """
     _exclusion_type = 'shadow_2d'
     _dimensionality = 2
 
