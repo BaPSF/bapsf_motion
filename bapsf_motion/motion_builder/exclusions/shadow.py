@@ -200,9 +200,16 @@ class Shadow2DExclusion(GovernExclusion):
 
     @staticmethod
     def _add_to_edge_pool(edge, epool=None) -> Tuple[int, np.ndarray]:
+        """Add ``edge`` to a pool of edges ``epool``."""
         # edge.shape == (2, 2)
+        # index_0 -> edge point, 0 = start and 1 = stop
+        # index_1 -> edge coordinate (0, 1) = (x, y)
+        #
+        # epool.shape == (N, 2, 2)
+        # index_0 -> Num. of edges
         # index_1 -> edge point, 0 = start and 1 = stop
         # index_2 -> edge coordinate (0, 1) = (x, y)
+        #
         if epool is None:
             epool = np.array(edge)[np.newaxis, ...]
         else:
@@ -214,6 +221,10 @@ class Shadow2DExclusion(GovernExclusion):
         return epool.shape[0] - 1, epool
 
     def _build_boundaries(self):
+        """
+        Build an array containing the points the define the boundary
+        sides of the motion space.
+        """
         # Build an edge pool that defines the boundary of the motion space
         # - shape == (4, 2, 2)
         #   - index_0 = 4 = the boundary side "ID"
@@ -250,6 +261,15 @@ class Shadow2DExclusion(GovernExclusion):
         return _pool
 
     def _build_corner_rays(self, edge_pool: np.ndarray) -> np.ndarray:
+        """
+        Build an array containing vectors that point from the
+        :attr:`insertion_point` to the points defined in ``edge_pool``.
+        """
+        # Returns corner_rays
+        # corner_rays.shape == (N, 2)
+        # - index_0 = Num. of rays
+        # - index_1 = (x, y) of vector
+        #
         # collect unique edge points (i.e. unique (x,y) coords of edge
         # segment start and stop locations)
         edge_points = edge_pool.reshape(-1, 2)
@@ -274,6 +294,10 @@ class Shadow2DExclusion(GovernExclusion):
     def _build_corner_ray_mask(
             self, corner_rays: np.ndarray, edge_pool: np.ndarray
     ) -> np.ndarray:
+        """
+        Build a boolean array to mask ``corner_rays`` and filer out
+        rays that point to locations behind closer edges.
+        """
 
         edge_vectors = edge_pool[..., 1, :] - edge_pool[..., 0, :]
 
@@ -304,6 +328,11 @@ class Shadow2DExclusion(GovernExclusion):
         return np.where(_count == 0, True, False)
 
     def _build_edge_pool(self, mask: xr.DataArray) -> np.ndarray:
+        """
+        Build an array containing the points (start and stop) of edges
+        in the motion space.  An edge is where the mask switches its
+        boolean value.
+        """
         # Find the (x, y) coordinates for the starting and ending points
         # of an edge in the mask array.  An edge occurs then neighboring
         # cells change values (i.e. switch between True and False)
@@ -450,6 +479,11 @@ class Shadow2DExclusion(GovernExclusion):
     def _build_fanned_rays(
         self, edge_pool: np.ndarray, corner_rays: np.ndarray
     ) -> np.ndarray:
+        """
+        Create an array of fanned rays sourced from ``corner_rays``, and
+        only include rays the project to further edges or the motion
+        space boundary.
+        """
 
         # calculate angles of corner_rays
         angles = np.arcsin(corner_rays[..., 1] / np.linalg.norm(corner_rays, axis=1))
@@ -583,7 +617,7 @@ class Shadow2DExclusion(GovernExclusion):
         return _rays
 
     def _paint_mask(self, rays: np.ndarray) -> xr.DataArray:
-
+        # use the set of rays to paint the True areas of the mask
         x_key, y_key = self.mspace_dims
         x_coord = self.mspace_coords[x_key]
         y_coord = self.mspace_coords[y_key]
