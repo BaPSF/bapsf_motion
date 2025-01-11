@@ -68,7 +68,7 @@ class DroopCorrectABC(ABC):
 
         Parameters
         ----------
-        points : :term:`array-like`
+        points : :term:`array_like`
             A single point or array of points for which the droop /
             non-droop correction will be applied.  These points must
             be given in a coordinate system with respect to the ball
@@ -181,7 +181,7 @@ class DroopCorrectABC(ABC):
 
         Parameters
         ----------
-        points : :term:`array-like`
+        points : :term:`array_like`
             A single point or array of points for which the droop
             correction will be applied.  These points must
             be given in a coordinate system with respect to the ball
@@ -208,7 +208,7 @@ class DroopCorrectABC(ABC):
 
         Parameters
         ----------
-        points : :term:`array-like`
+        points : :term:`array_like`
             A single point or array of points for which the non-droop
             correction will be applied.  These points must
             be given in a coordinate system with respect to the ball

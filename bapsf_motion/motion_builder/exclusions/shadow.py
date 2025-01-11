@@ -30,7 +30,7 @@ class Shadow2DExclusion(GovernExclusion):
         The `xarray` `~xarray.Dataset` the motion builder configuration
         is constructed in.
 
-    source_point : :term:`array-like`
+    source_point : :term:`array_like`
         An (x, y) coordinate for the "light" point source that shadows
         the existing exclusion layers in the mask.
 
