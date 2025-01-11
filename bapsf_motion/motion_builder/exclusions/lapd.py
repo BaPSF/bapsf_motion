@@ -58,6 +58,11 @@ class LaPDXYExclusion(GovernExclusion):
         limits.  Otherwise, `False` will only include the chamber wall
         exclusion. (DEFAULT: `True`)
 
+    skip_ds_add: bool
+        If `True`, then skip generating the `~xarray.DataArray`
+        corresponding to the :term:`exclusion layer` and skip adding it
+        to the `~xarray.Dataset`. (DEFAULT: `False`)
+
     Examples
     --------
 
