@@ -124,7 +124,11 @@ class MBItem:
         return len(self.mspace_dims)
 
     @property
-    def mask_resolution(self):
+    def mask_resolution(self) -> Tuple:
+        """
+        Tuple containing the spacial resolution of each dimension of
+        the motion space (i.e. grid spacing in each dimension).
+        """
         res = []
         for dim in self.mspace_dims:
             res.append(
