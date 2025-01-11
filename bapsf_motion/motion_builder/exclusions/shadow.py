@@ -541,14 +541,14 @@ class Shadow2DExclusion(GovernExclusion):
             y_coord.values[np.newaxis, ...], x_coord.size, axis=0
         )
 
-        # This processes uses Barycentric coordinates to determin if a
+        # This processes uses Barycentric coordinates to determine if a
         # grid point is within the triangle.
         #
         # https://en.wikipedia.org/wiki/Barycentric_coordinate_system
         #
         # lambda shape is (x_size, y_size, N_rays)
         #
-        # calcualte lambda_3
+        # calculate lambda_3
         numerator = np.cross(
             grid_points[:, :, None, :] - triangles[None, None, :, 0, :],
             (triangles[:, 1, :] - triangles[:, 0, :])[None, None, :, :],
@@ -567,7 +567,7 @@ class Shadow2DExclusion(GovernExclusion):
         denominator = -denominator
         lambda_2 = numerator / denominator[None, None, ...]
 
-        # calcualte lambda_1
+        # calculate lambda_1
         lambda_1 = 1 - lambda_2 - lambda_3
 
         # generate the conditional for each point in the motion space
