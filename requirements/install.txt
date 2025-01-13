@@ -3,6 +3,7 @@
 -r build.txt
 # restrictions due to supporting 32bit architecture
 # - PEP508 does not allow for architecture based dependencies
+kiwisolver < 1.4.7  # kiwisolver is a matplotlip dependency, 1.4.7 does not work on Windows x86
 numpy >= 1.18.1, < 2.0
 matplotlib >= 3.3.0, < 3.9.0
 pandas <= 2.0.3
