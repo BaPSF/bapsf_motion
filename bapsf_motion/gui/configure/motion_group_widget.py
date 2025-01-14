@@ -586,6 +586,10 @@ class MGWidget(QWidget):
         deployed_ips = []
         if isinstance(self._parent.rm, RunManager):
             for mg in self._parent.rm.mgs.values():
+                if dict_equal(mg_config, mg.config):
+                    # assume we are editing an existing motion group
+                    continue
+
                 deployed_mg_names.append(mg.config["name"])
 
                 for axis in mg.drive.axes:
