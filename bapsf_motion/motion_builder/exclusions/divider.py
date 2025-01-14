@@ -7,12 +7,14 @@ __mexclusions__ = ["DividerExclusion"]
 import numbers
 import numpy as np
 import re
+import warnings
 import xarray as xr
 
 from typing import Tuple
 
 from bapsf_motion.motion_builder.exclusions.base import BaseExclusion
 from bapsf_motion.motion_builder.exclusions.helpers import register_exclusion
+from bapsf_motion.utils.exceptions import ConfigurationWarning
 
 
 @register_exclusion
@@ -155,9 +157,38 @@ class DividerExclusion(BaseExclusion):
         sign, axis = self._exclude_sign_and_axis()
 
         if np.isinf(self.mb[0]) and axis == 1:
-            raise ValueError
+            warnings.warn(
+                f"Received an infinite slope and an excluded reference "
+                f"axis 1, assuming an excluded reference axis 0 was intended.",
+                category=ConfigurationWarning,
+            )
+            self.inputs["exclude"] = f"{sign}e0"
+
+            # double check correction was made
+            _s, _a = self._exclude_sign_and_axis()
+            if _s != sign and _a != 0:
+                raise ValueError(
+                    "The excluded reference axis string is malformed.  "
+                    "Received an infinite slope and an excluded reference "
+                    "axis 1, expected reference axis 0."
+                )
+
         elif self.mb[0] == 0 and axis == 0:
-            raise ValueError
+            warnings.warn(
+                f"Received a zero slope and an excluded reference "
+                f"axis 0, assuming an excluded reference axis 1 was intended.",
+                category=ConfigurationWarning,
+            )
+            self.inputs["exclude"] = f"{sign}e1"
+
+            # double check correction was made
+            _s, _a = self._exclude_sign_and_axis()
+            if _s != sign and _a != 1:
+                raise ValueError(
+                    "The excluded reference axis string is malformed.  "
+                    "Received a zero slope and an excluded reference "
+                    "axis 0, expected reference axis 1."
+                )
 
     def _generate_exclusion(self):
         """
