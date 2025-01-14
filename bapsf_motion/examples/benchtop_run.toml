@@ -25,6 +25,18 @@ space.1.num = 51
 layer.0.type = "grid"
 layer.0.limits = [[-3, 3], [-3, 3]]
 layer.0.steps = [7, 7]
+exclusion.0.type = "divider"
+exclusion.0.mb = ["inf", -4.0]
+exclusion.0.exclude = "-e0"
+exclusion.1.type = "divider"
+exclusion.1.mb = ["inf", 4.0]
+exclusion.1.exclude = "+e0"
+exclusion.2.type = "divider"
+exclusion.2.mb = [0.0, -4.0]
+exclusion.2.exclude = "-e1"
+exclusion.3.type = "divider"
+exclusion.3.mb = [0.0, 4.0]
+exclusion.3.exclude = "+e1"
 
 [run.mg.transform]
 type = "identity"
