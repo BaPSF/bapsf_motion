@@ -34,7 +34,7 @@
 .. |Axis| replace:: :class:`~bapsf_motion.actors.axis_.Axis`
 .. |Drive| replace:: :class:`~bapsf_motion.actors.drive_.Drive`
 .. |MotionGroup| replace:: :class:`~bapsf_motion.actors.motion_group_.MotionGroup`
-.. |Manager| replace:: :class:`~bapsf_motion.actors.manager_.Manager`
+.. |RunManager| replace:: :class:`~bapsf_motion.actors.manager_.RunManager`
 
 .. ------------------------
 .. PKG Common Functionality

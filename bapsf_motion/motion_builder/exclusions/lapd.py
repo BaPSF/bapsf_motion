@@ -8,16 +8,17 @@ import numpy as np
 import xarray as xr
 
 from numbers import Real
-from typing import Union
+from typing import Tuple, Union
 
-from bapsf_motion.motion_builder.exclusions.base import BaseExclusion
+from bapsf_motion.motion_builder.exclusions.base import GovernExclusion
 from bapsf_motion.motion_builder.exclusions.circular import CircularExclusion
 from bapsf_motion.motion_builder.exclusions.divider import DividerExclusion
 from bapsf_motion.motion_builder.exclusions.helpers import register_exclusion
+from bapsf_motion.motion_builder.exclusions.shadow import Shadow2DExclusion
 
 
 @register_exclusion
-class LaPDXYExclusion(BaseExclusion):
+class LaPDXYExclusion(GovernExclusion):
     r"""
     Class for defining the :term`LaPD` :term:`exclusion layer` in a XY
     :term:`motion space`.  This class setups up the typical XY
@@ -42,7 +43,7 @@ class LaPDXYExclusion(BaseExclusion):
         A variable indicating which port the probe is located at.  A
         value can be a string of
         :math:`\in` :math:`\{`\ e, east, t, top, w, west, b, bot,
-        bottom\ :math:`\}` (case insensitive) or an angle
+        bottom\ :math:`\}` (case-insensitive) or an angle
         :math:`\in [0,360)`.  An East port would correspond to an
         angle of `0` and a Top port corresponds to an angle of `90`.
         An angle port can be indicated by using the corresponding
@@ -57,13 +58,18 @@ class LaPDXYExclusion(BaseExclusion):
         limits.  Otherwise, `False` will only include the chamber wall
         exclusion. (DEFAULT: `True`)
 
+    skip_ds_add: bool
+        If `True`, then skip generating the `~xarray.DataArray`
+        corresponding to the :term:`exclusion layer` and skip adding it
+        to the `~xarray.Dataset`. (DEFAULT: `False`)
+
     Examples
     --------
 
     .. note::
        The following examples include examples for direct instantiation,
        as well as configuration passing at the |MotionGroup| and
-       |Manager| levels.
+       |RunManager| levels.
 
     Assume we have a 2D motion space and want to create the default
     exclusion for a probe deployed on the East port.  This would look
@@ -159,6 +165,9 @@ class LaPDXYExclusion(BaseExclusion):
         include_cone: bool = True,
         skip_ds_add: bool = False,
     ):
+        # pre-define attributes that will be fully defined by self._validate_inputs()
+        self._insertion_point = None
+
         super().__init__(
             ds,
             diameter=diameter,
@@ -205,6 +214,11 @@ class LaPDXYExclusion(BaseExclusion):
         """
         return self.inputs["include_cone"]
 
+    @property
+    def insertion_point(self) -> np.ndarray:
+        """(X, Y) location of the pivot, probe-insertion point."""
+        return self._insertion_point
+
     def _validate_inputs(self):
         """Validate input arguments."""
         # TODO: fill-out ValueError messages
@@ -245,17 +259,32 @@ class LaPDXYExclusion(BaseExclusion):
                 f"expected a value between (-180, 360) degrees."
             )
 
+        # populate additional attributes
+        self._insertion_point = np.array(
+            [
+                self.pivot_radius * np.cos(np.deg2rad(self.port_location)),
+                self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
+            ],
+        )
+
     def _combine_exclusions(self):
         """Combine all sub-exclusions into one exclusion array."""
-        exclusion = None
-        for ex in self.composed_exclusions:
-            if exclusion is None:
-                exclusion = ex.exclusion
-            else:
-                exclusion = np.logical_and(
-                    exclusion,
-                    ex.exclusion,
-                )
+        ex1 = self.composed_exclusions["chamber"]
+        try:
+            ex2 = self.composed_exclusions["port"]
+            exclusion = np.logical_or(ex1.exclusion, ex2.exclusion)
+        except KeyError:
+            exclusion = ex1.exclusion
+            pass
+
+        for ex_name, ex in self.composed_exclusions.items():
+            if ex_name in {"chamber", "port"}:
+                continue
+            exclusion = np.logical_and(
+                exclusion,
+                ex.exclusion,
+            )
+
         return exclusion
 
     def _generate_exclusion(self):
@@ -263,30 +292,40 @@ class LaPDXYExclusion(BaseExclusion):
         Generate and return the boolean mask corresponding to the
         exclusion configuration.
         """
-        self.composed_exclusions.append(
-            CircularExclusion(
-                self._ds,
-                skip_ds_add=True,
-                radius=0.5 * self.diameter,
-                center=(0.0, 0.0),
-                exclude="outside",
-            )
-        )
+        ex = self._generate_shadow_exclusion()
+        self.composed_exclusions["shadow"] = ex
+
+        ex = self._generate_chamber_exclusion()
+        self.composed_exclusions["chamber"] = ex
 
         if not self.include_cone:
             return self._combine_exclusions()
 
+        ex = self._generate_port_exclusion()
+        self.composed_exclusions["port"] = ex
+
+        exs = self._generate_cone_exclusions()
+        self.composed_exclusions.update(exs)
+
+        return self._combine_exclusions()
+
+    def _generate_chamber_exclusion(self):
+        ex = CircularExclusion(
+            self._ds,
+            skip_ds_add=True,
+            radius=0.5 * self.diameter,
+            center=(0.0, 0.0),
+            exclude="outside",
+        )
+        return ex
+
+    def _generate_cone_exclusions(self):
         # determine slope for code exclusion
         # - P is considered a point in the LaPD coordinate system
         # - P' is considered a point in the pivot (port) coordinate system
         theta = np.radians(self.port_location)
         alpha = 0.5 * np.radians(self.cone_full_angle)
-        pivot_xy = np.array(
-            [
-                self.pivot_radius * np.cos(theta),
-                self.pivot_radius * np.sin(theta),
-            ],
-        )
+        pivot_xy = self.insertion_point
 
         # rotation matrix to go P -> P'
         rot_matrix = np.array(
@@ -306,6 +345,7 @@ class LaPDXYExclusion(BaseExclusion):
         }
 
         # unit vectors representing the cone trajectories in P
+        exclusions = {}
         for key, traj in cone_trajectories.items():
             p_traj = np.matmul(traj, inv_rot_matrix)
 
@@ -318,13 +358,56 @@ class LaPDXYExclusion(BaseExclusion):
             axis = 0 if np.abs(exc_dir[0]) > np.abs(exc_dir[1]) else 1
             exclude = f"+e{axis}" if exc_dir[axis] > 0 else f"-e{axis}"
 
-            self.composed_exclusions.append(
-                DividerExclusion(
-                    self._ds,
-                    skip_ds_add=True,
-                    mb=(slope, intercept),
-                    exclude=exclude,
-                )
+            ex = DividerExclusion(
+                self._ds,
+                skip_ds_add=True,
+                mb=(slope, intercept),
+                exclude=exclude,
             )
+            exclusions[f"divider_{key}"] = ex
 
-        return self._combine_exclusions()
+        return exclusions
+
+    def _generate_port_exclusion(self):
+        # divider representing the port opening
+        theta = np.radians(self.port_location)
+        alpha = 0.5 * np.radians(self.cone_full_angle)
+        pivot_xy = self.insertion_point
+
+        radius = 0.5 * self.diameter
+        beta = np.arcsin(self.pivot_radius * np.sin(alpha) / radius)
+        if np.abs(beta) < np.pi / 2:
+            beta = np.pi - beta
+        beta = np.pi - beta - alpha
+        pt1 = radius * np.array([np.cos(theta + beta), np.sin(theta + beta)])
+        pt2 = radius * np.array([np.cos(theta - beta), np.sin(theta - beta)])
+        slope = (
+            np.inf
+            if np.equal(pt1[0], pt2[0])
+            else (pt1[1] - pt2[1]) / (pt1[0] - pt2[0])
+        )
+        intercept = pt1[0] if np.isinf(slope) else pt1[1] - slope * pt1[0]
+        if np.abs(pivot_xy[0]) / radius > .1:
+            sign = f"{pivot_xy[0]:+.1f}"[0]
+            sign = "-" if sign == "+" else "+"
+            exclude = f"{sign}e0"
+        else:
+            sign = f"{pivot_xy[1]:+.1f}"[0]
+            sign = "-" if sign == "+" else "+"
+            exclude = f"{sign}e1"
+
+        ex = DividerExclusion(
+            self._ds,
+            skip_ds_add=True,
+            mb=(slope, intercept),
+            exclude=exclude,
+        )
+        return ex
+
+    def _generate_shadow_exclusion(self):
+        ex = Shadow2DExclusion(
+            self._ds,
+            skip_ds_add=True,
+            source_point=self.insertion_point,
+        )
+        return ex

@@ -43,7 +43,7 @@ class GridLayer(BaseLayer):
     .. note::
        The following examples include examples for direct instantiation,
        as well as configuration passing at the |MotionGroup| and
-       |Manager| levels.
+       |RunManager| levels.
 
     Assume we have a 2D motion space and want to define a grid of
     points spaced at an interval of 2 ranging from -10 to 10 along

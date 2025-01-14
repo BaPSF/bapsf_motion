@@ -4,6 +4,7 @@ Module containing the definition of
 """
 __all__ = ["MBItem"]
 
+import numpy as np
 import re
 import xarray as xr
 
@@ -122,6 +123,19 @@ class MBItem:
         """
         return len(self.mspace_dims)
 
+    @property
+    def mask_resolution(self) -> Tuple:
+        """
+        Tuple containing the spacial resolution of each dimension of
+        the motion space (i.e. grid spacing in each dimension).
+        """
+        res = []
+        for dim in self.mspace_dims:
+            res.append(
+                np.average(np.diff(self.mspace_coords[dim]))
+            )
+        return tuple(res)
+
     @staticmethod
     def _validate_ds(ds: xr.Dataset) -> xr.Dataset:
         """Validate the given `~xarray.Dataset`."""
@@ -168,3 +182,4 @@ class MBItem:
     def drop_vars(self, names: str, *, errors: ErrorOptions = "raise"):
         new_ds = self._ds.drop_vars(names, errors=errors)
         self._ds = new_ds
+    drop_vars.__doc__ = xr.Dataset.drop_vars.__doc__

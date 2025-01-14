@@ -1,5 +1,5 @@
 """Module that defines the `BaseExclusion` abstract class."""
-__all__ = ["BaseExclusion"]
+__all__ = ["BaseExclusion", "GovernExclusion"]
 
 import numpy as np
 import re
@@ -47,10 +47,10 @@ class BaseExclusion(ABC, MBItem):
         self._inputs = kwargs
         self.skip_ds_add = skip_ds_add
 
-        self.composed_exclusions = []  # type: List[BaseExclusion]
+        self.composed_exclusions = {}  # type: Dict[str, BaseExclusion]
         """
-        List of dependent :term:`motion exclusions` used to make this
-        more complex :term:`motion exclusion`.
+        Dictionary of dependent :term:`motion exclusions` used to make
+        this more complex :term:`motion exclusion`.
         """
 
         super().__init__(
@@ -61,7 +61,9 @@ class BaseExclusion(ABC, MBItem):
 
         self._validate_inputs()
 
+        self._stored_exclusion = None
         if self.skip_ds_add:
+            self._stored_exclusion = self._generate_exclusion()
             return
 
         # store this mask to the Dataset
@@ -114,10 +116,14 @@ class BaseExclusion(ABC, MBItem):
         An exclusion `~xarray.DataArray` is a boolean array the behaves
         like a mask to define where a probe can and can not be placed.
         """
+        if self.skip_ds_add:
+            return self._stored_exclusion
+
         try:
             return self.item
         except KeyError:
-            return self._generate_exclusion()
+            self.regenerate_exclusion()
+            return self.item
 
     @property
     def inputs(self) -> Dict[str, Any]:
@@ -126,6 +132,18 @@ class BaseExclusion(ABC, MBItem):
         instantiation.
         """
         return self._inputs
+
+    @MBItem.name.setter
+    def name(self, name: str):
+        if not self.skip_ds_add:
+            # The exclusion name is a part of the Dataset management,
+            # so we can NOT/ should NOT rename it
+            return
+        elif not isinstance(name, str):
+            return
+
+        self._name = name
+        self._name_pattern = re.compile(rf"{name}(?P<number>[0-9]+)")
 
     @abstractmethod
     def _generate_exclusion(self) -> Union[np.ndarray, xr.DataArray]:
@@ -182,6 +200,8 @@ class BaseExclusion(ABC, MBItem):
                 f"To get the exclusion matrix use the 'ex.exclusion' property."
             )
 
+        self.composed_exclusions.clear()
+
         self._ds[self.name] = self._generate_exclusion()
 
     def update_global_mask(self):
@@ -195,7 +215,19 @@ class BaseExclusion(ABC, MBItem):
                 f"the exclusion can not be merged into the global maks."
             )
 
-        self._ds[self.mask_name] = np.logical_and(
-            self.mask,
-            self.exclusion,
-        )
+        self.mask[...] = np.logical_and(self.mask, self.exclusion)
+
+
+class GovernExclusion(BaseExclusion, ABC):
+    def update_global_mask(self):
+        """
+        Update the global :attr:`mask` to include the exclusions from
+        this :term:`exclusion layer`.
+        """
+        if self.skip_ds_add:
+            raise RuntimeError(
+                f"For exclusion {self.name} skip_ds_add={self.skip_ds_add} and thus "
+                f"the exclusion can not be merged into the global maks."
+            )
+
+        self.mask[...] = self.exclusion[...]
