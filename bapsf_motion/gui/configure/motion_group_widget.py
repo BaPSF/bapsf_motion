@@ -798,13 +798,7 @@ class MGWidget(QWidget):
 
         self.mg_name_widget.editingFinished.connect(self._rename_motion_group)
 
-        self.configChanged.connect(self._update_toml_widget)
-        self.configChanged.connect(self._update_mg_name_widget)
-        self.configChanged.connect(self._validate_motion_group)
-        self.configChanged.connect(self._update_drive_dropdown)
-        self.configChanged.connect(self._update_mb_dropdown)
-        self.configChanged.connect(self._update_transform_dropdown)
-        self.configChanged.connect(self._update_drive_control_widget)
+        self.configChanged.connect(self._config_changed_handler)
 
         self.drive_dropdown.currentIndexChanged.connect(
             self._drive_dropdown_new_selection
@@ -1054,6 +1048,22 @@ class MGWidget(QWidget):
                 self._transform_defaults.append((key, val))
 
         return self._transform_defaults
+
+    def _config_changed_handler(self):
+        # Note: none of the methods executed here should cause a
+        #       configChanged event
+        self._validate_motion_group()
+
+        # now update displays
+        self._update_mg_name_widget()
+        self._update_toml_widget()
+        self._update_drive_dropdown()
+        self._update_mb_dropdown()
+        self._update_transform_dropdown()
+
+        # updating the drive control widget should always be the last
+        # step
+        self._update_drive_control_widget()
 
     def _populate_drive_dropdown(self):
         for item in self.drive_defaults:
