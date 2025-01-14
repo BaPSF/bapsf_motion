@@ -1436,7 +1436,10 @@ class MGWidget(QWidget):
         if not self.drive_control_widget.isEnabled():
             return
 
-        self.drive_control_widget._update_all_axis_displays()
+        if self.drive_control_widget.mg is None:
+            self._refresh_drive_control()
+        else:
+            self.drive_control_widget._update_all_axis_displays()
 
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
