@@ -1505,12 +1505,17 @@ class MGWidget(QWidget):
 
         if not isinstance(self.mg.mb, MotionBuilder):
             self.mb_btn.set_invalid()
+            self.mb_btn.setToolTip("Motion space needs to be defined.")
             self.done_btn.setEnabled(False)
         else:
             if "layer" not in self.mg.mb.config:
                 self.mb_btn.set_invalid()
+                self.mb_btn.setToolTip(
+                    "A point layer needs to be defined to generate a motion list."
+                )
             else:
                 self.mb_btn.set_valid()
+                self.mb_btn.setToolTip("")
 
         if not isinstance(self.mg.transform, BaseTransform):
             self.transform_btn.set_invalid()
@@ -1574,6 +1579,7 @@ class MGWidget(QWidget):
             self.mb_dropdown.setEnabled(False)
             self.mb_btn.setEnabled(False)
             self.mb_btn.set_invalid()
+            self.mb_btn.setToolTip("Motion space needs to be defined.")
 
             self.transform_dropdown.setEnabled(False)
             self.transform_btn.setEnabled(False)
