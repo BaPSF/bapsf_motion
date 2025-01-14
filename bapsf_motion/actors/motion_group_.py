@@ -942,6 +942,15 @@ class MotionGroup(EventActor):
         if isinstance(pos, u.Quantity):
             pos = pos.value
 
+        if isinstance(self.mb, MotionBuilder):
+            if self.mb.is_excluded(pos):
+                self.logger.error(
+                    f"The requested position {pos} for motion group "
+                    f"'{self.name}' is in an excluded region of the "
+                    f"motion space.  NOT MOVEMENT PREFORMED!!"
+                )
+                return
+
         dr_pos = self.transform(pos, to_coords="drive").squeeze()
         return self.drive.move_to(pos=dr_pos, axis=axis)
 
