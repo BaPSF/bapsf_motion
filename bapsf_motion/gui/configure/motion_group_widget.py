@@ -788,6 +788,11 @@ class MGWidget(QWidget):
 
         self._initial_mg_config = _deepcopy_dict(self._mg_config)
 
+        if "name" not in self._mg_config or self._mg_config["name"] == "":
+            self._mg_config["name"] = "A New MG"
+        self.logger.info(f"starting _mg_config: {self._mg_config}")
+        self._update_mg_name_widget()
+
         self._spawn_motion_group()
         self._refresh_drive_control()
 
@@ -1333,7 +1338,6 @@ class MGWidget(QWidget):
             return self._mg_config
         elif self._mg_config is None:
             name = self.mg_name_widget.text()
-            name = "A New MG" if name == "" else name
             self._mg_config = {"name": name}
 
         return self._mg_config
@@ -1529,8 +1533,8 @@ class MGWidget(QWidget):
             self.done_btn.setEnabled(False)
 
     def _validate_motion_group_name(self) -> bool:
-        self.logger.info("Validating motion group name")
         mg_name = self.mg_name_widget.text()
+        self.logger.info(f"Validating motion group name '{mg_name}'.")
 
         # clear previous tooltips and actions
         self.mg_name_widget.setToolTip("")
