@@ -1587,16 +1587,23 @@ class MGWidget(QWidget):
 
     def _validate_motion_group(self):
         self.logger.info("Validating motion group")
-        vmg_name = self._validate_motion_group_name()
 
+        vmg_name = self._validate_motion_group_name()
         vdrive = self._validate_drive()
 
-        if not isinstance(self.mg.mb, MotionBuilder):
+        if not isinstance(self.mg, MotionGroup):
+            mb = None
+            transform = None
+        else:
+            mb = self.mg.mb
+            transform = self.mg.transform
+
+        if not isinstance(mb, MotionBuilder):
             self.mb_btn.set_invalid()
             self.mb_btn.setToolTip("Motion space needs to be defined.")
             self.done_btn.setEnabled(False)
         else:
-            if "layer" not in self.mg.mb.config:
+            if "layer" not in mb.config:
                 self.mb_btn.set_invalid()
                 self.mb_btn.setToolTip(
                     "A point layer needs to be defined to generate a motion list."
@@ -1605,7 +1612,7 @@ class MGWidget(QWidget):
                 self.mb_btn.set_valid()
                 self.mb_btn.setToolTip("")
 
-        if not isinstance(self.mg.transform, BaseTransform):
+        if not isinstance(transform, BaseTransform):
             self.transform_btn.set_invalid()
             self.done_btn.setEnabled(False)
 
