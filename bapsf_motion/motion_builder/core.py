@@ -279,7 +279,10 @@ class MotionBuilder(MBItem):
 
         if not isinstance(exclusion, GovernExclusion):
             self._exclusions.append(exclusion)
-        elif not isinstance(self.exclusions[0], GovernExclusion):
+        elif (
+            len(self.exclusions) == 0
+            or not isinstance(self.exclusions[0], GovernExclusion)
+        ):
             self._exclusions.insert(0, exclusion)
         else:
             warnings.warn(
