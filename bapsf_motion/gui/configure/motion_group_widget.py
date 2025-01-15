@@ -273,7 +273,14 @@ class AxisControlWidget(QWidget):
         self._move_to(pos)
 
     def _move_to(self, target_ax_pos):
+        target_pos = self.mg.position.value
+        target_pos[self.axis_index] = target_ax_pos
+
         if self.mg.drive.is_moving:
+            self.logger.info(
+                "Probe drive is currently moving.  Did NOT perform move "
+                f"to {target_pos}."
+            )
             return
 
         position = self.mg.position.value
@@ -542,6 +549,14 @@ class DriveControlWidget(QWidget):
             if not acw.isHidden()
         ]
         self.mg.move_to(target_pos)
+
+        if self.mg.drive.is_moving:
+            self.logger.info(
+                "Probe drive is currently moving.  Did NOT perform move "
+                f"to {target_pos}."
+            )
+            return
+
 
     def _stop_move(self):
         self.mg.stop()
