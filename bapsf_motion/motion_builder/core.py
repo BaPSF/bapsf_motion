@@ -348,7 +348,18 @@ class MotionBuilder(MBItem):
 
         select = {}
         for ii, dim_name in enumerate(self.mspace_dims):
-            select[dim_name] = point[ii]
+            _res = self.mask_resolution[ii]
+            _coord = self.mspace_coords[dim_name]
+            _point = point[ii]
+
+            if (
+                _point < (np.min(_coord) - 0.5 * _res)
+                or _point > (np.max(_coord) + 0.5 * _res)
+            ):
+                # point is outside the motion space
+                return True
+
+            select[dim_name] = _point
 
         return not bool(self.mask.sel(method="nearest", **select).data)
 
