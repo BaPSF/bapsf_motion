@@ -976,12 +976,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"MB config = {self.mb.config}")
 
         self.mpl_canvas.figure.clear()
-        ax = self.mpl_canvas.figure.add_subplot(111)
-        self.mb.mask.plot(
-            x=self.mb.mask.dims[0],
-            y=self.mb.mask.dims[1],
-            ax=ax,
-        )
+        ax = self.mpl_canvas.figure.gca()
+        xdim, ydim = self.mb.mspace_dims
+        self.mb.mask.plot(x=xdim, y=ydim, ax=ax)
 
         pts = self.mb.motion_list
         if pts is not None:
