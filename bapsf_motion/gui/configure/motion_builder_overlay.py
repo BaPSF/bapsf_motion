@@ -124,10 +124,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _connect_signals(self):
         super()._connect_signals()
 
-        self.configChanged.connect(self.update_canvas)
-        self.configChanged.connect(self.update_exclusion_list_box)
-        self.configChanged.connect(self.update_layer_list_box)
-        self.configChanged.connect(self._validate_mb)
+        self.configChanged.connect(self._config_changed_handler)
 
         self.add_ex_btn.clicked.connect(self._exclusion_configure_new)
         self.remove_ex_btn.clicked.connect(self._exclusion_remove_from_mb)
@@ -611,6 +608,16 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return _widget
 
     # -- WIDGET INTERACTION FUNCTIONALITY --
+
+    def _config_changed_handler(self):
+        # Note: none of the methods executed here should cause a
+        #       configChanged event
+        self._validate_mb()
+
+        # now update displays
+        self.update_exclusion_list_box()
+        self.update_layer_list_box()
+        self.update_canvas()
 
     def _exclusion_configure_new(self):
         if not self._params_widget.isHidden():
