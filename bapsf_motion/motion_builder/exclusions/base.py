@@ -6,7 +6,7 @@ import re
 import xarray as xr
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
 from bapsf_motion.motion_builder.item import MBItem
 
