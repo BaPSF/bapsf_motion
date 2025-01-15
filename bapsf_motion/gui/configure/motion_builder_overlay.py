@@ -35,7 +35,7 @@ from bapsf_motion.gui.widgets import (
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.motion_builder.layers import layer_registry
-from bapsf_motion.motion_builder.exclusions import exclusion_registry
+from bapsf_motion.motion_builder.exclusions import exclusion_registry, GovernExclusion
 from bapsf_motion.utils import _deepcopy_dict
 from bapsf_motion.utils import units as u
 
@@ -124,10 +124,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _connect_signals(self):
         super()._connect_signals()
 
-        self.configChanged.connect(self.update_canvas)
-        self.configChanged.connect(self.update_exclusion_list_box)
-        self.configChanged.connect(self.update_layer_list_box)
-        self.configChanged.connect(self._validate_mb)
+        self.configChanged.connect(self._config_changed_handler)
 
         self.add_ex_btn.clicked.connect(self._exclusion_configure_new)
         self.remove_ex_btn.clicked.connect(self._exclusion_remove_from_mb)
@@ -612,6 +609,16 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     # -- WIDGET INTERACTION FUNCTIONALITY --
 
+    def _config_changed_handler(self):
+        # Note: none of the methods executed here should cause a
+        #       configChanged event
+        self._validate_mb()
+
+        # now update displays
+        self.update_exclusion_list_box()
+        self.update_layer_list_box()
+        self.update_canvas()
+
     def _exclusion_configure_new(self):
         if not self._params_widget.isHidden():
             self._hide_and_clear_params_widget()
@@ -621,6 +628,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _available = self.exclusion_registry.get_names_by_dimensionality(
             self.dimensionality
         )
+        if self.mb.exclusions and isinstance(self.mb.exclusions[0], GovernExclusion):
+            # remove govern exclusion since we can only have one defined
+            for name in tuple(_available):
+                ex = self.exclusion_registry.get_exclusion(name)
+                if issubclass(ex, GovernExclusion):
+                    _available.remove(name)
+
         self._refresh_params_combo_box(_available)
         self.params_combo_box.setObjectName("exclusion")
 
@@ -969,12 +983,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"MB config = {self.mb.config}")
 
         self.mpl_canvas.figure.clear()
-        ax = self.mpl_canvas.figure.add_subplot(111)
-        self.mb.mask.plot(
-            x=self.mb.mask.dims[0],
-            y=self.mb.mask.dims[1],
-            ax=ax,
-        )
+        ax = self.mpl_canvas.figure.gca()
+        xdim, ydim = self.mb.mspace_dims
+        self.mb.mask.plot(x=xdim, y=ydim, ax=ax)
 
         pts = self.mb.motion_list
         if pts is not None:

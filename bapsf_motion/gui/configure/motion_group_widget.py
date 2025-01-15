@@ -2,6 +2,7 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
+import warnings
 
 from PySide6.QtCore import Qt, Signal, Slot, QSize
 from PySide6.QtGui import QDoubleValidator
@@ -39,6 +40,9 @@ from bapsf_motion.utils import units as u
 class AxisControlWidget(QWidget):
     axisLinked = Signal()
     axisUnlinked = Signal()
+    movementStarted = Signal(int)
+    movementStopped = Signal(int)
+    axisStatusChanged = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -255,6 +259,10 @@ class AxisControlWidget(QWidget):
 
         self.axis_name_label.setText(self.axis.name)
         self.axis.motor.status_changed.connect(self._update_display_of_axis_status)
+        self.axis.motor.status_changed.connect(self.axisStatusChanged.emit)
+        self.axis.motor.movement_started.connect(self._emit_movement_started)
+        self.axis.motor.movement_finished.connect(self._emit_movement_finished)
+        self.axis.motor.movement_finished.connect(self._update_display_of_axis_status)
         self._update_display_of_axis_status()
 
         self.axisLinked.emit()
@@ -263,17 +271,41 @@ class AxisControlWidget(QWidget):
         if self.axis is not None:
             # self.axis.terminate(delay_loop_stop=True)
             self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.status_changed.connect(self.axisStatusChanged.emit)
+            self.axis.motor.movement_started.connect(self._emit_movement_started)
+            self.axis.motor.movement_finished.connect(self._emit_movement_finished)
+            self.axis.motor.movement_finished.disconnect(
+                self._update_display_of_axis_status
+            )
 
         self._mg = None
         self._axis_index = None
         self.axisUnlinked.emit()
 
+    def _emit_movement_started(self):
+        self.movementStarted.emit(self.axis_index)
+
+    def _emit_movement_finished(self):
+        self.movementStopped.emit(self.axis_index)
+
     def closeEvent(self, event):
         self.logger.info("Closing AxisControlWidget")
+
+        if isinstance(self.axis, Axis):
+            self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.status_changed.disconnect(self.axisStatusChanged.emit)
+            self.axis.motor.movement_started.connect(self._emit_movement_started)
+            self.axis.motor.movement_finished.connect(self._emit_movement_finished)
+            self.axis.motor.movement_finished.disconnect(
+                self._update_display_of_axis_status
+            )
+
         event.accept()
 
 
 class DriveControlWidget(QWidget):
+    movementStarted = Signal()
+    movementStopped = Signal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -474,6 +506,9 @@ class DriveControlWidget(QWidget):
         for ii, ax in enumerate(self.mg.drive.axes):
             acw = self._axis_control_widgets[ii]
             acw.link_axis(self.mg, ii)
+            acw.movementStarted.connect(self._drive_movement_started)
+            acw.movementStopped.connect(self._drive_movement_finished)
+            acw.axisStatusChanged.connect(self._update_all_axis_displays)
             acw.show()
 
         self.setEnabled(not self._mg.terminated)
@@ -483,11 +518,41 @@ class DriveControlWidget(QWidget):
             visible = True if ii == 0 else False
 
             acw.unlink_axis()
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                acw.movementStarted.disconnect(self._drive_movement_started)
+                acw.movementStopped.disconnect(self._drive_movement_finished)
+                acw.axisStatusChanged.disconnect(self._update_all_axis_displays)
+
             acw.setVisible(visible)
 
         # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self.setEnabled(False)
+
+    def _update_all_axis_displays(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+            elif acw.axis.is_moving:
+                continue
+
+            acw._update_display_of_axis_status()
+
+    @Slot(int)
+    def _drive_movement_started(self, axis_index):
+        self.movementStarted.emit()
+
+    @Slot(int)
+    def _drive_movement_finished(self, axis_index):
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
+            return
+
+        is_moving = [ax.is_moving for ax in self.mg.drive.axes]
+        is_moving[axis_index] = False
+        if not any(is_moving):
+            self.movementStopped.emit()
 
     def closeEvent(self, event):
         self.logger.info("Closing DriveControlWidget")
@@ -521,6 +586,10 @@ class MGWidget(QWidget):
         deployed_ips = []
         if isinstance(self._parent.rm, RunManager):
             for mg in self._parent.rm.mgs.values():
+                if mg_config is not None and dict_equal(mg_config, mg.config):
+                    # assume we are editing an existing motion group
+                    continue
+
                 deployed_mg_names.append(mg.config["name"])
 
                 for axis in mg.drive.axes:
@@ -530,7 +599,6 @@ class MGWidget(QWidget):
             "mg_names": deployed_mg_names,
             "ips": deployed_ips,
         }
-
 
         self._logger = gui_logger
 
@@ -682,8 +750,8 @@ class MGWidget(QWidget):
         # if MGWidget launched without a drive then use a default
         # drive (if defined)
         if (
-                "drive" not in self.mg_config
-                and self.drive_defaults[0][0] != "Custom Drive"
+            "drive" not in self.mg_config
+            and self.drive_defaults[0][0] != "Custom Drive"
         ):
             self._mg_config["drive"] = _deepcopy_dict(self.drive_defaults[0][1])
 
@@ -724,6 +792,11 @@ class MGWidget(QWidget):
 
         self._initial_mg_config = _deepcopy_dict(self._mg_config)
 
+        if "name" not in self._mg_config or self._mg_config["name"] == "":
+            self._mg_config["name"] = "A New MG"
+        self.logger.info(f"starting _mg_config: {self._mg_config}")
+        self._update_mg_name_widget()
+
         self._spawn_motion_group()
         self._refresh_drive_control()
 
@@ -734,12 +807,7 @@ class MGWidget(QWidget):
 
         self.mg_name_widget.editingFinished.connect(self._rename_motion_group)
 
-        self.configChanged.connect(self._update_toml_widget)
-        self.configChanged.connect(self._update_mg_name_widget)
-        self.configChanged.connect(self._validate_motion_group)
-        self.configChanged.connect(self._update_drive_dropdown)
-        self.configChanged.connect(self._update_mb_dropdown)
-        self.configChanged.connect(self._update_transform_dropdown)
+        self.configChanged.connect(self._config_changed_handler)
 
         self.drive_dropdown.currentIndexChanged.connect(
             self._drive_dropdown_new_selection
@@ -750,6 +818,9 @@ class MGWidget(QWidget):
         self.transform_dropdown.currentIndexChanged.connect(
             self._transform_dropdown_new_selection
         )
+
+        self.drive_control_widget.movementStarted.connect(self.disable_config_controls)
+        self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
@@ -986,6 +1057,22 @@ class MGWidget(QWidget):
                 self._transform_defaults.append((key, val))
 
         return self._transform_defaults
+
+    def _config_changed_handler(self):
+        # Note: none of the methods executed here should cause a
+        #       configChanged event
+        self._validate_motion_group()
+
+        # now update displays
+        self._update_mg_name_widget()
+        self._update_toml_widget()
+        self._update_drive_dropdown()
+        self._update_mb_dropdown()
+        self._update_transform_dropdown()
+
+        # updating the drive control widget should always be the last
+        # step
+        self._update_drive_control_widget()
 
     def _populate_drive_dropdown(self):
         for item in self.drive_defaults:
@@ -1255,7 +1342,6 @@ class MGWidget(QWidget):
             return self._mg_config
         elif self._mg_config is None:
             name = self.mg_name_widget.text()
-            name = "A New MG" if name == "" else name
             self._mg_config = {"name": name}
 
         return self._mg_config
@@ -1354,6 +1440,15 @@ class MGWidget(QWidget):
     def _update_mg_name_widget(self):
         self.mg_name_widget.setText(self.mg_config["name"])
 
+    def _update_drive_control_widget(self):
+        if not self.drive_control_widget.isEnabled():
+            return
+
+        if self.drive_control_widget.mg is None:
+            self._refresh_drive_control()
+        else:
+            self.drive_control_widget._update_all_axis_displays()
+
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
         self.mg.config["name"] = self.mg_name_widget.text()
@@ -1414,12 +1509,17 @@ class MGWidget(QWidget):
 
         if not isinstance(self.mg.mb, MotionBuilder):
             self.mb_btn.set_invalid()
+            self.mb_btn.setToolTip("Motion space needs to be defined.")
             self.done_btn.setEnabled(False)
         else:
             if "layer" not in self.mg.mb.config:
                 self.mb_btn.set_invalid()
+                self.mb_btn.setToolTip(
+                    "A point layer needs to be defined to generate a motion list."
+                )
             else:
                 self.mb_btn.set_valid()
+                self.mb_btn.setToolTip("")
 
         if not isinstance(self.mg.transform, BaseTransform):
             self.transform_btn.set_invalid()
@@ -1442,8 +1542,8 @@ class MGWidget(QWidget):
             self.done_btn.setEnabled(False)
 
     def _validate_motion_group_name(self) -> bool:
-        self.logger.info("Validating motion group name")
         mg_name = self.mg_name_widget.text()
+        self.logger.info(f"Validating motion group name '{mg_name}'.")
 
         # clear previous tooltips and actions
         self.mg_name_widget.setToolTip("")
@@ -1483,6 +1583,7 @@ class MGWidget(QWidget):
             self.mb_dropdown.setEnabled(False)
             self.mb_btn.setEnabled(False)
             self.mb_btn.set_invalid()
+            self.mb_btn.setToolTip("Motion space needs to be defined.")
 
             self.transform_dropdown.setEnabled(False)
             self.transform_btn.setEnabled(False)
@@ -1623,6 +1724,26 @@ class MGWidget(QWidget):
             return
 
         self._change_transform(tr_default_config)
+
+    def disable_config_controls(self):
+        self.drive_dropdown.setEnabled(False)
+        self.drive_btn.setEnabled(False)
+
+        self.mb_dropdown.setEnabled(False)
+        self.mb_btn.setEnabled(False)
+
+        self.transform_dropdown.setEnabled(False)
+        self.transform_btn.setEnabled(False)
+
+    def enable_config_controls(self):
+        self.drive_dropdown.setEnabled(True)
+        self.drive_btn.setEnabled(True)
+
+        self.mb_dropdown.setEnabled(True)
+        self.mb_btn.setEnabled(True)
+
+        self.transform_dropdown.setEnabled(True)
+        self.transform_btn.setEnabled(True)
 
     def return_and_close(self):
         config = _deepcopy_dict(self.mg.config)

@@ -192,6 +192,9 @@ class MotionBuilder(MBItem):
 
         return ds
 
+    def _determine_name(self):
+        return self.base_name
+
     def add_layer(self, ly_type: str, **settings):
         """
         Add a "point" layer to the motion builder.
@@ -279,7 +282,10 @@ class MotionBuilder(MBItem):
 
         if not isinstance(exclusion, GovernExclusion):
             self._exclusions.append(exclusion)
-        elif not isinstance(self.exclusions[0], GovernExclusion):
+        elif (
+            len(self.exclusions) == 0
+            or not isinstance(self.exclusions[0], GovernExclusion)
+        ):
             self._exclusions.insert(0, exclusion)
         else:
             warnings.warn(

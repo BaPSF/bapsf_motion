@@ -1,17 +1,18 @@
 """Module that defines the `BaseExclusion` abstract class."""
 __all__ = ["BaseExclusion", "GovernExclusion"]
 
+import ast
 import numpy as np
 import re
 import xarray as xr
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
 from bapsf_motion.motion_builder.item import MBItem
 
 
-class BaseExclusion(ABC, MBItem):
+class BaseExclusion(MBItem):
     """
     Abstract base class for :term:`motion exclusion` classes.
 
@@ -133,18 +134,6 @@ class BaseExclusion(ABC, MBItem):
         """
         return self._inputs
 
-    @MBItem.name.setter
-    def name(self, name: str):
-        if not self.skip_ds_add:
-            # The exclusion name is a part of the Dataset management,
-            # so we can NOT/ should NOT rename it
-            return
-        elif not isinstance(name, str):
-            return
-
-        self._name = name
-        self._name_pattern = re.compile(rf"{name}(?P<number>[0-9]+)")
-
     @abstractmethod
     def _generate_exclusion(self) -> Union[np.ndarray, xr.DataArray]:
         """
@@ -160,6 +149,27 @@ class BaseExclusion(ABC, MBItem):
         These inputs are stored in :attr:`inputs`.
         """
         ...
+
+    def _determine_name(self):
+        try:
+            return self.name
+        except AttributeError:
+            # self._name has not been defined yet
+            pass
+
+        names = set(self._ds.data_vars.keys())
+        ids = []
+        for name in names:
+            _match = self.name_pattern.fullmatch(name)
+            if _match is not None:
+                ids.append(
+                    ast.literal_eval(_match.group("number"))
+                )
+
+        ids = list(set(ids))
+        _id = 0 if not ids else ids[-1] + 1
+
+        return f"{self.base_name}{_id:d}"
 
     def is_excluded(self, point):
         """
@@ -230,4 +240,7 @@ class GovernExclusion(BaseExclusion, ABC):
                 f"the exclusion can not be merged into the global maks."
             )
 
+        # Since GovernExclusion use the existing mask to generate its own
+        # mask, the exclusion must be regenerated during every global update
+        self.regenerate_exclusion()
         self.mask[...] = self.exclusion[...]
