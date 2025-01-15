@@ -392,7 +392,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         elif not isinstance(parent, mgw.MGWidget):
             pass
         elif parent.drive_dropdown.currentText != "Custom Drive":
-            index = parent.drive_dropdown.currentIndex
+            index = parent.drive_dropdown.currentIndex()
             _drive_config = _deepcopy_dict(
                 parent.drive_defaults[index][1]
             )
