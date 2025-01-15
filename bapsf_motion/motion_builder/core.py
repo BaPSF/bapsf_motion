@@ -192,6 +192,9 @@ class MotionBuilder(MBItem):
 
         return ds
 
+    def _determine_name(self):
+        return self.base_name
+
     def add_layer(self, ly_type: str, **settings):
         """
         Add a "point" layer to the motion builder.

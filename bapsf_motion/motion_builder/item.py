@@ -8,6 +8,7 @@ import numpy as np
 import re
 import xarray as xr
 
+from abc import ABC, abstractmethod
 from typing import Hashable, Tuple
 
 try:
@@ -16,7 +17,7 @@ except (ModuleNotFoundError, ImportError):
     ErrorOptions = str
 
 
-class MBItem:
+class MBItem(ABC):
     r"""
     A base class for any :term:`motion builder` class that will interact
     with the `xarray` `~xarray.Dataset` containing the
@@ -155,7 +156,8 @@ class MBItem:
 
         return ds
 
-    def _determine_name(self):
+    @abstractmethod
+    def _determine_name(self) -> str:
         """
         Determine the name for the motion builder item that will be used
         in the `~xarray.Dataset`.  This is generally the name of the
@@ -165,19 +167,7 @@ class MBItem:
         :attr:`name_pattern` and generate a unique :attr:`name` for
         the motion builder item.
         """
-        try:
-            return self.name
-        except AttributeError:
-            # self._name has not been defined yet
-            pass
-
-        names = set(self._ds.data_vars.keys())
-        n_existing = 0
-        for name in names:
-            if self.name_pattern.fullmatch(name) is not None:
-                n_existing += 1
-
-        return f"{self.base_name}{n_existing + 1:d}"
+        ...
 
     def drop_vars(self, names: str, *, errors: ErrorOptions = "raise"):
         new_ds = self._ds.drop_vars(names, errors=errors)

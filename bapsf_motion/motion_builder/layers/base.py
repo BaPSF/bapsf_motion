@@ -1,17 +1,18 @@
 """Module that defines the `BaseLayer` abstract class."""
 __all__ = ["BaseLayer"]
 
+import ast
 import re
 import numpy as np
 import xarray as xr
 
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 from typing import Any, Dict, List, Union
 
 from bapsf_motion.motion_builder.item import MBItem
 
 
-class BaseLayer(ABC, MBItem):
+class BaseLayer(MBItem):
     """
     Abstract base class for :term:`motion layer` classes.
 
@@ -141,6 +142,27 @@ class BaseLayer(ABC, MBItem):
         These inputs are stored in :attr:`inputs`.
         """
         ...
+
+    def _determine_name(self):
+        try:
+            return self.name
+        except AttributeError:
+            # self._name has not been defined yet
+            pass
+
+        names = set(self._ds.data_vars.keys())
+        ids = []
+        for name in names:
+            _match = self.name_pattern.fullmatch(name)
+            if _match is not None:
+                ids.append(
+                    ast.literal_eval(_match.group("number"))
+                )
+
+        ids = list(set(ids))
+        _id = 0 if not ids else ids[-1] + 1
+
+        return f"{self.base_name}{_id:d}"
 
     def _generate_point_matrix_da(self):
         """
