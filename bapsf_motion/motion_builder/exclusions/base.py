@@ -230,4 +230,7 @@ class GovernExclusion(BaseExclusion, ABC):
                 f"the exclusion can not be merged into the global maks."
             )
 
+        # Since GovernExclusion use the existing mask to generate its own
+        # mask, the exclusion must be regenerated during every global update
+        self.regenerate_exclusion()
         self.mask[...] = self.exclusion[...]
