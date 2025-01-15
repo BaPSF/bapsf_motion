@@ -654,6 +654,16 @@ class Shadow2DExclusion(GovernExclusion):
             triangles[:, 2, :] - triangles[:, 0, :],
             triangles[:, 1, :] - triangles[:, 0, :]
         )
+
+        zero_mask = denominator == 0
+        if np.any(zero_mask):
+            # denominator can be zero if all points on the triangle lie
+            # on a line
+            not_zero_mask = np.logical_not(zero_mask)
+            triangles = triangles[not_zero_mask, ...]
+            numerator = numerator[..., not_zero_mask]
+            denominator = denominator[not_zero_mask]
+
         lambda_3 = numerator / denominator[None, None, ...]
 
         # calculate lambda_2
