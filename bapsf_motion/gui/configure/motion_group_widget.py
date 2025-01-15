@@ -1004,8 +1004,10 @@ class MGWidget(QWidget):
     def _define_mspace_display_layout(self):
         ...
 
-    def _build_drive_defaults(self):
-
+    def _build_drive_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
+        # Returned _drive_defaults is a List of Tuple pairs
+        # - 1st Tuple element is the dropdown name
+        # - 2nd Tuple element is the dictionary configuration
         if self._defaults is None or "drive" not in self._defaults:
             self._drive_defaults = [("Custom Drive", {})]
             return self._drive_defaults
