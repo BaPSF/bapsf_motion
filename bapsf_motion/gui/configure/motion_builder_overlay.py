@@ -35,7 +35,7 @@ from bapsf_motion.gui.widgets import (
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.motion_builder.layers import layer_registry
-from bapsf_motion.motion_builder.exclusions import exclusion_registry
+from bapsf_motion.motion_builder.exclusions import exclusion_registry, GovernExclusion
 from bapsf_motion.utils import _deepcopy_dict
 from bapsf_motion.utils import units as u
 
@@ -628,6 +628,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _available = self.exclusion_registry.get_names_by_dimensionality(
             self.dimensionality
         )
+        if self.mb.exclusions and isinstance(self.mb.exclusions[0], GovernExclusion):
+            # remove govern exclusion since we can only have one defined
+            for name in tuple(_available):
+                ex = self.exclusion_registry.get_exclusion(name)
+                if issubclass(ex, GovernExclusion):
+                    _available.remove(name)
+
         self._refresh_params_combo_box(_available)
         self.params_combo_box.setObjectName("exclusion")
 
