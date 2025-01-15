@@ -7,10 +7,12 @@ import warnings
 from PySide6.QtCore import Qt, Signal, Slot, QSize
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
+    QCheckBox,
     QComboBox,
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QMessageBox,
     QSizePolicy,
     QTextEdit,
     QVBoxLayout,
@@ -35,6 +37,71 @@ from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry
 from bapsf_motion.utils import _deepcopy_dict, loop_safe_stop, toml, dict_equal
 from bapsf_motion.utils import units as u
+
+
+class MSpaceMessageBox(QMessageBox):
+    """
+    Modal warning dialog box to warn the user the motion space has yet
+    to be defined.  Thus, there are no restrictions on probe drive
+    movement, and it is up to the user to prevent any collisions.
+    """
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+
+        self._display_dialog = True
+
+        self.setWindowTitle("Motion Space NOT Defined")
+        self.setText(
+            "Motion Space is NOT defined, so there are no restrictions "
+            "on probe drive motion.  It is up to the user to avoid "
+            "collisions.\n\n"
+            "Proceed with movement?"
+        )
+        self.setIcon(QMessageBox.Icon.Warning)
+        self.setStandardButtons(
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.Abort
+        )
+        self.setDefaultButton(QMessageBox.StandardButton.Abort)
+
+        _cb = QCheckBox("Suppress future warnings for this motion group.")
+        self.setCheckBox(_cb)
+
+        self.checkBox().checkStateChanged.connect(self._update_display_dialog)
+
+    @property
+    def display_dialog(self) -> bool:
+        return self._display_dialog
+
+    @display_dialog.setter
+    def display_dialog(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            return
+
+        # ensure the display boolean (display_dialog) is in sync
+        # with the dialog check box ... these two values are supposed
+        # to be NOTs of each other
+        check_state = self.checkBox().checkState()
+        if check_state is Qt.CheckState.Checked is value:
+            self.checkBox().setChecked(not value)
+
+        self._display_dialog = value
+
+    @Slot(Qt.CheckState)
+    def _update_display_dialog(self, state: Qt.CheckState) -> None:
+        self.display_dialog = not (state is Qt.CheckState.Checked)
+
+    def exec(self) -> bool:
+        if not self.display_dialog:
+            return True
+
+        button = super().exec()
+
+        if button == QMessageBox.StandardButton.Yes:
+            # Make sure the Abort button always remains the default choice
+            self.setDefaultButton(QMessageBox.StandardButton.Abort)
+            return True
+        elif button == QMessageBox.StandardButton.Abort:
+            return False
 
 
 class AxisControlWidget(QWidget):
