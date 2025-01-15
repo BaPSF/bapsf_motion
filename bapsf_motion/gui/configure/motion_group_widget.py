@@ -189,6 +189,10 @@ class AxisControlWidget(QWidget):
 
         # Define ADVANCED WIDGETS
 
+        self.mspace_warning_dialog = None
+        if isinstance(parent, DriveControlWidget):
+            self.mspace_warning_dialog = parent.mspace_warning_dialog
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -283,10 +287,12 @@ class AxisControlWidget(QWidget):
             )
             return
 
-        position = self.mg.position.value
-        position[self.axis_index] = target_ax_pos
+        proceed = True
+        if not isinstance(self.mg.mb, MotionBuilder):
+            proceed = self.mspace_warning_dialog.exec()
 
-        self.mg.move_to(position)
+        if proceed:
+            self.mg.move_to(target_pos)
 
     def _update_display_of_axis_status(self):
         if self._mg.terminated:
@@ -456,6 +462,8 @@ class DriveControlWidget(QWidget):
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
 
+        self.mspace_warning_dialog = MSpaceMessageBox(parent=self)
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -548,7 +556,6 @@ class DriveControlWidget(QWidget):
             for acw in self._axis_control_widgets
             if not acw.isHidden()
         ]
-        self.mg.move_to(target_pos)
 
         if self.mg.drive.is_moving:
             self.logger.info(
@@ -557,6 +564,12 @@ class DriveControlWidget(QWidget):
             )
             return
 
+        proceed = True
+        if not isinstance(self.mg.mb, MotionBuilder):
+            proceed = self.mspace_warning_dialog.exec()
+
+        if proceed:
+            self.mg.move_to(target_pos)
 
     def _stop_move(self):
         self.mg.stop()
