@@ -9,6 +9,7 @@ import astropy.units as u
 import asyncio
 import logging
 
+from collections import UserDict
 from typing import Any, Dict, List, Optional, Tuple
 
 from bapsf_motion.actors.base import EventActor
@@ -157,8 +158,7 @@ class Drive(EventActor):
 
         return tuple(conditioned_settings)
 
-    @staticmethod
-    def _validate_axis(settings: Dict[str, Any]) -> Dict[str, Any]:
+    def _validate_axis(self, settings: Dict[str, Any]) -> Dict[str, Any]:
         """Validate the |Axis| arguments defined in ``settings``."""
         # TODO: create warnings for logger, loop, and auto_run since
         #       this class overrides in inputs of thos
@@ -185,6 +185,20 @@ class Drive(EventActor):
                 raise ValueError(
                     f"For axis setting '{key}' expected type {_type}, got "
                     f"type {type(settings[key])}."
+                )
+
+        if (
+            "motor_settings" in settings
+            and not isinstance(settings["motor_settings"], (dict, UserDict))
+        ):
+            _motor_settings = settings.pop("motor_settings")
+            if _motor_settings is not None:
+                self.logger.warning(
+                    "Removing motor settings from the input configuration.",
+                    exc_info=TypeError(
+                        "Expected None or dictionary for motor settings "
+                        f"input, got type {type(_motor_settings)}."
+                    ),
                 )
 
         return settings
