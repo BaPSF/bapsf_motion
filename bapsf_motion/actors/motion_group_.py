@@ -352,7 +352,9 @@ class MotionGroupConfig(UserDict):
             config.get("motion_builder", {})
         )
 
-        config = self._handle_user_meta(config, self._required_metadata["motion_group"])
+        req_meta = self._required_metadata.get("motion_group", set())
+        opt_meta = self._optional_metadata.get("motion_group", set())
+        config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
         # TODO: the below commented out code block is not do-able since
         #       motion_builder.space can be defined as a string for builtin spaces
@@ -375,7 +377,8 @@ class MotionGroupConfig(UserDict):
         """
         Validate the drive component of the motion group configuration.
         """
-        req_meta = self._required_metadata["drive"]
+        req_meta = self._required_metadata.get("drive", set())
+        opt_meta = self._optional_metadata.get("drive", set())
 
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
@@ -389,7 +392,7 @@ class MotionGroupConfig(UserDict):
             # )
             return {}
 
-        config = self._handle_user_meta(config, req_meta)
+        config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
         ax_meta = set(config["axes"].keys())
         if len(self._required_metadata["drive.axes"] - ax_meta) == 0:
@@ -435,7 +438,8 @@ class MotionGroupConfig(UserDict):
         Validate the axis (e.g. axes.0) component of the drive
         component of the motion group configuration.
         """
-        req_meta = self._required_metadata["drive.axes"]
+        req_meta = self._required_metadata.get("drive.axes", set())
+        opt_meta = self._optional_metadata.get("drive.axes", set())
 
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
@@ -444,7 +448,7 @@ class MotionGroupConfig(UserDict):
                 f"keys {missing_meta}."
             )
 
-        config = self._handle_user_meta(config, req_meta)
+        config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
         # TODO: Is it better to do the type checks here or allow class
         #       instantiation to handle it.
