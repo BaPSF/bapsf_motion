@@ -191,6 +191,12 @@ class Motor(EventActor):
     ip: `str`
         IPv4 address for the motor
 
+    limit_mode : `int`, optional
+        Define the operational mode of the motor limit switches. Value
+        should be an integer of value 1, 2, or 3.  1 indicates limit
+        is activated when energized, 2 indicates limit is activated
+        when de-energized, and 3 indicates no limits. (DEFAULT: ``1``)
+
     name: `str`, optional
         Name the motor.  If `None`, then the name will be automatically
         generated. (DEFAULT: `None`)
@@ -500,6 +506,7 @@ class Motor(EventActor):
         self,
         *,
         ip: str,
+        limit_mode: int = None,
         name: str = None,
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
@@ -512,6 +519,7 @@ class Motor(EventActor):
         self._setup = self._setup_defaults.copy()
         self._motor = self._motor_defaults.copy()
         self._status = self._status_defaults.copy()
+        self._limit_mode = limit_mode
 
         # simple signal to tell handlers that _status changed
         self.status_changed = SimpleSignal()
@@ -540,6 +548,30 @@ class Motor(EventActor):
     def _configure_before_run(self):
         # actions to be done during object instantiation, but before
         # the asyncio event loop starts running.
+        if self._limit_mode is None:
+            self._limit_mode = self.motor["define_limits"]
+        elif not isinstance(self._limit_mode, int):
+            self.logger.warning(
+                "Assuming limit mode 1 for input argument 'limit_mode'.",
+                exc_info=TypeError(
+                    "Was expecting an int of value 1, 2, or 3 for input "
+                    f"argument 'limit_mode', got type "
+                    f"{type(self._limit_mode)} instead."
+                ),
+            )
+            self._limit_mode = self.motor["define_limits"]
+        elif self._limit_mode not in (1, 2, 3):
+            self.logger.warning(
+                "Assuming limit mode 1 for input argument 'limit_mode'.",
+                exc_info=ValueError(
+                    "Was expecting an int of value 1, 2, or 3 for input "
+                    f"argument 'limit_mode', got value "
+                    f"{self._limit_mode} instead."
+                ),
+            )
+            self._limit_mode = self.motor["define_limits"]
+        else:
+            self.motor["define_limits"] = self._limit_mode
 
         self.connect()
 
@@ -626,6 +658,7 @@ class Motor(EventActor):
             "accel": None,
             "decel": None,
             "protocol_settings": None,
+            "define_limits": 1,  # 1 = energized, 2 = de-energized, 3 = None
         }
 
     @property
@@ -692,7 +725,7 @@ class Motor(EventActor):
         # input is closed (energized)
         # TODO: Replace with normal send_command when "define_limits" command
         #       is added to _commands dict
-        self.send_command("define_limits", 1)
+        self.send_command("define_limits", self.motor["define_limits"])
 
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
@@ -1675,7 +1708,7 @@ class Motor(EventActor):
             self.move_to(move_to_pos)
 
             self.logger.warning("Moving off limits - enable limits")
-            self.send_command("define_limits", 1)
+            self.send_command("define_limits", self.motor["define_limits"])
             self.sleep(4 * self.heartrate.ACTIVE)
 
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
