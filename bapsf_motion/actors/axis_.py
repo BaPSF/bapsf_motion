@@ -154,11 +154,18 @@ class Axis(EventActor):
     @property
     def config(self) -> Dict[str, Any]:
         """Dictionary of the axis configuration parameters."""
+        motor_settings = {}
+        for key, val in self.motor.config.items():
+            if key in ("name", "ip"):
+                continue
+            motor_settings[key] = val
+
         return {
             "name": self.name,
             "ip": self.motor.ip,
             "units": str(self.units),
-            "units_per_rev": self.units_per_rev.value.item()
+            "units_per_rev": self.units_per_rev.value.item(),
+            "motor_settings": motor_settings,
         }
     config.__doc__ = EventActor.config.__doc__
 

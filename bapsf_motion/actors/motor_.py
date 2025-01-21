@@ -835,6 +835,7 @@ class Motor(EventActor):
         return {
             "name": self.name,
             "ip": self.ip,
+            "limit_mode": self.motor["define_limits"],
         }
     config.__doc__ = EventActor.config.__doc__
 
