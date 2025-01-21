@@ -35,6 +35,10 @@ class Axis(EventActor):
     units_per_rev: float
         The number of ``units`` traversed per motor revolution.
 
+    motor_settings : `dict`, optional
+        A dictionary containing the optionl keyword arguments for
+        |Motor|.  (DEFAULT: `None`)
+
     name: str
         Name the axis.  (DEFAULT: ``'Axis'``)
 
@@ -78,6 +82,7 @@ class Axis(EventActor):
         ip: str,
         units: str,
         units_per_rev: float,
+        motor_settings: Dict[str, Any] = None,
         name: str = "Axis",
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
@@ -98,7 +103,7 @@ class Axis(EventActor):
         )
 
         self._motor = None
-        self._spawn_motor(ip=ip)
+        self._spawn_motor(ip=ip, motor_settings=motor_settings)
 
         if isinstance(self._motor, Motor) and self._motor.terminated:
             # terminate self if Motor is terminated
@@ -129,9 +134,12 @@ class Axis(EventActor):
         self.motor.terminate(delay_loop_stop=True)
         super().terminate(delay_loop_stop=delay_loop_stop)
 
-    def _spawn_motor(self, ip):
+    def _spawn_motor(self, ip, motor_settings: Optional[dict]):
         if isinstance(self.motor, Motor) and not self.terminated:
             self.motor.terminate(delay_loop_stop=True)
+
+        if motor_settings is None:
+            motor_settings = {}
 
         self._motor = Motor(
             ip=ip,
@@ -140,6 +148,7 @@ class Axis(EventActor):
             loop=self.loop,
             auto_run=False,
             parent=self,
+            **motor_settings,
         )
 
     @property
