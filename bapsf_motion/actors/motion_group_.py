@@ -242,6 +242,7 @@ class MotionGroupConfig(UserDict):
     #: optional keys for the motion group configuration dictionary
     _optional_metadata = {
         "motion_builder": {"exclusion", "layer"},
+        "drive.axes": {"motor_settings"},
     }
 
     #: allowable motion group header names
