@@ -6,13 +6,14 @@ import logging
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
     QLabel,
-    QWidget,
-    QSizePolicy,
-    QFrame,
-    QVBoxLayout,
     QLineEdit,
+    QSizePolicy,
+    QSlider,
+    QVBoxLayout,
+    QWidget, QGridLayout,
 )
 from typing import Any, Dict, List, Union
 
@@ -44,6 +45,7 @@ class AxisConfigWidget(QWidget):
             "units": "cm",
             "ip": "",
             "units_per_rev": "",
+            "motor_settings": {"limit_mode": 1},
         }
         self._axis = None
 
@@ -82,6 +84,17 @@ class AxisConfigWidget(QWidget):
         _widget.setValidator(QDoubleValidator(decimals=4))
         self.cm_per_rev_widget = _widget
 
+        _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
+        _widget.setMinimum(1)
+        _widget.setMaximum(3)
+        _widget.setTickInterval(1)
+        _widget.setSingleStep(1)
+        _widget.setTickPosition(QSlider.TickPosition.TicksBothSides)
+        _widget.setFixedHeight(24)
+        _widget.setMinimumWidth(100)
+        _widget.setValue(1)
+        self.limit_mode_slider = _widget
+
         # Define ADVANCED WIDGETS
 
         self.setStyleSheet(
@@ -100,10 +113,12 @@ class AxisConfigWidget(QWidget):
     def _connect_signals(self):
         self.ip_widget.editingFinished.connect(self._change_ip_address)
         self.cm_per_rev_widget.editingFinished.connect(self._change_cm_per_rev)
+        self.limit_mode_slider.valueChanged.connect(self._change_limit_mode)
 
         self.configChanged.connect(self._update_ip_widget)
         self.configChanged.connect(self._update_cm_per_rev_widget)
         self.configChanged.connect(self._update_online_led)
+        self.configChanged.connect(self._update_limit_mode_widget)
 
     def _define_layout(self):
         _label = QLabel("IP:  ")
@@ -145,11 +160,72 @@ class AxisConfigWidget(QWidget):
         layout.addSpacing(12)
         layout.addWidget(ip_label)
         layout.addWidget(self.ip_widget)
-        layout.addSpacing(32)
+        layout.addSpacing(28)
         layout.addWidget(self.cm_per_rev_widget)
         layout.addWidget(cm_per_rev_label)
+        layout.addSpacing(28)
+        layout.addLayout(self._define_limit_mode_layout())
         layout.addStretch()
         layout.addLayout(sub_layout)
+        return layout
+
+    def _define_limit_mode_layout(self):
+        layout = QGridLayout()
+
+        _label = QLabel("Limit\nMode")
+        _label.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
+        )
+        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _label.font()
+        font.setPointSize(16)
+        _label.setFont(font)
+
+        _energized_label = QLabel("energized")
+        _energized_label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+        # _energized_label.setMinimumWidth(24)
+        # _energized_label.setSizePolicy(
+        #     QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        # )
+        font = _energized_label.font()
+        font.setPointSize(12)
+        _energized_label.setFont(font)
+
+        _deenergized_label = QLabel("de-energized")
+        _deenergized_label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+        # _deenergized_label.setMinimumWidth(24)
+        # _deenergized_label.setSizePolicy(
+        #     QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
+        # )
+        font = _deenergized_label.font()
+        font.setPointSize(12)
+        _deenergized_label.setFont(font)
+
+        _none_label = QLabel("NONE")
+        _none_label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+        # _none_label.setMinimumWidth(24)
+        # _none_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _none_label.font()
+        font.setPointSize(12)
+        _none_label.setFont(font)
+
+        layout.addWidget(
+            _label,
+            0, 0,
+            3, 1,
+            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addWidget(self.limit_mode_slider, 1, 2, 1, 7)
+        layout.addWidget(_energized_label, 0, 1, 1, 3)
+        layout.addWidget(_deenergized_label, 2, 4, 1, 3)
+        layout.addWidget(_none_label, 0, 7, 1, 3)
+
         return layout
 
     @property
@@ -177,10 +253,7 @@ class AxisConfigWidget(QWidget):
     @axis_config.setter
     def axis_config(self, config):
         # TODO: this needs to be more robust
-        axis_config = self.axis_config.copy()
-        axis_config["ip"] = config["ip"]
-        axis_config["units_per_rev"] = config["units_per_rev"]
-        self._axis_config = axis_config
+        self._axis_config = {**self.axis_config, **config}
 
         self.configChanged.emit()
         self._check_axis_completeness()
@@ -237,6 +310,23 @@ class AxisConfigWidget(QWidget):
         self.configChanged.emit()
         self._check_axis_completeness()
 
+    def _change_limit_mode(self):
+        new_limit_mode = self.limit_mode_slider.value()
+        limit_mode = self.axis_config["motor_settings"]["limit_mode"]
+
+        if new_limit_mode == limit_mode:
+            # nothing changed
+            return
+
+        axis_config = self.axis_config.copy()
+        axis_config["motor_settings"]["limit_mode"] = new_limit_mode
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        self.axis_config = axis_config
+
     def _spawn_axis(self) -> Union[Axis, None]:
         self.logger.info("Spawning Axis.")
         if isinstance(self.axis, Axis):
@@ -271,6 +361,11 @@ class AxisConfigWidget(QWidget):
             online = self.axis.motor.status["connected"]
 
         self.online_led.setChecked(online)
+
+    def _update_limit_mode_widget(self):
+        limit_mode = self.axis_config["motor_settings"]["limit_mode"]
+        self.limit_mode_slider.setValue(limit_mode)
+
 
     def _validate_ip(self, ip):
         if ip == self.axis_config["ip"]:
