@@ -7,10 +7,12 @@ axes.0.name = "X"
 axes.0.ip = "192.168.6.104"
 axes.0.units = "cm"
 axes.0.units_per_rev = 0.254
+axes.0.motor_settings.limit_mode = 1
 axes.1.name = "Y"
 axes.1.ip = "192.168.6.103"
 axes.1.units = "cm"
 axes.1.units_per_rev = 0.254
+axes.1.motor_settings.limit_mode = 3
 
 [bapsf_motion.defaults.drive.1]
 name = "Plastic Room XY"
