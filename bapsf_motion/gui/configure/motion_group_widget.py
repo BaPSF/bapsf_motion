@@ -889,7 +889,9 @@ class MGWidget(QWidget):
 
         if "name" not in self._mg_config or self._mg_config["name"] == "":
             self._mg_config["name"] = "A New MG"
-        self.logger.info(f"starting mg_config:\n {self._mg_config}")
+
+        self.logger.info(f"Starting mg_config:\n {self._mg_config}")
+
         self._update_mg_name_widget()
 
         self._spawn_motion_group()
