@@ -1,7 +1,7 @@
 """
 This module defines the configuration GUI for construction data runs.
 """
-__all__ = ["ConfigureGUI"]
+__all__ = ["ConfigureGUI", "ConfigureApp"]
 
 import logging
 import logging.config
@@ -16,6 +16,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtWidgets import (
+    QApplication,
     QMainWindow,
     QHBoxLayout,
     QLabel,
@@ -603,3 +604,21 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.close()
 
         event.accept()
+
+
+class ConfigureApp(QApplication):
+
+    def __init__(
+        self,
+        *args,
+        config: Union[Path, str, Dict[str, Any], RunManagerConfig] = None,
+        defaults: Union[Path, str, Dict[str, Any], None] = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.setStyle("Fusion")
+        self._window = ConfigureGUI(config=config, defaults=defaults)
+        self._window.show()
+        self._window.activateWindow()
+

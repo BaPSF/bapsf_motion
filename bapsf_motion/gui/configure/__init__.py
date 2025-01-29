@@ -5,7 +5,8 @@ if __name__ == "__main__":
     import argparse
     import pathlib
 
-    from PySide6.QtWidgets import QApplication
+    # from PySide6.QtWidgets import QApplication
+    from bapsf_motion.gui.configure.configure_ import ConfigureApp
 
     parser = argparse.ArgumentParser(
         description="Launch the bapsf_motion Configuration GUI (ConfigureGUI)",
@@ -36,12 +37,17 @@ if __name__ == "__main__":
     elif args.config_file is not None:
         args.config_file = args.config_file.resolve()
 
-    app = QApplication([])
+    # app = QApplication([])
+    #
+    # window = ConfigureGUI(
+    #     config=args.config_file,
+    #     defaults=args.defaults_file,
+    # )
+    # window.show()
 
-    window = ConfigureGUI(
+    app = ConfigureApp(
+        [],
         config=args.config_file,
         defaults=args.defaults_file,
     )
-    window.show()
-
     app.exec()
