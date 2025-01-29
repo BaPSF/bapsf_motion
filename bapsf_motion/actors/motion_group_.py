@@ -242,6 +242,7 @@ class MotionGroupConfig(UserDict):
     #: optional keys for the motion group configuration dictionary
     _optional_metadata = {
         "motion_builder": {"exclusion", "layer"},
+        "drive.axes": {"motor_settings"},
     }
 
     #: allowable motion group header names
@@ -352,7 +353,9 @@ class MotionGroupConfig(UserDict):
             config.get("motion_builder", {})
         )
 
-        config = self._handle_user_meta(config, self._required_metadata["motion_group"])
+        req_meta = self._required_metadata.get("motion_group", set())
+        opt_meta = self._optional_metadata.get("motion_group", set())
+        config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
         # TODO: the below commented out code block is not do-able since
         #       motion_builder.space can be defined as a string for builtin spaces
@@ -375,7 +378,8 @@ class MotionGroupConfig(UserDict):
         """
         Validate the drive component of the motion group configuration.
         """
-        req_meta = self._required_metadata["drive"]
+        req_meta = self._required_metadata.get("drive", set())
+        opt_meta = self._optional_metadata.get("drive", set())
 
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
@@ -389,7 +393,7 @@ class MotionGroupConfig(UserDict):
             # )
             return {}
 
-        config = self._handle_user_meta(config, req_meta)
+        config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
         ax_meta = set(config["axes"].keys())
         if len(self._required_metadata["drive.axes"] - ax_meta) == 0:
@@ -435,7 +439,8 @@ class MotionGroupConfig(UserDict):
         Validate the axis (e.g. axes.0) component of the drive
         component of the motion group configuration.
         """
-        req_meta = self._required_metadata["drive.axes"]
+        req_meta = self._required_metadata.get("drive.axes", set())
+        opt_meta = self._optional_metadata.get("drive.axes", set())
 
         missing_meta = req_meta - set(config.keys())
         if missing_meta:
@@ -444,7 +449,7 @@ class MotionGroupConfig(UserDict):
                 f"keys {missing_meta}."
             )
 
-        config = self._handle_user_meta(config, req_meta)
+        config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
         # TODO: Is it better to do the type checks here or allow class
         #       instantiation to handle it.
@@ -654,7 +659,7 @@ class MotionGroupConfig(UserDict):
 
     @property
     def as_toml_string(self) -> str:
-        return "[motion_group]\n" + toml.as_toml_string(self)
+        return toml.as_toml_string({"motion_group": self})
 
 
 class MotionGroup(EventActor):
@@ -709,6 +714,7 @@ class MotionGroup(EventActor):
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
         build_mode: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
 
         self._drive = None
@@ -723,6 +729,7 @@ class MotionGroup(EventActor):
             logger=logger,
             loop=loop,
             auto_run=False,
+            parent=parent,
         )
         self.name = "MG"
 
@@ -752,7 +759,11 @@ class MotionGroup(EventActor):
         self._config.link_motion_builder(self.mb)
         self._config.link_transform(self.transform)
 
-        self.run(auto_run=auto_run)
+        if isinstance(self._drive, Drive) and self._drive.terminated:
+            # terminate self if Drive is terminated
+            self.terminate(delay_loop_stop=True)
+        elif not self.terminated:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         return
@@ -792,6 +803,7 @@ class MotionGroup(EventActor):
                 logger=self.logger,
                 loop=self.loop,
                 auto_run=False,
+                parent=self,
                 **_config_inputs,
             )
             self._drive = dr
@@ -801,6 +813,12 @@ class MotionGroup(EventActor):
                 exc_info=err,
             )
             self._drive = None
+
+        if self._drive.terminated or self.terminated:
+            # 1. terminated self if the new drive is terminated
+            # 2. terminate drive if self is already terminated (it's up
+            #    to the caller to re-run the motion group)
+            self.terminate(delay_loop_stop=True)
 
         return self._drive
 
@@ -903,7 +921,7 @@ class MotionGroup(EventActor):
         pos = self.transform(
             dr_pos.value.tolist(),
             to_coords="motion_space",
-        )
+        ).squeeze()
         return pos * dr_pos.unit
 
     def stop(self):
@@ -929,7 +947,16 @@ class MotionGroup(EventActor):
         if isinstance(pos, u.Quantity):
             pos = pos.value
 
-        dr_pos = self.transform(pos, to_coords="drive")
+        if isinstance(self.mb, MotionBuilder):
+            if self.mb.is_excluded(pos):
+                self.logger.error(
+                    f"The requested position {pos} for motion group "
+                    f"'{self.name}' is in an excluded region of the "
+                    f"motion space.  NOT MOVEMENT PREFORMED!!"
+                )
+                return
+
+        dr_pos = self.transform(pos, to_coords="drive").squeeze()
         return self.drive.move_to(pos=dr_pos, axis=axis)
 
     def move_ml(self, index: int):
@@ -947,6 +974,42 @@ class MotionGroup(EventActor):
         pos = self.mb.motion_list.sel(index=index).to_numpy().tolist()
 
         return self.move_to(pos=pos)
+
+    def set_zero(self, axis: Optional[int] = None):
+        """
+        Make current motion space position zero.
+
+        Parameters
+        ----------
+        axis: `int`, optional
+            If `None` (DEFAULT), then all axes will be set to zero.  If
+            `int`, then the axis corresponding to that index will be
+            set to zero.
+
+        """
+        # transform does not necessarily map the motion space zero to the
+        # zero of the probe drive space
+        #
+        if axis is None:
+            pass
+        elif not isinstance(axis, int):
+            raise TypeError(
+                f"Expected axis to be of type int or None, got type {type(axis)}."
+            )
+        elif axis < 0 or axis > self.drive.naxes:
+            raise ValueError(
+                f"Axis index {axis} is out of range [0, {self.drive.naxes-1}]."
+            )
+
+        if axis is None:
+            pos = [0] * self.drive.naxes
+        else:
+            pos = self.position.value
+            pos[axis] = 0
+
+        drive_zero_point = self.transform(pos, to_coords="drive")
+        drive_zero_point = drive_zero_point.squeeze()
+        self.drive.send_command("set_position", *drive_zero_point)
 
     @property
     def is_moving(self):

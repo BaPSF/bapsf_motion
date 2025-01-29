@@ -8,7 +8,7 @@ __actors__ = ["Axis"]
 import asyncio
 import logging
 
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motor_ import Motor
@@ -34,6 +34,10 @@ class Axis(EventActor):
 
     units_per_rev: float
         The number of ``units`` traversed per motor revolution.
+
+    motor_settings : `dict`, optional
+        A dictionary containing the optionl keyword arguments for
+        |Motor|.  (DEFAULT: `None`)
 
     name: str
         Name the axis.  (DEFAULT: ``'Axis'``)
@@ -78,10 +82,12 @@ class Axis(EventActor):
         ip: str,
         units: str,
         units_per_rev: float,
+        motor_settings: Dict[str, Any] = None,
         name: str = "Axis",
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
         # TODO: update units so inches can be used
         self._motor = None
@@ -93,17 +99,17 @@ class Axis(EventActor):
             logger=logger,
             loop=loop,
             auto_run=False,
+            parent=parent,
         )
 
-        self._motor = Motor(
-            ip=ip,
-            name="motor",
-            logger=self.logger,
-            loop=self.loop,
-            auto_run=False,
-        )
+        self._motor = None
+        self._spawn_motor(ip=ip, motor_settings=motor_settings)
 
-        self.run(auto_run=auto_run)
+        if isinstance(self._motor, Motor) and self._motor.terminated:
+            # terminate self if Motor is terminated
+            self.terminate(delay_loop_stop=True)
+        else:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         return
@@ -112,6 +118,11 @@ class Axis(EventActor):
         return
 
     def run(self, auto_run=True):
+        if self.terminated:
+            # we are restarting
+            self._terminated = False
+            self._spawn_motor(ip=self.config["ip"])
+
         super().run(auto_run=auto_run)
 
         if self.motor is None:
@@ -123,14 +134,38 @@ class Axis(EventActor):
         self.motor.terminate(delay_loop_stop=True)
         super().terminate(delay_loop_stop=delay_loop_stop)
 
+    def _spawn_motor(self, ip, motor_settings: Optional[dict]):
+        if isinstance(self.motor, Motor) and not self.terminated:
+            self.motor.terminate(delay_loop_stop=True)
+
+        if motor_settings is None:
+            motor_settings = {}
+
+        self._motor = Motor(
+            ip=ip,
+            name="motor",
+            logger=self.logger,
+            loop=self.loop,
+            auto_run=False,
+            parent=self,
+            **motor_settings,
+        )
+
     @property
     def config(self) -> Dict[str, Any]:
         """Dictionary of the axis configuration parameters."""
+        motor_settings = {}
+        for key, val in self.motor.config.items():
+            if key in ("name", "ip"):
+                continue
+            motor_settings[key] = val
+
         return {
             "name": self.name,
             "ip": self.motor.ip,
             "units": str(self.units),
-            "units_per_rev": self.units_per_rev.value.item()
+            "units_per_rev": self.units_per_rev.value.item(),
+            "motor_settings": motor_settings,
         }
     config.__doc__ = EventActor.config.__doc__
 

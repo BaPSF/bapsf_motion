@@ -1,17 +1,18 @@
 """Module that defines the `BaseExclusion` abstract class."""
-__all__ = ["BaseExclusion"]
+__all__ = ["BaseExclusion", "GovernExclusion"]
 
+import ast
 import numpy as np
 import re
 import xarray as xr
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, Union
 
 from bapsf_motion.motion_builder.item import MBItem
 
 
-class BaseExclusion(ABC, MBItem):
+class BaseExclusion(MBItem):
     """
     Abstract base class for :term:`motion exclusion` classes.
 
@@ -47,10 +48,10 @@ class BaseExclusion(ABC, MBItem):
         self._inputs = kwargs
         self.skip_ds_add = skip_ds_add
 
-        self.composed_exclusions = []  # type: List[BaseExclusion]
+        self.composed_exclusions = {}  # type: Dict[str, BaseExclusion]
         """
-        List of dependent :term:`motion exclusions` used to make this
-        more complex :term:`motion exclusion`.
+        Dictionary of dependent :term:`motion exclusions` used to make
+        this more complex :term:`motion exclusion`.
         """
 
         super().__init__(
@@ -61,7 +62,9 @@ class BaseExclusion(ABC, MBItem):
 
         self._validate_inputs()
 
+        self._stored_exclusion = None
         if self.skip_ds_add:
+            self._stored_exclusion = self._generate_exclusion()
             return
 
         # store this mask to the Dataset
@@ -114,10 +117,14 @@ class BaseExclusion(ABC, MBItem):
         An exclusion `~xarray.DataArray` is a boolean array the behaves
         like a mask to define where a probe can and can not be placed.
         """
+        if self.skip_ds_add:
+            return self._stored_exclusion
+
         try:
             return self.item
         except KeyError:
-            return self._generate_exclusion()
+            self.regenerate_exclusion()
+            return self.item
 
     @property
     def inputs(self) -> Dict[str, Any]:
@@ -142,6 +149,27 @@ class BaseExclusion(ABC, MBItem):
         These inputs are stored in :attr:`inputs`.
         """
         ...
+
+    def _determine_name(self):
+        try:
+            return self.name
+        except AttributeError:
+            # self._name has not been defined yet
+            pass
+
+        names = set(self._ds.data_vars.keys())
+        ids = []
+        for name in names:
+            _match = self.name_pattern.fullmatch(name)
+            if _match is not None:
+                ids.append(
+                    ast.literal_eval(_match.group("number"))
+                )
+
+        ids = list(set(ids))
+        _id = 0 if not ids else ids[-1] + 1
+
+        return f"{self.base_name}{_id:d}"
 
     def is_excluded(self, point):
         """
@@ -182,6 +210,8 @@ class BaseExclusion(ABC, MBItem):
                 f"To get the exclusion matrix use the 'ex.exclusion' property."
             )
 
+        self.composed_exclusions.clear()
+
         self._ds[self.name] = self._generate_exclusion()
 
     def update_global_mask(self):
@@ -195,7 +225,22 @@ class BaseExclusion(ABC, MBItem):
                 f"the exclusion can not be merged into the global maks."
             )
 
-        self._ds[self.mask_name] = np.logical_and(
-            self.mask,
-            self.exclusion,
-        )
+        self.mask[...] = np.logical_and(self.mask, self.exclusion)
+
+
+class GovernExclusion(BaseExclusion, ABC):
+    def update_global_mask(self):
+        """
+        Update the global :attr:`mask` to include the exclusions from
+        this :term:`exclusion layer`.
+        """
+        if self.skip_ds_add:
+            raise RuntimeError(
+                f"For exclusion {self.name} skip_ds_add={self.skip_ds_add} and thus "
+                f"the exclusion can not be merged into the global maks."
+            )
+
+        # Since GovernExclusion use the existing mask to generate its own
+        # mask, the exclusion must be regenerated during every global update
+        self.regenerate_exclusion()
+        self.mask[...] = self.exclusion[...]

@@ -1,4 +1,0 @@
-# these are dependencies required to use the package on a 32-bit version of Python
-# pandas 2.1+ does NOT successfully install on a 32-bit python while on a 64-bt platform
--r install.txt
-pandas <= 2.0.3

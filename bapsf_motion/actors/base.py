@@ -8,9 +8,13 @@ __actors__ = ["BaseActor", "EventActor"]
 import asyncio
 import logging
 import threading
+import time
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Dict, List, Optional, Union
+
+from bapsf_motion.utils import loop_safe_stop
 
 
 # TODO: create an EventActor for an actor that utilizes asyncio event loops
@@ -122,9 +126,16 @@ class EventActor(BaseActor, ABC):
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
 
+        if parent is not None and not isinstance(parent, EventActor):
+            parent = None
+        self._parent = parent
+
         super().__init__(name=name, logger=logger)
+
+        self._terminated = False
 
         self._thread = None
         self._loop = self.setup_event_loop(loop)
@@ -134,6 +145,15 @@ class EventActor(BaseActor, ABC):
         self._initialize_tasks()
 
         self.run(auto_run)
+
+    @property
+    def parent(self) -> Optional["EventActor"]:
+        return self._parent
+
+    @property
+    def terminated(self):
+        """Indicates if the actor has been terminated."""
+        return self._terminated
 
     @property
     def tasks(self) -> List[asyncio.Task]:
@@ -173,8 +193,10 @@ class EventActor(BaseActor, ABC):
         if self.loop is None or not self.loop.is_running():
             # no loop has been created or loop is not running
             return None
-        elif self._thread is not None:
-            return self._thread.ident
+        elif self.thread is not None:
+            return self.thread.ident
+        elif self.parent is not None and self.parent.thread is not None:
+            return self.parent.thread.ident
 
         # get thread id from inside the event loop
         future = asyncio.run_coroutine_threadsafe(
@@ -246,6 +268,7 @@ class EventActor(BaseActor, ABC):
             is only made available to help with subclassing.
             (DEFAULT: `True`)
         """
+        self._terminated = False
         if self.loop is None or self.loop.is_running() or not auto_run:
             return
 
@@ -268,14 +291,29 @@ class EventActor(BaseActor, ABC):
         """
         for task in list(self.tasks):
             self.loop.call_soon_threadsafe(task.cancel)
-            self.tasks.remove(task)
+            try:
+                self.tasks.remove(task)
+            except ValueError:
+                # a remove callback was set up on this task
+                pass
+
+        tstart = datetime.now()
+        while len(self.tasks) != 0:
+            for task in list(self.tasks):
+                if task.done() or task.cancelled():
+                    try:
+                        self.tasks.remove(task)
+                    except ValueError:
+                        pass
+
+            if (datetime.now() - tstart).total_seconds() > 6.0:
+                break
+            else:
+                time.sleep(0.1)
+
+        self._terminated = True
 
         if delay_loop_stop:
             return
 
-        # if we're stopping the loop, then all tasks need to be cancelled
-        for task in asyncio.all_tasks(self.loop):
-            if not task.done() or not task.cancelled():
-                self.loop.call_soon_threadsafe(task.cancel)
-
-        self.loop.call_soon_threadsafe(self.loop.stop)
+        loop_safe_stop(self.loop)

@@ -5,6 +5,7 @@ __all__ = ["MotionBuilder"]
 
 import numpy as np
 import re
+import warnings
 import xarray as xr
 
 from typing import Any, Dict, List, Optional, Union
@@ -18,11 +19,13 @@ from bapsf_motion.motion_builder.item import MBItem
 from bapsf_motion.motion_builder.exclusions import (
     exclusion_factory,
     BaseExclusion,
+    GovernExclusion,
 )
 from bapsf_motion.motion_builder.layers import (
     layer_factory,
     BaseLayer,
 )
+from bapsf_motion.utils.exceptions import ConfigurationWarning
 
 # TODO:  create a sit point, this is a point where the probe will sit when
 #        a motion list is finished but other motion lists are still running
@@ -80,7 +83,7 @@ class MotionBuilder(MBItem):
                 ly_type = layer.pop("type")
                 self.add_layer(ly_type, **layer)
 
-        self.exclusions = []  # type: List[BaseExclusion]
+        self._exclusions = []  # type: List[BaseExclusion]
         if exclusions is not None:
             # add each defined exclusion
             for exclusion in exclusions:
@@ -114,6 +117,11 @@ class MotionBuilder(MBItem):
             _config["layer"][ii] = ly.config
 
         return _config
+
+    @property
+    def exclusions(self) -> List[BaseExclusion]:
+        """List of added exclusion layers."""
+        return self._exclusions
 
     @staticmethod
     def _validate_space(space: List[Dict[str, Any]]):
@@ -183,6 +191,9 @@ class MotionBuilder(MBItem):
         ds.coords["space"] = space_coord
 
         return ds
+
+    def _determine_name(self):
+        return self.base_name
 
     def add_layer(self, ly_type: str, **settings):
         """
@@ -268,7 +279,22 @@ class MotionBuilder(MBItem):
         """
         # TODO: add ref in docstring to documented available layers
         exclusion = exclusion_factory(self._ds, ex_type=ex_type, **settings)
-        self.exclusions.append(exclusion)
+
+        if not isinstance(exclusion, GovernExclusion):
+            self._exclusions.append(exclusion)
+        elif (
+            len(self.exclusions) == 0
+            or not isinstance(self.exclusions[0], GovernExclusion)
+        ):
+            self._exclusions.insert(0, exclusion)
+        else:
+            warnings.warn(
+                f"The motion builder already has a govern exclusion layer "
+                f"({self.exclusions[0]}).  Not adding exclusion layer "
+                f"{exclusion}.)",
+                ConfigurationWarning
+            )
+
         self.clear_motion_list()
         self.rebuild_mask()
 
@@ -284,11 +310,11 @@ class MotionBuilder(MBItem):
             to the `~xarray.DataArray` name in the motion builder
             `~xarray.Dataset`,
         """
-        for ii, exclusion in enumerate(self.exclusions):
+        for ii, exclusion in enumerate(self._exclusions):
             if exclusion.name == name:
                 # TODO: can we define a __del__ in BaseLayer that would
                 #       handle cleanup for layer classes
-                del self.exclusions[ii]
+                del self._exclusions[ii]
                 self.drop_vars(name)
                 break
 
@@ -322,7 +348,18 @@ class MotionBuilder(MBItem):
 
         select = {}
         for ii, dim_name in enumerate(self.mspace_dims):
-            select[dim_name] = point[ii]
+            _res = self.mask_resolution[ii]
+            _coord = self.mspace_coords[dim_name]
+            _point = point[ii]
+
+            if (
+                _point < (np.min(_coord) - 0.5 * _res)
+                or _point > (np.max(_coord) + 0.5 * _res)
+            ):
+                # point is outside the motion space
+                return True
+
+            select[dim_name] = _point
 
         return not bool(self.mask.sel(method="nearest", **select).data)
 
@@ -397,7 +434,9 @@ class MotionBuilder(MBItem):
         """
         self.mask[...] = True
 
-        for ex in self.exclusions:
+        # The govern exclusion is always set to index 0 in self.exclusions.
+        # Thus, iterate self.exclusions in reverse order.
+        for ex in reversed(self.exclusions):
             ex.update_global_mask()
 
     def plot_mask(self):

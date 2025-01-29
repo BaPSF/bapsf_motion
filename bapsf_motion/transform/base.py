@@ -57,24 +57,10 @@ class BaseTransform(ABC):
         self.dependencies = []  # type: List[BaseTransform]
 
         # validate matrix
-        matrix = self._matrix(
-            np.array([0.0] * len(self._axes))[..., np.newaxis]
-        )
-        if not isinstance(matrix, np.ndarray):
-            raise TypeError
-        elif matrix.shape != tuple(2 * [len(self._axes) + 1]) + (1,):
-            # matrix needs to be square with each dimension being one size
-            # larger than the number axes the matrix transforms...the last
-            # dimensions allows for shift translations
-            raise ValueError(f"matrix.shape = {matrix.shape}")
-        elif self._dimensionality > 0 and self._dimensionality != len(self._axes):
-            raise ValueError(
-                f"The transform was design for probe drives with "
-                f"{self._dimensionality} axes, but was given a probe drive "
-                f"with {len(self._axes)} axes."
-            )
+        self._validate_matrix_to_drive()
+        self._validate_matrix_to_motion_space()
 
-    def __call__(self, points, to_coords="drive"):
+    def __call__(self, points, to_coords="drive") -> np.ndarray:
         r"""
         Perform a coordinate transformation on the supplied ``points``.
 
@@ -83,7 +69,7 @@ class BaseTransform(ABC):
         points: :term:`array_like`
             A single point or array of points for which the
             transformation will be generated.  The array of points
-            needs to be of size :math:`M` or :math:`M \times N` where
+            needs to be of size :math:`M` or :math:`N \times M` where
             :math:`M` is the dimensionality of the :term:`motion space`
             and :math:`N` is the number of points to be transformed.
 
@@ -104,23 +90,6 @@ class BaseTransform(ABC):
 
         """
 
-        # make sure points is a numpy array
-        if not isinstance(points, np.ndarray):
-            points = np.array(points)
-
-        # make sure points is always an M X N matrix
-        if points.ndim == 1 and self.naxes == 1:
-            points = points[np.newaxis, ...]
-        elif points.ndim == 1:
-            points = points[..., np.newaxis]
-
-        # points always needs to be 2D
-        if points.ndim != 2:
-            raise ValueError(
-                f"Expected a 2D array for 'points', but got a {points.ndim}-D"
-                f"array."
-            )
-
         # validate to_coords
         valid_coords = {"drive", "mspace", "motion_space", "motion space"}
         if not isinstance(to_coords, str):
@@ -134,20 +103,22 @@ class BaseTransform(ABC):
                 f"{valid_coords}, but got {to_coords}."
             )
 
+        points = self._condition_points(points)
         tr_points = self._convert(points, to_coords=to_coords)
 
-        if tr_points.ndim not in (1, 2):
-            ValueError(
-                "Something went wrong! The coordinate transformed points "
-                "do not share the same dimensionality as 'points'.  The"
-                " is likely a developer error and not a user error.  "
-                "Please post an issue on the bapsf_motion GitHub "
-                "repo, https://github.com/BaPSF/bapsf_motion/issues."
-            )
-        elif tr_points.ndim == 1 and self.naxes == 1:
-            tr_points = tr_points[np.newaxis, ...]
-        elif tr_points.ndim == 1:
-            tr_points = tr_points[..., np.newaxis]
+        # TODO: MARK FOR DELETION
+        # if tr_points.ndim not in (1, 2):
+        #     ValueError(
+        #         "Something went wrong! The coordinate transformed points "
+        #         "do not share the same dimensionality as 'points'.  The"
+        #         " is likely a developer error and not a user error.  "
+        #         "Please post an issue on the bapsf_motion GitHub "
+        #         "repo, https://github.com/BaPSF/bapsf_motion/issues."
+        #     )
+        # elif tr_points.ndim == 1 and self.naxes == 1:
+        #     tr_points = tr_points[np.newaxis, ...]
+        # elif tr_points.ndim == 1:
+        #     tr_points = tr_points[..., np.newaxis]
 
         return tr_points
 
@@ -213,7 +184,96 @@ class BaseTransform(ABC):
         """
         ...
 
-    def _matrix(self, points, to_coords="drive") -> np.ndarray:
+    def _validate_matrix_method(self, method_name: str):
+        method = getattr(self, method_name)
+        matrix = method(np.zeros((self.naxes+2, self.naxes)))
+
+        if not isinstance(matrix, np.ndarray):
+            raise TypeError(
+                f"The {method_name} is supposed to return a numpy array,"
+                f"got type {type(matrix)}."
+            )
+        elif matrix.ndim != 3:
+            raise ValueError(
+                f"The '{method_name}' method is not returning an "
+                "expected matrix,  expected a 3-D matrix and got a "
+                f"{matrix.ndim}-D matrix."
+            )
+        elif matrix.shape != (self.naxes+2, self.naxes+1, self.naxes+1):
+            shape_str = []
+            for ii in range(3):
+                size = (
+                    "N"
+                    if matrix.shape[ii] == self.naxes+2
+                    else f"M{matrix.shape[ii]-self.naxes:+d}"
+                )
+                shape_str.append(size)
+            shape_str = f"({', '.join(shape_str)})"
+
+            raise ValueError(
+                f"The '{method_name}' method is not returning an "
+                "expected matrix,  expected a matrix with shape "
+                f"(N, M+1, M+1) and got {shape_str}."
+            )
+
+    def _validate_matrix_to_drive(self):
+        self._validate_matrix_method("_matrix_to_drive")
+
+    def _validate_matrix_to_motion_space(self):
+        self._validate_matrix_method("_matrix_to_motion_space")
+
+    def _condition_matrix(
+        self, points: np.ndarray, matrix: np.ndarray
+    ) -> np.ndarray:
+        if not isinstance(points, np.ndarray):
+            points = self._condition_points(points)
+
+        if matrix.ndim == 2 and points.shape[0] == 1:
+            matrix = matrix[np.newaxis, ...]
+
+        # do NOT need to do any other conditioning since
+        # _validate_matrix_to_drive and _validate_matrix_to_motion_space
+        # ensures the associated matrix methods are behaving correctly
+        # before the object is instantiated
+
+        return matrix
+
+    def _condition_points(self, points):
+        # make sure points is a numpy array
+        if not isinstance(points, np.ndarray):
+            points = np.array(points)
+
+        # make sure points is always an N X M matrix
+        if points.ndim == 1 and points.size == self.naxes:
+            # single point was given
+            points = points[np.newaxis, ...]
+        elif points.ndim != 2:
+            raise ValueError(
+                f"Expected a 2D array of shape (N, {self.naxes}) for "
+                f"'points', but got a {points.ndim}-D array."
+            )
+        elif self.naxes not in points.shape:
+            raise ValueError(
+                f"Expected a 2D array of shape (N, {self.naxes}) for "
+                f"'points', but got shape {points.shape}."
+            )
+        elif points.shape[1] != self.naxes:
+            # dimensions are flipped from expected
+            points = np.swapaxes(points, 0, 1)
+
+        if np.issubdtype(points.dtype, np.floating):
+            pass
+        elif np.issubdtype(points.dtype, np.integer):
+            points = points.astype(np.float64)
+        else:
+            raise ValueError(
+                "Expected a 2D array of dtype integer or floating, but "
+                f"got dtype {points.dtype}."
+            )
+
+        return points
+
+    def matrix(self, points, to_coords="drive") -> np.ndarray:
         r"""
         The transformation matrix used to transform from probe drive
         coordinates to motion space coordinates, and vice versa.
@@ -223,7 +283,7 @@ class BaseTransform(ABC):
         points: :term:`array_like`
             A single point or array of points for which the
             transformation matrix will be generated.  The array of
-            points needs to be of size :math:`M` or :math:`M \times N`
+            points needs to be of size :math:`M` or :math:`N \times M`
             where :math:`M` is the dimensionality of the
             :term:`motion space` and :math:`N` is the number of points
             to be transformed.
@@ -240,7 +300,7 @@ class BaseTransform(ABC):
         -------
         matrix: :term:`array_like`
             A transformation matrix of size
-            :math:`M+1 \times M+1 \times N`.  The :math:`M+1`
+            :math:`N \times M+1 \times M+1`.  The :math:`M+1`
             dimensionality allows for the inclusion of a dimension
             for coordinate translations.
 
@@ -248,14 +308,14 @@ class BaseTransform(ABC):
         -----
 
         The generated matrix must have a dimensionality of
-        :math:`M+1 \times M+1 \times N` where :math:`M` is the
+        :math:`N \times M+1 \times M+1` where :math:`M` is the
         dimensionality of the :term:`motion space` and
         :math:`N` is the number of points passed in.  The +1 in the
         transformation matrix dimensionality corresponds to a dimension
         that allows for translational shifts in the coordinate
         transformation.  For example, if a 2D probe drive is being used
         then the generated matrix for a single point would have a size
-        of :math:`3 \times 3 \times 1`.
+        of :math:`1 \times 3 \times 3`.
 
         The matrix generation takes a ``points`` argument because not
         all transformations are agnostic of the starting location, for
@@ -263,18 +323,17 @@ class BaseTransform(ABC):
         """
         # Developer Notes:
         # 1. Call sequences goes
-        #    __call__ -> _convert -> _matrix
+        #    __call__ -> _convert -> matrix
         # 2. __call__ has conditioned points, so it will always be M x N
         # 3. __call__ has validated to_coords
 
+        points = self._condition_points(points)
         _matrix = (
             self._matrix_to_drive(points) if to_coords == "drive"
             else self._matrix_to_motion_space(points)
         )
 
-        if _matrix.shape == tuple(2 * [self.naxes + 1]):
-            return _matrix[..., np.newaxis]
-        return _matrix
+        return self._condition_matrix(points, _matrix)
 
     def _convert(self, points, to_coords="drive"):
         r"""
@@ -286,7 +345,7 @@ class BaseTransform(ABC):
         points: :term:`array_like`
             A single point or array of points for which the
             transformation will be generated.  The array of points
-            needs to be of size :math:`M` or :math:`M \times N` where
+            needs to be of size :math:`M` or :math:`N \times M` where
             :math:`M` is the dimensionality of the :term:`motion space`
             and :math:`N` is the number of points to be transformed.
 
@@ -320,14 +379,10 @@ class BaseTransform(ABC):
         # TODO: this convert function still need to be test to show
         #       that it'll work for N-dimensions...I stole this from
         #       LaPDXYTransform.convert() so it works in a world where
-        #       the generated matrix _matrix() is 3x3 but the points/positions
+        #       the generated matrix matrix() is 3x3 but the points/positions
         #       are only given as a 2-element vector
 
-        matrix = self._matrix(points, to_coords=to_coords)
-
-        if points.shape[1] == 1:
-            points = np.concatenate((points[..., 0], [1]))
-            return np.matmul(matrix, points)[:-1]
+        matrix = self.matrix(points, to_coords=to_coords)
 
         # add in extra dimension for the translation axis
         points = np.concatenate(
@@ -348,7 +403,7 @@ class BaseTransform(ABC):
             A single point or array of points in the motion space
             coordinate system for which the transformation matrix will
             be generated.  The array of points needs to be of size
-            :math:`M` or :math:`M \times N` where :math:`M` is the
+            :math:`M` or :math:`N \times M` where :math:`M` is the
             dimensionality of the :term:`motion space` and :math:`N` is
             the number of points to be transformed.
 
@@ -356,7 +411,7 @@ class BaseTransform(ABC):
         -------
         matrix: :term:`array_like`
             A transformation matrix of size
-            :math:`M+1 \times M+1 \times N`.  The :math:`M+1`
+            :math:`N \times M+1 \times M+1`.  The :math:`M+1`
             dimensionality allows for the inclusion of a dimension
             for coordinate translations.
 
@@ -364,14 +419,14 @@ class BaseTransform(ABC):
         -----
 
         The generated matrix must have a dimensionality of
-        :math:`M+1 \times M+1 \times N` where :math:`M` is the
+        :math:`N \times M+1 \times M+1` where :math:`M` is the
         dimensionality of the :term:`motion space` and
         :math:`N` is the number of points passed in.  The +1 in the
         transformation matrix dimensionality corresponds to a dimension
         that allows for translational shifts in the coordinate
         transformation.  For example, if a 2D probe drive is being used
         then the generated matrix for a single point would have a size
-        of :math:`3 \times 3 \times 1`.
+        of :math:`1 \times 3 \times 3`.
 
         The matrix generation takes a ``points`` argument because not
         all transformations are agnostic of the starting location, for
@@ -379,7 +434,7 @@ class BaseTransform(ABC):
         """
         # Developer Notes:
         # 1. Call sequences goes
-        #    __call__ -> _convert -> _matrix -> _matrix_to_drive
+        #    __call__ -> _convert -> matrix -> _matrix_to_drive
         # 2. Proper conditioning of points has already been done s.t. an
         #    M x N numpy array will always be passed in...this could only NOT
         #    be the case if the subclass overrides methods upstream in the call
@@ -405,7 +460,7 @@ class BaseTransform(ABC):
             A single point or array of points in the probe drive
             coordinate system for which the transformation matrix will
             be generated.  The array of points needs to be of size
-            :math:`M` or :math:`M \times N` where :math:`M` is the
+            :math:`M` or :math:`N \times M` where :math:`M` is the
             dimensionality of the :term:`motion space` and :math:`N` is
             the number of points to be transformed.
 
@@ -413,7 +468,7 @@ class BaseTransform(ABC):
         -------
         matrix: :term:`array_like`
             A transformation matrix of size
-            :math:`M+1 \times M+1 \times N`.  The :math:`M+1`
+            :math:`N \times M+1 \times M+1`.  The :math:`M+1`
             dimensionality allows for the inclusion of a dimension
             for coordinate translations.
 
@@ -421,14 +476,14 @@ class BaseTransform(ABC):
         -----
 
         The generated matrix must have a dimensionality of
-        :math:`M+1 \times M+1 \times N` where :math:`M` is the
+        :math:`N \times M+1 \times M+1` where :math:`M` is the
         dimensionality of the :term:`motion space` and
         :math:`N` is the number of points passed in.  The +1 in the
         transformation matrix dimensionality corresponds to a dimension
         that allows for translational shifts in the coordinate
         transformation.  For example, if a 2D probe drive is being used
         then the generated matrix for a single point would have a size
-        of :math:`3 \times 3 \times 1`.
+        of :math:`1 \times 3 \times 3`.
 
         The matrix generation takes a ``points`` argument because not
         all transformations are agnostic of the starting location, for
@@ -436,7 +491,7 @@ class BaseTransform(ABC):
         """
         # Developer Notes:
         # 1. Call sequences goes
-        #    __call__ -> _convert -> _matrix -> _matrix_to_motion_space
+        #    __call__ -> _convert -> matrix -> _matrix_to_motion_space
         # 2. Proper conditioning of points has already been done s.t. an
         #    M x N numpy array will always be passed in...this could only NOT
         #    be the case if the subclass overrides methods upstream in the call

@@ -1,0 +1,52 @@
+[run]
+name = "test"
+date = "2024-06-27 20:04 UTC"
+
+[motion_group.0]
+name = "plastic_room"
+
+[motion_group.0.drive]
+name = "drive"
+
+[motion_group.0.drive.axes.0]
+name = "X"
+ip = "192.168.0.70"
+units = "cm"
+units_per_rev = 0.508
+
+[motion_group.0.drive.axes.1]
+name = "Y"
+ip = "192.168.0.80"
+units = "cm"
+units_per_rev = 0.508
+
+[motion_group.0.transform]
+mspace_polarity = [-1, 1]
+drive_polarity = [1, 1]
+type = "lapd_xy"
+pivot_to_center = 62.898
+probe_axis_offset = 20.5
+pivot_to_drive = 135.542
+
+[motion_group.0.motion_builder.space.0]
+label = "X"
+range = [-55.0, 55.0]
+num = 440
+
+[motion_group.0.motion_builder.space.1]
+label = "Y"
+range = [-55.0, 55.0]
+num = 440
+
+[motion_group.0.motion_builder.exclusion.0]
+type = "lapd_xy"
+port_location = 0
+pivot_radius = 58.771
+cone_full_angle = 80
+include_cone = true
+diameter = 100
+
+[motion_group.0.motion_builder.layer.0]
+limits = [[-10.0, 10.0], [-10.0, 10.0]]
+steps = [11, 6]
+type = "grid"

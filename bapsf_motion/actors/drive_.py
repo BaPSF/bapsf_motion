@@ -9,6 +9,7 @@ import astropy.units as u
 import asyncio
 import logging
 
+from collections import UserDict
 from typing import Any, Dict, List, Optional, Tuple
 
 from bapsf_motion.actors.base import EventActor
@@ -77,6 +78,7 @@ class Drive(EventActor):
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
         auto_run: bool = False,
+        parent: Optional["EventActor"] = None,
     ):
         self._axes = None
 
@@ -85,6 +87,7 @@ class Drive(EventActor):
             logger=logger,
             loop=loop,
             auto_run=False,
+            parent=parent,
         )
 
         axes = self._validate_axes(axes)
@@ -96,7 +99,10 @@ class Drive(EventActor):
 
         self._axes = tuple(axis_objs)
 
-        self.run(auto_run=auto_run)
+        if any(ax.terminated for ax in self._axes):
+            self.terminate(delay_loop_stop=True)
+        else:
+            self.run(auto_run=auto_run)
 
     def _configure_before_run(self):
         return
@@ -113,7 +119,9 @@ class Drive(EventActor):
         for ax in self.axes:
             ax.run(auto_run=auto_run)
 
-    def _validate_axes(self, settings: List[Dict[str, Any]]) -> Tuple[Dict[str, Any]]:
+    def _validate_axes(
+        self, settings: List[Dict[str, Any]]
+    ) -> Tuple[Dict[str, Any], ...]:
         """
         Validate the |Axis| arguments for all axes defined in
         ``settings``.
@@ -150,8 +158,7 @@ class Drive(EventActor):
 
         return tuple(conditioned_settings)
 
-    @staticmethod
-    def _validate_axis(settings: Dict[str, Any]) -> Dict[str, Any]:
+    def _validate_axis(self, settings: Dict[str, Any]) -> Dict[str, Any]:
         """Validate the |Axis| arguments defined in ``settings``."""
         # TODO: create warnings for logger, loop, and auto_run since
         #       this class overrides in inputs of thos
@@ -180,6 +187,20 @@ class Drive(EventActor):
                     f"type {type(settings[key])}."
                 )
 
+        if (
+            "motor_settings" in settings
+            and not isinstance(settings["motor_settings"], (dict, UserDict))
+        ):
+            _motor_settings = settings.pop("motor_settings")
+            if _motor_settings is not None:
+                self.logger.warning(
+                    "Removing motor settings from the input configuration.",
+                    exc_info=TypeError(
+                        "Expected None or dictionary for motor settings "
+                        f"input, got type {type(_motor_settings)}."
+                    ),
+                )
+
         return settings
 
     def _spawn_axis(self, settings: Dict[str, Any]) -> Axis:
@@ -188,12 +209,14 @@ class Drive(EventActor):
         ``settings`` dictionary.  The key-value pairs defined in
         ``settings`` can only match those of |Axis| input arguments.
         """
+
         ax = Axis(
             **{
                 **settings,
                 "logger": self.logger,
                 "loop": self._loop,
                 "auto_run": False,
+                "parent": self,
             },
         )
 
@@ -233,7 +256,7 @@ class Drive(EventActor):
         return len(self.axes)
 
     @property
-    def anames(self) -> Tuple[str]:
+    def anames(self) -> Tuple[str, ...]:
         """Tuple of the names of the defined axes."""
         return tuple(ax.name for ax in self.axes)
 

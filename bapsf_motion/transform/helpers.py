@@ -8,7 +8,7 @@ __all__ = ["register_transform", "transform_factory", "transform_registry"]
 import inspect
 
 from numpydoc.docscrape import NumpyDocString, Parameter
-from typing import Dict, List, Type, Union
+from typing import Dict, List, Set, Type, Union
 
 from bapsf_motion.transform import base
 
@@ -114,7 +114,7 @@ class TransformRegistry:
                 f"The requested transform {name} does not exist."
             )
 
-    def get_names_by_dimensionality(self, ndim: int):
+    def get_names_by_dimensionality(self, ndim: int) -> Set[str]:
         return {
              name
              for name, tr in self._registry.items()

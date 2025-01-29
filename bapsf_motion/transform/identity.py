@@ -59,14 +59,14 @@ class IdentityTransform(base.BaseTransform):
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
         return dict()
 
-    def _identity_matrix(self, points: np.ndarray):
+    @staticmethod
+    def _identity_matrix(points: np.ndarray):
         """
         Generate an identity matrix with a zero-ed translation axis.
         """
-        shape = points.shape
-        matrix = np.identity(shape[0] + 1)
+        matrix = np.identity(points.shape[1] + 1)
         matrix[-1, -1] = 0
-        return np.repeat(matrix[..., np.newaxis], shape[1], axis=2)
+        return np.repeat(matrix[np.newaxis, ...], points.shape[0], axis=0)
 
     def _matrix_to_motion_space(self, points: np.ndarray):
         return self._identity_matrix(points)

@@ -1,0 +1,3 @@
+# RTD dependency list
+-r docs.txt
+ipykernel  # needed for nbsphinx to build on RTD
