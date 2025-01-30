@@ -1,8 +1,17 @@
 """This module contains custom Qt buttons."""
-__all__ = ["GearButton", "GearValidButton", "LED", "StopButton", "StyleButton"]
+__all__ = [
+    "DiscardButton",
+    "GearButton",
+    "GearValidButton",
+    "LED",
+    "StopButton",
+    "StyleButton",
+]
 
 import math
 
+from PySide6.QtCore import QSize
+from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import QPushButton
 from PySide6.QtCore import QSize
 
@@ -94,6 +103,39 @@ class StyleButton(QPushButton):
             self._checked_style = new_style
 
         self._resetStyleSheet()
+
+
+class DiscardButton(StyleButton):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.update_style_sheet(
+            styles={
+                "background-color": "rgb(180, 62, 57)",
+                "color": "rgba(188, 190, 196, 230)",
+            },
+            action="base",
+        )
+
+        self.setFixedHeight(48)
+        font = self.font()
+        font.setPixelSize(24)
+        font.setBold(True)
+        self.setFont(font)
+
+        _text = self.text()
+        if _text == "":
+            _text = "Discard && Quit"
+        self.setText(_text)
+
+    def setText(self, text):
+        super().setText(text)
+        font = self.font()
+        fm = QFontMetrics(font)
+        _length = fm.horizontalAdvance(text)
+        _padding = 2 * math.ceil(0.5 * (self.height() - fm.height()))
+        self.setFixedWidth(_length + _padding)
 
 
 class GearButton(StyleButton):
