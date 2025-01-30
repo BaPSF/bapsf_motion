@@ -44,6 +44,9 @@ from bapsf_motion.gui.widgets import QLogger, StyleButton, VLinePlain
 from bapsf_motion.utils import toml, _deepcopy_dict
 
 
+_HERE = Path(__file__).parent
+
+
 class RunWidget(QWidget):
     def __init__(self, parent: "ConfigureGUI"):
         super().__init__(parent=parent)
@@ -607,6 +610,7 @@ class ConfigureGUI(QMainWindow):
 
 
 class ConfigureApp(QApplication):
+    qss_file_path = (_HERE / "configure.qss").resolve()
 
     def __init__(
         self,
@@ -618,7 +622,14 @@ class ConfigureApp(QApplication):
         super().__init__(*args, **kwargs)
 
         self.setStyle("Fusion")
+        self.reload_style_sheet()
+
         self._window = ConfigureGUI(config=config, defaults=defaults)
         self._window.show()
         self._window.activateWindow()
 
+    def reload_style_sheet(self):
+        with open(self.qss_file_path, "r") as f:
+            qss_style = f.read()
+
+        self.setStyleSheet(qss_style)

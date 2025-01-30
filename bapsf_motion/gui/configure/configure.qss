@@ -1,0 +1,11 @@
+/* This is the QSS (similar to CSS) Style Sheet for the ConfigureGUI
+ *
+ * Useful links:
+ *
+ * - Qt Style Sheets
+ *   https://doc.qt.io/qt-6/stylesheet.html
+ * - Style Sheet Syntax
+ *   https://doc.qt.io/qt-6/stylesheet-syntax.html
+ * - Style Sheet Reference
+ *   https://doc.qt.io/qt-6/stylesheet-reference.html
+ */
