@@ -442,6 +442,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         font.setPointSize(20)
         _btn.setFont(font)
         _btn.setEnabled(False)
+        _btn.setHidden(True)
         self.load_default_btn = _btn
 
         _btn = StyleButton("Add Axis")
@@ -451,6 +452,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         font.setPointSize(20)
         _btn.setFont(font)
         _btn.setEnabled(False)
+        _btn.setHidden(True)
         self.add_axis_btn = _btn
 
         _btn = StyleButton("Validate")
