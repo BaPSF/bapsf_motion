@@ -11,6 +11,142 @@ from PySide6.QtCore import QSize
 import qtawesome as qta
 
 
+class StyleButton(QPushButton):
+    _default_base_style = {
+        "border-radius": "4px",
+        "border": "2px solid rgb(95, 95, 95)",
+        "background-color": "rgb(73, 73, 73)",
+    }
+    _default_hover_style = {}
+    _default_pressed_style = {"background-color": "rgb(117, 117, 117)"}
+    _default_checked_style = {}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._base_style = {**self._default_base_style}
+        self._hover_style = {**self._default_hover_style}
+        self._pressed_style = {**self._default_pressed_style}
+        self._checked_style = {**self._default_checked_style}
+
+        self._resetStyleSheet()
+
+    @property
+    def _style(self):
+        _base = "; ".join([f"{k}: {v}" for k, v in self.base_style.items()])
+        _hover = "; ".join([f"{k}: {v}" for k, v in self.hover_style.items()])
+        _pressed = "; ".join([f"{k}: {v}" for k, v in self.pressed_style.items()])
+        _checked = "; ".join([f"{k}: {v}" for k, v in self.checked_style.items()])
+        return f"""
+        StyleButton {{ {_base} }}
+
+        StyleButton:hover {{ {_hover}  }}
+
+        StyleButton:pressed {{ {_pressed} }}
+
+        StyleButton:checked {{ {_checked} }}
+        """
+
+    @property
+    def base_style(self):
+        return self._base_style
+
+    @property
+    def hover_style(self):
+        return self._hover_style
+
+    @property
+    def pressed_style(self):
+        return self._pressed_style
+
+    @property
+    def checked_style(self):
+        return self._checked_style
+
+    def _resetStyleSheet(self):
+        self.setStyleSheet(self._style)
+
+    def update_style_sheet(self, styles, action="base", reset=False):
+
+        if action not in ("base", "hover", "pressed", "checked"):
+            return
+
+        if action == "base":
+            _style = self.base_style if not reset else {**self._default_base_style}
+        elif action == "hover":
+            _style = self.hover_style if not reset else {**self._default_hover_style}
+        elif action == "pressed":
+            _style = self.pressed_style if not reset else {**self._default_pressed_style}
+        else:  # action == "checked":
+            _style = self.pressed_style if not reset else {**self._default_checked_style}
+
+        new_style = {**_style, **styles}
+
+        if action == "base":
+            self._base_style = new_style
+        elif action == "hover":
+            self._hover_style = new_style
+        elif action == "pressed":
+            self._pressed_style = new_style
+        else:  # action == "pressed"
+            self._checked_style = new_style
+
+        self._resetStyleSheet()
+
+
+class GearButton(StyleButton):
+    def __init__(self, color: str = "#2980b9", parent=None):
+        super().__init__(
+            qta.icon("fa.gear", color=color),
+            "",
+            parent=parent,
+        )
+
+        self._size = 32
+        self._icon_size = 24
+
+        self.setFixedWidth(self._size)
+        self.setFixedHeight(self._size)
+        self.setIconSize(QSize(self._icon_size, self._icon_size))
+
+
+class GearValidButton(StyleButton):
+    def __init__(self, parent=None):
+        # self._valid_color = "#499C54"  # rgb(14, 212, 0)
+        # self._invalid_color = "#C75450"  # rgb(13, 88, 0)
+        self._valid_color = "#3498DB"  # rgb(52, 152, 219) blue
+        self._invalid_color = "#FF5733"  # rgb(242, 94, 62) orange
+
+        self._valid_icon = qta.icon("fa.gear", color=self._valid_color)
+        self._invalid_icon = qta.icon("fa.gear", color=self._invalid_color)
+        self._is_valid = False
+
+        super().__init__(self._invalid_icon, "", parent=parent)
+
+        self._size = 32
+        self._icon_size = 24
+
+        self.setFixedWidth(self._size)
+        self.setFixedHeight(self._size)
+        self.setIconSize(QSize(self._icon_size, self._icon_size))
+
+    def set_valid(self):
+        self._is_valid = True
+        self._change_validation_icon()
+
+    def set_invalid(self):
+        self._is_valid = False
+        self._change_validation_icon()
+
+    @property
+    def is_valid(self):
+        return self._is_valid
+
+    def _change_validation_icon(self):
+        _icon = self._valid_icon if self.is_valid else self._invalid_icon
+        self.setIcon(_icon)
+
+
 class LED(QPushButton):
     _aspect_ratio = 1.0
 
@@ -100,142 +236,6 @@ class LED(QPushButton):
                 stop:1 rgb(0,0,0)); 
         }}
         """
-
-
-class StyleButton(QPushButton):
-    _default_base_style = {
-            "border-radius": "4px",
-            "border": "2px solid rgb(95, 95, 95)",
-            "background-color": "rgb(73, 73, 73)",
-        }
-    _default_hover_style = {}
-    _default_pressed_style = {"background-color": "rgb(117, 117, 117)"}
-    _default_checked_style = {}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self._base_style = {**self._default_base_style}
-        self._hover_style = {**self._default_hover_style}
-        self._pressed_style = {**self._default_pressed_style}
-        self._checked_style = {**self._default_checked_style}
-
-        self._resetStyleSheet()
-
-    @property
-    def _style(self):
-        _base = "; ".join([f"{k}: {v}" for k, v in self.base_style.items()])
-        _hover = "; ".join([f"{k}: {v}" for k, v in self.hover_style.items()])
-        _pressed = "; ".join([f"{k}: {v}" for k, v in self.pressed_style.items()])
-        _checked = "; ".join([f"{k}: {v}" for k, v in self.checked_style.items()])
-        return f"""
-        StyleButton {{ {_base} }}
-        
-        StyleButton:hover {{ {_hover}  }}
-        
-        StyleButton:pressed {{ {_pressed} }}
-        
-        StyleButton:checked {{ {_checked} }}
-        """
-
-    @property
-    def base_style(self):
-        return self._base_style
-
-    @property
-    def hover_style(self):
-        return self._hover_style
-
-    @property
-    def pressed_style(self):
-        return self._pressed_style
-
-    @property
-    def checked_style(self):
-        return self._checked_style
-
-    def _resetStyleSheet(self):
-        self.setStyleSheet(self._style)
-
-    def update_style_sheet(self, styles, action="base", reset=False):
-
-        if action not in ("base", "hover", "pressed", "checked"):
-            return
-
-        if action == "base":
-            _style = self.base_style if not reset else {**self._default_base_style}
-        elif action == "hover":
-            _style = self.hover_style if not reset else {**self._default_hover_style}
-        elif action == "pressed":
-            _style = self.pressed_style if not reset else {**self._default_pressed_style}
-        else: # action == "checked":
-            _style = self.pressed_style if not reset else {**self._default_checked_style}
-
-        new_style = {**_style, **styles}
-
-        if action == "base":
-            self._base_style = new_style
-        elif action == "hover":
-            self._hover_style = new_style
-        elif action == "pressed":
-            self._pressed_style = new_style
-        else:  # action == "pressed"
-            self._checked_style = new_style
-
-        self._resetStyleSheet()
-
-
-class GearButton(StyleButton):
-    def __init__(self, color: str = "#2980b9", parent=None):
-        super().__init__(
-            qta.icon("fa.gear", color=color),
-            "",
-            parent=parent,
-        )
-
-        self._size = 32
-        self._icon_size = 24
-
-        self.setFixedWidth(self._size)
-        self.setFixedHeight(self._size)
-        self.setIconSize(QSize(self._icon_size, self._icon_size))
-
-
-class GearValidButton(StyleButton):
-    def __init__(self, parent=None):
-        # self._valid_color = "#499C54"  # rgb(14, 212, 0)
-        # self._invalid_color = "#C75450"  # rgb(13, 88, 0)
-        self._valid_color = "#3498DB"  # rgb(52, 152, 219) blue
-        self._invalid_color = "#FF5733"  # rgb(242, 94, 62) orange
-
-        self._valid_icon = qta.icon("fa.gear", color=self._valid_color)
-        self._invalid_icon = qta.icon("fa.gear", color=self._invalid_color)
-        self._is_valid = False
-
-        super().__init__(self._invalid_icon, "", parent=parent)
-
-        self._size = 32
-        self._icon_size = 24
-
-        self.setFixedWidth(self._size)
-        self.setFixedHeight(self._size)
-        self.setIconSize(QSize(self._icon_size, self._icon_size))
-
-    def set_valid(self):
-        self._is_valid = True
-        self._change_validation_icon()
-
-    def set_invalid(self):
-        self._is_valid = False
-        self._change_validation_icon()
-
-    @property
-    def is_valid(self):
-        return self._is_valid
-
-    def _change_validation_icon(self):
-        _icon = self._valid_icon if self.is_valid else self._invalid_icon
-        self.setIcon(_icon)
 
 
 class StopButton(QPushButton):
