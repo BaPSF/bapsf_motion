@@ -31,7 +31,7 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QListWidgetItem,
 )
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
