@@ -34,18 +34,19 @@ class StyleButton(QPushButton):
 
     @property
     def _style(self):
+        _cls_name = self.__class__.__name__
         _base = "; ".join([f"{k}: {v}" for k, v in self.base_style.items()])
         _hover = "; ".join([f"{k}: {v}" for k, v in self.hover_style.items()])
         _pressed = "; ".join([f"{k}: {v}" for k, v in self.pressed_style.items()])
         _checked = "; ".join([f"{k}: {v}" for k, v in self.checked_style.items()])
         return f"""
-        StyleButton {{ {_base} }}
+        {_cls_name} {{ {_base} }}
 
-        StyleButton:hover {{ {_hover}  }}
+        {_cls_name}:hover {{ {_hover}  }}
 
-        StyleButton:pressed {{ {_pressed} }}
+        {_cls_name}:pressed {{ {_pressed} }}
 
-        StyleButton:checked {{ {_checked} }}
+        {_cls_name}:checked {{ {_checked} }}
         """
 
     @property
