@@ -13,7 +13,6 @@ import math
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QFontMetrics
 from PySide6.QtWidgets import QPushButton
-from PySide6.QtCore import QSize
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
