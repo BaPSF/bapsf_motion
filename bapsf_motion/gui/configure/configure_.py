@@ -40,7 +40,12 @@ import qtawesome as qta
 from bapsf_motion.actors import RunManager, RunManagerConfig, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
-from bapsf_motion.gui.widgets import QLogger, StyleButton, VLinePlain
+from bapsf_motion.gui.widgets import (
+    DiscardButton,
+    QLogger,
+    StyleButton,
+    VLinePlain,
+)
 from bapsf_motion.utils import toml, _deepcopy_dict
 
 
@@ -63,14 +68,7 @@ class RunWidget(QWidget):
         _btn.setFont(font)
         self.done_btn = _btn
 
-        _btn = StyleButton("Discard && Quit")
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet({"background-color": "rgb(255, 110, 110)"})
+        _btn = DiscardButton(parent=self)
         self.quit_btn = _btn
 
         _btn = StyleButton("IMPORT")

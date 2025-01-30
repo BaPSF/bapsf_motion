@@ -10,7 +10,7 @@ from typing import Union
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.widgets import StyleButton
+from bapsf_motion.gui.widgets import DiscardButton, StyleButton
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 
 
@@ -98,16 +98,7 @@ class _ConfigOverlay(_OverlayWidget):
         _btn.setEnabled(False)
         self.done_btn = _btn
 
-        _btn = StyleButton("Discard", parent=self)
-        _btn.setFixedWidth(250)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 110, 110)"}
-        )
+        _btn = DiscardButton(parent=self)
         self.discard_btn = _btn
 
     def _connect_signals(self):

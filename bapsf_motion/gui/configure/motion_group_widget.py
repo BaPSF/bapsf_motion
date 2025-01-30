@@ -31,7 +31,12 @@ from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
-from bapsf_motion.gui.widgets import GearValidButton, HLinePlain, StyleButton
+from bapsf_motion.gui.widgets import (
+    DiscardButton,
+    GearValidButton,
+    HLinePlain,
+    StyleButton,
+)
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry
@@ -745,16 +750,7 @@ class MGWidget(QWidget):
         _btn.setEnabled(False)
         self.done_btn = _btn
 
-        _btn = StyleButton("Discard")
-        _btn.setFixedWidth(300)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 110, 110)"}
-        )
+        _btn = DiscardButton(parent=self)
         self.discard_btn = _btn
 
         _btn = StyleButton("Load a Default")
