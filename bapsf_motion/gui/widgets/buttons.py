@@ -12,17 +12,18 @@ import qtawesome as qta
 
 
 class StyleButton(QPushButton):
-    _default_base_style = {
-        "border-radius": "4px",
-        "border": "2px solid rgb(95, 95, 95)",
-        "background-color": "rgb(73, 73, 73)",
-    }
-    _default_hover_style = {}
-    _default_pressed_style = {"background-color": "rgb(117, 117, 117)"}
-    _default_checked_style = {}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self._default_base_style = {
+            "border-radius": "4px",
+            "border": "2px solid rgb(95, 95, 95)",
+            "background-color": "rgb(73, 73, 73)",
+        }
+        self._default_hover_style = {}
+        self._default_pressed_style = {"background-color": "rgb(117, 117, 117)"}
+        self._default_checked_style = {}
 
         self._base_style = {**self._default_base_style}
         self._hover_style = {**self._default_hover_style}
