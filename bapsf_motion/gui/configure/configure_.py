@@ -241,7 +241,7 @@ class RunWidget(QWidget):
 
     @property
     def rm(self) -> Union[RunManager, None]:
-        parent = self.parent()  # type: "ConfigureGUI"
+        parent = self.parentWidget()  # type: "ConfigureGUI"
         try:
             return parent.rm
         except AttributeError:
@@ -281,7 +281,7 @@ class ConfigureGUI(QMainWindow):
 
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
-        self._run_widget = RunWidget(self)
+        self._run_widget = RunWidget(parent=self)
         self._mg_widget = None  # type: Union[MGWidget, None]
 
         self._stacked_widget = QStackedWidget(parent=self)
