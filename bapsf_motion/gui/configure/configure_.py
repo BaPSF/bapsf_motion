@@ -60,7 +60,7 @@ class RunWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("DONE")
+        _btn = StyleButton("DONE", parent=self)
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(48)
         font = _btn.font()
@@ -71,7 +71,7 @@ class RunWidget(QWidget):
         _btn = DiscardButton(parent=self)
         self.quit_btn = _btn
 
-        _btn = StyleButton("IMPORT")
+        _btn = StyleButton("IMPORT", parent=self)
         _btn.setFixedHeight(28)
         font = _btn.font()
         font.setPointSize(16)
@@ -79,7 +79,7 @@ class RunWidget(QWidget):
         self.import_btn = _btn
         self.import_btn.setEnabled(False)
 
-        _btn = StyleButton("EXPORT")
+        _btn = StyleButton("EXPORT", parent=self)
         _btn.setFixedHeight(28)
         font = _btn.font()
         font.setPointSize(16)
@@ -87,7 +87,7 @@ class RunWidget(QWidget):
         self.export_btn = _btn
         self.export_btn.setEnabled(False)
 
-        _btn = StyleButton("ADD")
+        _btn = StyleButton("ADD", parent=self)
         _btn.setFixedHeight(32)
         font = _btn.font()
         font.setPointSize(16)
@@ -95,7 +95,7 @@ class RunWidget(QWidget):
         _btn.setEnabled(True)
         self.add_mg_btn = _btn
 
-        _btn = StyleButton("REMOVE")
+        _btn = StyleButton("REMOVE", parent=self)
         _btn.setFixedHeight(32)
         font = _btn.font()
         font.setPointSize(16)
@@ -103,7 +103,7 @@ class RunWidget(QWidget):
         _btn.setEnabled(False)
         self.remove_mg_btn = _btn
 
-        _btn = StyleButton("Edit / Control")
+        _btn = StyleButton("Edit / Control", parent=self)
         _btn.setFixedHeight(32)
         font = _btn.font()
         font.setPointSize(16)
@@ -113,10 +113,10 @@ class RunWidget(QWidget):
 
         # Define TEXT WIDGETS
 
-        self.config_widget = QTextEdit()
-        self.mg_list_widget = QListWidget()
+        self.config_widget = QTextEdit(parent=self)
+        self.mg_list_widget = QListWidget(parent=self)
 
-        _txt_widget = QLineEdit()
+        _txt_widget = QLineEdit(parent=self)
         font = _txt_widget.font()
         font.setPointSize(16)
         _txt_widget.setFont(font)
@@ -132,14 +132,14 @@ class RunWidget(QWidget):
         banner_layout = self._define_banner_layout()
 
         # Create layout for toml window
-        toml_widget = QWidget()
+        toml_widget = QWidget(parent=self)
         toml_widget.setLayout(self._define_toml_layout())
         toml_widget.setMinimumWidth(400)
         toml_widget.setMinimumWidth(500)
         toml_widget.sizeHint().setWidth(450)
 
         # Create layout for controls
-        control_widget = QWidget()
+        control_widget = QWidget(parent=self)
         control_widget.setLayout(self._define_control_layout())
 
         # Construct layout below top banner
@@ -157,7 +157,7 @@ class RunWidget(QWidget):
 
     def _define_toml_layout(self):
         layout = QGridLayout()
-        label = QLabel("Run Configuration")
+        label = QLabel("Run Configuration", parent=self)
         label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
         )
@@ -192,7 +192,7 @@ class RunWidget(QWidget):
     def _define_control_layout(self):
         layout = QVBoxLayout()
 
-        run_label = QLabel("Run Name:  ")
+        run_label = QLabel("Run Name:  ", parent=self)
         run_label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt. AlignmentFlag.AlignLeft
         )
@@ -201,7 +201,7 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         run_label.setFont(font)
 
-        mg_label = QLabel("Defined Motion Groups")
+        mg_label = QLabel("Defined Motion Groups", parent=self)
         mg_label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
         )
