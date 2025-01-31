@@ -1,5 +1,6 @@
 """This module contains custom Qt buttons."""
 __all__ = [
+    "BannerButton",
     "DiscardButton",
     "GearButton",
     "GearValidButton",
@@ -104,8 +105,30 @@ class StyleButton(QPushButton):
         self._resetStyleSheet()
 
 
-class DiscardButton(StyleButton):
+class BannerButton(StyleButton):
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setFixedHeight(48)
+        font = self.font()
+        font.setPixelSize(24)
+        font.setBold(True)
+        self.setFont(font)
+
+        _text = self.text()
+        self.setText(_text)
+
+    def setText(self, text):
+        super().setText(text)
+        font = self.font()
+        fm = QFontMetrics(font)
+        _length = fm.horizontalAdvance(text)
+        _padding = 2 * math.ceil(0.5 * (self.height() - fm.height()))
+        self.setFixedWidth(_length + _padding)
+
+
+class DiscardButton(BannerButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -117,24 +140,10 @@ class DiscardButton(StyleButton):
             action="base",
         )
 
-        self.setFixedHeight(48)
-        font = self.font()
-        font.setPixelSize(24)
-        font.setBold(True)
-        self.setFont(font)
-
         _text = self.text()
         if _text == "":
             _text = "Discard && Quit"
         self.setText(_text)
-
-    def setText(self, text):
-        super().setText(text)
-        font = self.font()
-        fm = QFontMetrics(font)
-        _length = fm.horizontalAdvance(text)
-        _padding = 2 * math.ceil(0.5 * (self.height() - fm.height()))
-        self.setFixedWidth(_length + _padding)
 
 
 class GearButton(StyleButton):
