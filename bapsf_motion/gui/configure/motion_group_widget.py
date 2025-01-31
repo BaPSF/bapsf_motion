@@ -1481,7 +1481,7 @@ class MGWidget(QWidget):
     def _rerun_drive(self):
         self.logger.info("Restarting the motion group's drive")
 
-        if self.mg.drive is None:
+        if not isinstance(self.mg, MotionGroup) or self.mg.drive is None:
             return
 
         drive_config = self.mg.drive.config
