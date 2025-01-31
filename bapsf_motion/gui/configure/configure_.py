@@ -77,6 +77,7 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         _btn.setFont(font)
         self.import_btn = _btn
+        self.import_btn.setEnabled(False)
 
         _btn = StyleButton("EXPORT")
         _btn.setFixedHeight(28)
@@ -84,6 +85,7 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         _btn.setFont(font)
         self.export_btn = _btn
+        self.export_btn.setEnabled(False)
 
         _btn = StyleButton("ADD")
         _btn.setFixedHeight(32)
