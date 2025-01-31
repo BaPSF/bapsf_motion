@@ -128,15 +128,15 @@ class AxisControlWidget(QWidget):
         # self.setEnabled(True)
 
         # Define BUTTONS
-        _btn = StyleButton(qta.icon("fa.arrow-up"), "")
+        _btn = StyleButton(qta.icon("fa.arrow-up"), "", parent=self)
         _btn.setIconSize(QSize(48, 48))
         self.jog_forward_btn = _btn
 
-        _btn = StyleButton(qta.icon("fa.arrow-down"), "")
+        _btn = StyleButton(qta.icon("fa.arrow-down"), "", parent=self)
         _btn.setIconSize(QSize(48, 48))
         self.jog_backward_btn = _btn
 
-        _btn = StyleButton("FWD LIMIT")
+        _btn = StyleButton("FWD LIMIT", parent=self)
         _btn.update_style_sheet(
             {"background-color": "rgb(255, 95, 95)"},
             action="checked"
@@ -144,7 +144,7 @@ class AxisControlWidget(QWidget):
         _btn.setCheckable(True)
         self.limit_fwd_btn = _btn
 
-        _btn = StyleButton("BWD LIMIT")
+        _btn = StyleButton("BWD LIMIT", parent=self)
         _btn.update_style_sheet(
             {"background-color": "rgb(255, 95, 95)"},
             action="checked"
@@ -152,15 +152,15 @@ class AxisControlWidget(QWidget):
         _btn.setCheckable(True)
         self.limit_bwd_btn = _btn
 
-        _btn = StyleButton("HOME")
+        _btn = StyleButton("HOME", parent=self)
         _btn.setEnabled(False)
         self.home_btn = _btn
 
-        _btn = StyleButton("ZERO")
+        _btn = StyleButton("ZERO", parent=self)
         self.zero_btn = _btn
 
         # Define TEXT WIDGETS
-        _txt = QLabel("Name")
+        _txt = QLabel("Name", parent=self)
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
@@ -168,7 +168,7 @@ class AxisControlWidget(QWidget):
         _txt.setFixedHeight(18)
         self.axis_name_label = _txt
 
-        _txt = QLineEdit("")
+        _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _txt.setReadOnly(True)
         font = _txt.font()
@@ -176,7 +176,7 @@ class AxisControlWidget(QWidget):
         _txt.setFont(font)
         self.position_label = _txt
 
-        _txt = QLineEdit("")
+        _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
@@ -184,7 +184,7 @@ class AxisControlWidget(QWidget):
         _txt.setValidator(QDoubleValidator(decimals=2))
         self.target_position_label = _txt
 
-        _txt = QLineEdit("0")
+        _txt = QLineEdit("0", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
@@ -404,7 +404,7 @@ class DriveControlWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("STOP")
+        _btn = StyleButton("STOP", parent=self)
         _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         _btn.setFixedWidth(200)
         _btn.setMinimumHeight(400)
@@ -420,7 +420,7 @@ class DriveControlWidget(QWidget):
         )
         self.stop_1_btn = _btn
 
-        _btn = StyleButton("STOP")
+        _btn = StyleButton("STOP", parent=self)
         _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         _btn.setFixedWidth(200)
         _btn.setMinimumHeight(400)
@@ -436,7 +436,7 @@ class DriveControlWidget(QWidget):
         )
         self.stop_2_btn = _btn
 
-        _btn = StyleButton("Move \n To")
+        _btn = StyleButton("Move \n To", parent=self)
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
         font = _btn.font()
@@ -445,7 +445,7 @@ class DriveControlWidget(QWidget):
         _btn.setFont(font)
         self.move_to_btn = _btn
 
-        _btn = StyleButton("Home \n All")
+        _btn = StyleButton("Home \n All", parent=self)
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
         font = _btn.font()
@@ -455,7 +455,7 @@ class DriveControlWidget(QWidget):
         _btn.setEnabled(False)
         self.home_btn = _btn
 
-        _btn = StyleButton("Zero \n All")
+        _btn = StyleButton("Zero \n All", parent=self)
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
         font = _btn.font()
@@ -488,19 +488,19 @@ class DriveControlWidget(QWidget):
         sub_layout.addWidget(self.zero_all_btn)
 
         # Sub-Layout #2
-        _text = QLabel("Position")
+        _text = QLabel("Position", parent=self)
         font = _text.font()
         font.setPointSize(14)
         _text.setFont(font)
         _pos_label = _text
 
-        _text = QLabel("Target")
+        _text = QLabel("Target", parent=self)
         font = _text.font()
         font.setPointSize(14)
         _text.setFont(font)
         _target_label = _text
 
-        _text = QLabel("Jog Δ")
+        _text = QLabel("Jog Δ", parent=self)
         font = _text.font()
         font.setPointSize(14)
         _text.setFont(font)
@@ -534,7 +534,7 @@ class DriveControlWidget(QWidget):
         layout.addLayout(sub_layout)
         layout.addLayout(sub_layout2)
         for ii in range(4):
-            acw = AxisControlWidget(self)
+            acw = AxisControlWidget(parent=self)
             visible = True if ii == 0 else False
             acw.setVisible(visible)
             layout.addWidget(acw)
@@ -721,7 +721,7 @@ class MGWidget(QWidget):
 
         # Define TEXT WIDGETS
 
-        _widget = QTextEdit()
+        _widget = QTextEdit(parent=self)
         _widget.setSizePolicy(
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Expanding,
@@ -732,7 +732,7 @@ class MGWidget(QWidget):
         _widget.setMinimumWidth(350)
         self.toml_widget = _widget
 
-        _widget = QLineEdit()
+        _widget = QLineEdit(parent=self)
         font = _widget.font()
         font.setPointSize(16)
         _widget.setFont(font)
@@ -741,7 +741,7 @@ class MGWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Add / Update")
+        _btn = StyleButton("Add / Update", parent=self)
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(48)
         font = _btn.font()
@@ -753,7 +753,7 @@ class MGWidget(QWidget):
         _btn = DiscardButton(parent=self)
         self.discard_btn = _btn
 
-        _btn = StyleButton("Load a Default")
+        _btn = StyleButton("Load a Default", parent=self)
         _btn.setFixedWidth(250)
         _btn.setFixedHeight(36)
         font = _btn.font()
@@ -832,7 +832,7 @@ class MGWidget(QWidget):
         self._overlay_widget = None  # type: Union[_ConfigOverlay, None]
         self._overlay_shown = False
 
-        self.drive_control_widget = DriveControlWidget(self)
+        self.drive_control_widget = DriveControlWidget(parent=self)
         self.drive_control_widget.setEnabled(False)
 
         self.setLayout(self._define_layout())
@@ -956,7 +956,7 @@ class MGWidget(QWidget):
         ...
 
     def _define_toml_layout(self):
-        label = QLabel("Motion Group Configuration")
+        label = QLabel("Motion Group Configuration", parent=self)
         label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
         )
@@ -972,7 +972,7 @@ class MGWidget(QWidget):
 
     def _define_central_builder_layout(self):
 
-        _label = QLabel("Name:  ")
+        _label = QLabel("Name:  ", parent=self)
         _label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt. AlignmentFlag.AlignLeft
         )
