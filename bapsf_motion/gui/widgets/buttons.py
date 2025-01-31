@@ -2,6 +2,7 @@
 __all__ = [
     "BannerButton",
     "DiscardButton",
+    "DoneButton",
     "GearButton",
     "GearValidButton",
     "LED",
@@ -144,6 +145,32 @@ class DiscardButton(BannerButton):
         if _text == "":
             _text = "Discard && Quit"
         self.setText(_text)
+
+
+class DoneButton(BannerButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.update_style_sheet(
+            styles={
+                "color": "rgba(188, 190, 196, 230)",
+            },
+            action="base",
+        )
+
+        _text = self.text()
+        if _text == "":
+            _text = "DONE"
+        self.setText(_text)
+
+    def setText(self, text):
+        super(StyleButton, self).setText(text)
+
+        font = self.font()
+        fm = QFontMetrics(font)
+        _length = fm.horizontalAdvance(text)
+        _padding = 2 * (self.height() - fm.height())
+        self.setFixedWidth(_length + _padding)
 
 
 class GearButton(StyleButton):
