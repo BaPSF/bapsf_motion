@@ -105,7 +105,7 @@ class MSpaceMessageBox(QMessageBox):
             # Make sure the Abort button always remains the default choice
             self.setDefaultButton(QMessageBox.StandardButton.Abort)
             return True
-        elif button == QMessageBox.StandardButton.Abort:
+        else:  # button == QMessageBox.StandardButton.Abort:
             return False
 
 
@@ -254,7 +254,7 @@ class AxisControlWidget(QWidget):
     @property
     def axis(self) -> Union[Axis, None]:
         if self.mg is None or self.axis_index is None:
-            return
+            return None
 
         return self.mg.drive.axes[self.axis_index]
 
