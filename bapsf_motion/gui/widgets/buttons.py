@@ -349,43 +349,26 @@ class LED(QPushButton):
         """
 
 
-class StopButton(QPushButton):
-    default_style = """
-    background-color: rgb(255,90,90);
-    border-radius: 6px;
-    border: 2px solid black;
-    """
-    pressed_style = """
-    background-color: rgb(90,255,90)
-    """
-
+class StopButton(StyleButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # self.set_style_sheet(self.default_style)
-        # self.set_checkable(True)
-
-        self.setStyleSheet(
-            """
-        StopButton {
-          background-color: rgb(255,130,130);
-          border-radius: 6px;
-          border: 1px solid black;
-        }
-
-        StopButton:hover {
-          border: 3px solid black;
-          background-color: rgb(255,70,70);
-        }
-        """
+        self.update_style_sheet(
+            styles={
+                "background-color": "rgb(232, 80, 74)",
+                "border-radius": "6px",
+                "border": "3px solid rgb(190, 190, 190)",
+                "color": "rgba(188, 190, 196, 240)",
+            },
+            action="base",
         )
-
-        # self.pressed.connect(self.toggle_style)
-        # self.released.connect(self.toggle_style)
-
-    def toggle_style(self):
-        style = self.pressed_style if self.isChecked() else self.default_style
-        self.setStyleSheet(style)
+        self.update_style_sheet(
+            styles={
+                "border": "3px solid rgb(255, 0, 0)",
+                "background-color": "rgb(255, 70, 70)",
+            },
+            action="hover",
+        )
 
 
 # if __name__ == "__main__":
