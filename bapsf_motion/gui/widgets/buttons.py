@@ -351,7 +351,7 @@ class LED(QPushButton):
 
 class StopButton(StyleButton):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__("STOP", *args, **kwargs)
 
         self.update_style_sheet(
             styles={

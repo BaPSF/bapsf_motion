@@ -37,6 +37,7 @@ from bapsf_motion.gui.widgets import (
     GearValidButton,
     HLinePlain,
     StyleButton,
+    StopButton,
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
@@ -405,7 +406,7 @@ class DriveControlWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("STOP", parent=self)
+        _btn = StopButton(parent=self)
         _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         _btn.setFixedWidth(200)
         _btn.setMinimumHeight(400)
@@ -413,15 +414,9 @@ class DriveControlWidget(QWidget):
         font.setPointSize(32)
         font.setBold(True)
         _btn.setFont(font)
-        _btn.update_style_sheet(
-            {
-                "background-color": "rgb(255, 75, 75)",
-                "border": "3px solid rgb(170, 170, 170)",
-            },
-        )
         self.stop_1_btn = _btn
 
-        _btn = StyleButton("STOP", parent=self)
+        _btn = StopButton(parent=self)
         _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         _btn.setFixedWidth(200)
         _btn.setMinimumHeight(400)
@@ -429,12 +424,6 @@ class DriveControlWidget(QWidget):
         font.setPointSize(32)
         font.setBold(True)
         _btn.setFont(font)
-        _btn.update_style_sheet(
-            {
-                "background-color": "rgb(255, 75, 75)",
-                "border": "3px solid rgb(170, 170, 170)",
-            },
-        )
         self.stop_2_btn = _btn
 
         _btn = StyleButton("Move \n To", parent=self)
