@@ -10,6 +10,7 @@ __all__ = [
     "StyleButton",
 ]
 
+import ast
 import math
 
 from PySide6.QtCore import QSize
@@ -49,6 +50,37 @@ class StyleButton(QPushButton):
         _hover = "; ".join([f"{k}: {v}" for k, v in self.hover_style.items()])
         _pressed = "; ".join([f"{k}: {v}" for k, v in self.pressed_style.items()])
         _checked = "; ".join([f"{k}: {v}" for k, v in self.checked_style.items()])
+
+        _style = self.style()
+        _palette = _style.standardPalette()
+        _style_color = _palette.color(self.palette().ColorRole.ButtonText)
+
+        # Determine text color and transparency for the disabled state
+        try:
+            color = self.base_style["color"]
+        except KeyError:
+            color = _style_color
+
+        if isinstance(color, QColor):
+            pass
+        elif not isinstance(color, str):
+            color = _style_color
+        elif color.startswith("QColor"):
+            color = eval(color)
+        elif color.startswith("#"):
+            color = QColor(color)
+        elif color.startswith("rgba"):
+            args = ast.literal_eval(color[4:])
+            color = QColor(*args)
+        elif color.startswith("rgb"):
+            args = ast.literal_eval(color[3:])
+            color = QColor(*args)
+        else:
+            color = _style_color
+
+        color.setAlpha(100)
+        disable_string = f"color: rgba{color.getRgb()}"
+
         return f"""
         {_cls_name} {{ {_base} }}
 
@@ -57,6 +89,8 @@ class StyleButton(QPushButton):
         {_cls_name}:pressed {{ {_pressed} }}
 
         {_cls_name}:checked {{ {_checked} }}
+        
+        {_cls_name}:disabled {{ {disable_string} }}
         """
 
     @property
