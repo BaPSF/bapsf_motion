@@ -169,7 +169,7 @@ class DiscardButton(BannerButton):
 
         self.update_style_sheet(
             styles={
-                "background-color": "rgb(180, 62, 57)",
+                "background-color": "rgba(180, 62, 57, 180)",
                 "color": "rgba(188, 190, 196, 230)",
             },
             action="base",
