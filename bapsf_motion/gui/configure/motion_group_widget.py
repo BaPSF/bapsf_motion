@@ -33,6 +33,7 @@ from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfi
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.widgets import (
     DiscardButton,
+    DoneButton,
     GearValidButton,
     HLinePlain,
     StyleButton,
@@ -741,12 +742,7 @@ class MGWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Add / Update", parent=self)
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        _btn.setFont(font)
+        _btn = DoneButton("Add / Update", parent=self)
         _btn.setEnabled(False)
         self.done_btn = _btn
 

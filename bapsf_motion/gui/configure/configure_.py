@@ -42,6 +42,7 @@ from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dic
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 from bapsf_motion.gui.widgets import (
     DiscardButton,
+    DoneButton,
     QLogger,
     StyleButton,
     VLinePlain,
@@ -60,16 +61,8 @@ class RunWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("DONE", parent=self)
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        _btn.setFont(font)
-        self.done_btn = _btn
-
-        _btn = DiscardButton(parent=self)
-        self.quit_btn = _btn
+        self.done_btn = DoneButton(parent=self)
+        self.quit_btn = DiscardButton(parent=self)
 
         _btn = StyleButton("IMPORT", parent=self)
         _btn.setFixedHeight(28)

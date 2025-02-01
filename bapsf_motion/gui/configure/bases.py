@@ -10,7 +10,7 @@ from typing import Union
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.widgets import DiscardButton, StyleButton
+from bapsf_motion.gui.widgets import DiscardButton, DoneButton
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 
 
@@ -89,12 +89,7 @@ class _ConfigOverlay(_OverlayWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Add / Update", parent=self)
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        _btn.setFont(font)
+        _btn = DoneButton("Add / Update", parent=self)
         _btn.setEnabled(False)
         self.done_btn = _btn
 
