@@ -56,7 +56,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         # Define BUTTONS
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
-        _w = QComboBox(self)
+        _w = QComboBox(parent=self)
         _w.setMinimumWidth(300)
         _w.setMaximumWidth(500)
         _w.addItems(

@@ -10,7 +10,7 @@ from typing import Union
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.widgets import StyleButton
+from bapsf_motion.gui.widgets import DiscardButton, DoneButton
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 
 
@@ -26,10 +26,13 @@ class _OverlayWidget(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setStyleSheet("_OverlayWidget{ border: 2px solid black }")
 
-        self.background_fill_color = QColor(30, 30, 30, 120)
-        self.background_pen_color = QColor(30, 30, 30, 120)
+        self.background_fill_color = QColor(30, 30, 30, 200)
+        self.background_pen_color = QColor(30, 30, 30, 200)
 
-        self.overlay_fill_color = QColor(50, 50, 50)
+        _style = self.style()
+        _palette = _style.standardPalette()
+        backround_color = _palette.color(_palette.ColorRole.Base)
+        self.overlay_fill_color = backround_color
         self.overlay_pen_color = QColor(90, 90, 90)
 
         self._margins = [0.01, 0.01]  # [ w_margin / width, h_margin / height]
@@ -89,25 +92,11 @@ class _ConfigOverlay(_OverlayWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Add / Update", parent=self)
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        _btn.setFont(font)
+        _btn = DoneButton("Add / Update", parent=self)
         _btn.setEnabled(False)
         self.done_btn = _btn
 
-        _btn = StyleButton("Discard", parent=self)
-        _btn.setFixedWidth(250)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 110, 110)"}
-        )
+        _btn = DiscardButton(parent=self)
         self.discard_btn = _btn
 
     def _connect_signals(self):
