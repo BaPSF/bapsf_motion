@@ -26,10 +26,13 @@ class _OverlayWidget(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self.setStyleSheet("_OverlayWidget{ border: 2px solid black }")
 
-        self.background_fill_color = QColor(30, 30, 30, 120)
-        self.background_pen_color = QColor(30, 30, 30, 120)
+        self.background_fill_color = QColor(30, 30, 30, 200)
+        self.background_pen_color = QColor(30, 30, 30, 200)
 
-        self.overlay_fill_color = QColor(50, 50, 50)
+        _style = self.style()
+        _palette = _style.standardPalette()
+        backround_color = _palette.color(_palette.ColorRole.Base)
+        self.overlay_fill_color = backround_color
         self.overlay_pen_color = QColor(90, 90, 90)
 
         self._margins = [0.01, 0.01]  # [ w_margin / width, h_margin / height]
