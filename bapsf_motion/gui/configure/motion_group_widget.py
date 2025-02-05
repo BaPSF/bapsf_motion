@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
+    QStackedWidget,
 )
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -461,8 +462,19 @@ class DriveControlWidget(QWidget):
 
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
-
+        self.stacked_controller_widget = QStackedWidget(parent=self)
         self.mspace_warning_dialog = MSpaceMessageBox(parent=self)
+        self.desktop_controller_widget = None  # type: Union[QWidget, None]
+        self.game_controller_widget = None  # type: Union[QWidget, None]
+
+        _combo = QComboBox(parent=self)
+        _combo.setEditable(True)
+        _combo.lineEdit().setReadOnly(True)
+        _combo.lineEdit().setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+        _combo.addItems(["Desktop", "Game Controller"])
+        self.controller_combo_box = _combo
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -474,6 +486,53 @@ class DriveControlWidget(QWidget):
         self.move_to_btn.clicked.connect(self._move_to)
 
     def _define_layout(self):
+
+        self.desktop_controller_widget = self._define_desktop_controller_widget()
+        self.stacked_controller_widget.addWidget(self.desktop_controller_widget)
+
+        # Define the central_banner_layout
+        central_banner_layout = QHBoxLayout()
+        central_banner_layout.setContentsMargins(0, 0, 0, 0)
+
+        _label = QLabel("Control Mode:", parent=self)
+        _label.setFixedHeight(32)
+        _font = _label.font()
+        _font.setPointSize(16)
+        _label.setFont(_font)
+
+        self.controller_combo_box.setFixedHeight(32)
+        self.controller_combo_box.setFixedWidth(175)
+        _font.setPointSize(14)
+        self.controller_combo_box.setFont(_font)
+
+        central_banner_layout.addStretch(1)
+        central_banner_layout.addWidget(
+            _label,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+        central_banner_layout.addSpacing(12)
+        central_banner_layout.addWidget(
+            self.controller_combo_box,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+        )
+        central_banner_layout.addStretch(1)
+
+        # Define the central_layout
+        central_layout = QVBoxLayout()
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        central_layout.addLayout(central_banner_layout)
+        central_layout.addWidget(HLinePlain(parent=self))
+        central_layout.addWidget(self.stacked_controller_widget)
+
+        # Main Layout
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.stop_1_btn, alignment=Qt.AlignmentFlag.AlignLeft)
+        layout.addLayout(central_layout)
+        layout.addWidget(self.stop_2_btn, alignment=Qt.AlignmentFlag.AlignRight        )
+        return layout
+
+    def _define_desktop_controller_widget(self):
         # Sub-Layout #1
         sub_layout = QVBoxLayout()
         sub_layout.addWidget(self.move_to_btn)
@@ -519,13 +578,7 @@ class DriveControlWidget(QWidget):
         )
         sub_layout2.addStretch(20)
 
-        # Main Layout
         layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(
-            self.stop_1_btn,
-            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
-        )
         layout.addLayout(sub_layout)
         layout.addLayout(sub_layout2)
         for ii in range(4):
@@ -536,11 +589,11 @@ class DriveControlWidget(QWidget):
             self._axis_control_widgets.append(acw)
             layout.addSpacing(2)
         layout.addStretch()
-        layout.addWidget(
-            self.stop_2_btn,
-            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
-        )
-        return layout
+
+        _widget = QWidget(parent=self)
+        _widget.setLayout(layout)
+
+        return _widget
 
     @property
     def logger(self):
