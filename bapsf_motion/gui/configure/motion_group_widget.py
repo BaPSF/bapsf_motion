@@ -673,6 +673,19 @@ class DriveDesktopController(DriveBaseController):
         super().enable_motion_buttons()
 
 
+class DriveGameController(DriveBaseController):
+    def __init__(self, parent=None):
+        super().__init__(axis_display_mode="readonly", parent=parent)
+
+    def _initialize_widgets(self):
+        ...
+
+    def _define_layout(self) -> QLayout:
+        layout = QHBoxLayout()
+        layout.addWidget(QLabel("GAME CONTROLLER", parent=self))
+        return layout
+
+
 class DriveControlWidget(QWidget):
     movementStarted = Signal()
     movementStopped = Signal()
