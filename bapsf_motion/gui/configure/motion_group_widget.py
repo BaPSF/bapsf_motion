@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QStackedWidget,
+    QLayout,
 )
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -528,57 +529,15 @@ class DriveBaseController(QWidget):
         event.accept()
 
 
-class DriveControlWidget(QWidget):
-    movementStarted = Signal()
-    movementStopped = Signal()
-
+class DriveDesktopController(DriveBaseController):
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(axis_display_mode="interactive", parent=parent)
 
-        self._logger = gui_logger
-
-        self._mg = None
-        self._axis_control_widgets = []  # type: List[AxisControlWidget]
-
-        self.setEnabled(True)
-
-        # Define BUTTONS
-
-        _btn = StyleButton("STOP")
-        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
-        _btn.setFixedWidth(200)
-        _btn.setMinimumHeight(400)
-        font = _btn.font()
-        font.setPointSize(32)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet(
-            {
-                "background-color": "rgb(255, 75, 75)",
-                "border": "3px solid rgb(170, 170, 170)",
-            },
-        )
-        self.stop_1_btn = _btn
-
-        _btn = StyleButton("STOP")
-        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
-        _btn.setFixedWidth(200)
-        _btn.setMinimumHeight(400)
-        font = _btn.font()
-        font.setPointSize(32)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet(
-            {
-                "background-color": "rgb(255, 75, 75)",
-                "border": "3px solid rgb(170, 170, 170)",
-            },
-        )
-        self.stop_2_btn = _btn
-
+    def _initialize_widgets(self):
+        # BUTTON WIDGETS
         _btn = StyleButton("Move \n To")
         _btn.setFixedWidth(100)
-        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        _btn.setMinimumHeight(100)
         font = _btn.font()
         font.setPointSize(26)
         font.setBold(False)
@@ -587,7 +546,7 @@ class DriveControlWidget(QWidget):
 
         _btn = StyleButton("Home \n All")
         _btn.setFixedWidth(100)
-        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        _btn.setMinimumHeight(100)
         font = _btn.font()
         font.setPointSize(26)
         font.setBold(False)
@@ -597,86 +556,23 @@ class DriveControlWidget(QWidget):
 
         _btn = StyleButton("Zero \n All")
         _btn.setFixedWidth(100)
-        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        _btn.setMinimumHeight(100)
         font = _btn.font()
         font.setPointSize(26)
         font.setBold(False)
         _btn.setFont(font)
         self.zero_all_btn = _btn
 
-        # Define TEXT WIDGETS
-        # Define ADVANCED WIDGETS
-        self.stacked_controller_widget = QStackedWidget(parent=self)
-        self.mspace_warning_dialog = MSpaceMessageBox(parent=self)
-        self.desktop_controller_widget = None  # type: Union[QWidget, None]
-        self.game_controller_widget = None  # type: Union[QWidget, None]
-
-        _combo = QComboBox(parent=self)
-        _combo.setEditable(True)
-        _combo.lineEdit().setReadOnly(True)
-        _combo.lineEdit().setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-        )
-        _combo.addItems(["Desktop", "Game Controller"])
-        self.controller_combo_box = _combo
-
-        self.setLayout(self._define_layout())
-        self._connect_signals()
-
     def _connect_signals(self):
-        self.stop_1_btn.clicked.connect(self._stop_move)
-        self.stop_2_btn.clicked.connect(self._stop_move)
-        self.zero_all_btn.clicked.connect(self._zero_drive)
+        super()._connect_signals()
+
+        self.zero_all_btn.clicked.connect(self.zeroDrive.emit)
         self.move_to_btn.clicked.connect(self._move_to)
 
-    def _define_layout(self):
+        self.movementStarted.connect(self.disable_motion_buttons)
+        self.movementStopped.connect(self.enable_motion_buttons)
 
-        self.desktop_controller_widget = self._define_desktop_controller_widget()
-        self.stacked_controller_widget.addWidget(self.desktop_controller_widget)
-
-        # Define the central_banner_layout
-        central_banner_layout = QHBoxLayout()
-        central_banner_layout.setContentsMargins(0, 0, 0, 0)
-
-        _label = QLabel("Control Mode:", parent=self)
-        _label.setFixedHeight(32)
-        _font = _label.font()
-        _font.setPointSize(16)
-        _label.setFont(_font)
-
-        self.controller_combo_box.setFixedHeight(32)
-        self.controller_combo_box.setFixedWidth(175)
-        _font.setPointSize(14)
-        self.controller_combo_box.setFont(_font)
-
-        central_banner_layout.addStretch(1)
-        central_banner_layout.addWidget(
-            _label,
-            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
-        )
-        central_banner_layout.addSpacing(12)
-        central_banner_layout.addWidget(
-            self.controller_combo_box,
-            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
-        )
-        central_banner_layout.addStretch(1)
-
-        # Define the central_layout
-        central_layout = QVBoxLayout()
-        central_layout.setContentsMargins(0, 0, 0, 0)
-        central_layout.addLayout(central_banner_layout)
-        central_layout.addWidget(HLinePlain(parent=self))
-        central_layout.addWidget(self.stacked_controller_widget)
-
-        # Main Layout
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.stop_1_btn, alignment=Qt.AlignmentFlag.AlignLeft)
-        layout.addLayout(central_layout)
-        layout.addWidget(self.stop_2_btn, alignment=Qt.AlignmentFlag.AlignRight        )
-        return layout
-
-    def _define_desktop_controller_widget(self):
+    def _define_layout(self) -> QLayout:
         # Sub-Layout #1
         sub_layout = QVBoxLayout()
         sub_layout.addWidget(self.move_to_btn)
@@ -726,26 +622,12 @@ class DriveControlWidget(QWidget):
         layout.addLayout(sub_layout)
         layout.addLayout(sub_layout2)
         for ii in range(4):
-            acw = AxisControlWidget(self)
-            visible = True if ii == 0 else False
-            acw.setVisible(visible)
+            acw = self._axis_control_widgets[ii]
             layout.addWidget(acw)
-            self._axis_control_widgets.append(acw)
             layout.addSpacing(2)
         layout.addStretch()
 
-        _widget = QWidget(parent=self)
-        _widget.setLayout(layout)
-
-        return _widget
-
-    @property
-    def logger(self):
-        return self._logger
-
-    @property
-    def mg(self) -> Union[MotionGroup, None]:
-        return self._mg
+        return layout
 
     def _move_to(self):
         target_pos = [
@@ -759,6 +641,162 @@ class DriveControlWidget(QWidget):
                 "Probe drive is currently moving.  Did NOT perform move "
                 f"to {target_pos}."
             )
+            target_pos = []
+
+        self.moveTo.emit(target_pos)
+
+    def disable_motion_buttons(self):
+        self.move_to_btn.setEnabled(False)
+        self.zero_all_btn.setEnabled(False)
+
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            acw.disable_motion_buttons()
+
+    def enable_motion_buttons(self):
+        self.move_to_btn.setEnabled(True)
+        self.zero_all_btn.setEnabled(True)
+
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            acw.enable_motion_buttons()
+
+
+class DriveControlWidget(QWidget):
+    movementStarted = Signal()
+    movementStopped = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self._logger = gui_logger
+
+        self._mg = None
+
+        self.setEnabled(True)
+
+        # Define BUTTONS
+
+        _btn = StyleButton("STOP")
+        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        _btn.setFixedWidth(200)
+        _btn.setMinimumHeight(400)
+        font = _btn.font()
+        font.setPointSize(32)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.update_style_sheet(
+            {
+                "background-color": "rgb(255, 75, 75)",
+                "border": "3px solid rgb(170, 170, 170)",
+            },
+        )
+        self.stop_1_btn = _btn
+
+        _btn = StyleButton("STOP")
+        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        _btn.setFixedWidth(200)
+        _btn.setMinimumHeight(400)
+        font = _btn.font()
+        font.setPointSize(32)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.update_style_sheet(
+            {
+                "background-color": "rgb(255, 75, 75)",
+                "border": "3px solid rgb(170, 170, 170)",
+            },
+        )
+        self.stop_2_btn = _btn
+
+        # Define TEXT WIDGETS
+        # Define ADVANCED WIDGETS
+        self.mspace_warning_dialog = MSpaceMessageBox(parent=self)
+        self.desktop_controller_widget = DriveDesktopController(parent=self)
+        self.game_controller_widget = None  # type: Union[DriveBaseController, None]
+        self.stacked_controller_widget = QStackedWidget(parent=self)
+        self.stacked_controller_widget.addWidget(self.desktop_controller_widget)
+
+        _combo = QComboBox(parent=self)
+        _combo.setEditable(True)
+        _combo.lineEdit().setReadOnly(True)
+        _combo.lineEdit().setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+        _combo.addItems(["Desktop", "Game Controller"])
+        self.controller_combo_box = _combo
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.stop_1_btn.clicked.connect(self._stop_move)
+        self.stop_2_btn.clicked.connect(self._stop_move)
+
+        self.desktop_controller_widget.zeroDrive.connect(self._zero_drive)
+        self.desktop_controller_widget.moveTo.connect(self._move_to)
+
+    def _define_layout(self):
+
+        # Define the central_banner_layout
+        central_banner_layout = QHBoxLayout()
+        central_banner_layout.setContentsMargins(0, 0, 0, 0)
+
+        _label = QLabel("Control Mode:", parent=self)
+        _label.setFixedHeight(32)
+        _font = _label.font()
+        _font.setPointSize(16)
+        _label.setFont(_font)
+
+        self.controller_combo_box.setFixedHeight(32)
+        self.controller_combo_box.setFixedWidth(175)
+        _font.setPointSize(14)
+        self.controller_combo_box.setFont(_font)
+
+        central_banner_layout.addStretch(1)
+        central_banner_layout.addWidget(
+            _label,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+        central_banner_layout.addSpacing(12)
+        central_banner_layout.addWidget(
+            self.controller_combo_box,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+        )
+        central_banner_layout.addStretch(1)
+
+        # Define the central_layout
+        central_layout = QVBoxLayout()
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        central_layout.addLayout(central_banner_layout)
+        central_layout.addWidget(HLinePlain(parent=self))
+        central_layout.addWidget(self.stacked_controller_widget)
+
+        # Main Layout
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.stop_1_btn, alignment=Qt.AlignmentFlag.AlignLeft)
+        layout.addLayout(central_layout)
+        layout.addWidget(self.stop_2_btn, alignment=Qt.AlignmentFlag.AlignRight)
+        return layout
+
+
+    @property
+    def logger(self):
+        return self._logger
+
+    @property
+    def mg(self) -> Union[MotionGroup, None]:
+        return self._mg
+
+    @Slot(list)
+    def _move_to(self, target_pos):
+        if not target_pos:
+            # target_pos is an empty list
             return
 
         proceed = True
@@ -780,57 +818,32 @@ class DriveControlWidget(QWidget):
                 f"Expected type {MotionGroup} for motion group, but got type"
                 f" {type(mg)}."
             )
+            self.unlink_motion_group()
+            return
 
         if mg.drive is None:
             # drive has not been set yet
             self.unlink_motion_group()
             return
-        elif (
-            self.mg is not None
-            and self.mg.drive is not None
-            and mg.drive is self.mg.drive
-        ):
-            pass
         else:
             self.unlink_motion_group()
             self._mg = mg
 
-        for ii, ax in enumerate(self.mg.drive.axes):
-            acw = self._axis_control_widgets[ii]
-            acw.link_axis(self.mg, ii)
-            acw.movementStarted.connect(self._drive_movement_started)
-            acw.movementStopped.connect(self._drive_movement_finished)
-            acw.axisStatusChanged.connect(self._update_all_axis_displays)
-            acw.show()
+        self.desktop_controller_widget.link_motion_group(self.mg)
 
         self.setEnabled(not self._mg.terminated)
 
     def unlink_motion_group(self):
-        for ii, acw in enumerate(self._axis_control_widgets):
-            visible = True if ii == 0 else False
-
-            acw.unlink_axis()
-
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=RuntimeWarning)
-                acw.movementStarted.disconnect(self._drive_movement_started)
-                acw.movementStopped.disconnect(self._drive_movement_finished)
-                acw.axisStatusChanged.disconnect(self._update_all_axis_displays)
-
-            acw.setVisible(visible)
+        self.desktop_controller_widget.unlink_motion_group()
 
         # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self.setEnabled(False)
 
-    def _update_all_axis_displays(self):
-        for acw in self._axis_control_widgets:
-            if acw.isHidden():
-                continue
-            elif acw.axis.is_moving:
-                continue
-
-            acw._update_display_of_axis_status()
+    def update_controller_displays(self):
+        self.desktop_controller_widget.update_all_axis_displays()
+        if self.game_controller_widget is not None:
+            self.game_controller_widget.update_all_axis_displays()
 
     @Slot(int)
     def _drive_movement_started(self, axis_index):
@@ -1743,7 +1756,7 @@ class MGWidget(QWidget):
         if self.drive_control_widget.mg is None:
             self._refresh_drive_control()
         else:
-            self.drive_control_widget._update_all_axis_displays()
+            self.drive_control_widget.update_controller_displays()
 
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
