@@ -2,6 +2,7 @@ __all__ = ["AxisConfigWidget", "DriveConfigOverlay"]
 
 import asyncio
 import logging
+import warnings
 
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QDoubleValidator
@@ -407,8 +408,10 @@ class AxisConfigWidget(QWidget):
         self.logger.info("Closing AxisConfigWidget")
 
         try:
-            self.configChanged.disconnect()
-        except (RuntimeError, RuntimeWarning):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                self.configChanged.disconnect()
+        except RuntimeError:
             # everything already disconnected
             pass
 
@@ -795,8 +798,10 @@ class DriveConfigOverlay(_ConfigOverlay):
 
     def closeEvent(self, event):
         try:
-            self.configChanged.disconnect()
-        except (RuntimeError, RuntimeWarning):
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                self.configChanged.disconnect()
+        except RuntimeError:
             # everything already disconnected
             pass
 
