@@ -844,6 +844,7 @@ class DriveControlWidget(QWidget):
 
         elif controller == "Game Controller":
             self.game_controller_widget = DriveGameController(parent=self)
+            self.game_controller_widget.link_motion_group(self.mg)
             self.stacked_controller_widget.addWidget(self.game_controller_widget)
             self.stacked_controller_widget.setCurrentWidget(self.game_controller_widget)
 
