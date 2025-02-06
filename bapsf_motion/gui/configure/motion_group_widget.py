@@ -686,6 +686,11 @@ class DriveGameController(DriveBaseController):
     def _define_layout(self) -> QLayout:
         layout = QHBoxLayout()
         layout.addWidget(QLabel("GAME CONTROLLER", parent=self))
+        for acw in self._axis_control_widgets:
+            layout.addWidget(acw)
+            layout.addSpacing(2)
+        layout.addStretch()
+
         return layout
 
 
