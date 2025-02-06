@@ -193,7 +193,7 @@ class AxisControlWidget(QWidget):
         # Define ADVANCED WIDGETS
 
         self.mspace_warning_dialog = None
-        if isinstance(parent, DriveControlWidget):
+        if hasattr(parent, "mspace_warning_dialog"):
             self.mspace_warning_dialog = parent.mspace_warning_dialog
 
         self.setLayout(self._define_layout())
@@ -295,7 +295,10 @@ class AxisControlWidget(QWidget):
 
         proceed = True
         if not isinstance(self.mg.mb, MotionBuilder):
-            proceed = self.mspace_warning_dialog.exec()
+            try:
+                proceed = self.mspace_warning_dialog.exec()
+            except AttributeError:
+                proceed = False
 
         if proceed:
             self.mg.move_to(target_pos)
@@ -413,6 +416,9 @@ class DriveBaseController(QWidget):
         self._logger = gui_logger
 
         self._axis_display_mode = axis_display_mode
+        self.mspace_warning_dialog = None
+        if hasattr(parent, "mspace_warning_dialog"):
+            self.mspace_warning_dialog = parent.mspace_warning_dialog
 
         self._mg = None
 
@@ -801,7 +807,10 @@ class DriveControlWidget(QWidget):
 
         proceed = True
         if not isinstance(self.mg.mb, MotionBuilder):
-            proceed = self.mspace_warning_dialog.exec()
+            try:
+                proceed = self.mspace_warning_dialog.exec()
+            except AttributeError:
+                proceed = False
 
         if proceed:
             self.mg.move_to(target_pos)
