@@ -860,7 +860,7 @@ class DriveControlWidget(QWidget):
             self.movementStopped.emit()
 
     def closeEvent(self, event):
-        self.logger.info("Closing DriveControlWidget")
+        self.logger.info(f"Closing {self.__class__.__name__}")
         event.accept()
 
 
