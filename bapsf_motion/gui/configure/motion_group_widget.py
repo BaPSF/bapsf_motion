@@ -544,6 +544,10 @@ class DriveBaseController(QWidget):
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}.")
+
+        for acw in self._axis_control_widgets:
+            acw.close()
+
         event.accept()
 
 
