@@ -205,9 +205,6 @@ class AxisControlWidget(QWidget):
         self.zero_btn.clicked.connect(self._zero_axis)
         self.jog_delta_label.editingFinished.connect(self._validate_jog_value)
 
-        self.movementStarted.connect(self.disable_motion_buttons)
-        self.movementStopped.connect(self.enable_motion_buttons)
-
     def _define_layout(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -442,7 +439,8 @@ class DriveBaseController(QWidget):
             self._axis_control_widgets.append(acw)
 
     def _connect_signals(self):
-        ...
+        self.movementStarted.connect(self.disable_motion_buttons)
+        self.movementStopped.connect(self.enable_motion_buttons)
 
     @abstractmethod
     def _define_layout(self) -> QLayout:
@@ -516,6 +514,20 @@ class DriveBaseController(QWidget):
 
             acw._update_display_of_axis_status()
 
+    def disable_motion_buttons(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            acw.disable_motion_buttons()
+
+    def enable_motion_buttons(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            acw.enable_motion_buttons()
+
     @Slot(int)
     def _drive_movement_started(self, axis_index):
         self.movementStarted.emit()
@@ -574,9 +586,6 @@ class DriveDesktopController(DriveBaseController):
 
         self.zero_all_btn.clicked.connect(self.zeroDrive.emit)
         self.move_to_btn.clicked.connect(self._move_to)
-
-        self.movementStarted.connect(self.disable_motion_buttons)
-        self.movementStopped.connect(self.enable_motion_buttons)
 
     def _define_layout(self) -> QLayout:
         # Sub-Layout #1
@@ -655,21 +664,13 @@ class DriveDesktopController(DriveBaseController):
         self.move_to_btn.setEnabled(False)
         self.zero_all_btn.setEnabled(False)
 
-        for acw in self._axis_control_widgets:
-            if acw.isHidden():
-                continue
-
-            acw.disable_motion_buttons()
+        super().disable_motion_buttons()
 
     def enable_motion_buttons(self):
         self.move_to_btn.setEnabled(True)
         self.zero_all_btn.setEnabled(True)
 
-        for acw in self._axis_control_widgets:
-            if acw.isHidden():
-                continue
-
-            acw.enable_motion_buttons()
+        super().enable_motion_buttons()
 
 
 class DriveControlWidget(QWidget):
