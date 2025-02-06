@@ -4,6 +4,7 @@ import asyncio
 import logging
 import warnings
 
+from abc import abstractmethod
 from PySide6.QtCore import Qt, Signal, Slot, QSize
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
