@@ -814,22 +814,6 @@ class DriveControlWidget(QWidget):
     def mg(self) -> Union[MotionGroup, None]:
         return self._mg
 
-    @Slot(list)
-    def _move_to(self, target_pos):
-        if not target_pos:
-            # target_pos is an empty list
-            return
-
-        proceed = True
-        if not isinstance(self.mg.mb, MotionBuilder):
-            try:
-                proceed = self.mspace_warning_dialog.exec()
-            except AttributeError:
-                proceed = False
-
-        if proceed:
-            self.mg.move_to(target_pos)
-
     def _stop_move(self):
         self.mg.stop()
 
@@ -913,6 +897,22 @@ class DriveControlWidget(QWidget):
         is_moving[axis_index] = False
         if not any(is_moving):
             self.movementStopped.emit()
+
+    @Slot(list)
+    def _move_to(self, target_pos):
+        if not target_pos:
+            # target_pos is an empty list
+            return
+
+        proceed = True
+        if not isinstance(self.mg.mb, MotionBuilder):
+            try:
+                proceed = self.mspace_warning_dialog.exec()
+            except AttributeError:
+                proceed = False
+
+        if proceed:
+            self.mg.move_to(target_pos)
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
