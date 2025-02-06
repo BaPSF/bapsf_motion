@@ -390,8 +390,8 @@ class AxisControlWidget(QWidget):
         if isinstance(self.axis, Axis):
             self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
             self.axis.motor.status_changed.disconnect(self.axisStatusChanged.emit)
-            self.axis.motor.movement_started.connect(self._emit_movement_started)
-            self.axis.motor.movement_finished.connect(self._emit_movement_finished)
+            self.axis.motor.movement_started.disconnect(self._emit_movement_started)
+            self.axis.motor.movement_finished.disconnect(self._emit_movement_finished)
             self.axis.motor.movement_finished.disconnect(
                 self._update_display_of_axis_status
             )
