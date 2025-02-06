@@ -640,8 +640,7 @@ class DriveDesktopController(DriveBaseController):
         layout = QHBoxLayout()
         layout.addLayout(sub_layout)
         layout.addLayout(sub_layout2)
-        for ii in range(4):
-            acw = self._axis_control_widgets[ii]
+        for acw in self._axis_control_widgets:
             layout.addWidget(acw)
             layout.addSpacing(2)
         layout.addStretch()
