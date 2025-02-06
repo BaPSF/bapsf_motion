@@ -760,6 +760,8 @@ class DriveControlWidget(QWidget):
         self.desktop_controller_widget.zeroDrive.connect(self._zero_drive)
         self.desktop_controller_widget.moveTo.connect(self._move_to)
 
+        self.controller_combo_box.currentTextChanged.connect(self._switch_stack)
+
     def _define_layout(self):
 
         # Define the central_banner_layout
@@ -804,7 +806,6 @@ class DriveControlWidget(QWidget):
         layout.addWidget(self.stop_2_btn, alignment=Qt.AlignmentFlag.AlignRight)
         return layout
 
-
     @property
     def logger(self):
         return self._logger
@@ -831,6 +832,37 @@ class DriveControlWidget(QWidget):
 
     def _stop_move(self):
         self.mg.stop()
+
+    def _switch_stack(self):
+        controller = self.controller_combo_box.currentText()
+        _w = self.stacked_controller_widget.currentWidget()
+
+        if (
+            (controller == "Desktop" and isinstance(_w, DriveDesktopController))
+            or (controller == "Game Controller" and isinstance(_w, DriveGameController))
+        ):
+            # no switch is needed
+            pass
+        elif controller == "Desktop":
+            self.stacked_controller_widget.setCurrentIndex(0)
+            self.stacked_controller_widget.removeWidget(_w)
+
+            try:
+                self.game_controller_widget.close()
+                self.game_controller_widget.deleteLater()
+            except AttributeError:
+                pass
+
+            self.game_controller_widget = None
+
+        elif controller == "Game Controller":
+            self.game_controller_widget = DriveGameController(parent=self)
+            self.stacked_controller_widget.addWidget(self.game_controller_widget)
+            self.stacked_controller_widget.setCurrentWidget(self.game_controller_widget)
+
+        else:
+            # should never happen
+            pass
 
     def _zero_drive(self):
         self.mg.set_zero()
