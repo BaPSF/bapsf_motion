@@ -203,6 +203,9 @@ class AxisControlWidget(QWidget):
         self.zero_btn.clicked.connect(self._zero_axis)
         self.jog_delta_label.editingFinished.connect(self._validate_jog_value)
 
+        self.movementStarted.connect(self.disable_motion_buttons)
+        self.movementStopped.connect(self.enable_motion_buttons)
+
     def _define_layout(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -368,6 +371,16 @@ class AxisControlWidget(QWidget):
 
     def _emit_movement_finished(self):
         self.movementStopped.emit(self.axis_index)
+
+    def enable_motion_buttons(self):
+        self.zero_btn.setEnabled(True)
+        self.jog_forward_btn.setEnabled(True)
+        self.jog_backward_btn.setEnabled(True)
+
+    def disable_motion_buttons(self):
+        self.zero_btn.setEnabled(False)
+        self.jog_forward_btn.setEnabled(False)
+        self.jog_backward_btn.setEnabled(False)
 
     def closeEvent(self, event):
         self.logger.info("Closing AxisControlWidget")
