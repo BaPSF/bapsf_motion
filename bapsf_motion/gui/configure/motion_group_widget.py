@@ -2,11 +2,12 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
+import pygame
 import warnings
 
 from abc import abstractmethod
 from PySide6.QtCore import Qt, Signal, Slot, QSize
-from PySide6.QtGui import QDoubleValidator
+from PySide6.QtGui import QDoubleValidator, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -34,7 +35,7 @@ from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
-from bapsf_motion.gui.widgets import GearValidButton, HLinePlain, StyleButton
+from bapsf_motion.gui.widgets import GearValidButton, HLinePlain, LED, StyleButton
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry
@@ -680,18 +681,127 @@ class DriveGameController(DriveBaseController):
     def __init__(self, parent=None):
         super().__init__(axis_display_mode="readonly", parent=parent)
 
+    def _connect_signals(self):
+        super()._connect_signals()
+
+        self.refresh_controller_list_btn.clicked.connect(self.refresh_controller_combo)
+
     def _initialize_widgets(self):
-        ...
+        _font = QFont()
+        _font.setPointSize(12)
+
+        # BUTTON WIDGETS
+        _btn = StyleButton("Refresh List", parent=self)
+        _btn.setFixedHeight(32)
+        _btn.setFont(_font)
+        self.refresh_controller_list_btn = _btn
+
+        _btn = StyleButton("Connect", parent=self)
+        _btn.setFixedHeight(32)
+        _btn.setFont(_font)
+        _btn.setFixedWidth(100)
+        self.connect_btn = _btn
+
+        # TEXT/ICON WIDGETS
+        _led = LED(parent=self)
+        _led.set_fixed_height(24)
+        self.connected_led = _led
+
+        _txt = QLabel("Battery", parent=self)
+        _txt.setFixedHeight(32)
+        _txt.setFont(_font)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.battery_txt = _txt
+
+        # ADVANCED WIDGETS
+        _combo = QComboBox(parent=self)
+        _combo.setEditable(True)
+        _combo.lineEdit().setReadOnly(True)
+        _combo.lineEdit().setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
+        _combo.setFixedHeight(32)
+        _combo.setFont(_font)
+        self.controller_combo_widget = _combo
 
     def _define_layout(self) -> QLayout:
+        self.refresh_controller_combo()
+
+        connect_layout = QHBoxLayout()
+        connect_layout.setContentsMargins(0, 0, 0, 0)
+        connect_layout.addStretch(1)
+        connect_layout.addWidget(self.connect_btn)
+        connect_layout.addWidget(self.connected_led)
+        connect_layout.addStretch(1)
+
+        battery_layout = QHBoxLayout()
+        battery_layout.setContentsMargins(0, 0, 0, 0)
+        battery_layout.addStretch(1)
+        battery_layout.addWidget(self.battery_txt)
+        battery_layout.addStretch(1)
+
+        sub_layout_1 = QVBoxLayout()
+        sub_layout_1.setContentsMargins(0, 0, 0, 0)
+        sub_layout_1.addSpacing(16)
+        sub_layout_1.addWidget(self.refresh_controller_list_btn)
+        sub_layout_1.addWidget(self.controller_combo_widget)
+        sub_layout_1.addLayout(connect_layout)
+        sub_layout_1.addLayout(battery_layout)
+        sub_layout_1.addStretch(1)
+
+        sub_widget_1 = QWidget(parent=self)
+        sub_widget_1.setLayout(sub_layout_1)
+        sub_widget_1.setMaximumWidth(200)
+        sub_widget_1.setMinimumWidth(100)
+        sub_widget_1.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
+
         layout = QHBoxLayout()
-        layout.addWidget(QLabel("GAME CONTROLLER", parent=self))
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(sub_widget_1)
+        layout.addSpacing(2)
         for acw in self._axis_control_widgets:
             layout.addWidget(acw)
             layout.addSpacing(2)
         layout.addStretch()
 
         return layout
+
+    @property
+    def available_controllers(self) -> List["pygame.joystick.Joystick"]:
+        _joystick = pygame.joystick
+
+        if not _joystick.get_init():
+            _joystick.init()
+
+        return [_joystick.Joystick(_id) for _id in range(_joystick.get_count())]
+
+    def refresh_controller_combo(self):
+        self.disconnect_controller()
+
+        current_controller_name = self.controller_combo_widget.currentText()
+
+        self.controller_combo_widget.clear()
+
+        controller_names = [
+            controller.get_name()
+            for controller in self.available_controllers
+        ]
+        controller_names.append("")
+        self.controller_combo_widget.addItems(controller_names)
+
+        if current_controller_name in controller_names:
+            self.controller_combo_widget.setCurrentText(current_controller_name)
+            self.connect_controller()
+        else:
+            self.controller_combo_widget.setCurrentText("")
+
+    def connect_controller(self):
+        ...
+
+    def disconnect_controller(self):
+        ...
 
 
 class DriveControlWidget(QWidget):
