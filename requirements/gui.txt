@@ -1,6 +1,7 @@
 # these are dependencies required to use the package
 # ought to mirror 'install_requires' under 'options' in setup.cfg
 -r install.txt
+pygame
 PySide6; python_version >= '3.10'
 PySide6 <= 6.3.1; python_version < '3.10'
 qtawesome
