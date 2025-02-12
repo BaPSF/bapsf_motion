@@ -219,8 +219,8 @@ class AxisControlWidget(QWidget):
         self._connect_signals()
 
     def _connect_signals(self):
-        self.jog_forward_btn.clicked.connect(self._jog_forward)
-        self.jog_backward_btn.clicked.connect(self._jog_backward)
+        self.jog_forward_btn.clicked.connect(self.jog_forward)
+        self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
         self.jog_delta_label.editingFinished.connect(self._validate_jog_value)
 
@@ -346,11 +346,11 @@ class AxisControlWidget(QWidget):
         delta_str = self.jog_delta_label.text()
         return float(delta_str)
 
-    def _jog_forward(self):
+    def jog_forward(self):
         pos = self.position.value + self._get_jog_delta()
         self._move_to(pos)
 
-    def _jog_backward(self):
+    def jog_backward(self):
         pos = self.position.value - self._get_jog_delta()
         self._move_to(pos)
 
