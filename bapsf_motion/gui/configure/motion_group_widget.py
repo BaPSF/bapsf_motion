@@ -107,6 +107,8 @@ class MSpaceMessageBox(QMessageBox):
         elif button == QMessageBox.StandardButton.Abort:
             return False
 
+        return False
+
 
 class AxisControlWidget(QWidget):
     axisLinked = Signal()
@@ -253,7 +255,7 @@ class AxisControlWidget(QWidget):
     @property
     def axis(self) -> Union[Axis, None]:
         if self.mg is None or self.axis_index is None:
-            return
+            return None
 
         return self.mg.drive.axes[self.axis_index]
 
