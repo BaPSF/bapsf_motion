@@ -131,15 +131,15 @@ class AxisControlWidget(QWidget):
         # self.setEnabled(True)
 
         # Define BUTTONS
-        _btn = StyleButton(qta.icon("fa.arrow-up"), "")
+        _btn = StyleButton(qta.icon("fa.arrow-up"), "", parent=self)
         _btn.setIconSize(QSize(48, 48))
         self.jog_forward_btn = _btn
 
-        _btn = StyleButton(qta.icon("fa.arrow-down"), "")
+        _btn = StyleButton(qta.icon("fa.arrow-down"), "", parent=self)
         _btn.setIconSize(QSize(48, 48))
         self.jog_backward_btn = _btn
 
-        _btn = StyleButton("FWD LIMIT")
+        _btn = StyleButton("FWD LIMIT", parent=self)
         _btn.update_style_sheet(
             {"background-color": "rgb(255, 95, 95)"},
             action="checked"
@@ -147,7 +147,7 @@ class AxisControlWidget(QWidget):
         _btn.setCheckable(True)
         self.limit_fwd_btn = _btn
 
-        _btn = StyleButton("BWD LIMIT")
+        _btn = StyleButton("BWD LIMIT", parent=self)
         _btn.update_style_sheet(
             {"background-color": "rgb(255, 95, 95)"},
             action="checked"
@@ -155,15 +155,15 @@ class AxisControlWidget(QWidget):
         _btn.setCheckable(True)
         self.limit_bwd_btn = _btn
 
-        _btn = StyleButton("HOME")
+        _btn = StyleButton("HOME", parent=self)
         _btn.setEnabled(False)
         self.home_btn = _btn
 
-        _btn = StyleButton("ZERO")
+        _btn = StyleButton("ZERO", parent=self)
         self.zero_btn = _btn
 
         # Define TEXT WIDGETS
-        _txt = QLabel("Name")
+        _txt = QLabel("Name", parent=self)
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
@@ -171,7 +171,7 @@ class AxisControlWidget(QWidget):
         _txt.setFixedHeight(18)
         self.axis_name_label = _txt
 
-        _txt = QLineEdit("")
+        _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _txt.setReadOnly(True)
         font = _txt.font()
@@ -179,7 +179,7 @@ class AxisControlWidget(QWidget):
         _txt.setFont(font)
         self.position_label = _txt
 
-        _txt = QLineEdit("")
+        _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
@@ -187,7 +187,7 @@ class AxisControlWidget(QWidget):
         _txt.setValidator(QDoubleValidator(decimals=2))
         self.target_position_label = _txt
 
-        _txt = QLineEdit("0")
+        _txt = QLineEdit("0", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
