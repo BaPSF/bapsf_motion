@@ -689,6 +689,10 @@ class DriveGameController(DriveBaseController):
         super()._connect_signals()
 
         self.refresh_controller_list_btn.clicked.connect(self.refresh_controller_combo)
+        self.connect_btn.clicked.connect(self.connect_controller)
+        self.controller_combo_widget.currentIndexChanged.connect(
+            self.disconnect_controller
+        )
 
     def _initialize_widgets(self):
         self._run_pygame_loop = False
@@ -872,7 +876,6 @@ class DriveGameController(DriveBaseController):
         self.run_joystick_monitor()
 
     def disconnect_controller(self):
-        ...
         self.logger.info(f"Disconnecting controller.")
 
         self.run_pygame_loop = False
