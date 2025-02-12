@@ -933,9 +933,9 @@ class DriveGameController(DriveBaseController):
                 elif event.type == pygame.JOYBUTTONDOWN:
                     self.logger.info(f"button pressed - {event.dict}")
 
-                    if event.dict["button"] == 1:
-                        self.logger.info("This is my close button")
-                        self.run_pygame_loop = False
+                    button = event.dict["button"]
+                    if button in (0, 1):
+                        self.stop_move()
                 else:
                     self.logger.info(f"Received pygame event {event.type}.")
 
@@ -991,6 +991,9 @@ class DriveGameController(DriveBaseController):
                 self.mg.stop()
 
         self.connected_led.setChecked(False)
+
+    def stop_move(self):
+        self.mg.stop()
 
     def closeEvent(self, event):
         self.disconnect_controller()
