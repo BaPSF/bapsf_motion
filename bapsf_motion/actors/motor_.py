@@ -699,7 +699,7 @@ class Motor(EventActor):
 
     def _lost_connection(self, rtn: Any = None):
         """
-        Check if the motor connection as lost by examining the return
+        Check if the motor connection was lost by examining the return
         value from send_command.
         """
         if rtn is None:
