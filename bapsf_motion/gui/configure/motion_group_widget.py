@@ -689,6 +689,8 @@ class DriveGameController(DriveBaseController):
         self.refresh_controller_list_btn.clicked.connect(self.refresh_controller_combo)
 
     def _initialize_widgets(self):
+        self._run_pygame_loop = False
+
         _font = QFont()
         _font.setPointSize(12)
 
@@ -778,6 +780,27 @@ class DriveGameController(DriveBaseController):
             _joystick.init()
 
         return [_joystick.Joystick(_id) for _id in range(_joystick.get_count())]
+
+    @property
+    def joystick(self) -> Union[pygame.joystick.JoystickType, None]:
+        js_name = self.controller_combo_widget.currentText()
+        self.logger.info(f"Selected joystick: {js_name} - {self.available_controllers}")
+        js = None
+        for _js in self.available_controllers:
+            if _js.get_name() == js_name:
+                js = _js
+                break
+
+        return js
+
+    @property
+    def run_pygame_loop(self) -> bool:
+        return self._run_pygame_loop
+
+    @run_pygame_loop.setter
+    def run_pygame_loop(self, value: bool):
+        if isinstance(self._run_pygame_loop, bool):
+            self._run_pygame_loop = value
 
     def refresh_controller_combo(self):
         self.disconnect_controller()
