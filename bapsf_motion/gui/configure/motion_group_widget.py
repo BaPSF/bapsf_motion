@@ -917,6 +917,10 @@ class DriveGameController(DriveBaseController):
 
         self.connected_led.setChecked(False)
 
+    def closeEvent(self, event):
+        self.disconnect_controller()
+        super().closeEvent(event)
+
 
 class DriveControlWidget(QWidget):
     movementStarted = Signal()
