@@ -936,6 +936,8 @@ class DriveGameController(DriveBaseController):
                     button = event.dict["button"]
                     if button in (0, 1):
                         self.stop_move()
+                    elif button == 3:
+                        self.zero_drive()
                 else:
                     self.logger.info(f"Received pygame event {event.type}.")
 
@@ -994,6 +996,9 @@ class DriveGameController(DriveBaseController):
 
     def stop_move(self):
         self.mg.stop()
+
+    def zero_drive(self):
+        self.mg.set_zero()
 
     def closeEvent(self, event):
         self.disconnect_controller()
