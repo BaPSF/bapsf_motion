@@ -2,11 +2,13 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
+import os
 import pygame
 import warnings
 
 from abc import abstractmethod
-from PySide6.QtCore import Qt, Signal, Slot, QSize
+from datetime import datetime, timedelta
+from PySide6.QtCore import Qt, Signal, Slot, QSize, QThread
 from PySide6.QtGui import QDoubleValidator, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -871,6 +873,49 @@ class DriveGameController(DriveBaseController):
 
     def disconnect_controller(self):
         ...
+        self.logger.info(f"Disconnecting controller.")
+
+        self.run_pygame_loop = False
+        if pygame.get_init():
+            pygame.event.clear()
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
+            pygame.event.pump()
+
+        # force stop any motion that might be happening
+        if isinstance(self.mg, MotionGroup):
+            # MotionGroup has not been linked yet
+            self.mg.stop()
+
+        # wait for the pygame loop to shut down
+        #
+        # _thread = QThread.currentThread()
+        # wait_until = datetime.now() + timedelta(seconds=2)
+        # timeout = False
+        # self.logger.info(f"run_pygame_loop set to {self.run_pygame_loop}")
+        # self.logger.info(f"pygame.get_init() = {pygame.get_init()}, timeout = {timeout}")
+        # while pygame.get_init() and not timeout:
+        #     _thread.msleep(200)
+        #     if wait_until < datetime.now():
+        #         timeout = True
+        #
+        # Note: the pygame loop needs be operated in a separate thread
+        #       so it is not blocked when this method is called.  For
+        #       now pygame.quit() will always throw a pygame.error since
+        #       we are forcing a quit.
+        try:
+            pygame.quit()
+        except pygame.error as err:
+            self.logger.warning(
+                "The pygame event loop did not safely shut down and was "
+                "forced to shut down.",
+                exc_info=err,
+            )
+        finally:
+            if isinstance(self.mg, MotionGroup):
+                # MotionGroup has not been linked yet
+                self.mg.stop()
+
+        self.connected_led.setChecked(False)
 
 
 class DriveControlWidget(QWidget):
