@@ -284,11 +284,10 @@ class AxisControlWidget(QWidget):
         self.zero_btn.setEnabled(False)
         self.zero_btn.setVisible(False)
 
-        self.jog_delta_label.setEnabled(False)
-        self.jog_delta_label.setVisible(False)
-
         self.limit_fwd_btn.setFixedHeight(24)
         self.limit_bwd_btn.setFixedHeight(24)
+
+        self.jog_delta_label.setText("0.1")
 
         layout.addWidget(
             self.axis_name_label,
@@ -303,6 +302,8 @@ class AxisControlWidget(QWidget):
         )
         layout.addSpacing(8)
         layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
+        layout.addSpacing(12)
+        layout.addWidget(self.jog_delta_label)
         layout.addStretch(1)
 
         return layout
