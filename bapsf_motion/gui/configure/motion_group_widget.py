@@ -822,8 +822,52 @@ class DriveGameController(DriveBaseController):
         else:
             self.controller_combo_widget.setCurrentText("")
 
+    def run_joystick_monitor(self):
+        # ensure joystick events are monitored when the pygame window
+        # is not in focus
+        os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
+
+        if not pygame.get_init():
+            pygame.init()
+
+        if not pygame.joystick.get_init():
+            pygame.joystick.init()
+
+        js = self.joystick
+        if js is None:
+            self.logger.info("No joystick found")
+            self.disconnect_controller()
+            return None
+
+        js.init()
+        self.run_pygame_loop = js.get_init()
+        self.connected_led.setChecked(self.run_pygame_loop)
+
+        clock = pygame.time.Clock()
+        screen = pygame.display.set_mode((100, 100))
+
+        # pygame while loop
+        while self.run_pygame_loop:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.run_pygame_loop = False
+                elif event.type == pygame.JOYBUTTONDOWN:
+                    self.logger.info(f"button pressed - {event.dict}")
+
+                    if event.dict["button"] == 1:
+                        self.logger.info("This is my close button")
+                        self.run_pygame_loop = False
+                        # pygame.event.post(pygame.event.Event(pygame.QUIT))
+                else:
+                    self.logger.info(f"Received pygame event {event.type}.")
+
+            clock.tick(20)
+
+        self.disconnect_controller()
+
     def connect_controller(self):
-        ...
+        self.logger.info("Connecting controller.")
+        self.run_joystick_monitor()
 
     def disconnect_controller(self):
         ...
