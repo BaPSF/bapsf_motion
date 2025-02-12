@@ -128,7 +128,6 @@ class AxisControlWidget(QWidget):
         self._axis_index = None
 
         self.setFixedWidth(120)
-        # self.setEnabled(True)
 
         # Define BUTTONS
         _btn = StyleButton(qta.icon("fa.arrow-up"), "", parent=self)
@@ -863,7 +862,6 @@ class DriveGameController(DriveBaseController):
                     if event.dict["button"] == 1:
                         self.logger.info("This is my close button")
                         self.run_pygame_loop = False
-                        # pygame.event.post(pygame.event.Event(pygame.QUIT))
                 else:
                     self.logger.info(f"Received pygame event {event.type}.")
 
