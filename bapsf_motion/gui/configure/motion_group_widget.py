@@ -229,7 +229,17 @@ class AxisControlWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
 
-        # layout.addStretch(1)
+        if self.interactive_display_mode:
+            layout = self._define_interactive_layout(layout)
+        else:
+            layout = self._define_readonly_layout()
+
+        return layout
+
+    def _define_interactive_layout(self, layout: QVBoxLayout = None):
+        if layout is None:
+            layout = QVBoxLayout()
+
         layout.addWidget(
             self.axis_name_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
@@ -242,7 +252,6 @@ class AxisControlWidget(QWidget):
             self.target_position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
-        # layout.addStretch(1)
         layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addWidget(self.jog_forward_btn)
         layout.addStretch(1)
@@ -251,9 +260,51 @@ class AxisControlWidget(QWidget):
         layout.addStretch(1)
         layout.addWidget(self.jog_backward_btn, alignment=Qt.AlignmentFlag.AlignBottom)
         layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
-        # layout.addStretch(1)
         layout.addWidget(self.zero_btn, alignment=Qt.AlignmentFlag.AlignBottom)
-        # layout.addStretch(1)
+        layout.addStretch(1)
+
+        return layout
+
+    def _define_readonly_layout(self, layout: QVBoxLayout = None):
+        if layout is None:
+            layout = QVBoxLayout()
+
+        self.target_position_label.setEnabled(False)
+        self.target_position_label.setVisible(False)
+
+        self.jog_forward_btn.setEnabled(False)
+        self.jog_forward_btn.setVisible(False)
+
+        self.jog_backward_btn.setEnabled(False)
+        self.jog_backward_btn.setVisible(False)
+
+        self.home_btn.setEnabled(False)
+        self.home_btn.setVisible(False)
+
+        self.zero_btn.setEnabled(False)
+        self.zero_btn.setVisible(False)
+
+        self.jog_delta_label.setEnabled(False)
+        self.jog_delta_label.setVisible(False)
+
+        self.limit_fwd_btn.setFixedHeight(24)
+        self.limit_bwd_btn.setFixedHeight(24)
+
+        layout.addWidget(
+            self.axis_name_label,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addSpacing(4)
+        layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
+        layout.addSpacing(8)
+        layout.addWidget(
+            self.position_label,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addSpacing(8)
+        layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
+        layout.addStretch(1)
+
         return layout
 
     @property
@@ -456,7 +507,10 @@ class DriveBaseController(QWidget):
 
     def _initialize_axis_control_widgets(self):
         for ii in range(4):
-            acw = AxisControlWidget(parent=self)
+            acw = AxisControlWidget(
+                axis_display_mode=self._axis_display_mode,
+                parent=self,
+            )
             visible = True if ii == 0 else False
             acw.setVisible(visible)
             self._axis_control_widgets.append(acw)
