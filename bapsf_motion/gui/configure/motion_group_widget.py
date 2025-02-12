@@ -119,13 +119,28 @@ class AxisControlWidget(QWidget):
     movementStopped = Signal(int)
     axisStatusChanged = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(
+        self,
+        axis_display_mode="interactive",
+        parent=None,
+    ):
         super().__init__(parent)
 
         self._logger = gui_logger
 
         self._mg = None
         self._axis_index = None
+
+        if axis_display_mode not in ("interactive", "readonly"):
+            self._logger.info(
+                f"Forcing display mode of {self.__class__.__name__} to be"
+                f" interactive."
+            )
+            axis_display_mode = "interactive"
+        self._interactive_display_mode = (
+            True if axis_display_mode == "interactive"
+            else False
+        )
 
         self.setFixedWidth(120)
 
@@ -270,6 +285,10 @@ class AxisControlWidget(QWidget):
     @property
     def target_position(self):
         return float(self.target_position_label.text())
+
+    @property
+    def interactive_display_mode(self):
+        return self._interactive_display_mode
 
     def _get_jog_delta(self):
         delta_str = self.jog_delta_label.text()
