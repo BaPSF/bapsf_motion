@@ -771,7 +771,7 @@ class DriveGameController(DriveBaseController):
         return layout
 
     @property
-    def available_controllers(self) -> List["pygame.joystick.Joystick"]:
+    def available_controllers(self) -> List[pygame.joystick.JoystickType]:
         _joystick = pygame.joystick
 
         if not _joystick.get_init():
