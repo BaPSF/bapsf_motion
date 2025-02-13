@@ -1094,16 +1094,16 @@ class DriveGameController(DriveBaseController):
         if self.mg.is_moving:
             self.stop_move()
 
-    def stop_move(self, axis=None):
+    def stop_move(self, axis=None, soft=False):
         self.logger.info("Stopping move.")
 
         if axis is None:
-            self.mg.stop()
+            self.mg.stop(soft=soft)
             return None
 
         try:
             self.logger.info(f"Stopping axis {axis}.")
-            self.mg.drive.send_command("stop", axis=axis)
+            self.mg.drive.send_command("stop", soft, axis=axis)
         except Exception:  # noqa
             self.mg.stop()
 
@@ -1127,7 +1127,7 @@ class DriveGameController(DriveBaseController):
         ax = self.mg.drive.axes[axis_id]
 
         if np.absolute(value) < 0.5:
-            self.stop_move(axis=axis_id)
+            self.stop_move(axis=axis_id, soft=True)
         elif ax.is_moving:
             pass
         else:
