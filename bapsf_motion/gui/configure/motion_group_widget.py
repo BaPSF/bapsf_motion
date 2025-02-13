@@ -937,7 +937,6 @@ class DriveGameController(DriveBaseController):
         )
 
     def _initialize_widgets(self):
-        self._run_pygame_loop = False
         self._pygame_joystick_runner = None  # type: Union[PyGameJoystickRunner, None]
         self._thread_pool = QThreadPool(parent=self)
 
@@ -1083,15 +1082,6 @@ class DriveGameController(DriveBaseController):
                 break
 
         return js
-
-    @property
-    def run_pygame_loop(self) -> bool:
-        return self._run_pygame_loop
-
-    @run_pygame_loop.setter
-    def run_pygame_loop(self, value: bool):
-        if isinstance(self._run_pygame_loop, bool):
-            self._run_pygame_loop = value
 
     def refresh_controller_combo(self):
         self.disconnect_controller()
