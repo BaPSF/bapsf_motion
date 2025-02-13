@@ -1236,6 +1236,12 @@ class DriveControlWidget(QWidget):
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
+
+        self.desktop_controller_widget.close()
+
+        if isinstance(self.game_controller_widget, QWidget):
+            self.game_controller_widget.close()
+
         event.accept()
 
 
@@ -2471,6 +2477,8 @@ class MGWidget(QWidget):
 
         if self._overlay_widget is not None:
             self._overlay_widget.close()
+
+        self.drive_control_widget.close()
 
         loop_safe_stop(self.mg_loop)
         self.closing.emit()
