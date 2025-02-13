@@ -276,6 +276,11 @@ class Motor(EventActor):
             recv_processor=int,
         ),
         "commence_jogging": CommandEntry("commence_jogging", send="CJ"),
+        "continuous_jog": CommandEntry(
+            "continuous_jog",
+            send="",
+            method_command=True,
+        ),
         "current": CommandEntry(
             "change_current",
             send="CC",
@@ -1654,6 +1659,29 @@ class Motor(EventActor):
             self.socket.close()
         except AttributeError:
             pass
+
+    def continuous_jog(self, direction="forward"):
+        """
+        Start a continuous jog.  The motor will not stop until
+        commanded to.
+        """
+        if self.status["alarm"]:
+            self.send_command("alarm_reset")
+            alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
+
+            if self._lost_connection(alarm_msg) or alarm_msg["alarm_message"]:
+                self.logger.error(
+                    f"Motor alarm could not be reset. -- {alarm_msg}"
+                )
+                return None
+
+        self.enable()
+
+        # The direction of the commence_jogging is defined by the side
+        # of the target_distance (DI) command
+        direction = -1 if direction == "backward" else 1
+        self.send_command("target_distance", direction)
+        self.send_command("commence_jogging")
 
     def stop(self):
         """Stop motor movement."""
