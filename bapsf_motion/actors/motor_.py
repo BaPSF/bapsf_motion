@@ -451,7 +451,11 @@ class Motor(EventActor):
             two_way=True,
             units=u.rev / u.s,
         ),
-        "stop": CommandEntry("stop", send="SK"),
+        "stop": CommandEntry(
+            "stop",
+            send="SK",
+            send_processor=lambda soft: "D" if bool(soft) else "",
+        ),
         "target_distance": CommandEntry(
             "target_distance",
             send="DI",
@@ -1684,9 +1688,9 @@ class Motor(EventActor):
         self.send_command("target_distance", direction)
         self.send_command("commence_jogging")
 
-    def stop(self):
+    def stop(self, soft=False):
         """Stop motor movement."""
-        self.send_command("stop")
+        self.send_command("stop", soft)
 
     def move_to(self, pos: int):
         """

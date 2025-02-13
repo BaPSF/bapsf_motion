@@ -365,7 +365,7 @@ class Drive(EventActor):
 
         return rtn
 
-    def stop(self):
+    def stop(self, soft=False):
         """Stop all axes from moving."""
         # TODO: should I really be construct a return here?
         # TODO: is there a quicker/more efficient way of stopping the motors?
@@ -378,7 +378,7 @@ class Drive(EventActor):
                     f"perform STOP command."
                 )
                 continue
-            _rtn = ax.stop()
+            _rtn = ax.stop(soft=soft)
             rtn.append(_rtn)
 
         return rtn
