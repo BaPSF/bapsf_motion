@@ -2,6 +2,7 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
+import numpy as np
 import os
 import pygame
 import warnings
@@ -937,6 +938,7 @@ class DriveGameController(DriveBaseController):
         #   JOYDEVICEADDED
         #   JOYDEVICEREMOVED
         #
+        _joy_axis_values = {}
         while self.run_pygame_loop:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -949,8 +951,55 @@ class DriveGameController(DriveBaseController):
                         self.stop_move()
                     elif button == 3:
                         self.zero_drive()
+                elif event.type == pygame.JOYHATMOTION:
+                    value = event.dict["value"]
+                    axis_id = 0 if value[0] != 0 else 1
+                    direction = value[axis_id]
+
+                    acw = self._axis_control_widgets[axis_id]
+                    if direction == 0:
+                        # hat (dpad) button returned to unpressed state
+                        pass
+                    elif direction > 0:
+                        acw.jog_forward()
+                    else:
+                        acw.jog_backward()
+                elif event.type == pygame.JOYAXISMOTION:
+                    axis = event.dict["axis"]
+                    value = event.dict["value"]
+
+                    if axis == 0:
+                        # Horizontal of left joystick
+                        # - this axis is not utilized
+                        pass
+                    elif axis == 1 and np.absolute(value) < 0.5:
+                        drive_axis_id = 1
+                        ax = self.mg.drive.axes[drive_axis_id]
+
+                        if ax.is_moving:
+                            self.stop_move(axis=1)
+                    elif axis == 1:
+                        drive_axis_id = 1
+                        ax = self.mg.drive.axes[drive_axis_id]
+
+                        if ax.is_moving:
+                            continue
+
+                        # value_list = _joy_axis_values.get(axis, [])
+                        # value_list.append(value)
+                        # _joy_axis_values[axis] = value_list
+
+                        # pygame up-down axes are inverted
+                        direction = "forward" if value < 0 else "backward"
+
+                        self.mg.drive.send_command(
+                            "continuous_jog", direction, axis=drive_axis_id
+                        )
+                    else:
+                        self.logger.info(f"Event data = {event.dict}")
                 else:
                     self.logger.info(f"Received pygame event {event.type}.")
+                    self.logger.info(f"Event data = {event.dict}")
 
             clock.tick(20)
 
