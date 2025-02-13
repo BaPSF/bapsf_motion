@@ -199,10 +199,10 @@ class PyGameJoystickRunner(QRunnable):
                     value = event.dict["value"]
 
                     self.signals.axisMoved.emit(axis, value)
-                else:
-                    self.logger.info(
-                        f"PyGame event {event.type} - Data = {event.dict}."
-                    )
+
+                    # self.logger.info(
+                    #     f"PyGame event {event.type} - Data = {event.dict}."
+                    # )
 
             clock.tick(20)
 
