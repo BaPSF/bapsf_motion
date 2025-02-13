@@ -765,6 +765,7 @@ class Motor(EventActor):
 
         # set a slower speed
         self.send_command("speed", 4.0)
+        self.send_command("jog_speed", 4.0)
 
     def _read_and_set_protocol(self):
         """
