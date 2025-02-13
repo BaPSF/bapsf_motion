@@ -372,6 +372,12 @@ class Drive(EventActor):
 
         rtn = []
         for ax in self.axes:
+            if ax.motor.terminated:
+                self.logger.warning(
+                    f"Motor for axis {ax} has been terminated, can NOT "
+                    f"perform STOP command."
+                )
+                continue
             _rtn = ax.stop()
             rtn.append(_rtn)
 
