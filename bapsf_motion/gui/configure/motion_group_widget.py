@@ -449,6 +449,11 @@ class AxisControlWidget(QWidget):
 
         self.jog_delta_label.setText("0.1")
 
+        _fine_step_label = QLabel("Fine Step", parent=self)
+        _font = _fine_step_label.font()
+        _font.setPointSize(12)
+        _fine_step_label.setFont(_font)
+
         layout.addWidget(
             self.axis_name_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
@@ -462,7 +467,11 @@ class AxisControlWidget(QWidget):
         )
         layout.addSpacing(8)
         layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
-        layout.addSpacing(12)
+        layout.addSpacing(24)
+        layout.addWidget(
+            _fine_step_label,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBaseline,
+        )
         layout.addWidget(self.jog_delta_label)
         layout.addStretch(1)
 
