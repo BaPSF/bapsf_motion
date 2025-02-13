@@ -1255,11 +1255,13 @@ class DriveGameController(DriveBaseController):
 
     @Slot(int, float)
     def _handle_axis_move(self, jaxis, value):
-        if jaxis not in (1,):
+        if jaxis not in (1, 3):
             # moved joystick axis is not utilized
             return
-        else:  # jaxis == 1:
+        elif jaxis == 1:
             axis_id = 1
+        else:  # jaxis == 3:
+            axis_id = 0
 
         ax = self.mg.drive.axes[axis_id]
 
