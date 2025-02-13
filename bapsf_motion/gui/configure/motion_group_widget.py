@@ -994,8 +994,18 @@ class DriveGameController(DriveBaseController):
 
         self.connected_led.setChecked(False)
 
-    def stop_move(self):
-        self.mg.stop()
+    def stop_move(self, axis=None):
+        self.logger.info("Stopping move.")
+
+        if axis is None:
+            self.mg.stop()
+            return None
+
+        try:
+            self.logger.info(f"Stopping axis {axis}.")
+            self.mg.drive.send_command("stop", axis=axis)
+        except Exception:  # noqa
+            self.mg.stop()
 
     def zero_drive(self):
         self.mg.set_zero()
