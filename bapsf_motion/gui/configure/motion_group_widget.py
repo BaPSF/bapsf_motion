@@ -1427,7 +1427,7 @@ class MGWidget(QWidget):
         self._overlay_widget = None  # type: Union[_ConfigOverlay, None]
         self._overlay_shown = False
 
-        self.drive_control_widget = DriveControlWidget(self)
+        self.drive_control_widget = DriveControlWidget(parent=self)
         self.drive_control_widget.setEnabled(False)
 
         self.setLayout(self._define_layout())

@@ -277,7 +277,7 @@ class ConfigureGUI(QMainWindow):
 
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
-        self._run_widget = RunWidget(self)
+        self._run_widget = RunWidget(parent=self)
         self._mg_widget = None  # type: Union[MGWidget, None]
 
         self._stacked_widget = QStackedWidget(parent=self)
