@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QStackedWidget,
-    QLayout,
+    QLayout, QGridLayout,
 )
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -961,12 +961,6 @@ class DriveGameController(DriveBaseController):
         _led.set_fixed_height(24)
         self.connected_led = _led
 
-        _txt = QLabel("Battery", parent=self)
-        _txt.setFixedHeight(32)
-        _txt.setFont(_font)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
-        self.battery_txt = _txt
-
         # ADVANCED WIDGETS
         _combo = QComboBox(parent=self)
         _combo.setEditable(True)
@@ -988,11 +982,73 @@ class DriveGameController(DriveBaseController):
         connect_layout.addWidget(self.connected_led)
         connect_layout.addStretch(1)
 
-        battery_layout = QHBoxLayout()
-        battery_layout.setContentsMargins(0, 0, 0, 0)
-        battery_layout.addStretch(1)
-        battery_layout.addWidget(self.battery_txt)
-        battery_layout.addStretch(1)
+        _label_font = QFont()
+        _label_font.setPointSize(12)
+        _left_stick = QLabel("Left Stick :", parent=self)
+        _left_stick.setFont(_label_font)
+        _right_stick = QLabel("Right Stick :", parent=self)
+        _right_stick.setFont(_label_font)
+        _dpad_vert_stick = QLabel("DPad Up/Down :", parent=self)
+        _dpad_vert_stick.setFont(_label_font)
+        _dpad_horz_stick = QLabel("DPad Left/Right :", parent=self)
+        _dpad_horz_stick.setFont(_label_font)
+        _ab = QLabel("A / B :", parent=self)
+        _ab.setFont(_label_font)
+        _y = QLabel("Y :", parent=self)
+        _y.setFont(_label_font)
+        _move_y = QLabel("Move Y", parent=self)
+        _move_y.setFont(_label_font)
+        _move_x = QLabel("Move X", parent=self)
+        _move_x.setFont(_label_font)
+        _fine_y = QLabel("Fine Y", parent=self)
+        _fine_y.setFont(_label_font)
+        _fine_x = QLabel("Fine X", parent=self)
+        _fine_x.setFont(_label_font)
+        _stop = QLabel("STOP", parent=self)
+        _stop.setFont(_label_font)
+        _zero = QLabel("Zero", parent=self)
+        _zero.setFont(_label_font)
+
+        btn_label_layout = QGridLayout()
+        btn_label_layout.setContentsMargins(0, 0, 0, 0)
+        btn_label_layout.setColumnMinimumWidth(1, 8)
+        btn_label_layout.addWidget(
+            _left_stick, 0, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(
+            _right_stick, 1, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(
+            _dpad_vert_stick, 2, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(
+            _dpad_horz_stick, 3, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(
+            _ab, 4, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(
+            _y, 5, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+
+        btn_label_layout.addWidget(
+            _move_y, 0, 2, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        btn_label_layout.addWidget(
+            _move_x, 1, 2, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        btn_label_layout.addWidget(
+            _fine_y, 2, 2, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        btn_label_layout.addWidget(
+            _fine_x, 3, 2, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        btn_label_layout.addWidget(
+            _stop, 4, 2, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        btn_label_layout.addWidget(
+            _zero, 5, 2, alignment=Qt.AlignmentFlag.AlignLeft
+        )
 
         sub_layout_1 = QVBoxLayout()
         sub_layout_1.setContentsMargins(0, 0, 0, 0)
@@ -1000,7 +1056,8 @@ class DriveGameController(DriveBaseController):
         sub_layout_1.addWidget(self.refresh_controller_list_btn)
         sub_layout_1.addWidget(self.controller_combo_widget)
         sub_layout_1.addLayout(connect_layout)
-        sub_layout_1.addLayout(battery_layout)
+        sub_layout_1.addSpacing(24)
+        sub_layout_1.addLayout(btn_label_layout)
         sub_layout_1.addStretch(1)
 
         sub_widget_1 = QWidget(parent=self)
