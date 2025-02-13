@@ -275,6 +275,7 @@ class Motor(EventActor):
             recv=re.compile(r"BS=(?P<return>[0-9]\.?[0-9]?)"),
             recv_processor=int,
         ),
+        "commence_jogging": CommandEntry("commence_jogging", send="CJ"),
         "current": CommandEntry(
             "change_current",
             send="CC",
@@ -340,6 +341,33 @@ class Motor(EventActor):
             recv=re.compile(r"CI=(?P<return>[0-9]\.?[0-9]?)"),
             recv_processor=float,
             two_way=True,
+        ),
+        "jog_acceleration": CommandEntry(
+            "jog_acceleration",
+            send="JA",
+            send_processor=lambda value: f"{float(value):.3f}",
+            recv=re.compile(r"JA=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s / u.s,
+        ),
+        "jog_deceleration": CommandEntry(
+            "jog_deceleration",
+            send="JL",
+            send_processor=lambda value: f"{float(value):.3f}",
+            recv=re.compile(r"JL=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s / u.s,
+        ),
+        "jog_speed": CommandEntry(
+            "jog_speed",
+            send="JS",
+            send_processor=lambda value: f"{float(value):.4f}",
+            recv=re.compile(r"JS=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s,
         ),
         "kill": CommandEntry(
             "stop_and_kill",  # immediately stop moving and erase queue
