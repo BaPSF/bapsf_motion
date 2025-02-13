@@ -129,7 +129,7 @@ class PyGameJoystickRunner(QRunnable):
         super().__init__()
 
         self._logger = gui_logger
-        self._axis_dead_zone = 0.5
+        self._axis_dead_zone = 0.1
         self._run_loop = False
 
         # Re-instantiate the joystick since the given joystick was probably
@@ -194,39 +194,11 @@ class PyGameJoystickRunner(QRunnable):
                     direction = value[axis_id]
                     self.signals.hatPressed.emit(axis_id, direction)
 
-                # elif event.type == pygame.JOYAXISMOTION:
-                #     axis = event.dict["axis"]
-                #     value = event.dict["value"]
-                #
-                #     if axis == 0:
-                #         # Horizontal of left joystick
-                #         # - this axis is not utilized
-                #         pass
-                #     elif axis == 1 and np.absolute(value) < 0.5:
-                #         drive_axis_id = 1
-                #         ax = self.mg.drive.axes[drive_axis_id]
-                #
-                #         if ax.is_moving:
-                #             self.stop_move(axis=1)
-                #     elif axis == 1:
-                #         drive_axis_id = 1
-                #         ax = self.mg.drive.axes[drive_axis_id]
-                #
-                #         if ax.is_moving:
-                #             continue
-                #
-                #         # value_list = _joy_axis_values.get(axis, [])
-                #         # value_list.append(value)
-                #         # _joy_axis_values[axis] = value_list
-                #
-                #         # pygame up-down axes are inverted
-                #         direction = "forward" if value < 0 else "backward"
-                #
-                #         self.mg.drive.send_command(
-                #             "continuous_jog", direction, axis=drive_axis_id
-                #         )
-                #     else:
-                #         self.logger.info(f"Event data = {event.dict}")
+                elif event.type == pygame.JOYAXISMOTION:
+                    axis = event.dict["axis"]
+                    value = event.dict["value"]
+
+                    self.signals.axisMoved.emit(axis, value)
                 else:
                     self.logger.info(
                         f"PyGame event {event.type} - Data = {event.dict}."
