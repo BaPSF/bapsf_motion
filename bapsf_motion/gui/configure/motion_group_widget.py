@@ -1176,6 +1176,9 @@ class DriveGameController(DriveBaseController):
         self._pygame_joystick_runner.signals.joystickConnected.connect(
             self._update_connect_led
         )
+        self._pygame_joystick_runner.signals.axisMoved.connect(
+            self._handle_axis_move
+        )
         self._pygame_joystick_runner.signals.buttonPressed.connect(
             self._handle_button_press
         )
@@ -1248,6 +1251,29 @@ class DriveGameController(DriveBaseController):
     @Slot(bool)
     def _update_connect_led(self, value):
         self.connected_led.setChecked(value)
+
+    @Slot(int, float)
+    def _handle_axis_move(self, jaxis, value):
+        if jaxis not in (1,):
+            # moved joystick axis is not utilized
+            return
+        else:  # jaxis == 1:
+            axis_id = 1
+
+        ax = self.mg.drive.axes[axis_id]
+
+        self.logger.info(f"~~ Axis {jaxis} = {value}")
+        if np.absolute(value) < 0.5:
+            self.stop_move(axis=axis_id)
+        elif ax.is_moving:
+            pass
+        else:
+            # pygame up-down axes are inverted
+            direction = "forward" if value < 0 else "backward"
+
+            self.mg.drive.send_command(
+                "continuous_jog", direction, axis=axis_id
+            )
 
     @Slot(int)
     def _handle_button_press(self, button):
