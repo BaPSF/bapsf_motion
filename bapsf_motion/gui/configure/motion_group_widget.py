@@ -4,8 +4,13 @@ import asyncio
 import logging
 import numpy as np
 import os
-import pygame
 import warnings
+
+# ensure joystick events are monitored when the pygame window
+# is not in focus ... this needs to be done before importing pygame
+os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
+
+import pygame  # noqa
 
 from abc import abstractmethod
 from PySide6.QtCore import Qt, Signal, Slot, QSize, QRunnable, QThreadPool, QObject
@@ -143,10 +148,6 @@ class PyGameJoystickRunner(QRunnable):
 
     def run(self) -> None:
         self.logger.info("Starting PyGame Joystick runner")
-
-        # ensure joystick events are monitored when the pygame window
-        # is not in focus
-        os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 
         if not pygame.get_init():
             pygame.init()
