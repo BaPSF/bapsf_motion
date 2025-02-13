@@ -1159,6 +1159,7 @@ class DriveGameController(DriveBaseController):
 
     def closeEvent(self, event):
         self.disconnect_controller()
+        self._thead_pool.deleteLater()
         super().closeEvent(event)
 
 
