@@ -1086,8 +1086,12 @@ class DriveGameController(DriveBaseController):
             return
 
         self._pygame_joystick_runner.quit()
+        self._pygame_joystick_runner = None
         self._thead_pool.waitForDone(200)
         self._thead_pool.clear()
+
+        if self.mg.is_moving:
+            self.stop_move()
 
     def stop_move(self, axis=None):
         self.logger.info("Stopping move.")
