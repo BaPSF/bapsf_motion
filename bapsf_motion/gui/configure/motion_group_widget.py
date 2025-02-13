@@ -926,6 +926,17 @@ class DriveGameController(DriveBaseController):
         screen = pygame.display.set_mode((100, 100))
 
         # pygame while loop
+        # - joystick events
+        #   https://www.pygame.org/docs/ref/event.html
+        #
+        #   JOYAXISMOTION
+        #   JOYBALLMOTION
+        #   JOYHATMOTION
+        #   JOYBUTTONUP
+        #   JOYBUTTONDOWN
+        #   JOYDEVICEADDED
+        #   JOYDEVICEREMOVED
+        #
         while self.run_pygame_loop:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
