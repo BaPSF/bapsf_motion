@@ -165,7 +165,7 @@ class PyGameJoystickRunner(QRunnable):
         self.signals.joystickConnected.emit(self.run_loop)
 
         clock = pygame.time.Clock()
-        screen = pygame.display.set_mode((100, 100))
+        screen = pygame.display.set_mode((100, 100), flags=pygame.HIDDEN)
 
         # pygame while loop
         # - joystick events
