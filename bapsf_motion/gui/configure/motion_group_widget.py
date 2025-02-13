@@ -223,11 +223,6 @@ class PyGameJoystickRunner(QRunnable):
                 "forced to shut down.",
                 exc_info=err,
             )
-        finally:
-            # if isinstance(self.mg, MotionGroup):
-            #     # MotionGroup has not been linked yet
-            #     self.mg.stop()
-            pass
 
         self.signals.joystickConnected.emit(self.run_loop)
 
