@@ -292,7 +292,7 @@ class Drive(EventActor):
             Any arguments to the ``command`` that will be sent with the
             motor command.
         axis: int, optional
-            Axis index the comment is directed to.  If `None`, then the
+            Axis index the command is directed to.  If `None`, then the
             command is sent to all axes. (DEFAULT: `NONE`)
         """
         if axis is None:
