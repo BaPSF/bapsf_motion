@@ -930,7 +930,7 @@ class DriveGameController(DriveBaseController):
     def _initialize_widgets(self):
         self._run_pygame_loop = False
         self._pygame_joystick_runner = None  # type: Union[PyGameJoystickRunner, None]
-        self._thead_pool = QThreadPool(parent=self)
+        self._thread_pool = QThreadPool(parent=self)
 
         _font = QFont()
         _font.setPointSize(12)
@@ -1080,7 +1080,7 @@ class DriveGameController(DriveBaseController):
             self._handle_hat_press
         )
 
-        self._thead_pool.start(self._pygame_joystick_runner)
+        self._thread_pool.start(self._pygame_joystick_runner)
 
     def disconnect_controller(self):
         if self._pygame_joystick_runner is None:
@@ -1088,8 +1088,8 @@ class DriveGameController(DriveBaseController):
 
         self._pygame_joystick_runner.quit()
         self._pygame_joystick_runner = None
-        self._thead_pool.waitForDone(200)
-        self._thead_pool.clear()
+        self._thread_pool.waitForDone(200)
+        self._thread_pool.clear()
 
         if self.mg.is_moving:
             self.stop_move()
@@ -1160,7 +1160,7 @@ class DriveGameController(DriveBaseController):
 
     def closeEvent(self, event):
         self.disconnect_controller()
-        self._thead_pool.deleteLater()
+        self._thread_pool.deleteLater()
         super().closeEvent(event)
 
 
