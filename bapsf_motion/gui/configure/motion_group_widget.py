@@ -206,6 +206,7 @@ class PyGameJoystickRunner(QRunnable):
 
             clock.tick(20)
 
+        self.logger.info("PyGame loop ended.")
         self.run_shutdown()
 
     def run_shutdown(self):
