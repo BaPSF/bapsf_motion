@@ -1024,31 +1024,15 @@ class DriveGameController(DriveBaseController):
         btn_label_layout.addWidget(
             _dpad_horz_stick, 3, 0, alignment=Qt.AlignmentFlag.AlignRight
         )
-        btn_label_layout.addWidget(
-            _ab, 4, 0, alignment=Qt.AlignmentFlag.AlignRight
-        )
-        btn_label_layout.addWidget(
-            _y, 5, 0, alignment=Qt.AlignmentFlag.AlignRight
-        )
+        btn_label_layout.addWidget(_ab, 4, 0, alignment=Qt.AlignmentFlag.AlignRight)
+        btn_label_layout.addWidget(_y, 5, 0, alignment=Qt.AlignmentFlag.AlignRight)
 
-        btn_label_layout.addWidget(
-            _move_y, 0, 2, alignment=Qt.AlignmentFlag.AlignLeft
-        )
-        btn_label_layout.addWidget(
-            _move_x, 1, 2, alignment=Qt.AlignmentFlag.AlignLeft
-        )
-        btn_label_layout.addWidget(
-            _fine_y, 2, 2, alignment=Qt.AlignmentFlag.AlignLeft
-        )
-        btn_label_layout.addWidget(
-            _fine_x, 3, 2, alignment=Qt.AlignmentFlag.AlignLeft
-        )
-        btn_label_layout.addWidget(
-            _stop, 4, 2, alignment=Qt.AlignmentFlag.AlignLeft
-        )
-        btn_label_layout.addWidget(
-            _zero, 5, 2, alignment=Qt.AlignmentFlag.AlignLeft
-        )
+        btn_label_layout.addWidget(_move_y, 0, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_move_x, 1, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_fine_y, 2, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_fine_x, 3, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_stop, 4, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_zero, 5, 2, alignment=Qt.AlignmentFlag.AlignLeft)
 
         sub_layout_1 = QVBoxLayout()
         sub_layout_1.setContentsMargins(0, 0, 0, 0)
