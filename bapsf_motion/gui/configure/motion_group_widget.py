@@ -1067,109 +1067,6 @@ class DriveGameController(DriveBaseController):
         else:
             self.controller_combo_widget.setCurrentText("")
 
-    def run_joystick_monitor(self):
-        # ensure joystick events are monitored when the pygame window
-        # is not in focus
-        os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
-
-        if not pygame.get_init():
-            pygame.init()
-
-        if not pygame.joystick.get_init():
-            pygame.joystick.init()
-
-        js = self.joystick
-        if js is None:
-            self.logger.info("No joystick found")
-            self.disconnect_controller()
-            return None
-
-        js.init()
-        self.run_pygame_loop = js.get_init()
-        self.connected_led.setChecked(self.run_pygame_loop)
-
-        clock = pygame.time.Clock()
-        screen = pygame.display.set_mode((100, 100))
-
-        # pygame while loop
-        # - joystick events
-        #   https://www.pygame.org/docs/ref/event.html
-        #
-        #   JOYAXISMOTION
-        #   JOYBALLMOTION
-        #   JOYHATMOTION
-        #   JOYBUTTONUP
-        #   JOYBUTTONDOWN
-        #   JOYDEVICEADDED
-        #   JOYDEVICEREMOVED
-        #
-        _joy_axis_values = {}
-        while self.run_pygame_loop:
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.run_pygame_loop = False
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    self.logger.info(f"button pressed - {event.dict}")
-
-                    button = event.dict["button"]
-                    if button in (0, 1):
-                        self.stop_move()
-                    elif button == 3:
-                        self.zero_drive()
-                elif event.type == pygame.JOYHATMOTION:
-                    value = event.dict["value"]
-                    axis_id = 0 if value[0] != 0 else 1
-                    direction = value[axis_id]
-
-                    acw = self._axis_control_widgets[axis_id]
-                    if direction == 0:
-                        # hat (dpad) button returned to unpressed state
-                        pass
-                    elif direction > 0:
-                        acw.jog_forward()
-                    else:
-                        acw.jog_backward()
-                elif event.type == pygame.JOYAXISMOTION:
-                    axis = event.dict["axis"]
-                    value = event.dict["value"]
-
-                    if axis == 0:
-                        # Horizontal of left joystick
-                        # - this axis is not utilized
-                        pass
-                    elif axis == 1 and np.absolute(value) < 0.5:
-                        drive_axis_id = 1
-                        ax = self.mg.drive.axes[drive_axis_id]
-
-                        if ax.is_moving:
-                            self.stop_move(axis=1)
-                    elif axis == 1:
-                        drive_axis_id = 1
-                        ax = self.mg.drive.axes[drive_axis_id]
-
-                        if ax.is_moving:
-                            continue
-
-                        # value_list = _joy_axis_values.get(axis, [])
-                        # value_list.append(value)
-                        # _joy_axis_values[axis] = value_list
-
-                        # pygame up-down axes are inverted
-                        direction = "forward" if value < 0 else "backward"
-
-                        self.mg.drive.send_command(
-                            "continuous_jog", direction, axis=drive_axis_id
-                        )
-                    else:
-                        self.logger.info(f"Event data = {event.dict}")
-                else:
-                    self.logger.info(f"Received pygame event {event.type}.")
-                    self.logger.info(f"Event data = {event.dict}")
-
-            clock.tick(20)
-
-        self.disconnect_controller()
-
     def connect_controller(self):
         self.logger.info("Connecting controller.")
         self._pygame_joystick_runner = PyGameJoystickRunner(self.joystick)
@@ -1188,42 +1085,6 @@ class DriveGameController(DriveBaseController):
         )
 
         self._thead_pool.start(self._pygame_joystick_runner)
-        # self.run_joystick_monitor()
-
-    def _disconnect_controller(self):
-        self.logger.info(f"Disconnecting controller.")
-
-        self.run_pygame_loop = False
-        if pygame.get_init():
-            pygame.event.clear()
-            pygame.event.post(pygame.event.Event(pygame.QUIT))
-            pygame.event.pump()
-
-        # force stop any motion that might be happening
-        if isinstance(self.mg, MotionGroup):
-            # MotionGroup has not been linked yet
-            self.mg.stop()
-
-        # wait for the pygame loop to shut down
-        #
-        # Note: the pygame loop needs be operated in a separate thread
-        #       so it is not blocked when this method is called.  For
-        #       now pygame.quit() will always throw a pygame.error since
-        #       we are forcing a quit.
-        try:
-            pygame.quit()
-        except pygame.error as err:
-            self.logger.warning(
-                "The pygame event loop did not safely shut down and was "
-                "forced to shut down.",
-                exc_info=err,
-            )
-        finally:
-            if isinstance(self.mg, MotionGroup):
-                # MotionGroup has not been linked yet
-                self.mg.stop()
-
-        self.connected_led.setChecked(False)
 
     def disconnect_controller(self):
         if self._pygame_joystick_runner is None:
@@ -1265,7 +1126,6 @@ class DriveGameController(DriveBaseController):
 
         ax = self.mg.drive.axes[axis_id]
 
-        self.logger.info(f"~~ Axis {jaxis} = {value}")
         if np.absolute(value) < 0.5:
             self.stop_move(axis=axis_id)
         elif ax.is_moving:
