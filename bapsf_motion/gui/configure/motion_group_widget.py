@@ -533,12 +533,10 @@ class AxisControlWidget(QWidget):
             )
             return
 
-        proceed = True
-        if not isinstance(self.mg.mb, MotionBuilder):
-            try:
-                proceed = self.mspace_warning_dialog.exec()
-            except AttributeError:
-                proceed = False
+        try:
+            proceed = self.mspace_warning_dialog.exec()
+        except AttributeError:
+            proceed = False
 
         if proceed:
             self.mg.move_to(target_pos)
@@ -1431,6 +1429,9 @@ class DriveControlWidget(QWidget):
         if not self.isEnabled():
             return
 
+        if isinstance(mg.mb, MotionBuilder):
+            self.mspace_warning_dialog.display_dialog = False
+
         self.desktop_controller_widget.link_motion_group(self.mg)
         if self.game_controller_widget is not None:
             self.game_controller_widget.link_motion_group(self.mg)
@@ -1443,6 +1444,7 @@ class DriveControlWidget(QWidget):
             self.game_controller_widget.unlink_motion_group()
 
         self._mg = None
+        self.mspace_warning_dialog.display_dialog = True
         self.setEnabled(False)
 
     def update_controller_displays(self):
@@ -1470,12 +1472,10 @@ class DriveControlWidget(QWidget):
             # target_pos is an empty list
             return
 
-        proceed = True
-        if not isinstance(self.mg.mb, MotionBuilder):
-            try:
-                proceed = self.mspace_warning_dialog.exec()
-            except AttributeError:
-                proceed = False
+        try:
+            proceed = self.mspace_warning_dialog.exec()
+        except AttributeError:
+            proceed = False
 
         if proceed:
             self.mg.move_to(target_pos)
