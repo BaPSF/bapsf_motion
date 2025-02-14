@@ -3,6 +3,7 @@ This module contains helper widgets for contructing the main GUIs in
 `bapsf_motion.gui`.
 """
 __all__ = [
+    "BatteryStatusIcon",
     "GearButton",
     "GearValidButton",
     "HLinePlain",
@@ -25,6 +26,7 @@ from bapsf_motion.gui.widgets.buttons import (
     StyleButton,
 )
 from bapsf_motion.gui.widgets.misc import (
+    BatteryStatusIcon,
     IPv4Validator,
     QLineEditSpecialized,
     HLinePlain,

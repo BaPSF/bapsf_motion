@@ -1,5 +1,6 @@
 """This module contains miscellaneous custom Qt widgets."""
 __all__ = [
+    "BatteryStatusIcon",
     "IPv4Validator",
     "QLineEditSpecialized",
     "HLinePlain",
@@ -42,6 +43,14 @@ class BatteryStatusIcon(QLabel):
         self.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
+
+    def set_battery_status(self, battery_status):
+        try:
+            _icon = self._icon_map[battery_status]
+        except KeyError:
+            _icon = self._icon_map["unknown"]
+
+        self.setPixmap(_icon.pixmap(self._pixmap_size, self._pixmap_size))
 
 
 class IPv4Validator(QValidator):
