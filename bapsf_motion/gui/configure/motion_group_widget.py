@@ -662,6 +662,7 @@ class DriveBaseController(QWidget):
             self.mspace_warning_dialog = parent.mspace_warning_dialog
 
         self._mg = None
+        self._mspace_drive_polarity = None
 
         self._axis_control_widgets = []  # type: List[AxisControlWidget]
         self._initialize_axis_control_widgets()
@@ -701,6 +702,10 @@ class DriveBaseController(QWidget):
     def mg(self) -> Union[MotionGroup, None]:
         return self._mg
 
+    @property
+    def mspace_drive_polarity(self):
+        return self._mspace_drive_polarity
+
     def link_motion_group(self, mg: MotionGroup):
         if not isinstance(mg, MotionGroup):
             self.logger.warning(
@@ -732,6 +737,7 @@ class DriveBaseController(QWidget):
             acw.show()
 
         self.setEnabled(not self._mg.terminated)
+        self._determine_mspace_drive_polarity()
 
     def unlink_motion_group(self):
         for ii, acw in enumerate(self._axis_control_widgets):
@@ -750,6 +756,7 @@ class DriveBaseController(QWidget):
 
         # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
+        self._mspace_drive_polarity = None
         self.setEnabled(False)
 
     def update_all_axis_displays(self):
@@ -788,6 +795,27 @@ class DriveBaseController(QWidget):
         is_moving[axis_index] = False
         if not any(is_moving):
             self.movementStopped.emit()
+
+    def _determine_mspace_drive_polarity(self):
+        naxes = self.mg.drive.naxes
+        polarity = [1] * naxes
+        mspace_zero = [0] * naxes
+        drive_zero = self.mg.transform(mspace_zero, to_coords="drive")
+
+        for ii in range(naxes):
+            test_pt = [0] * naxes
+            test_pt[ii] = 10
+            drive_pt = self.mg.transform(test_pt, to_coords="drive")
+            delta = drive_pt[0][ii] - drive_zero[0][ii]
+
+            self.logger.info(f"test_pt = {test_pt}")
+            self.logger.info(f"drive_pt = {drive_pt}")
+            self.logger.info(f"delta = {delta}")
+
+            pt_polarity = 1 if delta > 0 else -1
+            polarity[ii] = pt_polarity
+
+        self._mspace_drive_polarity = polarity
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}.")
