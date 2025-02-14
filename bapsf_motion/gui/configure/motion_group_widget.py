@@ -1412,7 +1412,13 @@ class DriveControlWidget(QWidget):
             self.unlink_motion_group()
             self._mg = mg
 
+        self.setEnabled(not self._mg.terminated)
+        if not self.isEnabled():
+            return
+
         self.desktop_controller_widget.link_motion_group(self.mg)
+        if self.game_controller_widget is not None:
+            self.game_controller_widget.link_motion_group(self.mg)
 
         self.setEnabled(not self._mg.terminated)
 
