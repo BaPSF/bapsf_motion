@@ -1193,6 +1193,14 @@ class DriveGameController(DriveBaseController):
         elif ax.is_moving:
             pass
         else:
+            try:
+                proceed = self.mspace_warning_dialog.exec()
+            except AttributeError:
+                proceed = False
+
+            if not proceed:
+                return
+
             # pygame up-down axes are inverted
             sign = 1 if value <= 0 else -1
             sign = self.mspace_drive_polarity[axis_id] * sign
@@ -1214,6 +1222,14 @@ class DriveGameController(DriveBaseController):
         if direction == 0:
             # hat (dpad) button returned to unpressed state
             # do nothing
+            return
+
+        try:
+            proceed = self.mspace_warning_dialog.exec()
+        except AttributeError:
+            proceed = False
+
+        if not proceed:
             return
 
         acw = self._axis_control_widgets[hat_id]
