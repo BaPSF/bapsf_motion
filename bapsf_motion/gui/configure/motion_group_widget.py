@@ -1418,8 +1418,9 @@ class DriveControlWidget(QWidget):
 
     def unlink_motion_group(self):
         self.desktop_controller_widget.unlink_motion_group()
+        if self.game_controller_widget is not None:
+            self.game_controller_widget.unlink_motion_group()
 
-        # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self.setEnabled(False)
 
