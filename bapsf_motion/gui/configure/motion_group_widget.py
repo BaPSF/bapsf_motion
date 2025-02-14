@@ -808,10 +808,6 @@ class DriveBaseController(QWidget):
             drive_pt = self.mg.transform(test_pt, to_coords="drive")
             delta = drive_pt[0][ii] - drive_zero[0][ii]
 
-            self.logger.info(f"test_pt = {test_pt}")
-            self.logger.info(f"drive_pt = {drive_pt}")
-            self.logger.info(f"delta = {delta}")
-
             pt_polarity = 1 if delta > 0 else -1
             polarity[ii] = pt_polarity
 
