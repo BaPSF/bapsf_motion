@@ -1200,7 +1200,9 @@ class DriveGameController(DriveBaseController):
             pass
         else:
             # pygame up-down axes are inverted
-            direction = "forward" if value < 0 else "backward"
+            sign = 1 if value <= 0 else -1
+            sign = self.mspace_drive_polarity[axis_id] * sign
+            direction = "forward" if sign > 0 else "backward"
 
             self.mg.drive.send_command(
                 "continuous_jog", direction, axis=axis_id
