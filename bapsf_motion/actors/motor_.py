@@ -275,6 +275,12 @@ class Motor(EventActor):
             recv=re.compile(r"BS=(?P<return>[0-9]\.?[0-9]?)"),
             recv_processor=int,
         ),
+        "commence_jogging": CommandEntry("commence_jogging", send="CJ"),
+        "continuous_jog": CommandEntry(
+            "continuous_jog",
+            send="",
+            method_command=True,
+        ),
         "current": CommandEntry(
             "change_current",
             send="CC",
@@ -340,6 +346,33 @@ class Motor(EventActor):
             recv=re.compile(r"CI=(?P<return>[0-9]\.?[0-9]?)"),
             recv_processor=float,
             two_way=True,
+        ),
+        "jog_acceleration": CommandEntry(
+            "jog_acceleration",
+            send="JA",
+            send_processor=lambda value: f"{float(value):.3f}",
+            recv=re.compile(r"JA=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s / u.s,
+        ),
+        "jog_deceleration": CommandEntry(
+            "jog_deceleration",
+            send="JL",
+            send_processor=lambda value: f"{float(value):.3f}",
+            recv=re.compile(r"JL=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s / u.s,
+        ),
+        "jog_speed": CommandEntry(
+            "jog_speed",
+            send="JS",
+            send_processor=lambda value: f"{float(value):.4f}",
+            recv=re.compile(r"JS=(?P<return>[0-9]+\.?[0-9]*)"),
+            recv_processor=float,
+            two_way=True,
+            units=u.rev / u.s,
         ),
         "kill": CommandEntry(
             "stop_and_kill",  # immediately stop moving and erase queue
@@ -418,7 +451,11 @@ class Motor(EventActor):
             two_way=True,
             units=u.rev / u.s,
         ),
-        "stop": CommandEntry("stop", send="SK"),
+        "stop": CommandEntry(
+            "stop",
+            send="SK",
+            send_processor=lambda soft: "D" if bool(soft) else "",
+        ),
         "target_distance": CommandEntry(
             "target_distance",
             send="DI",
@@ -699,7 +736,7 @@ class Motor(EventActor):
 
     def _lost_connection(self, rtn: Any = None):
         """
-        Check if the motor connection as lost by examining the return
+        Check if the motor connection was lost by examining the return
         value from send_command.
         """
         if rtn is None:
@@ -732,6 +769,7 @@ class Motor(EventActor):
 
         # set a slower speed
         self.send_command("speed", 4.0)
+        self.send_command("jog_speed", 4.0)
 
     def _read_and_set_protocol(self):
         """
@@ -1627,9 +1665,32 @@ class Motor(EventActor):
         except AttributeError:
             pass
 
-    def stop(self):
+    def continuous_jog(self, direction="forward"):
+        """
+        Start a continuous jog.  The motor will not stop until
+        commanded to.
+        """
+        if self.status["alarm"]:
+            self.send_command("alarm_reset")
+            alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
+
+            if self._lost_connection(alarm_msg) or alarm_msg["alarm_message"]:
+                self.logger.error(
+                    f"Motor alarm could not be reset. -- {alarm_msg}"
+                )
+                return None
+
+        self.enable()
+
+        # The direction of the commence_jogging is defined by the side
+        # of the target_distance (DI) command
+        direction = -1 if direction == "backward" else 1
+        self.send_command("target_distance", direction)
+        self.send_command("commence_jogging")
+
+    def stop(self, soft=False):
         """Stop motor movement."""
-        self.send_command("stop")
+        self.send_command("stop", soft)
 
     def move_to(self, pos: int):
         """

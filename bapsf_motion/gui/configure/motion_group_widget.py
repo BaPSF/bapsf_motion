@@ -2,10 +2,19 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
+import numpy as np
+import os
 import warnings
 
-from PySide6.QtCore import Qt, Signal, Slot, QSize
-from PySide6.QtGui import QDoubleValidator
+# ensure joystick events are monitored when the pygame window
+# is not in focus ... this needs to be done before importing pygame
+os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
+
+import pygame  # noqa
+
+from abc import abstractmethod
+from PySide6.QtCore import Qt, Signal, Slot, QSize, QRunnable, QThreadPool, QObject
+from PySide6.QtGui import QDoubleValidator, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -17,6 +26,8 @@ from PySide6.QtWidgets import (
     QTextEdit,
     QVBoxLayout,
     QWidget,
+    QStackedWidget,
+    QLayout, QGridLayout,
 )
 from typing import Any, Dict, List, Optional, Tuple, Union
 
@@ -36,6 +47,7 @@ from bapsf_motion.gui.widgets import (
     DoneButton,
     GearValidButton,
     HLinePlain,
+    LED,
     StyleButton,
     StopButton,
 )
@@ -107,8 +119,164 @@ class MSpaceMessageBox(QMessageBox):
             # Make sure the Abort button always remains the default choice
             self.setDefaultButton(QMessageBox.StandardButton.Abort)
             return True
-        else:  # button == QMessageBox.StandardButton.Abort:
+        elif button == QMessageBox.StandardButton.Abort:
             return False
+
+        return False
+
+
+class PyGameJoystickRunnerSignals(QObject):
+    buttonPressed = Signal(int)
+    hatPressed = Signal(int, int)
+    axisMoved = Signal(int, float)
+    joystickConnected = Signal(bool)
+    shutdownLoop = Signal()
+
+
+class PyGameJoystickRunner(QRunnable):
+    # signals must be patterned in separate class, otherwise we can not
+    # connect the signals in out __init__
+    signals = PyGameJoystickRunnerSignals()
+
+    def __init__(self, joystick: pygame.joystick.JoystickType):
+        super().__init__()
+
+        self._logger = gui_logger
+        self._axis_dead_zone = 0.1
+        self._run_loop = False
+
+        # Re-instantiate the joystick since the given joystick was probably
+        # instantiated in a different thread.
+        joystick.init()
+        js_id = joystick.get_id()
+        joystick.quit()
+        self._joystick = pygame.joystick.Joystick(js_id)
+
+        self.signals.shutdownLoop.connect(self.run_shutdown)
+
+    def run(self) -> None:
+        self.logger.info("Starting PyGame Joystick runner")
+
+        if not pygame.get_init():
+            pygame.init()
+
+        if not pygame.joystick.get_init():
+            pygame.joystick.init()
+
+        js = self.joystick
+        if not isinstance(self.joystick, pygame.joystick.JoystickType):
+            pygame.quit()
+            return
+
+        js.init()
+        self.run_loop = js.get_init()
+        self.signals.joystickConnected.emit(self.run_loop)
+
+        clock = pygame.time.Clock()
+        screen = pygame.display.set_mode((100, 100), flags=pygame.HIDDEN)
+
+        # pygame while loop
+        # - joystick events
+        #   https://www.pygame.org/docs/ref/event.html
+        #
+        #   JOYAXISMOTION
+        #   JOYBALLMOTION
+        #   JOYHATMOTION
+        #   JOYBUTTONUP
+        #   JOYBUTTONDOWN
+        #   JOYDEVICEADDED
+        #   JOYDEVICEREMOVED
+        #
+        # _joy_axis_values = {}
+        while self.run_loop:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.run_loop = False
+                elif event.type == pygame.JOYBUTTONDOWN:
+                    self.signals.buttonPressed.emit(event.dict["button"])
+
+                    # TODO: add an immediate caller to handle emergency
+                    #       stop scenarios
+                elif event.type == pygame.JOYHATMOTION:
+                    value = event.dict["value"]
+                    axis_id = 0 if value[0] != 0 else 1
+                    direction = value[axis_id]
+                    self.signals.hatPressed.emit(axis_id, direction)
+
+                elif event.type == pygame.JOYAXISMOTION:
+                    axis = event.dict["axis"]
+                    value = event.dict["value"]
+
+                    self.signals.axisMoved.emit(axis, value)
+
+                    # self.logger.info(
+                    #     f"PyGame event {event.type} - Data = {event.dict}."
+                    # )
+
+            clock.tick(20)
+
+        self.logger.info("PyGame loop ended.")
+        self.run_shutdown()
+
+    def run_shutdown(self):
+        if self.run_loop:
+            self.quit()
+            self.signals.shutdownLoop.emit()
+            return
+
+        try:
+            pygame.quit()
+        except pygame.error as err:
+            self.logger.warning(
+                "The pygame event loop did not safely shut down and was "
+                "forced to shut down.",
+                exc_info=err,
+            )
+
+        self.signals.joystickConnected.emit(self.run_loop)
+
+    @property
+    def axis_dead_zone(self) -> float:
+        return self._axis_dead_zone
+
+    @axis_dead_zone.setter
+    def axis_dead_zone(self, value: float) -> None:
+        try:
+            value = float(value)
+        except TypeError:
+            return
+
+        if -1.0 >= value >= 1.0:
+            self._axis_dead_zone = np.absolute(value)
+
+    @property
+    def joystick(self) -> pygame.joystick.JoystickType:
+        return self._joystick
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def run_loop(self) -> bool:
+        return self._run_loop
+
+    @run_loop.setter
+    def run_loop(self, value: bool) -> None:
+        if isinstance(value, bool):
+            self._run_loop = value
+
+    def set_immediate_handler(self, func, event_type):
+        ...
+
+    def quit(self) -> None:
+        if pygame.get_init():
+            pygame.joystick.quit()
+            pygame.event.clear()
+            pygame.event.post(pygame.event.Event(pygame.QUIT))
+        self.run_loop = False
+
+        self.signals.joystickConnected.emit(self.run_loop)
 
 
 class AxisControlWidget(QWidget):
@@ -118,7 +286,11 @@ class AxisControlWidget(QWidget):
     movementStopped = Signal(int)
     axisStatusChanged = Signal()
 
-    def __init__(self, parent=None):
+    def __init__(
+        self,
+        axis_display_mode="interactive",
+        parent=None,
+    ):
         super().__init__(parent)
 
         self._logger = gui_logger
@@ -126,8 +298,18 @@ class AxisControlWidget(QWidget):
         self._mg = None
         self._axis_index = None
 
+        if axis_display_mode not in ("interactive", "readonly"):
+            self._logger.info(
+                f"Forcing display mode of {self.__class__.__name__} to be"
+                f" interactive."
+            )
+            axis_display_mode = "interactive"
+        self._interactive_display_mode = (
+            True if axis_display_mode == "interactive"
+            else False
+        )
+
         self.setFixedWidth(120)
-        # self.setEnabled(True)
 
         # Define BUTTONS
         _btn = StyleButton(qta.icon("fa.arrow-up"), "", parent=self)
@@ -197,15 +379,15 @@ class AxisControlWidget(QWidget):
         # Define ADVANCED WIDGETS
 
         self.mspace_warning_dialog = None
-        if isinstance(parent, DriveControlWidget):
+        if hasattr(parent, "mspace_warning_dialog"):
             self.mspace_warning_dialog = parent.mspace_warning_dialog
 
         self.setLayout(self._define_layout())
         self._connect_signals()
 
     def _connect_signals(self):
-        self.jog_forward_btn.clicked.connect(self._jog_forward)
-        self.jog_backward_btn.clicked.connect(self._jog_backward)
+        self.jog_forward_btn.clicked.connect(self.jog_forward)
+        self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
         self.jog_delta_label.editingFinished.connect(self._validate_jog_value)
 
@@ -214,7 +396,17 @@ class AxisControlWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
 
-        # layout.addStretch(1)
+        if self.interactive_display_mode:
+            layout = self._define_interactive_layout(layout)
+        else:
+            layout = self._define_readonly_layout()
+
+        return layout
+
+    def _define_interactive_layout(self, layout: QVBoxLayout = None):
+        if layout is None:
+            layout = QVBoxLayout()
+
         layout.addWidget(
             self.axis_name_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
@@ -227,7 +419,6 @@ class AxisControlWidget(QWidget):
             self.target_position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
-        # layout.addStretch(1)
         layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addWidget(self.jog_forward_btn)
         layout.addStretch(1)
@@ -236,9 +427,61 @@ class AxisControlWidget(QWidget):
         layout.addStretch(1)
         layout.addWidget(self.jog_backward_btn, alignment=Qt.AlignmentFlag.AlignBottom)
         layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
-        # layout.addStretch(1)
         layout.addWidget(self.zero_btn, alignment=Qt.AlignmentFlag.AlignBottom)
-        # layout.addStretch(1)
+        layout.addStretch(1)
+
+        return layout
+
+    def _define_readonly_layout(self, layout: QVBoxLayout = None):
+        if layout is None:
+            layout = QVBoxLayout()
+
+        self.target_position_label.setEnabled(False)
+        self.target_position_label.setVisible(False)
+
+        self.jog_forward_btn.setEnabled(False)
+        self.jog_forward_btn.setVisible(False)
+
+        self.jog_backward_btn.setEnabled(False)
+        self.jog_backward_btn.setVisible(False)
+
+        self.home_btn.setEnabled(False)
+        self.home_btn.setVisible(False)
+
+        self.zero_btn.setEnabled(False)
+        self.zero_btn.setVisible(False)
+
+        self.limit_fwd_btn.setFixedHeight(24)
+        self.limit_bwd_btn.setFixedHeight(24)
+
+        self.jog_delta_label.setText("0.1")
+
+        _fine_step_label = QLabel("Fine Step", parent=self)
+        _font = _fine_step_label.font()
+        _font.setPointSize(12)
+        _fine_step_label.setFont(_font)
+
+        layout.addWidget(
+            self.axis_name_label,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addSpacing(4)
+        layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
+        layout.addSpacing(8)
+        layout.addWidget(
+            self.position_label,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addSpacing(8)
+        layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
+        layout.addSpacing(24)
+        layout.addWidget(
+            _fine_step_label,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBaseline,
+        )
+        layout.addWidget(self.jog_delta_label)
+        layout.addStretch(1)
+
         return layout
 
     @property
@@ -271,15 +514,19 @@ class AxisControlWidget(QWidget):
     def target_position(self):
         return float(self.target_position_label.text())
 
+    @property
+    def interactive_display_mode(self):
+        return self._interactive_display_mode
+
     def _get_jog_delta(self):
         delta_str = self.jog_delta_label.text()
         return float(delta_str)
 
-    def _jog_forward(self):
+    def jog_forward(self):
         pos = self.position.value + self._get_jog_delta()
         self._move_to(pos)
 
-    def _jog_backward(self):
+    def jog_backward(self):
         pos = self.position.value - self._get_jog_delta()
         self._move_to(pos)
 
@@ -294,9 +541,10 @@ class AxisControlWidget(QWidget):
             )
             return
 
-        proceed = True
-        if not isinstance(self.mg.mb, MotionBuilder):
+        try:
             proceed = self.mspace_warning_dialog.exec()
+        except AttributeError:
+            proceed = False
 
         if proceed:
             self.mg.move_to(target_pos)
@@ -375,14 +623,24 @@ class AxisControlWidget(QWidget):
     def _emit_movement_finished(self):
         self.movementStopped.emit(self.axis_index)
 
+    def enable_motion_buttons(self):
+        self.zero_btn.setEnabled(True)
+        self.jog_forward_btn.setEnabled(True)
+        self.jog_backward_btn.setEnabled(True)
+
+    def disable_motion_buttons(self):
+        self.zero_btn.setEnabled(False)
+        self.jog_forward_btn.setEnabled(False)
+        self.jog_backward_btn.setEnabled(False)
+
     def closeEvent(self, event):
         self.logger.info("Closing AxisControlWidget")
 
         if isinstance(self.axis, Axis):
             self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
             self.axis.motor.status_changed.disconnect(self.axisStatusChanged.emit)
-            self.axis.motor.movement_started.connect(self._emit_movement_started)
-            self.axis.motor.movement_finished.connect(self._emit_movement_finished)
+            self.axis.motor.movement_started.disconnect(self._emit_movement_started)
+            self.axis.motor.movement_finished.disconnect(self._emit_movement_finished)
             self.axis.motor.movement_finished.disconnect(
                 self._update_display_of_axis_status
             )
@@ -390,45 +648,194 @@ class AxisControlWidget(QWidget):
         event.accept()
 
 
-class DriveControlWidget(QWidget):
+class DriveBaseController(QWidget):
+    driveStatusChanged = Signal()
     movementStarted = Signal()
     movementStopped = Signal()
+    moveTo = Signal(list)
+    zeroDrive = Signal()
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, axis_display_mode="interactive", parent=None):
+        # axis_display_mode == "interactive" or "readonly"
+        super().__init__(parent=parent)
 
         self._logger = gui_logger
 
+        self._axis_display_mode = axis_display_mode
+        self.mspace_warning_dialog = None
+        if hasattr(parent, "mspace_warning_dialog"):
+            self.mspace_warning_dialog = parent.mspace_warning_dialog
+
         self._mg = None
+        self._mspace_drive_polarity = None
+
         self._axis_control_widgets = []  # type: List[AxisControlWidget]
+        self._initialize_axis_control_widgets()
 
-        self.setEnabled(True)
+        self._initialize_widgets()
 
-        # Define BUTTONS
+        self.setLayout(self._define_layout())
+        self._connect_signals()
 
-        _btn = StopButton(parent=self)
-        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
-        _btn.setFixedWidth(200)
-        _btn.setMinimumHeight(400)
-        font = _btn.font()
-        font.setPointSize(32)
-        font.setBold(True)
-        _btn.setFont(font)
-        self.stop_1_btn = _btn
+    @abstractmethod
+    def _initialize_widgets(self):
+        ...
 
-        _btn = StopButton(parent=self)
-        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
-        _btn.setFixedWidth(200)
-        _btn.setMinimumHeight(400)
-        font = _btn.font()
-        font.setPointSize(32)
-        font.setBold(True)
-        _btn.setFont(font)
-        self.stop_2_btn = _btn
+    def _initialize_axis_control_widgets(self):
+        for ii in range(4):
+            acw = AxisControlWidget(
+                axis_display_mode=self._axis_display_mode,
+                parent=self,
+            )
+            visible = True if ii == 0 else False
+            acw.setVisible(visible)
+            self._axis_control_widgets.append(acw)
 
+    def _connect_signals(self):
+        self.movementStarted.connect(self.disable_motion_buttons)
+        self.movementStopped.connect(self.enable_motion_buttons)
+
+    @abstractmethod
+    def _define_layout(self) -> QLayout:
+        ...
+
+    @property
+    def logger(self):
+        return self._logger
+
+    @property
+    def mg(self) -> Union[MotionGroup, None]:
+        return self._mg
+
+    @property
+    def mspace_drive_polarity(self):
+        return self._mspace_drive_polarity
+
+    def link_motion_group(self, mg: MotionGroup):
+        if not isinstance(mg, MotionGroup):
+            self.logger.warning(
+                f"Expected type {MotionGroup} for motion group, but got type"
+                f" {type(mg)}."
+            )
+
+        if mg.drive is None:
+            # drive has not been set yet
+            self.unlink_motion_group()
+            return
+        elif (
+                self.mg is not None
+                and self.mg.drive is not None
+                and mg.drive is self.mg.drive
+        ):
+            pass
+        else:
+            self.unlink_motion_group()
+            self._mg = mg
+
+        for ii, ax in enumerate(self.mg.drive.axes):
+            acw = self._axis_control_widgets[ii]
+            acw.link_axis(self.mg, ii)
+            acw.movementStarted.connect(self._drive_movement_started)
+            acw.movementStopped.connect(self._drive_movement_finished)
+            acw.axisStatusChanged.connect(self.update_all_axis_displays)
+            acw.axisStatusChanged.connect(self.driveStatusChanged.emit)
+            acw.show()
+
+        self.setEnabled(not self._mg.terminated)
+        self._determine_mspace_drive_polarity()
+
+    def unlink_motion_group(self):
+        for ii, acw in enumerate(self._axis_control_widgets):
+            visible = True if ii == 0 else False
+
+            acw.unlink_axis()
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                acw.movementStarted.disconnect(self._drive_movement_started)
+                acw.movementStopped.disconnect(self._drive_movement_finished)
+                acw.axisStatusChanged.disconnect(self.update_all_axis_displays)
+                acw.axisStatusChanged.disconnect(self.driveStatusChanged.emit)
+
+            acw.setVisible(visible)
+
+        # self.mg.terminate(delay_loop_stop=True)
+        self._mg = None
+        self._mspace_drive_polarity = None
+        self.setEnabled(False)
+
+    def update_all_axis_displays(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+            # elif acw.axis.is_moving:
+            #     continue
+
+            acw._update_display_of_axis_status()
+
+    def disable_motion_buttons(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            acw.disable_motion_buttons()
+
+    def enable_motion_buttons(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            acw.enable_motion_buttons()
+
+    @Slot(int)
+    def _drive_movement_started(self, axis_index):
+        self.movementStarted.emit()
+
+    @Slot(int)
+    def _drive_movement_finished(self, axis_index):
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
+            return
+
+        is_moving = [ax.is_moving for ax in self.mg.drive.axes]
+        is_moving[axis_index] = False
+        if not any(is_moving):
+            self.movementStopped.emit()
+
+    def _determine_mspace_drive_polarity(self):
+        naxes = self.mg.drive.naxes
+        polarity = [1] * naxes
+        mspace_zero = [0] * naxes
+        drive_zero = self.mg.transform(mspace_zero, to_coords="drive")
+
+        for ii in range(naxes):
+            test_pt = [0] * naxes
+            test_pt[ii] = 10
+            drive_pt = self.mg.transform(test_pt, to_coords="drive")
+            delta = drive_pt[0][ii] - drive_zero[0][ii]
+
+            pt_polarity = 1 if delta > 0 else -1
+            polarity[ii] = pt_polarity
+
+        self._mspace_drive_polarity = polarity
+
+    def closeEvent(self, event):
+        self.logger.info(f"Closing {self.__class__.__name__}.")
+
+        for acw in self._axis_control_widgets:
+            acw.close()
+
+        event.accept()
+
+
+class DriveDesktopController(DriveBaseController):
+    def __init__(self, parent=None):
+        super().__init__(axis_display_mode="interactive", parent=parent)
+
+    def _initialize_widgets(self):
+        # BUTTON WIDGETS
         _btn = StyleButton("Move \n To", parent=self)
         _btn.setFixedWidth(100)
-        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        _btn.setMinimumHeight(100)
         font = _btn.font()
         font.setPointSize(26)
         font.setBold(False)
@@ -437,7 +844,7 @@ class DriveControlWidget(QWidget):
 
         _btn = StyleButton("Home \n All", parent=self)
         _btn.setFixedWidth(100)
-        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        _btn.setMinimumHeight(100)
         font = _btn.font()
         font.setPointSize(26)
         font.setBold(False)
@@ -447,28 +854,20 @@ class DriveControlWidget(QWidget):
 
         _btn = StyleButton("Zero \n All", parent=self)
         _btn.setFixedWidth(100)
-        _btn.setMinimumHeight(int(.25 * self.stop_1_btn.minimumHeight()))
+        _btn.setMinimumHeight(100)
         font = _btn.font()
         font.setPointSize(26)
         font.setBold(False)
         _btn.setFont(font)
         self.zero_all_btn = _btn
 
-        # Define TEXT WIDGETS
-        # Define ADVANCED WIDGETS
-
-        self.mspace_warning_dialog = MSpaceMessageBox(parent=self)
-
-        self.setLayout(self._define_layout())
-        self._connect_signals()
-
     def _connect_signals(self):
-        self.stop_1_btn.clicked.connect(self._stop_move)
-        self.stop_2_btn.clicked.connect(self._stop_move)
-        self.zero_all_btn.clicked.connect(self._zero_drive)
+        super()._connect_signals()
+
+        self.zero_all_btn.clicked.connect(self.zeroDrive.emit)
         self.move_to_btn.clicked.connect(self._move_to)
 
-    def _define_layout(self):
+    def _define_layout(self) -> QLayout:
         # Sub-Layout #1
         sub_layout = QVBoxLayout()
         sub_layout.addWidget(self.move_to_btn)
@@ -514,36 +913,15 @@ class DriveControlWidget(QWidget):
         )
         sub_layout2.addStretch(20)
 
-        # Main Layout
         layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(
-            self.stop_1_btn,
-            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
-        )
         layout.addLayout(sub_layout)
         layout.addLayout(sub_layout2)
-        for ii in range(4):
-            acw = AxisControlWidget(parent=self)
-            visible = True if ii == 0 else False
-            acw.setVisible(visible)
+        for acw in self._axis_control_widgets:
             layout.addWidget(acw)
-            self._axis_control_widgets.append(acw)
             layout.addSpacing(2)
         layout.addStretch()
-        layout.addWidget(
-            self.stop_2_btn,
-            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
-        )
+
         return layout
-
-    @property
-    def logger(self):
-        return self._logger
-
-    @property
-    def mg(self) -> Union[MotionGroup, None]:
-        return self._mg
 
     def _move_to(self):
         target_pos = [
@@ -557,17 +935,471 @@ class DriveControlWidget(QWidget):
                 "Probe drive is currently moving.  Did NOT perform move "
                 f"to {target_pos}."
             )
+            target_pos = []
+
+        self.moveTo.emit(target_pos)
+
+    def disable_motion_buttons(self):
+        self.move_to_btn.setEnabled(False)
+        self.zero_all_btn.setEnabled(False)
+
+        super().disable_motion_buttons()
+
+    def enable_motion_buttons(self):
+        self.move_to_btn.setEnabled(True)
+        self.zero_all_btn.setEnabled(True)
+
+        super().enable_motion_buttons()
+
+
+class DriveGameController(DriveBaseController):
+    def __init__(self, parent=None):
+        super().__init__(axis_display_mode="readonly", parent=parent)
+
+    def _connect_signals(self):
+        super()._connect_signals()
+
+        self.refresh_controller_list_btn.clicked.connect(self.refresh_controller_combo)
+        self.connect_btn.clicked.connect(self.connect_controller)
+        self.controller_combo_widget.currentIndexChanged.connect(
+            self.disconnect_controller
+        )
+
+    def _initialize_widgets(self):
+        self._pygame_joystick_runner = None  # type: Union[PyGameJoystickRunner, None]
+        self._thread_pool = QThreadPool(parent=self)
+
+        _font = QFont()
+        _font.setPointSize(12)
+
+        # BUTTON WIDGETS
+        _btn = StyleButton("Refresh List", parent=self)
+        _btn.setFixedHeight(32)
+        _btn.setFont(_font)
+        self.refresh_controller_list_btn = _btn
+
+        _btn = StyleButton("Connect", parent=self)
+        _btn.setFixedHeight(32)
+        _btn.setFont(_font)
+        _btn.setFixedWidth(100)
+        self.connect_btn = _btn
+
+        # TEXT/ICON WIDGETS
+        _led = LED(parent=self)
+        _led.set_fixed_height(24)
+        self.connected_led = _led
+
+        # ADVANCED WIDGETS
+        _combo = QComboBox(parent=self)
+        _combo.setEditable(True)
+        _combo.lineEdit().setReadOnly(True)
+        _combo.lineEdit().setAlignment(
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+        )
+        _combo.setFixedHeight(32)
+        _combo.setFont(_font)
+        self.controller_combo_widget = _combo
+
+    def _define_layout(self) -> QLayout:
+        self.refresh_controller_combo()
+
+        connect_layout = QHBoxLayout()
+        connect_layout.setContentsMargins(0, 0, 0, 0)
+        connect_layout.addStretch(1)
+        connect_layout.addWidget(self.connect_btn)
+        connect_layout.addWidget(self.connected_led)
+        connect_layout.addStretch(1)
+
+        _label_font = QFont()
+        _label_font.setPointSize(12)
+        _left_stick = QLabel("Left Stick :", parent=self)
+        _left_stick.setFont(_label_font)
+        _right_stick = QLabel("Right Stick :", parent=self)
+        _right_stick.setFont(_label_font)
+        _dpad_vert_stick = QLabel("DPad Up/Down :", parent=self)
+        _dpad_vert_stick.setFont(_label_font)
+        _dpad_horz_stick = QLabel("DPad Left/Right :", parent=self)
+        _dpad_horz_stick.setFont(_label_font)
+        _ab = QLabel("A / B :", parent=self)
+        _ab.setFont(_label_font)
+        _y = QLabel("Y :", parent=self)
+        _y.setFont(_label_font)
+        _move_y = QLabel("Move Y", parent=self)
+        _move_y.setFont(_label_font)
+        _move_x = QLabel("Move X", parent=self)
+        _move_x.setFont(_label_font)
+        _fine_y = QLabel("Fine Y", parent=self)
+        _fine_y.setFont(_label_font)
+        _fine_x = QLabel("Fine X", parent=self)
+        _fine_x.setFont(_label_font)
+        _stop = QLabel("STOP", parent=self)
+        _stop.setFont(_label_font)
+        _zero = QLabel("Zero", parent=self)
+        _zero.setFont(_label_font)
+
+        btn_label_layout = QGridLayout()
+        btn_label_layout.setContentsMargins(0, 0, 0, 0)
+        btn_label_layout.setColumnMinimumWidth(1, 8)
+        btn_label_layout.addWidget(
+            _left_stick, 0, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(
+            _right_stick, 1, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(
+            _dpad_vert_stick, 2, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(
+            _dpad_horz_stick, 3, 0, alignment=Qt.AlignmentFlag.AlignRight
+        )
+        btn_label_layout.addWidget(_ab, 4, 0, alignment=Qt.AlignmentFlag.AlignRight)
+        btn_label_layout.addWidget(_y, 5, 0, alignment=Qt.AlignmentFlag.AlignRight)
+
+        btn_label_layout.addWidget(_move_y, 0, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_move_x, 1, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_fine_y, 2, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_fine_x, 3, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_stop, 4, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+        btn_label_layout.addWidget(_zero, 5, 2, alignment=Qt.AlignmentFlag.AlignLeft)
+
+        sub_layout_1 = QVBoxLayout()
+        sub_layout_1.setContentsMargins(0, 0, 0, 0)
+        sub_layout_1.addSpacing(16)
+        sub_layout_1.addWidget(self.refresh_controller_list_btn)
+        sub_layout_1.addWidget(self.controller_combo_widget)
+        sub_layout_1.addLayout(connect_layout)
+        sub_layout_1.addSpacing(24)
+        sub_layout_1.addLayout(btn_label_layout)
+        sub_layout_1.addStretch(1)
+
+        sub_widget_1 = QWidget(parent=self)
+        sub_widget_1.setLayout(sub_layout_1)
+        sub_widget_1.setMaximumWidth(200)
+        sub_widget_1.setMinimumWidth(100)
+        sub_widget_1.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(sub_widget_1)
+        layout.addSpacing(2)
+        for acw in self._axis_control_widgets:
+            layout.addWidget(acw)
+            layout.addSpacing(2)
+        layout.addStretch()
+
+        return layout
+
+    @property
+    def available_controllers(self) -> List[pygame.joystick.JoystickType]:
+        _joystick = pygame.joystick
+
+        if not _joystick.get_init():
+            _joystick.init()
+
+        return [_joystick.Joystick(_id) for _id in range(_joystick.get_count())]
+
+    @property
+    def joystick(self) -> Union[pygame.joystick.JoystickType, None]:
+        js_name = self.controller_combo_widget.currentText()
+        self.logger.info(f"Selected joystick: {js_name} - {self.available_controllers}")
+        js = None
+        for _js in self.available_controllers:
+            if _js.get_name() == js_name:
+                js = _js
+                break
+
+        return js
+
+    def refresh_controller_combo(self):
+        self.disconnect_controller()
+
+        current_controller_name = self.controller_combo_widget.currentText()
+
+        self.controller_combo_widget.clear()
+
+        controller_names = [
+            controller.get_name()
+            for controller in self.available_controllers
+        ]
+        controller_names.append("")
+        self.controller_combo_widget.addItems(controller_names)
+
+        if current_controller_name != "" and current_controller_name in controller_names:
+            self.controller_combo_widget.setCurrentText(current_controller_name)
+            self.connect_controller()
+        else:
+            self.controller_combo_widget.setCurrentText("")
+
+    def connect_controller(self):
+        self.logger.info("Connecting controller.")
+        self._pygame_joystick_runner = PyGameJoystickRunner(self.joystick)
+
+        self._pygame_joystick_runner.signals.joystickConnected.connect(
+            self._update_connect_led
+        )
+        self._pygame_joystick_runner.signals.axisMoved.connect(
+            self._handle_axis_move
+        )
+        self._pygame_joystick_runner.signals.buttonPressed.connect(
+            self._handle_button_press
+        )
+        self._pygame_joystick_runner.signals.hatPressed.connect(
+            self._handle_hat_press
+        )
+
+        self._thread_pool.start(self._pygame_joystick_runner)
+
+    def disconnect_controller(self):
+        if self._pygame_joystick_runner is None:
             return
 
-        proceed = True
-        if not isinstance(self.mg.mb, MotionBuilder):
-            proceed = self.mspace_warning_dialog.exec()
+        self._pygame_joystick_runner.quit()
+        self._pygame_joystick_runner = None
+        self._thread_pool.waitForDone(200)
+        self._thread_pool.clear()
 
-        if proceed:
-            self.mg.move_to(target_pos)
+        if self.mg.is_moving:
+            self.stop_move()
+
+    def stop_move(self, axis=None, soft=False):
+        self.logger.debug("Stopping move.")
+
+        if axis is None:
+            self.mg.stop(soft=soft)
+            return
+
+        try:
+            self.mg.drive.send_command("stop", soft, axis=axis)
+        except Exception:  # noqa
+            self.mg.stop()
+
+    def zero_drive(self):
+        self.mg.set_zero()
+
+    @Slot(bool)
+    def _update_connect_led(self, value):
+        self.connected_led.setChecked(value)
+
+    @Slot(int, float)
+    def _handle_axis_move(self, jaxis, value):
+        if jaxis not in (1, 3):
+            # moved joystick axis is not utilized
+            return
+        elif jaxis == 1:
+            axis_id = 1
+        else:  # jaxis == 3:
+            axis_id = 0
+
+        ax = self.mg.drive.axes[axis_id]
+
+        if np.absolute(value) < 0.5:
+            self.stop_move(axis=axis_id, soft=True)
+        elif ax.is_moving:
+            pass
+        else:
+            try:
+                proceed = self.mspace_warning_dialog.exec()
+            except AttributeError:
+                proceed = False
+
+            if not proceed:
+                return
+
+            # pygame up-down axes are inverted
+            sign = 1 if value <= 0 else -1
+            sign = self.mspace_drive_polarity[axis_id] * sign
+            direction = "forward" if sign > 0 else "backward"
+
+            self.mg.drive.send_command(
+                "continuous_jog", direction, axis=axis_id
+            )
+
+    @Slot(int)
+    def _handle_button_press(self, button):
+        if button in (0, 1):
+            self.stop_move()
+        elif button == 3:
+            self.zero_drive()
+
+    @Slot(int, int)
+    def _handle_hat_press(self, hat_id, direction):
+        if direction == 0:
+            # hat (dpad) button returned to unpressed state
+            # do nothing
+            return
+
+        try:
+            proceed = self.mspace_warning_dialog.exec()
+        except AttributeError:
+            proceed = False
+
+        if not proceed:
+            return
+
+        acw = self._axis_control_widgets[hat_id]
+        if direction > 0:
+            acw.jog_forward()
+        else:
+            acw.jog_backward()
+
+    def closeEvent(self, event):
+        self.disconnect_controller()
+        self._thread_pool.deleteLater()
+        super().closeEvent(event)
+
+
+class DriveControlWidget(QWidget):
+    movementStarted = Signal()
+    movementStopped = Signal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self._logger = gui_logger
+
+        self._mg = None
+
+        self.setEnabled(True)
+
+        # Define BUTTONS
+
+        _btn = StopButton(parent=self)
+        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        _btn.setFixedWidth(200)
+        _btn.setMinimumHeight(400)
+        font = _btn.font()
+        font.setPointSize(32)
+        font.setBold(True)
+        _btn.setFont(font)
+        self.stop_1_btn = _btn
+
+        _btn = StopButton(parent=self)
+        _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        _btn.setFixedWidth(200)
+        _btn.setMinimumHeight(400)
+        font = _btn.font()
+        font.setPointSize(32)
+        font.setBold(True)
+        _btn.setFont(font)
+        self.stop_2_btn = _btn
+
+        # Define TEXT WIDGETS
+        # Define ADVANCED WIDGETS
+        self.mspace_warning_dialog = MSpaceMessageBox(parent=self)
+        self.desktop_controller_widget = DriveDesktopController(parent=self)
+        self.game_controller_widget = None  # type: Union[DriveBaseController, None]
+        self.stacked_controller_widget = QStackedWidget(parent=self)
+        self.stacked_controller_widget.addWidget(self.desktop_controller_widget)
+
+        _combo = QComboBox(parent=self)
+        _combo.setEditable(True)
+        _combo.lineEdit().setReadOnly(True)
+        _combo.lineEdit().setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+        _combo.addItems(["Desktop", "Game Controller"])
+        self.controller_combo_box = _combo
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.stop_1_btn.clicked.connect(self._stop_move)
+        self.stop_2_btn.clicked.connect(self._stop_move)
+
+        self.desktop_controller_widget.zeroDrive.connect(self._zero_drive)
+        self.desktop_controller_widget.moveTo.connect(self._move_to)
+
+        self.controller_combo_box.currentTextChanged.connect(self._switch_stack)
+
+    def _define_layout(self):
+
+        # Define the central_banner_layout
+        central_banner_layout = QHBoxLayout()
+        central_banner_layout.setContentsMargins(0, 0, 0, 0)
+
+        _label = QLabel("Control Mode:", parent=self)
+        _label.setFixedHeight(32)
+        _font = _label.font()
+        _font.setPointSize(16)
+        _label.setFont(_font)
+
+        self.controller_combo_box.setFixedHeight(32)
+        self.controller_combo_box.setFixedWidth(175)
+        _font.setPointSize(14)
+        self.controller_combo_box.setFont(_font)
+
+        central_banner_layout.addStretch(1)
+        central_banner_layout.addWidget(
+            _label,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+        central_banner_layout.addSpacing(12)
+        central_banner_layout.addWidget(
+            self.controller_combo_box,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
+        )
+        central_banner_layout.addStretch(1)
+
+        # Define the central_layout
+        central_layout = QVBoxLayout()
+        central_layout.setContentsMargins(0, 0, 0, 0)
+        central_layout.addLayout(central_banner_layout)
+        central_layout.addWidget(HLinePlain(parent=self))
+        central_layout.addWidget(self.stacked_controller_widget)
+
+        # Main Layout
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.stop_1_btn, alignment=Qt.AlignmentFlag.AlignLeft)
+        layout.addLayout(central_layout)
+        layout.addWidget(self.stop_2_btn, alignment=Qt.AlignmentFlag.AlignRight)
+        return layout
+
+    @property
+    def logger(self):
+        return self._logger
+
+    @property
+    def mg(self) -> Union[MotionGroup, None]:
+        return self._mg
 
     def _stop_move(self):
         self.mg.stop()
+
+    def _switch_stack(self):
+        controller = self.controller_combo_box.currentText()
+        _w = self.stacked_controller_widget.currentWidget()
+
+        if (
+            (controller == "Desktop" and isinstance(_w, DriveDesktopController))
+            or (controller == "Game Controller" and isinstance(_w, DriveGameController))
+        ):
+            # no switch is needed
+            pass
+        elif controller == "Desktop":
+            self.stacked_controller_widget.setCurrentIndex(0)
+            self.stacked_controller_widget.removeWidget(_w)
+
+            try:
+                self.game_controller_widget.close()
+                self.game_controller_widget.deleteLater()
+            except AttributeError:
+                pass
+
+            self.game_controller_widget = None
+
+        elif controller == "Game Controller":
+            self.game_controller_widget = DriveGameController(parent=self)
+            self.game_controller_widget.link_motion_group(self.mg)
+            self.stacked_controller_widget.addWidget(self.game_controller_widget)
+            self.stacked_controller_widget.setCurrentWidget(self.game_controller_widget)
+
+        else:
+            # should never happen
+            pass
 
     def _zero_drive(self):
         self.mg.set_zero()
@@ -578,57 +1410,43 @@ class DriveControlWidget(QWidget):
                 f"Expected type {MotionGroup} for motion group, but got type"
                 f" {type(mg)}."
             )
+            self.unlink_motion_group()
+            return
 
         if mg.drive is None:
             # drive has not been set yet
             self.unlink_motion_group()
             return
-        elif (
-            self.mg is not None
-            and self.mg.drive is not None
-            and mg.drive is self.mg.drive
-        ):
-            pass
         else:
             self.unlink_motion_group()
             self._mg = mg
 
-        for ii, ax in enumerate(self.mg.drive.axes):
-            acw = self._axis_control_widgets[ii]
-            acw.link_axis(self.mg, ii)
-            acw.movementStarted.connect(self._drive_movement_started)
-            acw.movementStopped.connect(self._drive_movement_finished)
-            acw.axisStatusChanged.connect(self._update_all_axis_displays)
-            acw.show()
-
         self.setEnabled(not self._mg.terminated)
+        if not self.isEnabled():
+            return
+
+        if isinstance(mg.mb, MotionBuilder):
+            self.mspace_warning_dialog.display_dialog = False
+
+        self.desktop_controller_widget.link_motion_group(self.mg)
+        if self.game_controller_widget is not None:
+            self.game_controller_widget.link_motion_group(self.mg)
+
+        self.update_controller_displays()
 
     def unlink_motion_group(self):
-        for ii, acw in enumerate(self._axis_control_widgets):
-            visible = True if ii == 0 else False
+        self.desktop_controller_widget.unlink_motion_group()
+        if self.game_controller_widget is not None:
+            self.game_controller_widget.unlink_motion_group()
 
-            acw.unlink_axis()
-
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore", category=RuntimeWarning)
-                acw.movementStarted.disconnect(self._drive_movement_started)
-                acw.movementStopped.disconnect(self._drive_movement_finished)
-                acw.axisStatusChanged.disconnect(self._update_all_axis_displays)
-
-            acw.setVisible(visible)
-
-        # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
+        self.mspace_warning_dialog.display_dialog = True
         self.setEnabled(False)
 
-    def _update_all_axis_displays(self):
-        for acw in self._axis_control_widgets:
-            if acw.isHidden():
-                continue
-            elif acw.axis.is_moving:
-                continue
-
-            acw._update_display_of_axis_status()
+    def update_controller_displays(self):
+        self.desktop_controller_widget.update_all_axis_displays()
+        if self.game_controller_widget is not None:
+            self.game_controller_widget.update_all_axis_displays()
 
     @Slot(int)
     def _drive_movement_started(self, axis_index):
@@ -644,8 +1462,28 @@ class DriveControlWidget(QWidget):
         if not any(is_moving):
             self.movementStopped.emit()
 
+    @Slot(list)
+    def _move_to(self, target_pos):
+        if not target_pos:
+            # target_pos is an empty list
+            return
+
+        try:
+            proceed = self.mspace_warning_dialog.exec()
+        except AttributeError:
+            proceed = False
+
+        if proceed:
+            self.mg.move_to(target_pos)
+
     def closeEvent(self, event):
-        self.logger.info("Closing DriveControlWidget")
+        self.logger.info(f"Closing {self.__class__.__name__}")
+
+        self.desktop_controller_widget.close()
+
+        if isinstance(self.game_controller_widget, QWidget):
+            self.game_controller_widget.close()
+
         event.accept()
 
 
@@ -1524,10 +2362,7 @@ class MGWidget(QWidget):
         if not self.drive_control_widget.isEnabled():
             return
 
-        if self.drive_control_widget.mg is None:
-            self._refresh_drive_control()
-        else:
-            self.drive_control_widget._update_all_axis_displays()
+        self._refresh_drive_control()
 
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
@@ -1867,6 +2702,8 @@ class MGWidget(QWidget):
 
         if self._overlay_widget is not None:
             self._overlay_widget.close()
+
+        self.drive_control_widget.close()
 
         loop_safe_stop(self.mg_loop)
         self.closing.emit()

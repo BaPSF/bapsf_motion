@@ -1,5 +1,6 @@
 """This module contains miscellaneous custom Qt widgets."""
 __all__ = [
+    "BatteryStatusIcon",
     "IPv4Validator",
     "QLineEditSpecialized",
     "HLinePlain",
@@ -8,11 +9,48 @@ __all__ = [
 
 import logging
 
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QValidator, QColor
-from PySide6.QtWidgets import QLineEdit, QFrame,QWidget
+from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
+
+# noqa
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta
 
 from bapsf_motion.utils import ipv4_pattern as _ipv4_pattern
+
+
+class BatteryStatusIcon(QLabel):
+    def __init__(self, parent=None):
+
+        self._pixmap_size = 24
+        self._icon_map = {
+            "unknown": qta.icon("mdi.microsoft-xbox-controller-battery-unknown"),
+            "wired": qta.icon("mdi.microsoft-xbox-controller-battery-charging"),
+            "max": qta.icon("mdi.microsoft-xbox-controller-battery-full"),
+            "full": qta.icon("mdi.microsoft-xbox-controller-battery-full"),
+            "medium": qta.icon("mdi.microsoft-xbox-controller-battery-medium"),
+            "low": qta.icon("mdi.microsoft-xbox-controller-battery-low"),
+            "empty": qta.icon("mdi.microsoft-xbox-controller-battery-empty"),
+        }
+
+        super().__init__("", parent=parent)
+        self.setPixmap(
+            self._icon_map["unknown"].pixmap(self._pixmap_size, self._pixmap_size)
+        )
+        self.setMaximumWidth(self._pixmap_size+8)
+        self.setMaximumHeight(self._pixmap_size+8)
+        self.setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+
+    def set_battery_status(self, battery_status):
+        try:
+            _icon = self._icon_map[battery_status]
+        except KeyError:
+            _icon = self._icon_map["unknown"]
+
+        self.setPixmap(_icon.pixmap(self._pixmap_size, self._pixmap_size))
 
 
 class IPv4Validator(QValidator):

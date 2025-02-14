@@ -924,9 +924,9 @@ class MotionGroup(EventActor):
         ).squeeze()
         return pos * dr_pos.unit
 
-    def stop(self):
+    def stop(self, soft=False):
         """Immediately stop the probe drive motion."""
-        self.drive.stop()
+        self.drive.stop(soft=soft)
 
     def move_to(self, pos, axis: Optional[int] = None):
         """

@@ -354,10 +354,10 @@ class Axis(EventActor):
         """
         return self.send_command("move_to", *args)
 
-    def stop(self):
+    def stop(self, soft=False):
         """
         Quick access command for ``send_command("stop")``.
         """
         # not sending STOP command through send_command() since using
         # motor.stop() should result in faster execution
-        return self.motor.stop()
+        return self.motor.stop(soft=soft)

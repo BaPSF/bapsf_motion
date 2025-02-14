@@ -292,7 +292,7 @@ class Drive(EventActor):
             Any arguments to the ``command`` that will be sent with the
             motor command.
         axis: int, optional
-            Axis index the comment is directed to.  If `None`, then the
+            Axis index the command is directed to.  If `None`, then the
             command is sent to all axes. (DEFAULT: `NONE`)
         """
         if axis is None:
@@ -365,14 +365,20 @@ class Drive(EventActor):
 
         return rtn
 
-    def stop(self):
+    def stop(self, soft=False):
         """Stop all axes from moving."""
         # TODO: should I really be construct a return here?
         # TODO: is there a quicker/more efficient way of stopping the motors?
 
         rtn = []
         for ax in self.axes:
-            _rtn = ax.stop()
+            if ax.motor.terminated:
+                self.logger.warning(
+                    f"Motor for axis {ax.name} has been terminated, can NOT "
+                    f"perform STOP command."
+                )
+                continue
+            _rtn = ax.stop(soft=soft)
             rtn.append(_rtn)
 
         return rtn
