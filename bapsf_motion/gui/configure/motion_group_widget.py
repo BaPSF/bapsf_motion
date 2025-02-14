@@ -227,7 +227,6 @@ class PyGameJoystickRunner(QRunnable):
 
         self.signals.joystickConnected.emit(self.run_loop)
 
-
     @property
     def axis_dead_zone(self) -> float:
         return self._axis_dead_zone
@@ -1159,7 +1158,7 @@ class DriveGameController(DriveBaseController):
             self.stop_move()
 
     def stop_move(self, axis=None, soft=False):
-        self.logger.info("Stopping move.")
+        self.logger.debug("Stopping move.")
 
         if axis is None:
             self.mg.stop(soft=soft)
