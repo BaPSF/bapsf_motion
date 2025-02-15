@@ -212,13 +212,6 @@ class DoneButton(BannerButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.update_style_sheet(
-            styles={
-                "color": "rgb(50, 50, 50)",
-            },
-            action="base",
-        )
-
         _text = self.text()
         if _text == "":
             _text = "DONE"
