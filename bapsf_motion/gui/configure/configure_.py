@@ -604,6 +604,7 @@ class ConfigureApp(QApplication):
         super().__init__(*args, **kwargs)
 
         self.setStyle("Fusion")
+        self.styleHints().setColorScheme(Qt.ColorScheme.Light)
         self.reload_style_sheet()
 
         self._window = ConfigureGUI(config=config, defaults=defaults)
