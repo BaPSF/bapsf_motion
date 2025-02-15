@@ -30,6 +30,7 @@ class StyleButton(QPushButton):
             "border-radius": "4px",
             f"border": f"2px solid rgb(123, 123, 123)",
             "background-color": "rgb(163, 163, 163)",
+            "color": "rgb(50, 50, 50)",
         }
         self._default_hover_style = {}
         self._default_pressed_style = {"background-color": "rgb(111, 111, 111)"}
@@ -213,7 +214,7 @@ class DoneButton(BannerButton):
 
         self.update_style_sheet(
             styles={
-                "color": "rgba(188, 190, 196, 230)",
+                "color": "rgb(50, 50, 50)",
             },
             action="base",
         )
