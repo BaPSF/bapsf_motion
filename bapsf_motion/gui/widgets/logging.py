@@ -118,7 +118,7 @@ class QLogger(QWidget):
         log_widget = QTextEdit(parent=self)
         log_widget.setReadOnly(True)
         font = log_widget.font()
-        font.setPointSize(12)
+        font.setPointSize(10)
         font.setFamily("Courier New")
         log_widget.setFont(font)
         self.log_widget = log_widget
