@@ -29,17 +29,23 @@ class StyleButton(QPushButton):
 
         self._default_base_style = {
             "border-radius": "4px",
-            "border": "2px solid rgb(95, 95, 95)",
-            "background-color": "rgb(73, 73, 73)",
+            f"border": f"2px solid rgb(123, 123, 123)",
+            "background-color": "rgb(163, 163, 163)",
         }
         self._default_hover_style = {}
-        self._default_pressed_style = {"background-color": "rgb(117, 117, 117)"}
+        self._default_pressed_style = {"background-color": "rgb(111, 111, 111)"}
         self._default_checked_style = {}
+        self._default_disabled_style = {"color": "rgb(123, 123, 123)"}
 
         self._base_style = {**self._default_base_style}
         self._hover_style = {**self._default_hover_style}
         self._pressed_style = {**self._default_pressed_style}
         self._checked_style = {**self._default_checked_style}
+        self._disabled_style = {**self._default_disabled_style}
+
+        _font = self.font()
+        _font.setBold(True)
+        self.setFont(_font)
 
         self._resetStyleSheet()
 
@@ -50,36 +56,37 @@ class StyleButton(QPushButton):
         _hover = "; ".join([f"{k}: {v}" for k, v in self.hover_style.items()])
         _pressed = "; ".join([f"{k}: {v}" for k, v in self.pressed_style.items()])
         _checked = "; ".join([f"{k}: {v}" for k, v in self.checked_style.items()])
+        _disabled = "; ".join([f"{k}: {v}" for k, v in self.disabled_style.items()])
 
-        _style = self.style()
-        _palette = _style.standardPalette()
-        _style_color = _palette.color(self.palette().ColorRole.ButtonText)
-
+        # _style = self.style()
+        # _palette = _style.standardPalette()
+        # _style_color = _palette.color(self.palette().ColorRole.ButtonText)
+        #
         # Determine text color and transparency for the disabled state
-        try:
-            color = self.base_style["color"]
-        except KeyError:
-            color = _style_color
-
-        if isinstance(color, QColor):
-            pass
-        elif not isinstance(color, str):
-            color = _style_color
-        elif color.startswith("QColor"):
-            color = eval(color)
-        elif color.startswith("#"):
-            color = QColor(color)
-        elif color.startswith("rgba"):
-            args = ast.literal_eval(color[4:])
-            color = QColor(*args)
-        elif color.startswith("rgb"):
-            args = ast.literal_eval(color[3:])
-            color = QColor(*args)
-        else:
-            color = _style_color
-
-        color.setAlpha(100)
-        disable_string = f"color: rgba{color.getRgb()}"
+        # try:
+        #     color = self.base_style["color"]
+        # except KeyError:
+        #     color = _style_color
+        #
+        # if isinstance(color, QColor):
+        #     pass
+        # elif not isinstance(color, str):
+        #     color = _style_color
+        # elif color.startswith("QColor"):
+        #     color = eval(color)
+        # elif color.startswith("#"):
+        #     color = QColor(color)
+        # elif color.startswith("rgba"):
+        #     args = ast.literal_eval(color[4:])
+        #     color = QColor(*args)
+        # elif color.startswith("rgb"):
+        #     args = ast.literal_eval(color[3:])
+        #     color = QColor(*args)
+        # else:
+        #     color = _style_color
+        #
+        # color.setAlpha(100)
+        # disable_string = f"color: rgba{color.getRgb()}"
 
         return f"""
         {_cls_name} {{ {_base} }}
@@ -90,7 +97,7 @@ class StyleButton(QPushButton):
 
         {_cls_name}:checked {{ {_checked} }}
         
-        {_cls_name}:disabled {{ {disable_string} }}
+        {_cls_name}:disabled {{ {_disabled} }}
         """
 
     @property
@@ -109,12 +116,16 @@ class StyleButton(QPushButton):
     def checked_style(self):
         return self._checked_style
 
+    @property
+    def disabled_style(self):
+        return self._disabled_style
+
     def _resetStyleSheet(self):
         self.setStyleSheet(self._style)
 
     def update_style_sheet(self, styles, action="base", reset=False):
 
-        if action not in ("base", "hover", "pressed", "checked"):
+        if action not in ("base", "hover", "pressed", "checked", "disabled"):
             return
 
         if action == "base":
@@ -123,8 +134,13 @@ class StyleButton(QPushButton):
             _style = self.hover_style if not reset else {**self._default_hover_style}
         elif action == "pressed":
             _style = self.pressed_style if not reset else {**self._default_pressed_style}
-        else:  # action == "checked":
+        elif action == "checked":
             _style = self.pressed_style if not reset else {**self._default_checked_style}
+        else:  # action == "disabled
+            _style = (
+                self.disabled_style if not reset
+                else {**self._default_disabled_style}
+            )
 
         new_style = {**_style, **styles}
 
@@ -134,8 +150,10 @@ class StyleButton(QPushButton):
             self._hover_style = new_style
         elif action == "pressed":
             self._pressed_style = new_style
-        else:  # action == "pressed"
+        elif action == "pressed":
             self._checked_style = new_style
+        else:  # action == "disabled"
+            self._disabled_style = new_style
 
         self._resetStyleSheet()
 
