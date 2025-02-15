@@ -3,7 +3,10 @@ This module contains helper widgets for contructing the main GUIs in
 `bapsf_motion.gui`.
 """
 __all__ = [
+    "BannerButton",
     "BatteryStatusIcon",
+    "DiscardButton",
+    "DoneButton",
     "GearButton",
     "GearValidButton",
     "HLinePlain",
@@ -19,6 +22,9 @@ __all__ = [
 
 from bapsf_motion.gui.widgets.logging import QLogHandler, QLogger
 from bapsf_motion.gui.widgets.buttons import (
+    BannerButton,
+    DiscardButton,
+    DoneButton,
     GearButton,
     GearValidButton,
     LED,

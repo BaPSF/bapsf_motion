@@ -28,6 +28,7 @@ from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.widgets import (
+    DiscardButton,
     HLinePlain,
     QLineEditSpecialized,
     StyleButton,
@@ -87,7 +88,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ex_btn.setEnabled(False)
 
         self.params_add_btn = self._generate_btn_widget("Add / Update")
-        self.params_discard_btn = self._generate_btn_widget("Discard")
+
+        _btn = DiscardButton(parent=self)
+        font = _btn.font()
+        font.setPointSize(16)
+        font.setBold(False)
+        _btn.setFont(font)
+        _btn.setFixedHeight(32)
+        _btn.setText("Discard")
+        self.params_discard_btn = _btn
 
         # Define TEXT WIDGETS
         _txt = QComboBox(parent=self)

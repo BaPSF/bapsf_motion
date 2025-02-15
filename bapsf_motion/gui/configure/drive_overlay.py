@@ -122,7 +122,7 @@ class AxisConfigWidget(QWidget):
         self.configChanged.connect(self._update_limit_mode_widget)
 
     def _define_layout(self):
-        _label = QLabel("IP:  ")
+        _label = QLabel("IP:  ", parent=self)
         _label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
         )
@@ -132,7 +132,7 @@ class AxisConfigWidget(QWidget):
         _label.setFont(font)
         ip_label = _label
 
-        _label = QLabel("cm / rev")
+        _label = QLabel("cm / rev", parent=self)
         _label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
         )
@@ -142,7 +142,7 @@ class AxisConfigWidget(QWidget):
         _label.setFont(font)
         cm_per_rev_label = _label
 
-        _label = QLabel("online")
+        _label = QLabel("online", parent=self)
         _label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
         )
@@ -173,7 +173,7 @@ class AxisConfigWidget(QWidget):
     def _define_limit_mode_layout(self):
         layout = QGridLayout()
 
-        _label = QLabel("Limit\nMode")
+        _label = QLabel("Limit\nMode", parent=self)
         _label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
         )
@@ -182,7 +182,7 @@ class AxisConfigWidget(QWidget):
         font.setPointSize(16)
         _label.setFont(font)
 
-        _energized_label = QLabel("energized")
+        _energized_label = QLabel("energized", parent=self)
         _energized_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
@@ -194,7 +194,7 @@ class AxisConfigWidget(QWidget):
         font.setPointSize(12)
         _energized_label.setFont(font)
 
-        _deenergized_label = QLabel("de-energized")
+        _deenergized_label = QLabel("de-energized", parent=self)
         _deenergized_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
@@ -206,7 +206,7 @@ class AxisConfigWidget(QWidget):
         font.setPointSize(12)
         _deenergized_label.setFont(font)
 
-        _none_label = QLabel("NONE")
+        _none_label = QLabel("NONE", parent=self)
         _none_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
@@ -438,25 +438,27 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Load a Default")
+        _btn = StyleButton("Load a Default", parent=self)
         _btn.setFixedWidth(250)
         _btn.setFixedHeight(36)
         font = _btn.font()
         font.setPointSize(20)
         _btn.setFont(font)
         _btn.setEnabled(False)
+        _btn.setHidden(True)
         self.load_default_btn = _btn
 
-        _btn = StyleButton("Add Axis")
+        _btn = StyleButton("Add Axis", parent=self)
         _btn.setFixedWidth(120)
         _btn.setFixedHeight(36)
         font = _btn.font()
         font.setPointSize(20)
         _btn.setFont(font)
         _btn.setEnabled(False)
+        _btn.setHidden(True)
         self.add_axis_btn = _btn
 
-        _btn = StyleButton("Validate")
+        _btn = StyleButton("Validate", parent=self)
         _btn.setFixedWidth(120)
         _btn.setFixedHeight(36)
         font = _btn.font()
@@ -464,13 +466,13 @@ class DriveConfigOverlay(_ConfigOverlay):
         _btn.setFont(font)
         self.validate_btn = _btn
 
-        _btn = LED()
+        _btn = LED(parent=self)
         _btn.set_fixed_height(32)
         _btn.off_color = "d43729"
         self.validate_led = _btn
 
         # Define TEXT WIDGETS
-        _widget = QLineEdit()
+        _widget = QLineEdit(parent=self)
         font = _widget.font()
         font.setPointSize(16)
         _widget.setFont(font)
@@ -532,7 +534,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         return layout
 
     def _define_second_row_layout(self):
-        _label = QLabel("Drive Name:  ")
+        _label = QLabel("Drive Name:  ", parent=self)
         _label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
         )
@@ -707,7 +709,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         self._change_validation_state(True)
 
     def _spawn_axis_widget(self, name):
-        _frame = QFrame()
+        _frame = QFrame(parent=self)
         _frame.setLayout(QVBoxLayout())
 
         _widget = AxisConfigWidget(name, parent=self)

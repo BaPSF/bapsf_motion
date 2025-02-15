@@ -42,7 +42,15 @@ from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
-from bapsf_motion.gui.widgets import GearValidButton, HLinePlain, LED, StyleButton
+from bapsf_motion.gui.widgets import (
+    DiscardButton,
+    DoneButton,
+    GearValidButton,
+    HLinePlain,
+    LED,
+    StyleButton,
+    StopButton,
+)
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry
@@ -825,7 +833,7 @@ class DriveDesktopController(DriveBaseController):
 
     def _initialize_widgets(self):
         # BUTTON WIDGETS
-        _btn = StyleButton("Move \n To")
+        _btn = StyleButton("Move \n To", parent=self)
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
         font = _btn.font()
@@ -834,7 +842,7 @@ class DriveDesktopController(DriveBaseController):
         _btn.setFont(font)
         self.move_to_btn = _btn
 
-        _btn = StyleButton("Home \n All")
+        _btn = StyleButton("Home \n All", parent=self)
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
         font = _btn.font()
@@ -844,7 +852,7 @@ class DriveDesktopController(DriveBaseController):
         _btn.setEnabled(False)
         self.home_btn = _btn
 
-        _btn = StyleButton("Zero \n All")
+        _btn = StyleButton("Zero \n All", parent=self)
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
         font = _btn.font()
@@ -869,19 +877,19 @@ class DriveDesktopController(DriveBaseController):
         sub_layout.addWidget(self.zero_all_btn)
 
         # Sub-Layout #2
-        _text = QLabel("Position")
+        _text = QLabel("Position", parent=self)
         font = _text.font()
         font.setPointSize(14)
         _text.setFont(font)
         _pos_label = _text
 
-        _text = QLabel("Target")
+        _text = QLabel("Target", parent=self)
         font = _text.font()
         font.setPointSize(14)
         _text.setFont(font)
         _target_label = _text
 
-        _text = QLabel("Jog Δ")
+        _text = QLabel("Jog Δ", parent=self)
         font = _text.font()
         font.setPointSize(14)
         _text.setFont(font)
@@ -1257,7 +1265,7 @@ class DriveControlWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("STOP")
+        _btn = StopButton(parent=self)
         _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         _btn.setFixedWidth(200)
         _btn.setMinimumHeight(400)
@@ -1265,15 +1273,9 @@ class DriveControlWidget(QWidget):
         font.setPointSize(32)
         font.setBold(True)
         _btn.setFont(font)
-        _btn.update_style_sheet(
-            {
-                "background-color": "rgb(255, 75, 75)",
-                "border": "3px solid rgb(170, 170, 170)",
-            },
-        )
         self.stop_1_btn = _btn
 
-        _btn = StyleButton("STOP")
+        _btn = StopButton(parent=self)
         _btn.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
         _btn.setFixedWidth(200)
         _btn.setMinimumHeight(400)
@@ -1281,12 +1283,6 @@ class DriveControlWidget(QWidget):
         font.setPointSize(32)
         font.setBold(True)
         _btn.setFont(font)
-        _btn.update_style_sheet(
-            {
-                "background-color": "rgb(255, 75, 75)",
-                "border": "3px solid rgb(170, 170, 170)",
-            },
-        )
         self.stop_2_btn = _btn
 
         # Define TEXT WIDGETS
@@ -1553,7 +1549,7 @@ class MGWidget(QWidget):
 
         # Define TEXT WIDGETS
 
-        _widget = QTextEdit()
+        _widget = QTextEdit(parent=self)
         _widget.setSizePolicy(
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Expanding,
@@ -1564,7 +1560,7 @@ class MGWidget(QWidget):
         _widget.setMinimumWidth(350)
         self.toml_widget = _widget
 
-        _widget = QLineEdit()
+        _widget = QLineEdit(parent=self)
         font = _widget.font()
         font.setPointSize(16)
         _widget.setFont(font)
@@ -1573,28 +1569,14 @@ class MGWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Add / Update")
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        _btn.setFont(font)
+        _btn = DoneButton("Add / Update", parent=self)
         _btn.setEnabled(False)
         self.done_btn = _btn
 
-        _btn = StyleButton("Discard")
-        _btn.setFixedWidth(300)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 110, 110)"}
-        )
+        _btn = DiscardButton(parent=self)
         self.discard_btn = _btn
 
-        _btn = StyleButton("Load a Default")
+        _btn = StyleButton("Load a Default", parent=self)
         _btn.setFixedWidth(250)
         _btn.setFixedHeight(36)
         font = _btn.font()
@@ -1797,7 +1779,7 @@ class MGWidget(QWidget):
         ...
 
     def _define_toml_layout(self):
-        label = QLabel("Motion Group Configuration")
+        label = QLabel("Motion Group Configuration", parent=self)
         label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
         )
@@ -1813,7 +1795,7 @@ class MGWidget(QWidget):
 
     def _define_central_builder_layout(self):
 
-        _label = QLabel("Name:  ")
+        _label = QLabel("Name:  ", parent=self)
         _label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt. AlignmentFlag.AlignLeft
         )
@@ -2322,7 +2304,7 @@ class MGWidget(QWidget):
     def _rerun_drive(self):
         self.logger.info("Restarting the motion group's drive")
 
-        if self.mg.drive is None:
+        if not isinstance(self.mg, MotionGroup) or self.mg.drive is None:
             return
 
         drive_config = self.mg.drive.config

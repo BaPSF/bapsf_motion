@@ -72,40 +72,39 @@ class QLogger(QWidget):
     def __init__(
             self,
             logger: logging.Logger,
-            verbosity=logging.WARNING,
             parent=None,
     ):
         super().__init__(parent=parent)
 
         self._logger = logger  # type: logging.Logger
-        self._log_widget = None  # type: QTextEdit
-        self._slider_widget = None  # type: QSlider
 
-        self.setLayout(self._define_layout())
+        # BUTTON WIDGETS
 
-        self._handler = self._setup_log_handler()  # type: QLogHandler
+        # TEXT WIDGETS
+        _label = QLabel("LOG", parent=self)
+        _font = _label.font()
+        _font.setPointSize(14)
+        _font.setBold(True)
+        _label.setFont(_font)
+        self.title_txt = _label
 
-        self._slider_widget.valueChanged.connect(self.update_log_verbosity)
+        self.slider_labels = []
+        for text in self._verbosity.keys():
+            _label = QLabel(text, parent=self)
+            _label.setAlignment(
+                Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
+            )
+            _label.setMinimumWidth(24)
 
-    @property
-    def handler(self) -> QLogHandler:
-        return self._handler
+            font = _label.font()
+            font.setPointSize(12)
+            _label.setFont(font)
 
-    def _define_layout(self):
-        layout = QVBoxLayout()
+            self.slider_labels.append(_label)
 
-        # first row: Title
-        label = QLabel("LOG")
-        font = label.font()
-        font.setPointSize(14)
-        font.setBold(True)
-        label.setFont(font)
-        layout.addWidget(label, alignment=Qt.AlignHCenter | Qt.AlignTop)
+        # ADVANCED WIDGETS
 
-        # second row: verbosity setting
-        row2_layout = QGridLayout()
-
-        slider = QSlider(Qt.Horizontal)
+        slider = QSlider(Qt.Orientation.Horizontal, parent=self)
         slider.setMinimum(1)
         slider.setMaximum(4)
         slider.setTickInterval(1)
@@ -113,63 +112,71 @@ class QLogger(QWidget):
         slider.setTickPosition(slider.TickPosition.TicksBelow)
         slider.setFixedHeight(16)
         slider.setMinimumWidth(100)
-        slider.setValue(2)
+        slider.setValue(2)  # logging.INFO
+        self.slider_widget = slider
 
-        self._slider_widget = slider
-
-        label_widgets = []
-        for label in self._verbosity.keys():
-            lw = QLabel(label)
-            lw.setAlignment(Qt.AlignCenter | Qt.AlignVCenter)
-            lw.setMinimumWidth(24)
-
-            font = lw.font()
-            font.setPointSize(12)
-            lw.setFont(font)
-
-            label_widgets.append(lw)
-
-        row2_layout.addWidget(slider, 0, 1, 1, 6)
-        for ii, lw in enumerate(label_widgets):
-            row2_layout.addWidget(lw, 1, 2 * ii, 1, 2)
-
-        layout.addLayout(row2_layout)
-
-        # third row: text box
-        log_widget = QTextEdit()
+        log_widget = QTextEdit(parent=self)
         log_widget.setReadOnly(True)
         font = log_widget.font()
         font.setPointSize(10)
         font.setFamily("Courier New")
         log_widget.setFont(font)
-        self._log_widget = log_widget
+        self.log_widget = log_widget
 
-        layout.addWidget(log_widget)
+        self._handler = self._setup_log_handler()  # type: QLogHandler
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self) -> None:
+        self.slider_widget.valueChanged.connect(self.update_log_verbosity)
+
+    @property
+    def handler(self) -> QLogHandler:
+        return self._handler
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    def _define_layout(self):
+        slider_layout = QGridLayout()
+        slider_layout.addWidget(self.slider_widget, 0, 1, 1, 6)
+        for ii, lw in enumerate(self.slider_labels):
+            slider_layout.addWidget(lw, 1, 2 * ii, 1, 2)
+
+        layout = QVBoxLayout()
+        layout.addWidget(
+            self.title_txt,
+            alignment=Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop,
+        )
+        layout.addLayout(slider_layout)
+        layout.addWidget(self.log_widget)
 
         return layout
 
     def _setup_log_handler(self):
-        handler = QLogHandler(widget=self._log_widget)
+        handler = QLogHandler(widget=self.log_widget)
         handler.setFormatter(
             logging.Formatter(
                 fmt="%(asctime)s - [%(levelname)s] { %(name)s }  %(message)s",
                 datefmt="%H:%M:%S",
             ),
         )
-        vindex = self._slider_widget.value() - 1
+        vindex = self.slider_widget.value() - 1
         vkey = list(self._verbosity.keys())[vindex]
         handler.setLevel(self._verbosity[vkey])
-        self._logger.addHandler(handler)
+        self.logger.addHandler(handler)
 
         return handler
 
     def update_log_verbosity(self):
-        vindex = self._slider_widget.value() - 1
+        vindex = self.slider_widget.value() - 1
         vkey = list(self._verbosity.keys())[vindex]
 
         self.handler.setLevel(self._verbosity[vkey])
 
-        self._logger.info(f"Changed log verbosity to {vkey} ({self._verbosity[vkey]}).")
+        self.logger.info(f"Changed log verbosity to {vkey} ({self._verbosity[vkey]}).")
 
 
 class DemoQLogger(QMainWindow):

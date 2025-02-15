@@ -1,7 +1,7 @@
 """
 This module defines the configuration GUI for construction data runs.
 """
-__all__ = ["ConfigureGUI"]
+__all__ = ["ConfigureGUI", "ConfigureApp"]
 
 import logging
 import logging.config
@@ -16,6 +16,7 @@ from PySide6.QtCore import (
 )
 from PySide6.QtGui import QCloseEvent, QIcon
 from PySide6.QtWidgets import (
+    QApplication,
     QMainWindow,
     QHBoxLayout,
     QLabel,
@@ -30,7 +31,7 @@ from PySide6.QtWidgets import (
     QStackedWidget,
     QListWidgetItem,
 )
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
@@ -39,8 +40,17 @@ import qtawesome as qta
 from bapsf_motion.actors import RunManager, RunManagerConfig, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
-from bapsf_motion.gui.widgets import QLogger, StyleButton, VLinePlain
+from bapsf_motion.gui.widgets import (
+    DiscardButton,
+    DoneButton,
+    QLogger,
+    StyleButton,
+    VLinePlain,
+)
 from bapsf_motion.utils import toml, _deepcopy_dict
+
+
+_HERE = Path(__file__).parent
 
 
 class RunWidget(QWidget):
@@ -51,68 +61,44 @@ class RunWidget(QWidget):
 
         # Define BUTTONS
 
-        _btn = StyleButton("DONE")
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        _btn.setFont(font)
-        self.done_btn = _btn
+        self.done_btn = DoneButton(parent=self)
+        self.quit_btn = DiscardButton(parent=self)
 
-        _btn = StyleButton("Discard && Quit")
-        _btn.setFixedWidth(200)
+        _btn = StyleButton("IMPORT", parent=self)
         _btn.setFixedHeight(48)
-        font = _btn.font()
-        font.setPointSize(24)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.update_style_sheet({"background-color": "rgb(255, 110, 110)"})
-        self.quit_btn = _btn
-
-        _btn = StyleButton("IMPORT")
-        _btn.setFixedHeight(28)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
         self.import_btn = _btn
 
-        _btn = StyleButton("EXPORT")
-        _btn.setFixedHeight(28)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
+        _btn = StyleButton("EXPORT", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
         self.export_btn = _btn
 
-        _btn = StyleButton("ADD")
-        _btn.setFixedHeight(32)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
-        _btn.setEnabled(True)
+        _btn = StyleButton("ADD", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
         self.add_mg_btn = _btn
 
-        _btn = StyleButton("REMOVE")
-        _btn.setFixedHeight(32)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
+        _btn = StyleButton("REMOVE", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
         _btn.setEnabled(False)
         self.remove_mg_btn = _btn
 
-        _btn = StyleButton("Edit / Control")
-        _btn.setFixedHeight(32)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
+        _btn = StyleButton("Edit / Control", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
         _btn.setEnabled(False)
         self.modify_mg_btn = _btn
 
         # Define TEXT WIDGETS
 
-        self.config_widget = QTextEdit()
-        self.mg_list_widget = QListWidget()
+        self.config_widget = QTextEdit(parent=self)
+        self.mg_list_widget = QListWidget(parent=self)
 
-        _txt_widget = QLineEdit()
+        _txt_widget = QLineEdit(parent=self)
         font = _txt_widget.font()
         font.setPointSize(16)
         _txt_widget.setFont(font)
@@ -128,14 +114,14 @@ class RunWidget(QWidget):
         banner_layout = self._define_banner_layout()
 
         # Create layout for toml window
-        toml_widget = QWidget()
+        toml_widget = QWidget(parent=self)
         toml_widget.setLayout(self._define_toml_layout())
         toml_widget.setMinimumWidth(400)
         toml_widget.setMinimumWidth(500)
         toml_widget.sizeHint().setWidth(450)
 
         # Create layout for controls
-        control_widget = QWidget()
+        control_widget = QWidget(parent=self)
         control_widget.setLayout(self._define_control_layout())
 
         # Construct layout below top banner
@@ -153,7 +139,7 @@ class RunWidget(QWidget):
 
     def _define_toml_layout(self):
         layout = QGridLayout()
-        label = QLabel("Run Configuration")
+        label = QLabel("Run Configuration", parent=self)
         label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
         )
@@ -171,8 +157,8 @@ class RunWidget(QWidget):
 
         layout.addWidget(label, 0, 0, 1, 2)
         layout.addWidget(self.config_widget, 1, 0, 1, 2)
-        layout.addWidget(self.import_btn, 2, 0, 1, 1)
-        layout.addWidget(self.export_btn, 2, 1, 1, 1)
+        layout.addWidget(self.import_btn, 2, 0)
+        layout.addWidget(self.export_btn, 2, 1)
 
         return layout
 
@@ -188,7 +174,7 @@ class RunWidget(QWidget):
     def _define_control_layout(self):
         layout = QVBoxLayout()
 
-        run_label = QLabel("Run Name:  ")
+        run_label = QLabel("Run Name:  ", parent=self)
         run_label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt. AlignmentFlag.AlignLeft
         )
@@ -197,7 +183,7 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         run_label.setFont(font)
 
-        mg_label = QLabel("Defined Motion Groups")
+        mg_label = QLabel("Defined Motion Groups", parent=self)
         mg_label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
         )
@@ -237,7 +223,7 @@ class RunWidget(QWidget):
 
     @property
     def rm(self) -> Union[RunManager, None]:
-        parent = self.parent()  # type: "ConfigureGUI"
+        parent = self.parentWidget()  # type: "ConfigureGUI"
         try:
             return parent.rm
         except AttributeError:
@@ -603,3 +589,30 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.close()
 
         event.accept()
+
+
+class ConfigureApp(QApplication):
+    qss_file_path = (_HERE / "configure.qss").resolve()
+
+    def __init__(
+        self,
+        *args,
+        config: Union[Path, str, Dict[str, Any], RunManagerConfig] = None,
+        defaults: Union[Path, str, Dict[str, Any], None] = None,
+        **kwargs,
+    ) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.setStyle("Fusion")
+        self.styleHints().setColorScheme(Qt.ColorScheme.Light)
+        self.reload_style_sheet()
+
+        self._window = ConfigureGUI(config=config, defaults=defaults)
+        self._window.show()
+        self._window.activateWindow()
+
+    def reload_style_sheet(self):
+        with open(self.qss_file_path, "r") as f:
+            qss_style = f.read()
+
+        self.setStyleSheet(qss_style)
