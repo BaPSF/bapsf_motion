@@ -123,6 +123,11 @@ class StyleButton(QPushButton):
     def _resetStyleSheet(self):
         self.setStyleSheet(self._style)
 
+    def setPointSize(self, point_size):
+        font = self.font()
+        font.setPointSize(point_size)
+        self.setFont(font)
+
     def update_style_sheet(self, styles, action="base", reset=False):
 
         if action not in ("base", "hover", "pressed", "checked", "disabled"):
