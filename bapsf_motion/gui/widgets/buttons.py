@@ -377,8 +377,8 @@ class StopButton(StyleButton):
             styles={
                 "background-color": "rgb(232, 80, 74)",
                 "border-radius": "6px",
-                "border": "3px solid rgb(190, 190, 190)",
-                "color": "rgba(188, 190, 196, 240)",
+                "border": "3px solid rgb(90, 90, 90)",
+                "color": "rgba(30, 30, 30, 240)",
             },
             action="base",
         )
