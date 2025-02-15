@@ -65,42 +65,31 @@ class RunWidget(QWidget):
         self.quit_btn = DiscardButton(parent=self)
 
         _btn = StyleButton("IMPORT", parent=self)
-        _btn.setFixedHeight(28)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
         self.import_btn = _btn
-        self.import_btn.setEnabled(False)
 
         _btn = StyleButton("EXPORT", parent=self)
-        _btn.setFixedHeight(28)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
         self.export_btn = _btn
-        self.export_btn.setEnabled(False)
 
         _btn = StyleButton("ADD", parent=self)
-        _btn.setFixedHeight(32)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
-        _btn.setEnabled(True)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
         self.add_mg_btn = _btn
 
         _btn = StyleButton("REMOVE", parent=self)
-        _btn.setFixedHeight(32)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
         _btn.setEnabled(False)
         self.remove_mg_btn = _btn
 
         _btn = StyleButton("Edit / Control", parent=self)
-        _btn.setFixedHeight(32)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
         _btn.setEnabled(False)
         self.modify_mg_btn = _btn
 
@@ -168,8 +157,8 @@ class RunWidget(QWidget):
 
         layout.addWidget(label, 0, 0, 1, 2)
         layout.addWidget(self.config_widget, 1, 0, 1, 2)
-        layout.addWidget(self.import_btn, 2, 0, 1, 1)
-        layout.addWidget(self.export_btn, 2, 1, 1, 1)
+        layout.addWidget(self.import_btn, 2, 0)
+        layout.addWidget(self.export_btn, 2, 1)
 
         return layout
 
