@@ -191,10 +191,14 @@ class DiscardButton(BannerButton):
 
         self.update_style_sheet(
             styles={
-                "background-color": "rgba(180, 62, 57, 180)",
-                "color": "rgba(188, 190, 196, 230)",
+                "background-color": "rgb(232, 80, 74)",
+                "color": "rgb(30, 30, 30)",
             },
             action="base",
+        )
+        self.update_style_sheet(
+            styles={"background-color": self._default_base_style["background-color"]},
+            action="disabled",
         )
 
         _text = self.text()
