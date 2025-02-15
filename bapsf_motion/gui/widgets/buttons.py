@@ -10,7 +10,6 @@ __all__ = [
     "StyleButton",
 ]
 
-import ast
 import math
 
 from PySide6.QtCore import QSize
