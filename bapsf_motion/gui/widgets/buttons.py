@@ -21,6 +21,8 @@ from typing import Optional
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta
 
+from bapsf_motion.gui.helpers import cast_color_to_rgba_string
+
 
 class StyleButton(QPushButton):
 
@@ -255,6 +257,7 @@ class GearValidButton(StyleButton):
 
         self._valid_icon = qta.icon("fa.gear", color=self._valid_color)
         self._invalid_icon = qta.icon("fa.gear", color=self._invalid_color)
+        self._disabled_icon = qta.icon("fa.gear")
         self._is_valid = False
 
         super().__init__(self._invalid_icon, "", parent=parent)
