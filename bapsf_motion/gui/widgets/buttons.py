@@ -332,13 +332,12 @@ class ValidButton(StyleButton):
     def setCheckable(self, arg__1):
         super().setCheckable(True)
 
-    def set_valid(self):
-        self.setChecked(True)
-        self._is_valid = True
+    def set_valid(self, state: bool = True):
+        self.setChecked(state)
+        self._is_valid = state
 
     def set_invalid(self):
-        self.setChecked(False)
-        self._is_valid = False
+        self.set_valid(False)
 
     def _enforce_checked_state(self):
         self.setChecked(self.is_valid)
@@ -373,9 +372,10 @@ class GearValidButton(ValidButton):
         self.setIconSize(QSize(self._icon_size, self._icon_size))
         self.setChecked(False)
 
-    def set_valid(self):
-        self.setIcon(self._valid_icon)
-        super().set_valid()
+    def set_valid(self, state: bool = True):
+        _icon = self._valid_icon if state else self._invalid_icon
+        self.setIcon(_icon)
+        super().set_valid(state=state)
 
     def set_invalid(self):
         self.setIcon(self._invalid_icon)
