@@ -1789,9 +1789,9 @@ class MGWidget(QWidget):
         _label.setFont(font)
         name_label = _label
 
-        sub_layout = QHBoxLayout()
-        sub_layout.addWidget(name_label)
-        sub_layout.addWidget(self.mg_name_widget)
+        title_sub_layout = QHBoxLayout()
+        title_sub_layout.addWidget(name_label)
+        title_sub_layout.addWidget(self.mg_name_widget)
 
         drive_sub_layout = QHBoxLayout()
         drive_sub_layout.addWidget(self.drive_label)
@@ -1810,7 +1810,7 @@ class MGWidget(QWidget):
 
         layout = QVBoxLayout()
         layout.addSpacing(18)
-        layout.addLayout(sub_layout)
+        layout.addLayout(title_sub_layout)
         layout.addSpacing(18)
         layout.addLayout(drive_sub_layout)
         layout.addLayout(mb_sub_layout)
