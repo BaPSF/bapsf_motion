@@ -52,6 +52,7 @@ from bapsf_motion.gui.widgets import (
     StyleButton,
     StopButton,
     ValidButton,
+    ZeroButton,
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
@@ -341,7 +342,7 @@ class AxisControlWidget(QWidget):
         self.home_btn = _btn
         self.home_btn.setHidden(True)
 
-        _btn = StyleButton("ZERO", parent=self)
+        _btn = ZeroButton("ZERO", parent=self)
         self.zero_btn = _btn
 
         # Define TEXT WIDGETS

@@ -20,6 +20,7 @@ __all__ = [
     "StyleButton",
     "ValidButton",
     "VLinePlain",
+    "ZeroButton",
 ]
 
 from bapsf_motion.gui.widgets.logging import QLogHandler, QLogger
@@ -34,6 +35,7 @@ from bapsf_motion.gui.widgets.buttons import (
     StopButton,
     StyleButton,
     ValidButton,
+    ZeroButton,
 )
 from bapsf_motion.gui.widgets.misc import (
     BatteryStatusIcon,

@@ -10,6 +10,7 @@ __all__ = [
     "StopButton",
     "StyleButton",
     "ValidButton",
+    "ZeroButton",
 ]
 
 import math
@@ -509,14 +510,11 @@ class StopButton(StyleButton):
         )
 
 
-# if __name__ == "__main__":
-#     from PySide6.QtWidgets import QApplication, QMainWindow
-#
-#     app = QApplication([])
-#
-#     window = QMainWindow()
-#     _widget = LED()
-#     window.setCentralWidget(_widget)
-#     window.show()
-#
-#     app.exec()
+class ZeroButton(StyleButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.update_style_sheet(
+            styles={"background-color": "rgb(52, 161, 219)"},
+            action="pressed",
+        )
