@@ -1740,7 +1740,6 @@ class MGWidget(QWidget):
         layout.addLayout(self._define_mg_builder_layout(), 2)
         layout.addWidget(HLinePlain(parent=self))
         layout.addWidget(self.drive_control_widget)
-        # layout.addStretch(1)
 
         return layout
 
@@ -1762,9 +1761,6 @@ class MGWidget(QWidget):
         layout.addStretch(1)
 
         return layout
-
-    def _def_mg_control_layout(self):
-        ...
 
     def _define_toml_layout(self):
         label = QLabel("Motion Group Configuration", parent=self)
