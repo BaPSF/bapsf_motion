@@ -15,6 +15,7 @@ import math
 from PySide6.QtCore import QSize
 from PySide6.QtGui import QFontMetrics, QColor
 from PySide6.QtWidgets import QPushButton
+from typing import Optional
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
@@ -220,7 +221,19 @@ class DoneButton(BannerButton):
 
 
 class GearButton(StyleButton):
-    def __init__(self, color: str = "#2980b9", parent=None):
+    def __init__(self, color: Optional[str] = None, parent=None):
+
+        try:
+            color = cast_color_to_rgba_string(color)
+        except (ValueError, TypeError):
+            color = None
+
+        if color is None:
+            _palette = self.palette()
+            _palette_color = _palette.color(_palette.ColorRole.ButtonText)
+
+            _color = self.base_style.get("color", _palette_color)
+
         super().__init__(
             qta.icon("fa.gear", color=color),
             "",
