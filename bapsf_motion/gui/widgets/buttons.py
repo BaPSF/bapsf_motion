@@ -273,6 +273,7 @@ class DoneButton(BannerButton):
 
 class GearButton(StyleButton):
     def __init__(self, color: Optional[str] = None, parent=None):
+        super().__init__(parent=parent)
 
         try:
             color = cast_color_to_rgba_string(color)
@@ -283,13 +284,19 @@ class GearButton(StyleButton):
             _palette = self.palette()
             _palette_color = _palette.color(_palette.ColorRole.ButtonText)
 
-            _color = self.base_style.get("color", _palette_color)
+            color = self.base_style.get("color", _palette_color)
 
-        super().__init__(
-            qta.icon("fa.gear", color=color),
-            "",
-            parent=parent,
-        )
+        if not isinstance(color, QColor):
+            color = cast_color_to_rgba_string(color)
+            icon_color = color.replace("rgba(", "").replace(")", "")
+            r, g, b, a = map(int, icon_color.split(","))
+            icon_color = QColor(r, g, b, a=a)
+        else:
+            icon_color = color
+
+        self.update_style_sheet(styles={"color": color}, action="base")
+        self._icon = qta.icon("fa.gear", color=icon_color)
+        self.setIcon(self._icon)
 
         self._size = 32
         self._icon_size = 24
