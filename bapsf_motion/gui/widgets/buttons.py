@@ -135,30 +135,22 @@ class StyleButton(QPushButton):
 
         if action == "base":
             _style = self.base_style if not reset else {**self._default_base_style}
+            self._base_style = {**_style, **styles}
         elif action == "hover":
             _style = self.hover_style if not reset else {**self._default_hover_style}
+            self._hover_style = {**_style, **styles}
         elif action == "pressed":
             _style = self.pressed_style if not reset else {**self._default_pressed_style}
+            self._pressed_style = {**_style, **styles}
         elif action == "checked":
             _style = self.pressed_style if not reset else {**self._default_checked_style}
+            self._checked_style = {**_style, **styles}
         else:  # action == "disabled
             _style = (
                 self.disabled_style if not reset
                 else {**self._default_disabled_style}
             )
-
-        new_style = {**_style, **styles}
-
-        if action == "base":
-            self._base_style = new_style
-        elif action == "hover":
-            self._hover_style = new_style
-        elif action == "pressed":
-            self._pressed_style = new_style
-        elif action == "pressed":
-            self._checked_style = new_style
-        else:  # action == "disabled"
-            self._disabled_style = new_style
+            self._disabled_style = {**_style, **styles}
 
         self._resetStyleSheet()
 
