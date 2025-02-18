@@ -47,6 +47,7 @@ from bapsf_motion.gui.widgets import (
     DoneButton,
     GearValidButton,
     HLinePlain,
+    IconButton,
     LED,
     StyleButton,
     StopButton,
@@ -312,12 +313,12 @@ class AxisControlWidget(QWidget):
         self.setFixedWidth(120)
 
         # Define BUTTONS
-        _btn = StyleButton(qta.icon("fa.arrow-up"), "", parent=self)
-        _btn.setIconSize(QSize(48, 48))
+        _btn = IconButton("fa.arrow-up", parent=self)
+        _btn.setIconSize(48)
         self.jog_forward_btn = _btn
 
-        _btn = StyleButton(qta.icon("fa.arrow-down"), "", parent=self)
-        _btn.setIconSize(QSize(48, 48))
+        _btn = IconButton("fa.arrow-down", parent=self)
+        _btn.setIconSize(48)
         self.jog_backward_btn = _btn
 
         _btn = StyleButton("FWD LIMIT", parent=self)
