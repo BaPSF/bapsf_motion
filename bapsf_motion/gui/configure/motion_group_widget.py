@@ -1303,6 +1303,8 @@ class DriveControlWidget(QWidget):
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
         _combo.addItems(["Desktop", "Game Controller"])
+        _combo.setFixedHeight(32)
+        _combo.setFixedWidth(175)
         self.controller_combo_box = _combo
 
         self.setLayout(self._define_layout())
@@ -1328,11 +1330,6 @@ class DriveControlWidget(QWidget):
         _font = _label.font()
         _font.setPointSize(16)
         _label.setFont(_font)
-
-        self.controller_combo_box.setFixedHeight(32)
-        self.controller_combo_box.setFixedWidth(175)
-        _font.setPointSize(14)
-        self.controller_combo_box.setFont(_font)
 
         central_banner_layout.addStretch(1)
         central_banner_layout.addWidget(
