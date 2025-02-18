@@ -299,6 +299,16 @@ class GearValidButton(StyleButton):
         _icon = self._valid_icon if self.is_valid else self._invalid_icon
         self.setIcon(_icon)
 
+    def setDisabled(self, arg__1):
+        self.setEnabled(not arg__1)
+
+    def setEnabled(self, arg__1):
+        self.set_invalid()
+        if not arg__1:
+            self.setIcon(self._disabled_icon)
+
+        super().setEnabled(arg__1)
+
 
 class LED(QPushButton):
     _aspect_ratio = 1.0
