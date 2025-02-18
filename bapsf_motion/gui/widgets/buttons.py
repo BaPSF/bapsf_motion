@@ -250,8 +250,8 @@ class GearButton(StyleButton):
 
 class GearValidButton(StyleButton):
     def __init__(self, parent=None):
-        self._valid_color = QColor(52, 152, 219, a=160)  # "#3498DB"  # blue
-        self._invalid_color = QColor(219, 111, 52, a=200)  # "#3498DB" orange
+        self._valid_color = QColor(52, 161, 219, 240)
+        self._invalid_color = QColor(250, 66, 45, 200)
 
         self._valid_icon = qta.icon("fa.gear", color=self._valid_color)
         self._invalid_icon = qta.icon("fa.gear", color=self._invalid_color)
@@ -259,20 +259,34 @@ class GearValidButton(StyleButton):
 
         super().__init__(self._invalid_icon, "", parent=parent)
 
+        self.update_style_sheet(
+            styles={"background-color": "rgb(95, 95, 95)"},
+            action="pressed",
+        )
+        self.update_style_sheet(
+            styles={"background-color": "rgb(123, 123, 123)"},
+            action="checked",
+        )  # checked state is the valid state
+
         self._size = 32
-        self._icon_size = 24
+        self._icon_size = 28
 
         self.setFixedWidth(self._size)
         self.setFixedHeight(self._size)
+        self.setIcon(self._invalid_icon)
         self.setIconSize(QSize(self._icon_size, self._icon_size))
+        self.setCheckable(True)
+        self.setChecked(False)
 
     def set_valid(self):
+        self.setIcon(self._valid_icon)
+        self.setChecked(True)
         self._is_valid = True
-        self._change_validation_icon()
 
     def set_invalid(self):
+        self.setIcon(self._invalid_icon)
+        self.setChecked(False)
         self._is_valid = False
-        self._change_validation_icon()
 
     @property
     def is_valid(self):
