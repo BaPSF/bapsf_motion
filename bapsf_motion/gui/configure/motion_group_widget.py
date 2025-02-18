@@ -340,6 +340,7 @@ class AxisControlWidget(QWidget):
         _btn = StyleButton("HOME", parent=self)
         _btn.setEnabled(False)
         self.home_btn = _btn
+        self.home_btn.setHidden(True)
 
         _btn = StyleButton("ZERO", parent=self)
         self.zero_btn = _btn
