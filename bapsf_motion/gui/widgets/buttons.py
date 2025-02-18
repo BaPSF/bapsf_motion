@@ -337,6 +337,11 @@ class GearValidButton(StyleButton):
         self.setCheckable(True)
         self.setChecked(False)
 
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.clicked.connect(self._enforce_checked_state)
+
     def set_valid(self):
         self.setIcon(self._valid_icon)
         self.setChecked(True)
@@ -350,6 +355,9 @@ class GearValidButton(StyleButton):
     @property
     def is_valid(self):
         return self._is_valid
+
+    def _enforce_checked_state(self):
+        self.setChecked(self.is_valid)
 
     def _change_validation_icon(self):
         _icon = self._valid_icon if self.is_valid else self._invalid_icon
