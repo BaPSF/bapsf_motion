@@ -51,6 +51,7 @@ from bapsf_motion.gui.widgets import (
     LED,
     StyleButton,
     StopButton,
+    ValidButton,
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
@@ -321,20 +322,18 @@ class AxisControlWidget(QWidget):
         _btn.setIconSize(48)
         self.jog_backward_btn = _btn
 
-        _btn = StyleButton("FWD LIMIT", parent=self)
+        _btn = ValidButton("FWD LIMIT", parent=self)
         _btn.update_style_sheet(
             {"background-color": "rgb(255, 95, 95)"},
             action="checked"
         )
-        _btn.setCheckable(True)
         self.limit_fwd_btn = _btn
 
-        _btn = StyleButton("BWD LIMIT", parent=self)
+        _btn = ValidButton("BWD LIMIT", parent=self)
         _btn.update_style_sheet(
             {"background-color": "rgb(255, 95, 95)"},
             action="checked"
         )
-        _btn.setCheckable(True)
         self.limit_bwd_btn = _btn
 
         _btn = StyleButton("HOME", parent=self)
