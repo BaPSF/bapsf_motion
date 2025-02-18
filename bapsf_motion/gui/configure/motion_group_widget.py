@@ -1576,16 +1576,6 @@ class MGWidget(QWidget):
         _btn = DiscardButton(parent=self)
         self.discard_btn = _btn
 
-        _btn = StyleButton("Load a Default", parent=self)
-        _btn.setFixedWidth(250)
-        _btn.setFixedHeight(36)
-        font = _btn.font()
-        font.setPointSize(20)
-        _btn.setFont(font)
-        _btn.setEnabled(False)
-        self.quick_mg_btn = _btn
-        self.quick_mg_btn.setVisible(False)
-
         _icon = QLabel(parent=self)
         _icon.setPixmap(qta.icon("mdi.steering").pixmap(24, 24))
         _icon.setMaximumWidth(32)
@@ -1758,8 +1748,6 @@ class MGWidget(QWidget):
         layout = QHBoxLayout()
 
         layout.addWidget(self.discard_btn)
-        layout.addStretch()
-        layout.addWidget(self.quick_mg_btn)
         layout.addStretch()
         layout.addWidget(self.done_btn)
 
