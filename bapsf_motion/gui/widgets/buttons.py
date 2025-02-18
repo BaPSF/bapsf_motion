@@ -307,7 +307,6 @@ class GearButton(StyleButton):
         self.setIconSize(QSize(self._icon_size, self._icon_size))
 
 
-class GearValidButton(StyleButton):
 class ValidButton(StyleButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -345,6 +344,7 @@ class ValidButton(StyleButton):
         self.setChecked(self.is_valid)
 
 
+class GearValidButton(ValidButton):
     def __init__(self, parent=None):
         self._valid_color = QColor(52, 161, 219, 240)
         self._invalid_color = QColor(250, 66, 45, 200)
@@ -352,7 +352,6 @@ class ValidButton(StyleButton):
         self._valid_icon = qta.icon("fa.gear", color=self._valid_color)
         self._invalid_icon = qta.icon("fa.gear", color=self._invalid_color)
         self._disabled_icon = qta.icon("fa.gear")
-        self._is_valid = False
 
         super().__init__(self._invalid_icon, "", parent=parent)
 
@@ -372,30 +371,15 @@ class ValidButton(StyleButton):
         self.setFixedHeight(self._size)
         self.setIcon(self._invalid_icon)
         self.setIconSize(QSize(self._icon_size, self._icon_size))
-        self.setCheckable(True)
         self.setChecked(False)
-
-        self._connect_signals()
-
-    def _connect_signals(self):
-        self.clicked.connect(self._enforce_checked_state)
 
     def set_valid(self):
         self.setIcon(self._valid_icon)
-        self.setChecked(True)
-        self._is_valid = True
+        super().set_valid()
 
     def set_invalid(self):
         self.setIcon(self._invalid_icon)
-        self.setChecked(False)
-        self._is_valid = False
-
-    @property
-    def is_valid(self):
-        return self._is_valid
-
-    def _enforce_checked_state(self):
-        self.setChecked(self.is_valid)
+        super().set_invalid()
 
     def _change_validation_icon(self):
         _icon = self._valid_icon if self.is_valid else self._invalid_icon
