@@ -554,7 +554,6 @@ class AxisControlWidget(QWidget):
         if self._mg.terminated:
             return
 
-        # pos = self.axis.motor.status["position"]
         pos = self.position
         self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
 
@@ -562,8 +561,8 @@ class AxisControlWidget(QWidget):
             self.target_position_label.setText(f"{pos.value:.2f}")
 
         limits = self.axis.motor.status["limits"]
-        self.limit_fwd_btn.setChecked(limits["CW"])
-        self.limit_bwd_btn.setChecked(limits["CCW"])
+        self.limit_fwd_btn.set_valid(state=limits["CW"])
+        self.limit_bwd_btn.set_valid(state=limits["CCW"])
 
     def _validate_jog_value(self):
         _txt = self.jog_delta_label.text()
