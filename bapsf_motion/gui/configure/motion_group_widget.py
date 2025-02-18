@@ -1758,6 +1758,8 @@ class MGWidget(QWidget):
         layout.addSpacing(12)
         layout.addLayout(self._define_central_builder_layout())
         layout.addSpacing(12)
+        # probe position graph widgets should go HERE
+        # - i.e. self._define_mspace_display_layout()
         layout.addStretch(1)
 
         return layout
