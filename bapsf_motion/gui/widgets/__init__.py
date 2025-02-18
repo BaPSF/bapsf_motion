@@ -18,6 +18,7 @@ __all__ = [
     "QLogHandler",
     "StopButton",
     "StyleButton",
+    "ValidButton",
     "VLinePlain",
 ]
 
@@ -32,6 +33,7 @@ from bapsf_motion.gui.widgets.buttons import (
     LED,
     StopButton,
     StyleButton,
+    ValidButton,
 )
 from bapsf_motion.gui.widgets.misc import (
     BatteryStatusIcon,
