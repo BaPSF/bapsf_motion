@@ -1294,7 +1294,10 @@ class DriveControlWidget(QWidget):
         self.stacked_controller_widget.addWidget(self.desktop_controller_widget)
 
         _combo = QComboBox(parent=self)
+        _font = _combo.font()
+        _font.setPointSize(12)
         _combo.setEditable(True)
+        _combo.lineEdit().setFont(_font)
         _combo.lineEdit().setReadOnly(True)
         _combo.lineEdit().setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
