@@ -438,16 +438,6 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         # Define BUTTONS
 
-        _btn = StyleButton("Load a Default", parent=self)
-        _btn.setFixedWidth(250)
-        _btn.setFixedHeight(36)
-        font = _btn.font()
-        font.setPointSize(20)
-        _btn.setFont(font)
-        _btn.setEnabled(False)
-        _btn.setHidden(True)
-        self.load_default_btn = _btn
-
         _btn = StyleButton("Add Axis", parent=self)
         _btn.setFixedWidth(120)
         _btn.setFixedHeight(36)
@@ -527,8 +517,6 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         layout = QHBoxLayout()
         layout.addWidget(self.discard_btn)
-        layout.addStretch()
-        layout.addWidget(self.load_default_btn)
         layout.addStretch()
         layout.addWidget(self.done_btn)
         return layout
