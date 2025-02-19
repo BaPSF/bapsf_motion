@@ -812,9 +812,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.configChanged.emit()
 
-    def _refresh_params_combo_box(self, items, current: Optional[str] = None):
-        self.params_combo_box.currentTextChanged.disconnect()
+    def _refresh_params_combo_box(
+        self, items, icons=None, current: Optional[str] = None, _type: Optional[str] = None,
+    ):
+        # disable combo box signals during depopulation
+        self.params_combo_box.blockSignals(True)
 
+        # update items
         self.params_combo_box.setObjectName("")
         self.params_combo_box.clear()
         self.params_combo_box.addItems(items)
@@ -823,9 +827,37 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         else:
             self.params_combo_box.setCurrentText(current)
 
-        self.params_combo_box.currentTextChanged.connect(
-            self._refresh_params_widget_from_combo_box_change
-        )
+        # add item icons
+        if icons is None:
+            icons = []
+        for ii, icon in enumerate(icons):
+            if icon is None or icon == "":
+                continue
+
+            self.params_combo_box.setItemIcon(ii, icon)
+
+        # set combo box tool tip
+        if _type == "exclusion":
+            self.params_combo_box.setToolTip(
+                "Items with a crown are Govern exclusions.  You can only "
+                "select one Govern exclusion."
+            )
+            self.params_combo_box.setToolTipDuration(30000)
+        else:
+            self.params_combo_box.setToolTip("")
+            self.params_combo_box.setToolTipDuration(0)        # set combo box tool tip
+        if _type == "exclusion":
+            self.params_combo_box.setToolTip(
+                "Items with a crown are Govern exclusions.  You can only "
+                "select one Govern exclusion."
+            )
+            self.params_combo_box.setToolTipDuration(30000)
+        else:
+            self.params_combo_box.setToolTip("")
+            self.params_combo_box.setToolTipDuration(0)
+
+        # re-enable signals
+        self.params_combo_box.blockSignals(False)
 
     def _refresh_params_widget(self):
         self.params_add_btn.setEnabled(False)
