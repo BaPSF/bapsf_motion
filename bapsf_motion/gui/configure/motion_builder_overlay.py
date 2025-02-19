@@ -536,18 +536,17 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         banner_layout = QHBoxLayout()
         banner_layout.setContentsMargins(0, 0, 0, 0)
-        banner_layout.setSpacing(8)
-
+        banner_layout.addSpacing(12)
         banner_layout.addWidget(
             self.params_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
         )
-        banner_layout.addSpacing(20)
+        banner_layout.addStretch(1)
         banner_layout.addWidget(
             self.params_combo_box,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
         )
-        banner_layout.addStretch()
+        banner_layout.addStretch(1)
         banner_layout.addWidget(
             self.params_discard_btn,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
