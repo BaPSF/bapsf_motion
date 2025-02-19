@@ -150,9 +150,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.params_discard_btn = _btn
 
         _txt = QComboBox(parent=self._params_widget)
-        _txt.setMinimumWidth(200)
-        _txt.setMaximumWidth(400)
+        _txt.setFixedHeight(34)
+        _txt.setFixedWidth(250)
         _txt.setEditable(False)
+        font = _txt.font()
+        font.setPointSize(12)
+        _txt.setFont(font)
         self.params_combo_box = _txt
 
         # non-widget initialization
