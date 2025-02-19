@@ -848,9 +848,23 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _type = self._param_inputs["_type"]
         _registry = self._param_inputs["_registry"]
 
+        # Handle strings representing np.inf and np.nan
+        for np_repr in ("inf", "nan"):
+            single_quote_string = f"'{np_repr}'"
+            double_quote_string = f'"{np_repr}"'
+            if (
+                np_repr in _input_string
+                and not (
+                    single_quote_string in _input_string
+                    or double_quote_string in _input_string
+                )
+            ):
+                _input_string = _input_string.replace(np_repr, single_quote_string)
+                input_widget.setText(_input_string)
+
         try:
             _input = ast.literal_eval(_input_string)
-        except (ValueError, SyntaxError):
+        except (ValueError, SyntaxError) as err:
             params = _registry.get_input_parameters(_type)
             _type = params[param]["param"].annotation
             if inspect.isclass(_type) and issubclass(_type, str):
@@ -859,11 +873,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 _input = None
             else:
                 self.logger.exception(
-                    f"Input '{input_widget.text()}' is not a valid type for '{param}'."
+                    f"Input '{input_widget.text()}' is not a valid type for '{param}'.",
+                    exc_info=err,
                 )
                 _input = None
                 input_widget.setText("")
-                raise
 
         self._param_inputs[param] = _input
 
@@ -1008,10 +1022,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             )
             # self._transform = transform
             self.change_validation_state(True)
-        except (ValueError, TypeError):
-            self.logger.exception("Supplied input arguments are not valid.")
+        except (ValueError, TypeError) as err:
+            self.logger.exception(
+                "Supplied input arguments are not valid.",
+                exc_info=err,
+            )
             self.change_validation_state(False)
-            raise
 
     def change_validation_state(self, valid: bool = False):
         self.params_add_btn.setEnabled(valid)
