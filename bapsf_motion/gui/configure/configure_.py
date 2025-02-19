@@ -97,6 +97,9 @@ class RunWidget(QWidget):
 
         self.config_widget = QTextEdit(parent=self)
         self.mg_list_widget = QListWidget(parent=self)
+        _font = self.mg_list_widget.font()
+        _font.setPointSize(14)
+        self.mg_list_widget.setFont(_font)
 
         _txt_widget = QLineEdit(parent=self)
         font = _txt_widget.font()
