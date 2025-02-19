@@ -965,12 +965,11 @@ class DriveGameController(DriveBaseController):
         self._pygame_joystick_runner = None  # type: Union[PyGameJoystickRunner, None]
         self._thread_pool = QThreadPool(parent=self)
 
-        _font = QFont()
-        _font.setPointSize(12)
-
         # BUTTON WIDGETS
         _btn = StyleButton("Refresh List", parent=self)
         _btn.setFixedHeight(32)
+        _font = _btn.font()
+        _font.setPointSize(12)
         _btn.setFont(_font)
         self.refresh_controller_list_btn = _btn
 
