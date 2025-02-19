@@ -75,7 +75,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         #     input args/kwargs)
         self._param_inputs = {}  # type: Dict[str, Any]
         self._params_widget = QWidget(parent=self)
-        self._params_field_widget = None  # type: Union[QWidget, None]
+        self._params_field_widget = QWidget(parent=self._params_widget)
         self._params_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
 
         self._params_widget.setMinimumHeight(300)
@@ -560,8 +560,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         hline = HLinePlain(parent=self._params_widget)
         hline.set_color(125, 125, 125)
         hline.setLineWidth(2)
-
-        self._params_field_widget = QWidget(parent=self._params_widget)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
