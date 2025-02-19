@@ -310,7 +310,8 @@ class ConfigureGUI(QMainWindow):
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
         self.resize(1760, 990)
-        self.setMinimumHeight(600)
+        self.setMinimumHeight(990)
+        self.setMinimumWidth(1760)
 
     def _define_layout(self):
 
