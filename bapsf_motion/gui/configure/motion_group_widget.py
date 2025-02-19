@@ -1263,6 +1263,7 @@ class DriveControlWidget(QWidget):
         self._mg = None
 
         self.setEnabled(True)
+        self.setFixedHeight(450)
 
         # Define BUTTONS
 
