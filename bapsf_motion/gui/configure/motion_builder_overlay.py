@@ -804,7 +804,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         try:
             _input = ast.literal_eval(_input_string)
-        except (ValueError, SyntaxError):
+        except (ValueError, SyntaxError) as err:
             params = _registry.get_input_parameters(_type)
             _type = params[param]["param"].annotation
             if inspect.isclass(_type) and issubclass(_type, str):
@@ -813,7 +813,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 _input = None
             else:
                 self.logger.exception(
-                    f"Input '{input_widget.text()}' is not a valid type for '{param}'."
+                    f"Input '{input_widget.text()}' is not a valid type for '{param}'.",
+                    exc_info=err,
                 )
                 _input = None
                 input_widget.setText("")
