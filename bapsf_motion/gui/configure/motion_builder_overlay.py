@@ -556,9 +556,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.params_add_btn,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
+        banner_layout.addSpacing(12)
+        banner_widget = QWidget(parent=self._params_widget)
+        banner_widget.setLayout(banner_layout)
+        banner_widget.setFixedHeight(38)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(banner_widget)
         layout.addWidget(hline)
         layout.addWidget(self._params_field_widget)
         layout.addStretch()
