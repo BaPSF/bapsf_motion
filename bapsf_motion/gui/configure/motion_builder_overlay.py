@@ -114,8 +114,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.layer_list_box = QListWidget(parent=self)
         self.layer_list_box.setMinimumHeight(250)
+        _font = self.layer_list_box.font()
+        _font.setPointSize(12)
+        self.layer_list_box.setFont(_font)
         self.exclusion_list_box = QListWidget(parent=self)
         self.exclusion_list_box.setMinimumHeight(250)
+        self.exclusion_list_box.setFont(_font)
 
         self.mpl_canvas = FigureCanvas()
         self.mpl_canvas.setParent(self)
