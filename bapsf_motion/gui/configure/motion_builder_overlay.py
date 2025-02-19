@@ -9,6 +9,7 @@ import re
 from PySide6.QtCore import Qt, Slot, QSize
 from PySide6.QtGui import QIcon, QDoubleValidator
 from PySide6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
     QLabel,
     QGridLayout,
@@ -125,6 +126,21 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mpl_canvas.setParent(self)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
+        self.mpl_canvas_frame = QFrame(parent=self)
+        self.mpl_canvas_frame.setObjectName("mpl_canvas_frame")
+        self.mpl_canvas_frame.setStyleSheet(
+            """
+            QFrame#mpl_canvas_frame {
+                border: 2px solid rgb(125, 125, 125);
+                border-radius: 5px; 
+                padding: 0px;
+                margin: 0px;
+            }
+            """
+        )
+        self.mpl_canvas_frame.setLayout(QVBoxLayout())
+        self.mpl_canvas_frame.layout().addWidget(self.mpl_canvas)
+
         self._initialize_motion_builder()
         self.setLayout(self._define_layout())
 
@@ -191,6 +207,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         sub_layout.addWidget(self._define_sidebar_widget())
         sub_layout.addSpacing(8)
         sub_layout.addWidget(VLinePlain(parent=self))
+        sub_layout.addSpacing(8)
         sub_layout.addWidget(self._define_right_area_widget())
 
         layout = QVBoxLayout()
@@ -260,9 +277,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         layout = QVBoxLayout(_widget)
-        layout.addWidget(self.mpl_canvas)
-        layout.addWidget(HLinePlain(parent=self))
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.mpl_canvas_frame)
         layout.addWidget(self._define_params_widget())
+        layout.addStretch(1)
 
         return _widget
 
