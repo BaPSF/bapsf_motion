@@ -259,8 +259,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def _define_sidebar_widget(self):
         _widget = QWidget(parent=self)
-        _widget.setMinimumWidth(350)
-        _widget.setMaximumWidth(500)
+        _widget.setFixedWidth(400)
         _widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
 
         layout = QVBoxLayout(_widget)
