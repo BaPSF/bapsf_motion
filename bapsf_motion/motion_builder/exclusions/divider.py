@@ -144,7 +144,7 @@ class DividerExclusion(BaseExclusion):
         elif len(self.mb) != 2:
             raise TypeError
         elif (
-            isinstance(self.mb[0], str) and self.mb[0] == "inf"
+            isinstance(self.mb[0], str) and "inf" in self.mb[0]
         ) or np.isinf(self.mb[0]):
             if not isinstance(self.mb[1], _scalar_types):
                 raise ValueError
