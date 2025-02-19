@@ -30,6 +30,7 @@ from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.widgets import (
     DiscardButton,
+    DoneButton,
     HLinePlain,
     QLineEditSpecialized,
     StyleButton,
@@ -77,12 +78,20 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._params_field_widget = None  # type: Union[QWidget, None]
         self._params_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
 
-        # Define BUTTONS
         self._params_widget.setMinimumHeight(300)
         size_policy = self._params_widget.sizePolicy()
         size_policy.setRetainSizeWhenHidden(True)
         self._params_widget.setSizePolicy(size_policy)
 
+        # SET UP LEFT WIDGETS (i.e. list boxes)
+        self.layer_list_box = QListWidget(parent=self)
+        self.layer_list_box.setMinimumHeight(250)
+        _font = self.layer_list_box.font()
+        _font.setPointSize(12)
+        self.layer_list_box.setFont(_font)
+        self.exclusion_list_box = QListWidget(parent=self)
+        self.exclusion_list_box.setMinimumHeight(250)
+        self.exclusion_list_box.setFont(_font)
 
         self.add_ly_btn = self._generate_btn_widget("ADD")
         self.remove_ly_btn = self._generate_btn_widget("REMOVE")
@@ -96,40 +105,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ex_btn = self._generate_btn_widget("EDIT")
         self.edit_ex_btn.setEnabled(False)
 
-        self.params_add_btn = self._generate_btn_widget("Add / Update")
-
-        _btn = DiscardButton(parent=self)
-        font = _btn.font()
-        font.setPointSize(16)
-        font.setBold(False)
-        _btn.setFont(font)
-        _btn.setFixedHeight(32)
-        _btn.setText("Discard")
-        self.params_discard_btn = _btn
-
-        # Define TEXT WIDGETS
-        _txt = QComboBox(parent=self)
-        _txt.setMinimumWidth(200)
-        _txt.setMaximumWidth(400)
-        _txt.setEditable(False)
-        # _txt.addItems(_available)
-        # _txt.setCurrentText(_type)
-        self.params_combo_box = _txt
-
-        _txt = QLabel("", parent=self)
-        self.params_label = _txt
-
-        # Define ADVANCED WIDGETS
-
-        self.layer_list_box = QListWidget(parent=self)
-        self.layer_list_box.setMinimumHeight(250)
-        _font = self.layer_list_box.font()
-        _font.setPointSize(12)
-        self.layer_list_box.setFont(_font)
-        self.exclusion_list_box = QListWidget(parent=self)
-        self.exclusion_list_box.setMinimumHeight(250)
-        self.exclusion_list_box.setFont(_font)
-
+        # SET UP PLOT WIDGET
         self.mpl_canvas = FigureCanvas()
         self.mpl_canvas.setParent(self)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
@@ -148,6 +124,38 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         self.mpl_canvas_frame.setLayout(QVBoxLayout())
         self.mpl_canvas_frame.layout().addWidget(self.mpl_canvas)
+
+        # SET UP INPUT WIDGETS (those in self._params_widget)
+
+        _txt = QLabel("", parent=self._params_widget)
+        _font = _txt.font()
+        _font.setPixelSize(16)
+        _font.setFamily("Courier New")
+        _font.setBold(True)
+        _txt.setFont(_font)
+        self.params_label = _txt
+
+        _btn = DoneButton("Add / Update", parent=self._params_widget)
+        _btn.setFixedHeight(34)
+        _font = _btn.font()
+        _font.setPointSize(12)
+        _btn.setFont(_font)
+        _btn.shrink_width()
+        self.params_add_btn = _btn
+
+        _btn = DiscardButton("Discard", parent=self._params_widget)
+        _btn.setFixedHeight(34)
+        _btn.setFont(_font)
+        _btn.shrink_width(scale=2)
+        self.params_discard_btn = _btn
+
+        _txt = QComboBox(parent=self._params_widget)
+        _txt.setMinimumWidth(200)
+        _txt.setMaximumWidth(400)
+        _txt.setEditable(False)
+        self.params_combo_box = _txt
+
+        # non-widget initialization
 
         self._initialize_motion_builder()
         self.setLayout(self._define_layout())
