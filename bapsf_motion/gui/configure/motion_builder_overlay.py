@@ -686,14 +686,23 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _available = self.exclusion_registry.get_names_by_dimensionality(
             self.dimensionality
         )
-        if self.mb.exclusions and isinstance(self.mb.exclusions[0], GovernExclusion):
-            # remove govern exclusion since we can only have one defined
-            for name in tuple(_available):
-                ex = self.exclusion_registry.get_exclusion(name)
-                if issubclass(ex, GovernExclusion):
-                    _available.remove(name)
+        _icons = [None] * len(_available)
+        _exclude_governors = (
+            bool(self.mb.exclusions)
+            and isinstance(self.mb.exclusions[0], GovernExclusion)
+        )
+        _govern_icon = qta.icon("mdi.crown")
+        for ii, name in enumerate(tuple(_available)):
+            ex = self.exclusion_registry.get_exclusion(name)
+            if _exclude_governors and issubclass(ex, GovernExclusion):
+                _available.remove(name)
+                _icons = None
+                continue
 
-        self._refresh_params_combo_box(_available)
+            if issubclass(ex, GovernExclusion):
+                _icons[ii] = _govern_icon
+
+        self._refresh_params_combo_box(_available, icons=_icons, _type="exclusion")
         self.params_combo_box.setObjectName("exclusion")
 
         self._refresh_params_widget()
@@ -705,25 +714,46 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         if name is None:
             return
 
-        ex = None
+        current_ex = None
         for _ex in self.mb.exclusions:
             if _ex.name == name:
-                ex = _ex
+                current_ex = _ex
                 break
-        if ex is None:
+        if current_ex is None:
             return
 
         if not self._params_widget.isHidden():
             self._hide_and_clear_params_widget()
 
-        self.params_label.setText(ex.name)
+        self.params_label.setText(current_ex.name)
         _available = self.exclusion_registry.get_names_by_dimensionality(
             self.dimensionality
         )
-        self._refresh_params_combo_box(_available, ex.exclusion_type)
+        _icons = [None] * len(_available)
+        _exclude_governors = (
+                bool(self.mb.exclusions)
+                and isinstance(self.mb.exclusions[0], GovernExclusion)
+        )
+        _govern_icon = qta.icon("mdi.crown")
+        for ii, name in enumerate(tuple(_available)):
+            ex = self.exclusion_registry.get_exclusion(name)
+            if _exclude_governors and issubclass(ex, GovernExclusion):
+                _available.remove(name)
+                _icons = None
+                continue
+
+            if issubclass(ex, GovernExclusion):
+                _icons[ii] = _govern_icon
+
+        self._refresh_params_combo_box(
+            _available,
+            icons=_icons,
+            current=current_ex.exclusion_type,
+            _type="exclusion",
+        )
         self.params_combo_box.setObjectName("exclusion")
 
-        self._param_inputs = ex.config.copy()
+        self._param_inputs = current_ex.config.copy()
         self._param_inputs.pop("type")
 
         self._refresh_params_widget()
@@ -786,7 +816,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _available = self.layer_registry.get_names_by_dimensionality(
             self.dimensionality
         )
-        self._refresh_params_combo_box(_available, ly.layer_type)
+        self._refresh_params_combo_box(_available, current=ly.layer_type)
         self.params_combo_box.setObjectName("layer")
 
         self._param_inputs = ly.config.copy()
