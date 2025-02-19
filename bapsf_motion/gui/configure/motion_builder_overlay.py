@@ -73,11 +73,16 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         #     values (i.e. the input widgets that map to the layer/exclusion
         #     input args/kwargs)
         self._param_inputs = {}  # type: Dict[str, Any]
-        self._params_widget = None  # type: Union[QWidget, None]
+        self._params_widget = QWidget(parent=self)
         self._params_field_widget = None  # type: Union[QWidget, None]
         self._params_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
 
         # Define BUTTONS
+        self._params_widget.setMinimumHeight(300)
+        size_policy = self._params_widget.sizePolicy()
+        size_policy.setRetainSizeWhenHidden(True)
+        self._params_widget.setSizePolicy(size_policy)
+
 
         self.add_ly_btn = self._generate_btn_widget("ADD")
         self.remove_ly_btn = self._generate_btn_widget("REMOVE")
@@ -512,12 +517,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         ...
 
     def _define_params_widget(self):
-        _widget = QWidget(parent=self)
-        _widget.setMinimumHeight(300)
-        size_policy = _widget.sizePolicy()
-        size_policy.setRetainSizeWhenHidden(True)
-        _widget.setSizePolicy(size_policy)
-        layout = QVBoxLayout(_widget)
 
         self.params_add_btn.setEnabled(False)
 
@@ -550,12 +549,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
 
-        layout.addLayout(banner_layout)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(hline)
         layout.addWidget(self._params_field_widget)
         layout.addStretch()
 
-        self._params_widget = _widget
+        self._params_widget.setLayout(layout)
         self._params_widget.hide()
         return self._params_widget
 
