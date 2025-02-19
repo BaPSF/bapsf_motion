@@ -149,6 +149,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _btn.shrink_width(scale=2)
         self.params_discard_btn = _btn
 
+        _txt = QLabel("Type :", parent=self._params_widget)
+        _font = _txt.font()
+        _font.setPixelSize(16)
+        _font.setBold(False)
+        _txt.setFont(_font)
+        self.select_type_label = _txt
+
         _txt = QComboBox(parent=self._params_widget)
         _txt.setFixedHeight(34)
         _txt.setFixedWidth(250)
@@ -539,6 +546,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
         )
         banner_layout.addStretch(1)
+        banner_layout.addWidget(
+            self.select_type_label,
+            alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
+        )
+        banner_layout.addSpacing(4)
         banner_layout.addWidget(
             self.params_combo_box,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft,
