@@ -818,7 +818,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 )
                 _input = None
                 input_widget.setText("")
-                raise
 
         self._param_inputs[param] = _input
 
@@ -969,7 +968,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 exc_info=err,
             )
             self.change_validation_state(False)
-            raise
 
     def change_validation_state(self, valid: bool = False):
         self.params_add_btn.setEnabled(valid)
