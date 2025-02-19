@@ -838,27 +838,21 @@ class DriveDesktopController(DriveBaseController):
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
         font = _btn.font()
-        font.setPointSize(26)
-        font.setBold(False)
+        font.setPointSize(20)
         _btn.setFont(font)
         self.move_to_btn = _btn
 
         _btn = StyleButton("Home \n All", parent=self)
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
-        font = _btn.font()
-        font.setPointSize(26)
-        font.setBold(False)
         _btn.setFont(font)
         _btn.setEnabled(False)
         self.home_btn = _btn
+        self.home_btn.setVisible(False)
 
-        _btn = StyleButton("Zero \n All", parent=self)
+        _btn = ZeroButton("Zero \n All", parent=self)
         _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
-        font = _btn.font()
-        font.setPointSize(26)
-        font.setBold(False)
         _btn.setFont(font)
         self.zero_all_btn = _btn
 
@@ -903,16 +897,17 @@ class DriveDesktopController(DriveBaseController):
             _pos_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
+        sub_layout2.addSpacing(6)
         sub_layout2.addWidget(
             _target_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
-        sub_layout2.addStretch(14)
+        sub_layout2.addSpacing(108)
         sub_layout2.addWidget(
             _jog_delta_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
-        sub_layout2.addStretch(20)
+        sub_layout2.addStretch(1)
 
         layout = QHBoxLayout()
         layout.addLayout(sub_layout)
