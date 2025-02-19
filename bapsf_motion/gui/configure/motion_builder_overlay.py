@@ -143,7 +143,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _btn.shrink_width()
         self.params_add_btn = _btn
 
-        _btn = DiscardButton("Discard", parent=self._params_widget)
+        _btn = DiscardButton(parent=self._params_widget)
         _btn.setFixedHeight(34)
         _btn.setFont(_font)
         _btn.shrink_width(scale=2)

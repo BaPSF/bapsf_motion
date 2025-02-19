@@ -62,7 +62,7 @@ class RunWidget(QWidget):
         # Define BUTTONS
 
         self.done_btn = DoneButton(parent=self)
-        self.quit_btn = DiscardButton(parent=self)
+        self.quit_btn = DiscardButton("Discard && Quit", parent=self)
 
         _btn = StyleButton("IMPORT", parent=self)
         _btn.setFixedHeight(48)

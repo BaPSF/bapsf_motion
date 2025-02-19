@@ -290,7 +290,7 @@ class DiscardButton(BannerButton):
 
         _text = self.text()
         if _text == "":
-            _text = "Discard && Quit"
+            _text = "Discard"
         self.setText(_text)
 
 
