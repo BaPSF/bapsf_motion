@@ -963,8 +963,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             )
             # self._transform = transform
             self.change_validation_state(True)
-        except (ValueError, TypeError):
-            self.logger.exception("Supplied input arguments are not valid.")
+        except (ValueError, TypeError) as err:
+            self.logger.exception(
+                "Supplied input arguments are not valid.",
+                exc_info=err,
+            )
             self.change_validation_state(False)
             raise
 
