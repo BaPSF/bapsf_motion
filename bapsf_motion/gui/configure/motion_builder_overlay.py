@@ -528,12 +528,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.params_add_btn.setEnabled(False)
 
-        hline = HLinePlain(parent=self)
-        hline.set_color(30, 30, 30)
-        hline.setLineWidth(2)
-
-        self._params_field_widget = QWidget(parent=_widget)
-
         banner_layout = QHBoxLayout()
         banner_layout.setContentsMargins(0, 0, 0, 0)
         banner_layout.addSpacing(12)
@@ -559,6 +553,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         banner_widget = QWidget(parent=self._params_widget)
         banner_widget.setLayout(banner_layout)
         banner_widget.setFixedHeight(38)
+
+        hline = HLinePlain(parent=self._params_widget)
+        hline.set_color(125, 125, 125)
+        hline.setLineWidth(2)
+
+        self._params_field_widget = QWidget(parent=self._params_widget)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
