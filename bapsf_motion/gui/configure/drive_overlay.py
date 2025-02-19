@@ -98,16 +98,6 @@ class AxisConfigWidget(QWidget):
 
         # Define ADVANCED WIDGETS
 
-        self.setStyleSheet(
-            """
-            AxisConfigWidget QLabel {
-                border: 0px;
-            }
-
-            QLabel {padding: 0px}
-            """
-        )
-
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -449,10 +439,10 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.add_axis_btn = _btn
 
         _btn = StyleButton("Validate", parent=self)
-        _btn.setFixedWidth(120)
+        _btn.setFixedWidth(150)
         _btn.setFixedHeight(36)
         font = _btn.font()
-        font.setPointSize(20)
+        font.setPointSize(16)
         _btn.setFont(font)
         self.validate_btn = _btn
 
@@ -530,7 +520,6 @@ class DriveConfigOverlay(_ConfigOverlay):
         font = _label.font()
         font.setPointSize(16)
         _label.setFont(font)
-        _label.setStyleSheet("border: 0px")
         name_label = _label
 
         layout = QHBoxLayout()
@@ -704,18 +693,19 @@ class DriveConfigOverlay(_ConfigOverlay):
         _widget.set_ip_handler(self._validate_ip)
         _widget.configChanged.connect(self._change_validation_state)
         _widget.configChanged.connect(self._terminate_drive)
-        # _widget.setStyleSheet(
-        #     "border: 3px solid rgb(95, 95, 95);"
-        #     "border-radius: 5px;"
-        # )
 
         self.axis_widgets.append(_widget)
 
         _frame.layout().addWidget(_widget)
+        _frame.setObjectName("acw_frame")
         _frame.setStyleSheet(
-            "border: 3px solid rgb(95, 95, 95);"
-            "border-radius: 5px;"
-            "padding: 6px;"
+            """
+            QFrame#acw_frame {
+                border: 2px solid rgb(60, 60, 60);
+                border-radius: 5px;
+                padding: 6px;
+            }
+            """
         )
 
         return _frame
