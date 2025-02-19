@@ -62,13 +62,16 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         #     points layer
         # _params_widget:
         #     top enclosing widget for setting and configuring parameter inputs
-        #     for an exclusion or point layer
+        #     for an exclusion or point layer (i.e. widget that contains all
+        #     configuring widgets)
         # _params_field_widget:
-        #     child widget of _params_widget that contains the actual inpu fields
-        #     for configuring _param_inputs
+        #     child widget of _params_widget that contains the actual input fields
+        #     for configuring _param_inputs (i.e. widget container for all the
+        #     input widgets that map to the layer/exclusion input args/kwargs)
         # _params_input_widgets:
         #     dictionary of the actual widgets that control the _param_inputs
-        #     values
+        #     values (i.e. the input widgets that map to the layer/exclusion
+        #     input args/kwargs)
         self._param_inputs = {}  # type: Dict[str, Any]
         self._params_widget = None  # type: Union[QWidget, None]
         self._params_field_widget = None  # type: Union[QWidget, None]
