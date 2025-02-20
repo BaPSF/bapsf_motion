@@ -55,17 +55,23 @@ class TransformConfigOverlay(_ConfigOverlay):
 
         # Define BUTTONS
         # Define TEXT WIDGETS
+        _txt = QLabel("Select Type:", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        _font = _txt.font()
+        _font.setPointSize(16)
+        _txt.setFont(_font)
+        self.combo_label = _txt
+
         # Define ADVANCED WIDGETS
         _w = QComboBox(parent=self)
-        _w.setMinimumWidth(300)
-        _w.setMaximumWidth(500)
+        _w.setFixedWidth(250)
         _w.addItems(
             list(self.registry.get_names_by_dimensionality(self._mg.drive.naxes))
         )
         _w.setEditable(False)
         _w.setCurrentText(tr_type)
         font = _w.font()
-        font.setPointSize(18)
+        font.setPointSize(16)
         _w.setFont(font)
         self.combo_widget = _w
 
@@ -84,12 +90,20 @@ class TransformConfigOverlay(_ConfigOverlay):
             self.combo_widget.currentText()
         )
 
+        type_layout = QHBoxLayout()
+        type_layout.setContentsMargins(0, 0, 0, 0)
+        type_layout.addSpacing(8)
+        type_layout.addWidget(self.combo_label)
+        type_layout.addSpacing(8)
+        type_layout.addWidget(self.combo_widget)
+        type_layout.addStretch(1)
+
         layout = QVBoxLayout()
         layout.addLayout(self._define_banner_layout())
         layout.addWidget(HLinePlain(parent=self))
         layout.addSpacing(8)
-        layout.addWidget(self.combo_widget)
-        layout.addSpacing(8)
+        layout.addLayout(type_layout)
+        layout.addSpacing(24)
         layout.addWidget(self._params_widget)
         layout.addStretch()
 
