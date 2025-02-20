@@ -1524,7 +1524,7 @@ class MGWidget(QWidget):
             "ips": deployed_ips,
         }
 
-        self._logger = gui_logger
+        self._logger = logging.getLogger(f"{gui_logger.name}.MGW")
 
         self._mg = None
         self._mg_index = None
@@ -2398,7 +2398,7 @@ class MGWidget(QWidget):
         try:
             mg = MotionGroup(
                 config=self.mg_config,
-                logger=logging.getLogger(f"{self.logger.name}.MGW"),
+                logger=logging.getLogger(f"{self.logger.name}.MG"),
                 loop=self.mg_loop,
                 auto_run=True,
             )
