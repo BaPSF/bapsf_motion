@@ -2424,10 +2424,12 @@ class MGWidget(QWidget):
         self.logger.info("Spawning Motion Group")
 
         if isinstance(self.mg, MotionGroup):
+            self.logger.info("Terminating Motion Group for re-spawn.")
             self.mg.terminate(delay_loop_stop=True)
             # self._set_mg(None)
             self._mg = None
 
+        mg = None
         try:
             mg = MotionGroup(
                 config=self.mg_config,
@@ -2435,8 +2437,16 @@ class MGWidget(QWidget):
                 loop=self.mg_loop,
                 auto_run=True,
             )
-        except (ConnectionError, TimeoutError, ValueError, TypeError):
-            self.logger.warning("Not able to instantiate MotionGroup.")
+        except (ConnectionError, TimeoutError, ValueError, TypeError) as err:
+            self.logger.warning(
+                "Not able to instantiate MotionGroup.",
+                exc_info=err,
+            )
+            try:
+                mg.terminate(delay_loop_stop=True)
+            except AttributeError:
+                pass
+
             mg = None
 
         # modify drive_dropdown
