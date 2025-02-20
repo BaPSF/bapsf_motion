@@ -13,8 +13,8 @@ os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 import pygame  # noqa
 
 from abc import abstractmethod
-from PySide6.QtCore import Qt, Signal, Slot, QSize, QRunnable, QThreadPool, QObject
-from PySide6.QtGui import QDoubleValidator, QFont
+from PySide6.QtCore import Qt, Signal, Slot, QRunnable, QSize, QThreadPool, QObject
+from PySide6.QtGui import QDoubleValidator, QFont, QIcon
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -1630,6 +1630,12 @@ class MGWidget(QWidget):
         _w.setSizeAdjustPolicy(
             QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
         )
+        _w.setIconSize(QSize(20, 20))
+        _w.setToolTip(
+            "Flagged items indicate the base transforms, which are not "
+            "pre-configured."
+        )
+        _w.setToolTipDuration(30000)
         self._transform_dropdown = _w
         self._populate_transform_dropdown()
 
@@ -2084,6 +2090,7 @@ class MGWidget(QWidget):
         allowed_transforms = self.transform_registry.get_names_by_dimensionality(naxes)
 
         # populate dropdown
+        _template_icon = qta.icon("mdi6.map-marker-star-outline")
         for tr_name, tr_config in self.transform_defaults:
             index = self.transform_dropdown.findText(tr_name)
             if index != -1:
@@ -2099,6 +2106,11 @@ class MGWidget(QWidget):
                 continue
 
             self.transform_dropdown.addItem(tr_name)
+
+            # add icon for base/template transforms
+            if tr_name != "Custom Transform" and tr_name == tr_config["type"]:
+                count = self.transform_dropdown.count()
+                self.transform_dropdown.setItemIcon(count-1, _template_icon)
 
         if tr_name_stored is not None:
             index = self.transform_dropdown.findText(tr_name_stored)
