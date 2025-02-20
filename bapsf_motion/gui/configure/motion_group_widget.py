@@ -1510,7 +1510,11 @@ class MGWidget(QWidget):
         deployed_ips = []
         if isinstance(self._parent.rm, RunManager):
             for mg in self._parent.rm.mgs.values():
-                if mg_config is not None and dict_equal(mg_config, mg.config):
+                if (
+                    mg_config is not None
+                    and mg_config["name"] == mg.config["name"]
+                    and dict_equal(mg_config, mg.config)
+                ):
                     # assume we are editing an existing motion group
                     continue
 
