@@ -1539,6 +1539,7 @@ class MGWidget(QWidget):
 
         self._defaults = None if defaults is None else _deepcopy_dict(defaults)
         self._drive_defaults = None
+        self._custom_drive_index = -1
         self._build_drive_defaults()
 
         self._transform_defaults = None
@@ -1836,6 +1837,7 @@ class MGWidget(QWidget):
         # - 2nd Tuple element is the dictionary configuration
         if self._defaults is None or "drive" not in self._defaults:
             self._drive_defaults = [("Custom Drive", {})]
+            self._custom_drive_index = 0
             return self._drive_defaults
 
         _drive_defaults = {"Custom Drive": {}}
@@ -1883,6 +1885,7 @@ class MGWidget(QWidget):
                 self._drive_defaults.insert(0, (key, val))
             else:
                 self._drive_defaults.append((key, val))
+        self._custom_drive_index = 0 if default_name == "Custom Drive" else 1
 
         return self._drive_defaults
 
@@ -2004,8 +2007,17 @@ class MGWidget(QWidget):
         self._update_drive_control_widget()
 
     def _populate_drive_dropdown(self):
+        # always clear dropdown before population to prevent duplicating
+        # an already populated dropdown
+        self.drive_dropdown.clear()
+
+        # populate
         for item in self.drive_defaults:
-            self.drive_dropdown.addItem(item[0])
+            drive_name = item[0]
+            if drive_name == "Custom Drive":
+                drive_name = item[1].get("name", "Custom Drive")
+
+            self.drive_dropdown.addItem(drive_name)
 
         # set default drive
         self.drive_dropdown.setCurrentIndex(0)
@@ -2336,9 +2348,11 @@ class MGWidget(QWidget):
         self.drive_control_widget.link_motion_group(self.mg)
 
     def _update_drive_dropdown(self):
-        custom_drive_index = self.drive_dropdown.findText("Custom Drive")
-        if custom_drive_index == -1:
+        if self._custom_drive_index == -1:
+            # this should never happen if self._custom_drive_index was
+            # defined properly
             raise ValueError("Custom Drive not found")
+        custom_drive_index = self._custom_drive_index
 
         if "drive" not in self.mg_config:
             self.drive_dropdown.setCurrentIndex(custom_drive_index)
@@ -2357,11 +2371,7 @@ class MGWidget(QWidget):
             self.drive_dropdown.setCurrentIndex(custom_drive_index)
             return
 
-        drive_config_default = self.drive_defaults[index][1]
-        if dict_equal(drive_config, drive_config_default):
-            self.drive_dropdown.setCurrentIndex(index)
-        else:
-            self.drive_dropdown.setCurrentIndex(custom_drive_index)
+        self.drive_dropdown.setCurrentIndex(index)
 
     def _update_mb_dropdown(self):
         self._populate_mb_dropdown()
@@ -2428,6 +2438,29 @@ class MGWidget(QWidget):
         except (ConnectionError, TimeoutError, ValueError, TypeError):
             self.logger.warning("Not able to instantiate MotionGroup.")
             mg = None
+
+        # modify drive_dropdown
+        drive_name = (
+            "Custom Drive"
+            if not (isinstance(mg, MotionGroup) and isinstance(mg.drive, Drive))
+            else mg.drive.config["name"]
+        )
+        drive_entry = (
+            {} if drive_name == "Custom Drive"
+            else _deepcopy_dict(mg.drive.config)
+        )
+        dd_index = self.drive_dropdown.findText(drive_name)
+        if dd_index == -1:
+            # reset/define custom drive entry
+            for _default in self.drive_defaults:
+                self._drive_defaults[self._custom_drive_index] = (
+                    "Custom Drive", drive_entry
+                )
+            self.drive_dropdown.blockSignals(True)
+            self._populate_drive_dropdown()
+            self.drive_dropdown.blockSignals(False)
+            # Note: self._set_mg() should trigger self._update_drive_dropdown()
+            #       so we are not explicitly setting the dropdown index here
 
         self._set_mg(mg)
 
@@ -2567,10 +2600,11 @@ class MGWidget(QWidget):
 
     @Slot(int)
     def _drive_dropdown_new_selection(self, index):
-        self.logger.warning(f"New selections in drive dropdown {index}")
-        if self.drive_dropdown.currentText() == "Custom Drive":
-            # custom drive can be anything, change nothing
+        if index == -1:
+            self.logger.warning(f"Selected index {index} in drive dropdown is invalid.")
             return
+
+        self.logger.warning(f"New selections in drive dropdown {index}")
 
         drive_config = _deepcopy_dict(self.drive_defaults[index][1])
         self._change_drive(drive_config)
