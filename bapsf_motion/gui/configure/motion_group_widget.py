@@ -1846,15 +1846,34 @@ class MGWidget(QWidget):
         if "name" in _defaults.keys():
             # only one drive defined
             _name = _defaults["name"]
-            if _name not in _drive_defaults.keys():
+
+            # exclude drives that are already deployed
+            exclude = False
+            ips = [ax["ip"] for ax in _defaults["axes"].values()]
+            if (
+                len(set(ips) - set(self._deployed_restrictions["ips"])) != len(ips)
+            ):
+                exclude = True
+
+            # add to defaults
+            if not exclude and _name not in _drive_defaults.keys():
                 _drive_defaults[_name] = _deepcopy_dict(_defaults)
         else:
             for key, entry in _defaults.items():
                 _name = entry["name"]
+
+                # do not add duplicate defaults
                 if _name in _drive_defaults.keys():
-                    # do not add duplicate defaults
                     continue
 
+                # exclude drives that are already deployed
+                ips = [ax["ip"] for ax in entry["axes"].values()]
+                if (
+                    len(set(ips) - set(self._deployed_restrictions["ips"])) != len(ips)
+                ):
+                    continue
+
+                # add to defaults
                 _drive_defaults[_name] = _deepcopy_dict(entry)
 
         # convert to list of 2-element tuples
