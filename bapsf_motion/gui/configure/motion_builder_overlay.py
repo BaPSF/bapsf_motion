@@ -2,6 +2,7 @@ __all__ = ["MotionBuilderConfigOverlay"]
 
 import ast
 import inspect
+import math
 import numpy as np
 import matplotlib as mpl
 import re
@@ -598,17 +599,28 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         params = _registry.get_input_parameters(_type)
 
         _widget = QWidget(parent=self._params_widget)
-        layout = QGridLayout(_widget)
-        layout.setContentsMargins(8, 4, 8, 4)
-        layout.setSpacing(8)
 
-        # layout.setColumnStretch(0, 2)
-        # layout.setColumnStretch(1, 2)
-        # layout.setColumnStretch(2, 4)
-        # layout.setColumnStretch(3, 1)
-        # layout.setColumnStretch(4, 1)
+        layout = QGridLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setHorizontalSpacing(0)
+        layout.setVerticalSpacing(4)
+
+        layout.setColumnMinimumWidth(0, 48)
+        layout.setColumnMinimumWidth(2, 8)
+        layout.setColumnMinimumWidth(4, 32)
+        layout.setColumnMinimumWidth(5, 32)
+        layout.setColumnMinimumWidth(6, 48)
+
+        layout.setColumnStretch(0, 0)
+        # layout.setColumnStretch(1, 1)
+        layout.setColumnStretch(2, 0)
+        layout.setColumnStretch(3, 4)
+        layout.setColumnStretch(4, 0)
+        layout.setColumnStretch(5, 0)
+        layout.setColumnStretch(6, 0)
 
         ii = 0
+        _row_height = 24
         for key, val in params.items():
             # determine the seeded value for the transform input
             if key in self._param_inputs:
@@ -621,48 +633,63 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 self._param_inputs[key] = default
 
             _txt = QLabel(key, parent=_widget)
+            _txt.setFixedHeight(_row_height)
+            _txt.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
             font = _txt.font()
-            font.setPointSize(16)
-            font.setBold(True)
+            font.setPointSize(14)
             _txt.setFont(font)
-            _label = _txt
+            _variable_name = _txt
 
             annotation = val['param'].annotation
             if inspect.isclass(annotation):
                 annotation = annotation.__name__
             annotation = f"{annotation}".split(".")[-1]
 
-            _txt = QLabel(annotation, parent=_widget)
-            font = _txt.font()
-            font.setPointSize(16)
-            font.setBold(True)
-            _txt.setFont(font)
-            _type = _txt
+            _txt = QLabel("", parent=_widget)
+            _txt.setAlignment(
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
+            )
+            _icon = qta.icon("msc.symbol-type-parameter")
+            # size = math.floor(0.9 * _row_height)
+            size = _row_height
+            _txt.setPixmap(_icon.pixmap(QSize(size, size)))
+            _txt.setToolTip(annotation)
+            _txt.setToolTipDuration(30000)
+            _type_icon = _txt
 
             text = "" if default is None else f"{default}"
             _txt = QLineEditSpecialized(text, parent=_widget)
             _txt.setObjectName(key)
             _txt.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+            _txt.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
             font = _txt.font()
-            font.setPointSize(16)
+            font.setPointSize(14)
             _txt.setFont(font)
             _input = _txt
             _input.editingFinishedPayload.connect(self._update_param_inputs)
 
             _txt = QLabel("", parent=_widget)
-            _icon = qta.icon("fa.question-circle-o").pixmap(QSize(16, 16))  # type: QIcon
-            _txt.setPixmap(_icon)
+            _txt.setAlignment(
+                Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
+            )
+            _icon = qta.icon("fa.question-circle-o")
+            size = math.floor(0.95 * _row_height)
+            _txt.setPixmap(_icon.pixmap(QSize(size, size)))
             _txt.setToolTip("\n".join(val["desc"]))
-            _txt.setToolTipDuration(10000)
-            _txt.setMaximumWidth(24)
-            _help = _txt
+            _txt.setToolTipDuration(30000)
+            _help_icon = _txt
 
-            layout.addWidget(_label, ii, 0, alignment=Qt.AlignmentFlag.AlignRight)
-            layout.addWidget(_type, ii, 1, alignment=Qt.AlignmentFlag.AlignCenter)
-            layout.addWidget(_input, ii, 2, alignment=Qt.AlignmentFlag.AlignLeft)
-            layout.addWidget(_help, ii, 3, alignment=Qt.AlignmentFlag.AlignLeft)
+            layout.setRowMinimumHeight(ii, _row_height)
+            layout.setRowStretch(ii, 0)
+
+            layout.addWidget(_variable_name, ii, 1)
+            layout.addWidget(_input, ii, 3)
+            layout.addWidget(_type_icon, ii, 4)
+            layout.addWidget(_help_icon, ii, 5)
+
             ii += 1
 
+        _widget.setLayout(layout)
         return _widget
 
     # -- WIDGET INTERACTION FUNCTIONALITY --
