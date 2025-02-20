@@ -13,7 +13,7 @@ def get_qapplication() -> Union[QApplication, None]:
     return app
 
 
-def get_color_scheme() -> Qt.ColorScheme:
+def get_color_scheme() -> "Qt.ColorScheme":
     app = get_qapplication()
     _scheme = app.styleHints().colorScheme()
     return _scheme
