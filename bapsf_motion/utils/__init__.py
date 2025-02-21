@@ -108,21 +108,21 @@ def _deepcopy_dict(item):
 
 
 def dict_equal(d1, d2) -> bool:
+    if not isinstance(d1, (dict, UserDict)) or not isinstance(d2, (dict, UserDict)):
+        return False
+
     if set(d1) != set(d2):
         return False
 
     for key, val in d1.items():
-        if key not in d2:
-            return False
-
         if isinstance(val, (dict, UserDict)):
             equality = dict_equal(val, d2[key])
-            return equality
 
-        if val == d2[key]:
-            continue
+            if not equality:
+                return False
 
-        return False
+        if val != d2[key]:
+            return False
 
     return True
 
