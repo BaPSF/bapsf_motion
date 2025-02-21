@@ -2048,6 +2048,7 @@ class MGWidget(QWidget):
 
         self.mb_dropdown.clear()
 
+        # get space dimensionality
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
             naxes = self.mg.drive.naxes
         elif "drive" in self.mg_config and "axes" in self.mg_config["drive"]:
