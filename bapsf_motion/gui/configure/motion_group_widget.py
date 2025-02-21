@@ -2316,7 +2316,6 @@ class MGWidget(QWidget):
         self.logger.info(f"Replacing the motion group's transform...\n{config}")
         if not bool(config):
             # config is empty
-            self.mg.terminate(delay_loop_stop=True)
             self.drive_control_widget.setEnabled(False)
             self.transform_btn.set_invalid()
 
