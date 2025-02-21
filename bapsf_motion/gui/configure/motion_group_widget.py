@@ -1977,7 +1977,7 @@ class MGWidget(QWidget):
             default_key = "identity"
 
         # convert to list of 2-element tuples
-        self._transform_defaults = [("Custom Transform", {})]
+        self._transform_defaults = []
         for key, val in _defaults_dict.items():
             if key == default_key:
                 self._transform_defaults.insert(0, (key, val))
@@ -2112,11 +2112,16 @@ class MGWidget(QWidget):
 
     def _populate_transform_dropdown(self):
 
+        tr_name_stored = None
+        tr_config_stored = None
         if self.transform_dropdown.count() != 0:
             # we are repopulating and need to reset dropdown to current position
             tr_name_stored = self.transform_dropdown.currentText()
-        else:
-            tr_name_stored = None
+            tr_config_stored = None
+            for _name, _config in self.transform_defaults:
+                if _name == tr_name_stored:
+                    tr_config_stored = _config
+                    break
 
         # Block signals when repopulating the dropdown
         self.transform_dropdown.blockSignals(True)
@@ -2139,9 +2144,7 @@ class MGWidget(QWidget):
                 # transform already in dropdown
                 continue
 
-            if tr_name == "Custom Transform":
-                pass
-            elif (
+            if (
                 "type" not in tr_config
                 or tr_config["type"] not in allowed_transforms
             ):
@@ -2150,7 +2153,7 @@ class MGWidget(QWidget):
             self.transform_dropdown.addItem(tr_name)
 
             # add icon for base/template transforms
-            if tr_name != "Custom Transform" and tr_name == tr_config["type"]:
+            if tr_name == tr_config["type"]:
                 count = self.transform_dropdown.count()
                 self.transform_dropdown.setItemIcon(count-1, _template_icon)
 
@@ -2165,30 +2168,7 @@ class MGWidget(QWidget):
         self.transform_dropdown.blockSignals(False)
 
         # set default transform
-        if (
-            not isinstance(self.mg, MotionGroup)
-            or not isinstance(self.mg.transform, BaseTransform)
-        ):
-            self.transform_dropdown.setCurrentIndex(0)
-            return
-
-        _type = self.mg.transform.transform_type
-        _config = _deepcopy_dict(self.mg.transform.config)
-        for tr_name, tr_default_config in self.transform_defaults:
-            if tr_name == "Custom Transform" or _type != tr_default_config["type"]:
-                continue
-
-            if dict_equal(_deepcopy_dict(_config), tr_default_config):
-                index = self.transform_dropdown.findText(tr_name)
-                if index == -1:
-                    # this should not happen
-                    break
-
-                self.transform_dropdown.setCurrentIndex(index)
-                return
-
-        index = self.transform_dropdown.findText("Custom Transform")
-        self.transform_dropdown.setCurrentIndex(index)
+        self.transform_dropdown.setCurrentIndex(0)
 
     def _popup_drive_configuration(self):
         self._overlay_setup(
@@ -2679,9 +2659,6 @@ class MGWidget(QWidget):
         self.logger.info(f"New selections in transform dropdown {index} '{tr_name}'")
 
         if index == -1:
-            return
-        elif tr_name == "Custom Transform":
-            # custom transform can be anything, change nothing
             return
 
         tr_default_config = None  # type: Union[Dict[str, Any], None]
