@@ -1547,6 +1547,7 @@ class MGWidget(QWidget):
 
         self._mb_defaults = None
         self._custom_mb_index = -1
+        self._mb_combo_last_index = -1
         self._build_mb_defaults()
 
         # Define TEXT WIDGETS
@@ -2077,6 +2078,7 @@ class MGWidget(QWidget):
             index = self.mb_dropdown.findText(mb_name_stored)
 
             if index != -1:
+                self._mb_combo_last_index = index
                 self.mb_dropdown.setCurrentIndex(index)
                 self.mb_dropdown.blockSignals(False)
                 return
@@ -2094,6 +2096,7 @@ class MGWidget(QWidget):
             not isinstance(self.mg, MotionGroup)
             or not isinstance(self.mg.mb, MotionBuilder)
         ):
+            self._mb_combo_last_index = 0
             self.mb_dropdown.setCurrentIndex(0)
             return
         else:
@@ -2109,10 +2112,12 @@ class MGWidget(QWidget):
                     # this should not happen
                     break
 
+                self._mb_combo_last_index = index
                 self.mb_dropdown.setCurrentIndex(index)
                 return
 
         index = self.mb_dropdown.findText("Custom Motion Builder")
+        self._mb_combo_last_index = index
         self.mb_dropdown.setCurrentIndex(index)
 
     def _populate_transform_dropdown(self):
@@ -2645,51 +2650,23 @@ class MGWidget(QWidget):
 
     @Slot(int)
     def _mb_dropdown_new_selection(self, index):
-        mb_name = self.mb_dropdown.currentText()
-        self.logger.warning(
-            f"New selections in motion builder dropdown {index} '{mb_name}'"
-        )
 
         if index == -1:
+            self.logger.warning(f"Selected index {index} in mb dropdown is invalid.")
             return
-        elif mb_name == "Custom Motion Builder":
-            # custom mb can be anything, change nothing
+        elif index == self._mb_combo_last_index:
+            # index did not change
             return
 
-        mb_default_config = None  # type: Union[Dict[str, Any], None]
-        for _name, _config in self.mb_defaults:
-            if mb_name != _name:
-                continue
+        self._mb_combo_last_index = index
 
-            mb_default_config = _deepcopy_dict(_config)
-            break
-
-        self.logger.info(f"New MB config...\n{mb_default_config}")
-        self.logger.info(
-            f"mb_default_config is None = {mb_default_config is None}\n"
-            f"'motion_builder' in self.mg_config = {'motion_builder' in self.mg_config}\n"
+        mb_dropdown_name = self.mb_dropdown.currentText()
+        mb_dropdown_config = _deepcopy_dict(self.mb_defaults[index][1])
+        self.logger.warning(
+            f"New selections in motion builder dropdown {index} '{mb_dropdown_name}'"
         )
-        if mb_default_config is None:
-            # could not find the default config
-            self._update_mb_dropdown()
-            return
-        elif (
-            "motion_builder" in self.mg_config
-            and dict_equal(
-                mb_default_config,
-                _deepcopy_dict(self.mg_config["motion_builder"]),
-            )
-        ):
-            self.logger.info(
-                "Selected transform is already in use\n"
-                f"selected = {mb_default_config}\n"
-                f"old = {_deepcopy_dict(self.mg_config['motion_builder'])}"
-            )
-            # selected transform is already deployed
-            return
 
-        self.logger.info("Changing MB config...")
-        self._change_motion_builder(mb_default_config)
+        self._change_motion_builder(mb_dropdown_config)
 
     @Slot(int)
     def _transform_dropdown_new_selection(self, index):
