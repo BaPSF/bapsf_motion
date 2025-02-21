@@ -2019,8 +2019,12 @@ class MGWidget(QWidget):
 
             self.drive_dropdown.addItem(drive_name)
 
-        # set default drive
-        self.drive_dropdown.setCurrentIndex(0)
+        # set drive
+        self.drive_dropdown.blockSignals(True)
+        drive_index = 0
+        self.drive_dropdown.setCurrentIndex(drive_index)
+
+        self.drive_dropdown.blockSignals(False)
 
     def _populate_mb_dropdown(self):
         self.logger.info("Populating Motion Builder dropdown")
