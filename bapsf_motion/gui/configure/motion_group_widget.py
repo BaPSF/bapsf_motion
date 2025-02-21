@@ -1546,6 +1546,7 @@ class MGWidget(QWidget):
         self._build_transform_defaults()
 
         self._mb_defaults = None
+        self._custom_mb_index = -1
         self._build_mb_defaults()
 
         # Define TEXT WIDGETS
@@ -1890,6 +1891,7 @@ class MGWidget(QWidget):
         return self._drive_defaults
 
     def _build_mb_defaults(self):
+        self._custom_mb_index = 0
         if self._defaults is None or "motion_builder" not in self._defaults:
             self._mb_defaults = [("Custom Motion Builder", {})]
             return self._mb_defaults
@@ -1928,6 +1930,9 @@ class MGWidget(QWidget):
         for key, val in _mb_defaults_dict.items():
             if key == default_name:
                 self._mb_defaults.insert(0, (key, val))
+
+                if key != "Custom Motion Builder":
+                    self._custom_mb_index = 1
             else:
                 self._mb_defaults.append((key, val))
 
