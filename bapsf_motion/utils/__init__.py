@@ -107,7 +107,7 @@ def _deepcopy_dict(item):
     return _copy
 
 
-def dict_equal(d1, d2):
+def dict_equal(d1, d2) -> bool:
     if set(d1) != set(d2):
         return False
 
@@ -119,7 +119,12 @@ def dict_equal(d1, d2):
             equality = dict_equal(val, d2[key])
             return equality
 
-        return val == d2[key]
+        if val == d2[key]:
+            continue
+
+        return False
+
+    return True
 
 
 def loop_safe_stop(loop: asyncio.AbstractEventLoop, max_wait: Optional[float] = 6.0):
