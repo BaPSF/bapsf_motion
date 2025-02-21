@@ -2629,7 +2629,7 @@ class MGWidget(QWidget):
         if index == -1:
             return
         elif mb_name == "Custom Motion Builder":
-            # custom transform can be anything, change nothing
+            # custom mb can be anything, change nothing
             return
 
         mb_default_config = None  # type: Union[Dict[str, Any], None]
