@@ -2669,7 +2669,7 @@ class MGWidget(QWidget):
     @Slot(int)
     def _transform_dropdown_new_selection(self, index):
         tr_name = self.transform_dropdown.currentText()
-        self.logger.warning(f"New selections in transform dropdown {index} '{tr_name}'")
+        self.logger.info(f"New selections in transform dropdown {index} '{tr_name}'")
 
         if index == -1:
             return
