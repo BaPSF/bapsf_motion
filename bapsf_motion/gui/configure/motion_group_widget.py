@@ -2174,7 +2174,7 @@ class MGWidget(QWidget):
                 tr_name = _item[0]
                 tr_default_config = _item[1]
 
-                if _type != tr_default_config["type"]:
+                if tr_name_stored != tr_default_config["type"]:
                     continue
 
                 index = self.transform_dropdown.findText(tr_name)
