@@ -2404,6 +2404,34 @@ class MGWidget(QWidget):
         self.drive_dropdown.setCurrentIndex(index)
 
     def _update_mb_dropdown(self):
+        self.logger.info("Updating MB dropdown")
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
+            mb_config = _deepcopy_dict(self.mg.mb.config)
+            mb_dropdown_index = self.mb_dropdown.currentIndex()
+            mb_dropdown_name = self.mb_defaults[mb_dropdown_index][0]
+            mb_dropdown_config = self.mb_defaults[mb_dropdown_index][1]
+
+            if mb_dropdown_name == "Custom Motion Builder":
+                # update the custom motion builder with the current config
+                self.mb_defaults[mb_dropdown_index] = (mb_dropdown_name, mb_config)
+            elif dict_equal(mb_config, mb_dropdown_config):
+                # the config for the pre-defined motion builder matches the
+                # deployed config
+                pass
+            else:
+                # the config for the pre-defined motion builder does NOT match
+                # the deployed config...switch to custom motion builder
+                self.mb_dropdown.blockSignals(True)
+
+                self.mb_defaults[self._custom_mb_index] = (
+                    "Custom Motion Builder", mb_config
+                )
+
+                self._mb_combo_last_index = self._custom_mb_index
+                self.mb_dropdown.setCurrentIndex(self._custom_mb_index)
+
+                self.mb_dropdown.blockSignals(False)
+
         self._populate_mb_dropdown()
 
     def _update_transform_dropdown(self):
