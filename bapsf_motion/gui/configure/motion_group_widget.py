@@ -2022,6 +2022,9 @@ class MGWidget(QWidget):
         # set drive
         self.drive_dropdown.blockSignals(True)
         drive_index = 0
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
+            drive_name = self.mg.drive.config["name"]
+            drive_index = self.drive_dropdown.findText(drive_name)
         self.drive_dropdown.setCurrentIndex(drive_index)
 
         self.drive_dropdown.blockSignals(False)
