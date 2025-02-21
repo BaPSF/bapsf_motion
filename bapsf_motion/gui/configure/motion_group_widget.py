@@ -2157,6 +2157,39 @@ class MGWidget(QWidget):
                 count = self.transform_dropdown.count()
                 self.transform_dropdown.setItemIcon(count-1, _template_icon)
 
+        if (
+            isinstance(self.mg, MotionGroup)
+            and isinstance(self.mg.transform, BaseTransform)
+        ):
+            _type = self.mg.transform.transform_type
+            _config = _deepcopy_dict(self.mg.transform.config)
+            if (
+                tr_config_stored is None
+                or tr_config_stored["type"] != _type
+                or not dict_equal(tr_config_stored, _config)
+            ):
+                tr_name_stored = _type
+
+            for ii, _item in enumerate(self.transform_defaults):
+                tr_name = _item[0]
+                tr_default_config = _item[1]
+
+                if _type != tr_default_config["type"]:
+                    continue
+
+                index = self.transform_dropdown.findText(tr_name)
+                if index == -1:
+                    # this should not happen
+                    break
+
+                self._transform_defaults[ii] = (
+                    tr_name,
+                    {**tr_default_config, **_config},
+                )
+                self.transform_dropdown.setCurrentIndex(index)
+                self.transform_dropdown.blockSignals(False)
+                return
+
         if tr_name_stored is not None:
             index = self.transform_dropdown.findText(tr_name_stored)
 
