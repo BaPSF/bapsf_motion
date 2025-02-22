@@ -936,6 +936,22 @@ class DriveDesktopController(DriveBaseController):
 
         self.moveTo.emit(target_pos)
 
+    def set_target_position(self, target_position: List[float]):
+        npos = len(target_position)
+        naxes = self.mg.drive.naxes
+
+        if npos != naxes:
+            self.logger.warning(
+                f"Received target position {target_position} does NOT "
+                f"have the same dimensionality as the drive "
+                f"({naxes})."
+            )
+            return
+
+        for ii, pos in enumerate(target_position):
+            acw = self._axis_control_widgets[ii]
+            acw.target_position_label.setText(f"{pos}")
+
     def disable_motion_buttons(self):
         self.move_to_btn.setEnabled(False)
         self.zero_all_btn.setEnabled(False)
@@ -1473,6 +1489,20 @@ class DriveControlWidget(QWidget):
         if proceed:
             self.mg.move_to(target_pos)
 
+    def set_target_position(self, target_position: List[float]):
+        npos = len(target_position)
+        naxes = self.mg.drive.naxes
+
+        if npos != naxes:
+            self.logger.warning(
+                f"Received target position {target_position} does NOT "
+                f"have the same dimensionality as the drive "
+                f"({naxes})."
+            )
+            return
+
+        self.desktop_controller_widget.set_target_position(target_position)
+
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
 
@@ -1736,6 +1766,8 @@ class MGWidget(QWidget):
         self.transform_dropdown.currentIndexChanged.connect(
             self._transform_dropdown_new_selection
         )
+
+        self.mpl_canvas.targetPositionSelected.connect(self._update_target_position)
 
         self.drive_control_widget.movementStarted.connect(self.disable_config_controls)
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
@@ -2468,6 +2500,10 @@ class MGWidget(QWidget):
             return
 
         self.mpl_canvas.link_motion_builder(self.mg.mb)
+
+    @Slot(list)
+    def _update_target_position(self, target_position: List[float]):
+        self.drive_control_widget.set_target_position(target_position)
 
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
