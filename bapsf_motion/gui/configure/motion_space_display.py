@@ -3,7 +3,9 @@ __all__ = ["MotionSpaceDisplay"]
 import logging
 import matplotlib as mpl
 
-from PySide6.QtCore import Signal, Slot
+from matplotlib.collections import PathCollection
+from PySide6.QtCore import Signal
+from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
 from typing import Union
 
@@ -13,12 +15,14 @@ from bapsf_motion.motion_builder import MotionBuilder
 # noqa
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
+from matplotlib.backend_bases import Event, MouseEvent, PickEvent
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar  # noqa
 
 
 class MotionSpaceDisplay(QFrame):
     mbChanged = Signal()
+    targetPositionSelected = Signal(list)
 
     def __init__(
         self, mb: MotionBuilder = None, parent=None
@@ -48,10 +52,15 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
 
         self.setLayout(self._define_layout())
+
+        self._mpl_pick_callback_id = None
         self._connect_signals()
 
     def _connect_signals(self):
         self.mbChanged.connect(self.update_canvas)
+        self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
+            "pick_event", self.on_pick  # noqa
+        )
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -68,6 +77,36 @@ class MotionSpaceDisplay(QFrame):
     @property
     def mb(self) -> Union[MotionBuilder, None]:
         return self._mb
+
+    def on_pick(self, event: PickEvent):
+        gui_event = event.guiEvent  # type: QMouseEvent
+
+        artist = event.artist  # noqa
+        if not isinstance(artist, PathCollection):
+            self.logger.warning(
+                f"Currently only know how to retrieve data from a "
+                f"PathCollection artist (i.e. an artist created with "
+                f"pyplot.scatter()), received artist type {type(artist)}."
+            )
+            return
+
+        # A PickEvent associated with a PathCollection artist will have
+        # the attribute ind.  ind is a list of ints corresponding to the
+        # indices of the data used to create the scatter plot
+        if len(event.ind) != 1:
+            self.logger.info(
+                f"Could not select data point, too many point close to "
+                f"the mouse click."
+            )
+            return
+        index = event.ind[0]  # noqa
+
+        # get the date from the artist
+        data = artist.get_offsets()
+        target_position = data[index, :]
+
+        self.logger.info(f"target position = {target_position}")
+        self.targetPositionSelected.emit(target_position)
 
     def link_motion_builder(self, mb: MotionBuilder):
         if not isinstance(mb, MotionBuilder):
@@ -106,6 +145,7 @@ class MotionSpaceDisplay(QFrame):
                 s=2 ** 2,
                 facecolors="deepskyblue",
                 edgecolors="black",
+                picker=True,
             )
 
         self.mpl_canvas.draw()
