@@ -14,7 +14,7 @@ import pygame  # noqa
 
 from abc import abstractmethod
 from PySide6.QtCore import Qt, Signal, Slot, QRunnable, QSize, QThreadPool, QObject
-from PySide6.QtGui import QDoubleValidator, QFont, QIcon
+from PySide6.QtGui import QDoubleValidator, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
@@ -41,6 +41,7 @@ from bapsf_motion.gui.configure.bases import _ConfigOverlay, _OverlayWidget
 from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
+from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.widgets import (
     DiscardButton,
@@ -1657,6 +1658,8 @@ class MGWidget(QWidget):
         self.drive_control_widget = DriveControlWidget(parent=self)
         self.drive_control_widget.setEnabled(False)
 
+        self.mpl_canvas = MotionSpaceDisplay(parent=self)
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -1767,9 +1770,7 @@ class MGWidget(QWidget):
         layout.addSpacing(12)
         layout.addLayout(self._define_central_builder_layout())
         layout.addSpacing(12)
-        # probe position graph widgets should go HERE
-        # - i.e. self._define_mspace_display_layout()
-        layout.addStretch(1)
+        layout.addWidget(self.mpl_canvas)
 
         return layout
 
@@ -2007,6 +2008,7 @@ class MGWidget(QWidget):
         self._update_drive_dropdown()
         self._update_mb_dropdown()
         self._update_transform_dropdown()
+        self._update_mpl_canvas_mb()
 
         # updating the drive control widget should always be the last
         # step
@@ -2448,6 +2450,24 @@ class MGWidget(QWidget):
             return
 
         self._refresh_drive_control()
+
+    def _update_mpl_canvas_mb(self):
+        if (
+            not isinstance(self.mg, MotionGroup)
+            or not isinstance(self.mg.mb, MotionBuilder)
+        ):
+            self.mpl_canvas.unlink_motion_builder()
+            return
+
+        if not isinstance(self.mpl_canvas.mb, MotionBuilder):
+            self.mpl_canvas.link_motion_builder(self.mg.mb)
+            return
+
+        if dict_equal(self.mg.mb.config, self.mpl_canvas.mb.config):
+            # canvas already had current motion builder
+            return
+
+        self.mpl_canvas.link_motion_builder(self.mg.mb)
 
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
