@@ -358,7 +358,7 @@ class ConfigureGUI(QMainWindow):
         return self._logging_config_dict
 
     def replace_rm(self, config):
-        if isinstance(self.rm, RunManager) and not self.rm.terminated:
+        if isinstance(self.rm, RunManager):
             self.rm.terminate()
 
         self.logger.info(f"Replacing the run manager with new config: {config}.")
