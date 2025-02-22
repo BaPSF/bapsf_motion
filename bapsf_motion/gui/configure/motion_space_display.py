@@ -14,6 +14,7 @@ from bapsf_motion.motion_builder import MotionBuilder
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
+from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar  # noqa
 
 
 class MotionSpaceDisplay(QFrame):
@@ -44,6 +45,8 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas = FigureCanvas()
         self.mpl_canvas.setParent(self)
 
+        self.mpl_toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -53,6 +56,7 @@ class MotionSpaceDisplay(QFrame):
     def _define_layout(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.mpl_toolbar)
         layout.addWidget(self.mpl_canvas)
 
         return layout
