@@ -108,17 +108,25 @@ class MotionSpaceDisplay(QFrame):
         self.logger.info(f"target position = {target_position}")
         self.targetPositionSelected.emit(target_position)
 
-    def link_motion_builder(self, mb: MotionBuilder):
+    def link_motion_builder(self, mb: Union[MotionBuilder, None]):
+        self.logger.info(f"Linking Motion Builder {mb}")
+
+        self.blockSignals(True)
+        self.unlink_motion_builder()
+        self.blockSignals(False)
+
         if not isinstance(mb, MotionBuilder):
-            self.unlink_motion_builder()
+            self.mbChanged.emit()
             return
 
         self._mb = mb
         self.setHidden(False)
+        self.mbChanged.emit()
 
     def unlink_motion_builder(self):
         self._mb = None
         self.setHidden(True)
+        self.mbChanged.emit()
 
     def update_canvas(self):
         if not isinstance(self.mb, MotionBuilder):
