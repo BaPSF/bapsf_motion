@@ -8,9 +8,8 @@ import matplotlib as mpl
 import re
 
 from PySide6.QtCore import Qt, Slot, QSize
-from PySide6.QtGui import QIcon, QDoubleValidator
+from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
-    QFrame,
     QHBoxLayout,
     QLabel,
     QGridLayout,
@@ -29,6 +28,7 @@ import qtawesome as qta
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
+from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
 from bapsf_motion.gui.widgets import (
     DiscardButton,
     DoneButton,
@@ -107,24 +107,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ex_btn.setEnabled(False)
 
         # SET UP PLOT WIDGET
-        self.mpl_canvas = FigureCanvas()
-        self.mpl_canvas.setParent(self)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-        self.mpl_canvas_frame = QFrame(parent=self)
-        self.mpl_canvas_frame.setObjectName("mpl_canvas_frame")
-        self.mpl_canvas_frame.setStyleSheet(
-            """
-            QFrame#mpl_canvas_frame {
-                border: 2px solid rgb(125, 125, 125);
-                border-radius: 5px; 
-                padding: 0px;
-                margin: 0px;
-            }
-            """
-        )
-        self.mpl_canvas_frame.setLayout(QVBoxLayout())
-        self.mpl_canvas_frame.layout().addWidget(self.mpl_canvas)
+        self.mpl_canvas = MotionSpaceDisplay(parent=self)
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
+            self.mpl_canvas.link_motion_builder(self.mg.mb)
 
         # SET UP INPUT WIDGETS (those in self._params_widget)
 
@@ -304,7 +289,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         layout = QVBoxLayout(_widget)
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.mpl_canvas_frame)
+        layout.addWidget(self.mpl_canvas)
         layout.addWidget(self._define_params_widget())
         layout.addStretch(1)
 
@@ -1142,26 +1127,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.remove_ly_btn.setEnabled(enable)
 
     def update_canvas(self):
-        self.logger.info("Redrawing plot...")
-        self.logger.info(f"MB config = {self.mb.config}")
-
-        self.mpl_canvas.figure.clear()
-        ax = self.mpl_canvas.figure.gca()
-        xdim, ydim = self.mb.mspace_dims
-        self.mb.mask.plot(x=xdim, y=ydim, ax=ax)
-
-        pts = self.mb.motion_list
-        if pts is not None:
-            ax.scatter(
-                x=pts[..., 0],
-                y=pts[..., 1],
-                linewidth=1,
-                s=2 ** 2,
-                facecolors="deepskyblue",
-                edgecolors="black",
-            )
-
-        self.mpl_canvas.draw()
+        self.mpl_canvas.update_canvas()
 
     def update_exclusion_list_box(self):
         self.logger.info("Updating Exclusion List Box")
@@ -1301,6 +1267,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"layer looks like : {layers}")
 
         self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
+        self.mpl_canvas.link_motion_builder(self._mb)
         self.configChanged.emit()
         return self._mb
 
