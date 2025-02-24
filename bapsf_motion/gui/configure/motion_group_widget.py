@@ -1307,6 +1307,7 @@ class DriveGameController(DriveBaseController):
 class DriveControlWidget(QWidget):
     movementStarted = Signal()
     movementStopped = Signal()
+    targetPositionChanged = Signal(list)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1371,6 +1372,9 @@ class DriveControlWidget(QWidget):
 
         self.desktop_controller_widget.zeroDrive.connect(self._zero_drive)
         self.desktop_controller_widget.moveTo.connect(self._move_to)
+        self.desktop_controller_widget.targetPositionChanged.connect(
+            self.targetPositionChanged.emit
+        )
 
         self.controller_combo_box.currentTextChanged.connect(self._switch_stack)
 
