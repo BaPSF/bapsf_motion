@@ -1821,6 +1821,9 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.movementStarted.connect(self.disable_config_controls)
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
+        self.drive_control_widget.targetPositionChanged.connect(
+            self.mpl_canvas.update_target_position_plot
+        )
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
