@@ -64,6 +64,7 @@ class MotionSpaceDisplay(QFrame):
         self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
             "pick_event", self.on_pick  # noqa
         )
+        self.targetPositionSelected.connect(self.update_target_position_plot)
 
     def _define_layout(self):
         layout = QVBoxLayout()
