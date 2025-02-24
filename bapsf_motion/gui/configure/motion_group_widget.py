@@ -741,7 +741,7 @@ class DriveBaseController(QWidget):
         return position
 
     @property
-    def target_position(self):
+    def target_position(self) -> Union[List[float], None]:
         target_position = []
         for acw in self._axis_control_widgets:
             if acw.isHidden():
