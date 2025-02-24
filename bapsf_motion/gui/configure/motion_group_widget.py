@@ -668,6 +668,7 @@ class DriveBaseController(QWidget):
     movementStopped = Signal()
     moveTo = Signal(list)
     zeroDrive = Signal()
+    targetPositionChanged = Signal(list)
 
     def __init__(self, axis_display_mode="interactive", parent=None):
         # axis_display_mode == "interactive" or "readonly"
@@ -743,6 +744,13 @@ class DriveBaseController(QWidget):
             return None
 
         return target_position
+
+    def _target_position_changed(self, position):
+        self.logger.info(f"DBC target position changed {self.target_position}")
+        tpos = self.target_position
+        if tpos is None:
+            tpos = []
+        self.targetPositionChanged.emit(tpos)
 
     def link_motion_group(self, mg: MotionGroup):
         if not isinstance(mg, MotionGroup):
