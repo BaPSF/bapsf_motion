@@ -1421,6 +1421,10 @@ class DriveControlWidget(QWidget):
     def mg(self) -> Union[MotionGroup, None]:
         return self._mg
 
+    @property
+    def target_position(self):
+        return self.desktop_controller_widget.target_position
+
     def _stop_move(self):
         self.mg.stop()
 
