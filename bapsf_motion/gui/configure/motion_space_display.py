@@ -226,16 +226,22 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.draw()
 
     def update_target_position_plot(self, position):
-        if position is None:
-            return
-
         self.logger.debug(f"Drawing target position {position}")
+
+        if not bool(position):
+            position = None
 
         _label = "target"
         stuff = self._get_plot_axis_by_name(_label)
         if stuff is not None:
             ax, handler = stuff  # type: plt.Axes, PathCollection
-            handler.set_offsets(position)
+
+            if position is None:
+                handler.remove()
+            else:
+                handler.set_offsets(position)
+        elif position is None:
+            return
         else:
             ax = self.mpl_canvas.figure.gca()
 
