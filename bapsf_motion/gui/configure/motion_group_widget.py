@@ -1843,9 +1843,16 @@ class MGWidget(QWidget):
         self.drive_control_widget.targetPositionChanged.connect(
             self.mpl_canvas.update_target_position_plot
         )
+        self.drive_control_widget.driveStatusChanged.connect(
+            self._update_position_in_plot
+        )
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
+
+    def _update_position_in_plot(self):
+        position = self.drive_control_widget.position
+        self.mpl_canvas.update_position_plot(position)
 
     def _define_layout(self):
 
