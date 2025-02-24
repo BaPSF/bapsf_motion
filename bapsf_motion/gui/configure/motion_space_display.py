@@ -78,6 +78,23 @@ class MotionSpaceDisplay(QFrame):
     def mb(self) -> Union[MotionBuilder, None]:
         return self._mb
 
+    def _get_plot_axis_by_name(self, name: str):
+        fig_axes = self.mpl_canvas.figure.axes
+        for ax in fig_axes:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", UserWarning)
+                legend_handles, legend_labels = ax.get_legend_handles_labels()
+
+            if name not in legend_labels:
+                continue
+
+            index = legend_labels.index(name)
+            handler = legend_handles[index]
+
+            return ax, handler
+
+        return None
+
     def on_pick(self, event: PickEvent):
         gui_event = event.guiEvent  # type: QMouseEvent
 
