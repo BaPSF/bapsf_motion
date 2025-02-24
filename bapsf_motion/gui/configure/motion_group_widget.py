@@ -2457,6 +2457,9 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.link_motion_group(self.mg)
 
+        target_position = self.drive_control_widget.target_position
+        self.drive_control_widget.targetPositionChanged.emit(target_position)
+
     def _update_drive_dropdown(self):
         if self._custom_drive_index == -1:
             # this should never happen if self._custom_drive_index was
