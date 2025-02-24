@@ -142,7 +142,7 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.figure.clear()
         ax = self.mpl_canvas.figure.gca()
         xdim, ydim = self.mb.mspace_dims
-        self.mb.mask.plot(x=xdim, y=ydim, ax=ax)
+        self.mb.mask.plot(x=xdim, y=ydim, ax=ax, label="mask")
 
         pts = self.mb.motion_list
         if pts is not None:
@@ -154,6 +154,7 @@ class MotionSpaceDisplay(QFrame):
                 facecolors="deepskyblue",
                 edgecolors="black",
                 picker=True,
+                label="motion_list",
             )
 
         self.mpl_canvas.draw()
