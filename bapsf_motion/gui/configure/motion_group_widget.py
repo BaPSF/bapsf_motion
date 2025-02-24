@@ -1437,6 +1437,10 @@ class DriveControlWidget(QWidget):
         return self._mg
 
     @property
+    def position(self) -> List[float]:
+        return self.desktop_controller_widget.position
+
+    @property
     def target_position(self):
         return self.desktop_controller_widget.target_position
 
