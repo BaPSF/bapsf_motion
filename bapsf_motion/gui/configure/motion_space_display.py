@@ -1,8 +1,11 @@
 __all__ = ["MotionSpaceDisplay"]
 
 import logging
+import warnings
+
 import matplotlib as mpl
 
+from matplotlib import pyplot as plt
 from matplotlib.collections import PathCollection
 from PySide6.QtCore import Signal
 from PySide6.QtGui import QMouseEvent
@@ -156,11 +159,22 @@ class MotionSpaceDisplay(QFrame):
         self.logger.info("Redrawing plot...")
         self.logger.info(f"MB config = {self.mb.config}")
 
-        self.mpl_canvas.figure.clear()
-        ax = self.mpl_canvas.figure.gca()
+        # retrieve last target position
+        stuff = self._get_plot_axis_by_name("target")
+        if stuff is not None:
+            ax, handler = stuff  # type: plt.Axes, PathCollection
+            target_position = handler.get_offsets()
+        else:
+            target_position = None
+
+        fig = self.mpl_canvas.figure
+        fig.clear()
+        ax = fig.gca()
+
         xdim, ydim = self.mb.mspace_dims
         self.mb.mask.plot(x=xdim, y=ydim, ax=ax, label="mask")
 
+        # Draw motion list
         pts = self.mb.motion_list
         if pts is not None:
             ax.scatter(
@@ -174,6 +188,7 @@ class MotionSpaceDisplay(QFrame):
                 label="motion_list",
             )
 
+        # Draw insertion point
         insertion_point = self.mb.get_insertion_point()
         if insertion_point is not None:
             ax.scatter(
@@ -201,6 +216,11 @@ class MotionSpaceDisplay(QFrame):
             elif insertion_point[1] < ylim[0]:
                 ylim = [1.05 * insertion_point[1], ylim[1]]
             ax.set_ylim(ylim)
+
+        # Draw target position
+        self.update_target_position_plot(position=target_position)
+
+        # Draw current position
 
         self.mpl_canvas.draw()
 
