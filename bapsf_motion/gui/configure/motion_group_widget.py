@@ -289,6 +289,7 @@ class AxisControlWidget(QWidget):
     movementStarted = Signal(int)
     movementStopped = Signal(int)
     axisStatusChanged = Signal()
+    targetPositionChanged = Signal(float)
 
     def __init__(
         self,
@@ -393,6 +394,9 @@ class AxisControlWidget(QWidget):
         self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
         self.jog_delta_label.editingFinished.connect(self._validate_jog_value)
+        self.target_position_label.editingFinished.connect(
+            self._validate_target_position_value
+        )
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -571,6 +575,14 @@ class AxisControlWidget(QWidget):
         val = 0.0 if _txt == "" else float(_txt)
         val = abs(val)
         self.jog_delta_label.setText(f"{val:.2f}")
+
+    def _validate_target_position_value(self):
+        try:
+            val = self.target_position
+        except ValueError:
+            val = None
+
+        self.targetPositionChanged.emit(val)
 
     def _zero_axis(self):
         self.logger.info(f"Setting zero of axis {self.axis_index}")
