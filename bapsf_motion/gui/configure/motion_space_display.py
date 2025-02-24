@@ -204,6 +204,32 @@ class MotionSpaceDisplay(QFrame):
 
         self.mpl_canvas.draw()
 
+    def update_target_position_plot(self, position):
+        if position is None:
+            return
+
+        self.logger.debug(f"Drawing target position {position}")
+
+        _label = "target"
+        stuff = self._get_plot_axis_by_name(_label)
+        if stuff is not None:
+            ax, handler = stuff  # type: plt.Axes, PathCollection
+            handler.set_offsets(position)
+        else:
+            ax = self.mpl_canvas.figure.gca()
+
+            ax.scatter(
+                x=position[0],
+                y=position[1],
+                s=7 ** 2,
+                linewidth=2,
+                facecolors="none",
+                edgecolors="blue",
+                label=_label,
+            )
+
+        self.mpl_canvas.draw()
+
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
