@@ -725,6 +725,25 @@ class DriveBaseController(QWidget):
     def mspace_drive_polarity(self):
         return self._mspace_drive_polarity
 
+    @property
+    def target_position(self):
+        target_position = []
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            target_position.append(acw.target_position)
+
+        if not bool(target_position):
+            # no values in target position
+            return None
+
+        if any(pos is None for pos in target_position):
+            # some target positions are not valid
+            return None
+
+        return target_position
+
     def link_motion_group(self, mg: MotionGroup):
         if not isinstance(mg, MotionGroup):
             self.logger.warning(
