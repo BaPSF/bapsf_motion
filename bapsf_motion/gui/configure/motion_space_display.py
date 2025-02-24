@@ -157,6 +157,34 @@ class MotionSpaceDisplay(QFrame):
                 label="motion_list",
             )
 
+        insertion_point = self.mb.get_insertion_point()
+        if insertion_point is not None:
+            ax.scatter(
+                x=insertion_point[0],
+                y=insertion_point[1],
+                s=3 ** 2,
+                linewidth=2,
+                facecolors="none",
+                edgecolors="red",
+                label="insertion_point",
+            )
+
+            # reset x range of plot
+            xlim = ax.get_xlim()
+            if insertion_point[0] > xlim[1]:
+                xlim = [xlim[0], 1.05 * insertion_point[0]]
+            elif insertion_point[0] < xlim[0]:
+                xlim = [1.05 * insertion_point[0], xlim[1]]
+            ax.set_xlim(xlim)
+
+            # reset y range of plot
+            ylim = ax.get_ylim()
+            if insertion_point[1] > ylim[1]:
+                ylim = [ylim[0], 1.05 * insertion_point[1]]
+            elif insertion_point[1] < ylim[0]:
+                ylim = [1.05 * insertion_point[1], ylim[1]]
+            ax.set_ylim(ylim)
+
         self.mpl_canvas.draw()
 
     def closeEvent(self, event):
