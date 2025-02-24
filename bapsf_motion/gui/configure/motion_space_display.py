@@ -4,6 +4,7 @@ import logging
 import warnings
 
 import matplotlib as mpl
+import numpy as np
 
 from matplotlib import pyplot as plt
 from matplotlib.collections import PathCollection
@@ -160,6 +161,14 @@ class MotionSpaceDisplay(QFrame):
         self.logger.info("Redrawing plot...")
         self.logger.info(f"MB config = {self.mb.config}")
 
+        # retrieve last position
+        stuff = self._get_plot_axis_by_name("position")
+        if stuff is not None:
+            ax, handler = stuff  # type: plt.Axes, PathCollection
+            position = handler.get_offsets()
+        else:
+            position = None
+
         # retrieve last target position
         stuff = self._get_plot_axis_by_name("target")
         if stuff is not None:
@@ -222,6 +231,7 @@ class MotionSpaceDisplay(QFrame):
         self.update_target_position_plot(position=target_position)
 
         # Draw current position
+        self.update_position_plot(position=position)
 
         self.mpl_canvas.draw()
 
@@ -252,6 +262,78 @@ class MotionSpaceDisplay(QFrame):
                 linewidth=2,
                 facecolors="none",
                 edgecolors="blue",
+                label=_label,
+            )
+
+        self.mpl_canvas.draw()
+
+    def update_position_plot(self, position):
+        self.logger.debug(f"Drawing target position {position}")
+
+        if isinstance(position, np.ndarray):
+            position = position.squeeze()
+            position = position.tolist()
+
+        if not bool(position):
+            position = None
+
+        # add position dot
+        _label = "position"
+        stuff = self._get_plot_axis_by_name(_label)
+        if stuff is not None:
+            ax, handler = stuff  # type: plt.Axes, PathCollection
+
+            if position is None:
+                handler.remove()
+            else:
+                handler.set_offsets(position)
+        elif position is None:
+            return
+        else:
+            ax = self.mpl_canvas.figure.gca()
+
+            ax.scatter(
+                x=position[0],
+                y=position[1],
+                s=7 ** 2,
+                linewidth=2,
+                facecolors="none",
+                edgecolors="black",
+                label=_label,
+            )
+
+        # add probe shaft (line from insertion to position
+        _label = "probe"
+        stuff = self._get_plot_axis_by_name(_label)
+        insertion_point = self.mb.get_insertion_point()
+        if (insertion_point is None or position is None) and stuff is not None:
+            # not enough to update plot, so remove EXISTING plot
+            ax, handler = stuff
+            handler.remove()
+        elif insertion_point is None or position is None:
+            # nothing to plot and plot does NOT already exist
+            pass
+        elif stuff is not None:
+            # update existing plot
+            ax, handler = stuff  # type: plt.Axes, plt.Line2D
+
+            xdata = [insertion_point[0], position[0]]
+            ydata = [insertion_point[1], position[1]]
+
+            handler.set_xdata(xdata)
+            handler.set_ydata(ydata)
+        else:
+            # plot does NOT exist, make plot
+            ax = self.mpl_canvas.figure.gca()
+
+            xdata = [insertion_point[0], position[0]]
+            ydata = [insertion_point[1], position[1]]
+
+            ax.plot(
+                xdata,
+                ydata,
+                color="black",
+                linewidth=2,
                 label=_label,
             )
 
