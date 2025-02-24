@@ -710,6 +710,9 @@ class DriveBaseController(QWidget):
         self.movementStarted.connect(self.disable_motion_buttons)
         self.movementStopped.connect(self.enable_motion_buttons)
 
+        for acw in self._axis_control_widgets:
+            acw.targetPositionChanged.connect(self._target_position_changed)
+
     @abstractmethod
     def _define_layout(self) -> QLayout:
         ...
