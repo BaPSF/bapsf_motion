@@ -730,6 +730,17 @@ class DriveBaseController(QWidget):
         return self._mspace_drive_polarity
 
     @property
+    def position(self) -> List[float]:
+        position = []
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            position.append(acw.position.value)
+
+        return position
+
+    @property
     def target_position(self):
         target_position = []
         for acw in self._axis_control_widgets:
