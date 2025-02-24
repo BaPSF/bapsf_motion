@@ -182,7 +182,7 @@ class MotionSpaceDisplay(QFrame):
         ax = fig.gca()
 
         xdim, ydim = self.mb.mspace_dims
-        self.mb.mask.plot(x=xdim, y=ydim, ax=ax, label="mask")
+        self.mb.mask.plot(x=xdim, y=ydim, ax=ax, add_colorbar=False, label="mask")
 
         # Draw motion list
         pts = self.mb.motion_list
