@@ -150,7 +150,7 @@ class MotionSpaceDisplay(QFrame):
                 x=pts[..., 0],
                 y=pts[..., 1],
                 linewidth=1,
-                s=2 ** 2,
+                s=3 ** 2,
                 facecolors="deepskyblue",
                 edgecolors="black",
                 picker=True,
