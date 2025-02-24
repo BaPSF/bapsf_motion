@@ -415,6 +415,24 @@ class MotionBuilder(MBItem):
             dims=("index", "space")
         )
 
+    def get_insertion_point(self) -> Union[np.ndarray, None]:
+        """
+        Get the insertion point associated with the `GovernExclusion.
+        Returns `None` if no insertion point exists.
+        """
+        try:
+            ex = self.exclusions[0]
+        except IndexError:
+            return None
+
+        if not isinstance(ex, GovernExclusion):
+            return None
+
+        if not hasattr(ex, "insertion_point"):
+            return None
+
+        return ex.insertion_point  # noqa
+
     def clear_motion_list(self):
         """
         Clear/delete the currently constructed :term:`motion list`.
