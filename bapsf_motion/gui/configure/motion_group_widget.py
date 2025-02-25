@@ -50,6 +50,7 @@ from bapsf_motion.gui.widgets import (
     HLinePlain,
     IconButton,
     LED,
+    QTAIconLabel,
     StyleButton,
     StopButton,
     ValidButton,
@@ -1685,11 +1686,9 @@ class MGWidget(QWidget):
         _btn = DiscardButton(parent=self)
         self.discard_btn = _btn
 
-        _icon = QLabel(parent=self)
-        _icon.setPixmap(qta.icon("mdi.steering").pixmap(24, 24))
-        _icon.setMaximumWidth(32)
-        _icon.setMaximumHeight(32)
-        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        _icon = QTAIconLabel("mdi.steering", parent=self)
+        _icon.setFixedSize(32)
+        _icon.setIconSize(24)
         self.drive_label = _icon
 
         _w = QComboBox(parent=self)
@@ -1706,11 +1705,10 @@ class MGWidget(QWidget):
         _btn = GearValidButton(parent=self)
         self.drive_btn = _btn
 
-        _icon = QLabel(parent=self)
-        _icon.setPixmap(qta.icon("mdi.motion").pixmap(24, 24))
-        _icon.setMaximumWidth(32)
-        _icon.setMaximumHeight(32)
         _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        _icon = QTAIconLabel("mdi.motion", parent=self)
+        _icon.setFixedSize(32)
+        _icon.setIconSize(24)
         self.mb_label = _icon
 
         _w = QComboBox(parent=self)
@@ -1728,11 +1726,9 @@ class MGWidget(QWidget):
         _btn.setEnabled(False)
         self.mb_btn = _btn
 
-        _icon = QLabel(parent=self)
-        _icon.setPixmap(qta.icon("fa5s.exchange-alt").pixmap(24, 24))
-        _icon.setMaximumWidth(32)
-        _icon.setMaximumHeight(32)
-        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        _icon = QTAIconLabel("fa5s.exchange-alt", parent=self)
+        _icon.setFixedSize(32)
+        _icon.setIconSize(24)
         self.transform_label = _icon
 
         _w = QComboBox(parent=self)
