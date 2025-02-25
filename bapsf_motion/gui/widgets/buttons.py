@@ -399,13 +399,14 @@ class GearValidButton(ValidButton):
             action="checked",
         )  # checked state is the valid state
 
-        self._size = 32
-        self._icon_size = 28
-
-        self.setFixedWidth(self._size)
-        self.setFixedHeight(self._size)
         self.setIcon(self._invalid_icon)
-        self.setIconSize(QSize(self._icon_size, self._icon_size))
+
+        self._size = None
+        self.setFixedSize(32)
+
+        self._icon_size = None
+        self.setIconSize(28)
+
         self.setChecked(False)
 
     def set_valid(self, state: bool = True):
@@ -416,6 +417,32 @@ class GearValidButton(ValidButton):
     def set_invalid(self):
         self.setIcon(self._invalid_icon)
         super().set_invalid()
+
+    def setIconSize(self, size: int):
+        if not isinstance(size, int):
+            return
+        elif size <= 0:
+            return
+
+        self._icon_size = size
+        size = QSize(size, size)
+        super().setIconSize(size)
+
+    def setFixedSize(self, size: int):
+        if not isinstance(size, int):
+            return
+        elif size <= 0:
+            return
+
+        self._size = size
+        size = QSize(size, size)
+        super().setFixedSize(size)
+
+    def setFixedHeight(self, h):
+        self.setFixedSize(h)
+
+    def setFixedWidth(self, w):
+        self.setFixedSize(w)
 
     def _change_validation_icon(self):
         _icon = self._valid_icon if self.is_valid else self._invalid_icon
