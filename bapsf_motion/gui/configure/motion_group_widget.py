@@ -2887,14 +2887,7 @@ class MGWidget(QWidget):
         self.transform_btn.setEnabled(False)
 
     def enable_config_controls(self):
-        self.drive_dropdown.setEnabled(True)
-        self.drive_btn.setEnabled(True)
-
-        self.mb_dropdown.setEnabled(True)
-        self.mb_btn.setEnabled(True)
-
-        self.transform_dropdown.setEnabled(True)
-        self.transform_btn.setEnabled(True)
+        self._validate_motion_group()
 
     def return_and_close(self):
         config = _deepcopy_dict(self.mg.config)
