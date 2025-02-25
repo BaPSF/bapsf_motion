@@ -1390,6 +1390,12 @@ class DriveControlWidget(QWidget):
         self.desktop_controller_widget.driveStatusChanged.connect(
             self.driveStatusChanged.emit
         )
+        self.desktop_controller_widget.movementStarted.connect(
+            self._drive_movement_started
+        )
+        self.desktop_controller_widget.movementStopped.connect(
+            self._drive_movement_finished
+        )
 
         self.controller_combo_box.currentTextChanged.connect(self._switch_stack)
 
@@ -1530,19 +1536,13 @@ class DriveControlWidget(QWidget):
         if self.game_controller_widget is not None:
             self.game_controller_widget.update_all_axis_displays()
 
-    @Slot(int)
-    def _drive_movement_started(self, axis_index):
+    def _drive_movement_started(self):
+        self.controller_combo_box.setEnabled(False)
         self.movementStarted.emit()
 
-    @Slot(int)
-    def _drive_movement_finished(self, axis_index):
-        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
-            return
-
-        is_moving = [ax.is_moving for ax in self.mg.drive.axes]
-        is_moving[axis_index] = False
-        if not any(is_moving):
-            self.movementStopped.emit()
+    def _drive_movement_finished(self):
+        self.controller_combo_box.setEnabled(True)
+        self.movementStopped.emit()
 
     @Slot(list)
     def _move_to(self, target_pos):
