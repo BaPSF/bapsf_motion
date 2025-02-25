@@ -1758,6 +1758,9 @@ class MGWidget(QWidget):
         self.drive_control_widget.setEnabled(False)
 
         self.mpl_canvas = MotionSpaceDisplay(parent=self)
+        _policy = self.mpl_canvas.sizePolicy()
+        _policy.setRetainSizeWhenHidden(True)
+        self.mpl_canvas.setSizePolicy(_policy)
 
         self.setLayout(self._define_layout())
         self._connect_signals()
