@@ -1882,7 +1882,7 @@ class MGWidget(QWidget):
         layout = QHBoxLayout()
         layout.addLayout(self._define_toml_layout())
         layout.addSpacing(12)
-        layout.addLayout(self._define_central_builder_layout())
+        layout.addWidget(self._define_central_builder_widget())
         layout.addSpacing(12)
         layout.addWidget(self.mpl_canvas)
 
@@ -1903,7 +1903,7 @@ class MGWidget(QWidget):
 
         return layout
 
-    def _define_central_builder_layout(self):
+    def _define_central_builder_widget(self):
 
         _label = QLabel("Name:  ", parent=self)
         _label.setAlignment(
@@ -1943,7 +1943,9 @@ class MGWidget(QWidget):
         layout.addLayout(transform_sub_layout)
         layout.addStretch()
 
-        return layout
+        _widget = QWidget(parent=self)
+        _widget.setLayout(layout)
+        return _widget
 
     def _build_drive_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
         # Returned _drive_defaults is a List of Tuple pairs
