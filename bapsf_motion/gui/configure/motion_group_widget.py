@@ -518,8 +518,12 @@ class AxisControlWidget(QWidget):
         return val * unit
 
     @property
-    def target_position(self):
-        return float(self.target_position_label.text())
+    def target_position(self) -> Union[float, None]:
+        try:
+            pos = float(self.target_position_label.text())
+        except ValueError:
+            pos = None
+        return pos
 
     @property
     def interactive_display_mode(self):
@@ -577,12 +581,7 @@ class AxisControlWidget(QWidget):
         self.jog_delta_label.setText(f"{val:.2f}")
 
     def _validate_target_position_value(self):
-        try:
-            val = self.target_position
-        except ValueError:
-            val = None
-
-        self.targetPositionChanged.emit(val)
+        self.targetPositionChanged.emit(self.target_position)
 
     def _zero_axis(self):
         self.logger.info(f"Setting zero of axis {self.axis_index}")
@@ -986,6 +985,13 @@ class DriveDesktopController(DriveBaseController):
                 f"to {target_pos}."
             )
             target_pos = []
+
+        if any(p is None for p in target_pos):
+            self.logger.warning(
+                f"Requested target position ({target_pos}) is not valid,"
+                f" NOT performing move to."
+            )
+            return
 
         self.moveTo.emit(target_pos)
 
