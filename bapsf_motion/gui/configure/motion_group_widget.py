@@ -2773,6 +2773,9 @@ class MGWidget(QWidget):
             self.drive_btn.setToolTip("Drive is not fully configured.")
             return False
 
+        self.drive_dropdown.setEnabled(True)
+        self.drive_btn.setEnabled(True)
+
         self.mb_dropdown.setEnabled(True)
         self.mb_btn.setEnabled(True)
 
