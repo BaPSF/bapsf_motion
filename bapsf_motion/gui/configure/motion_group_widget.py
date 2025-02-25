@@ -1945,6 +1945,7 @@ class MGWidget(QWidget):
 
         _widget = QWidget(parent=self)
         _widget.setLayout(layout)
+        _widget.setFixedWidth(335)
         return _widget
 
     def _build_drive_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
