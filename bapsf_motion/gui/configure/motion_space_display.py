@@ -184,6 +184,8 @@ class MotionSpaceDisplay(QFrame):
         xdim, ydim = self.mb.mspace_dims
         self.mb.mask.plot(x=xdim, y=ydim, ax=ax, add_colorbar=False, label="mask")
 
+        fig.tight_layout()
+
         # Draw motion list
         pts = self.mb.motion_list
         if pts is not None:
