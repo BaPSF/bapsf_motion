@@ -3,21 +3,82 @@ __all__ = [
     "BatteryStatusIcon",
     "IPv4Validator",
     "QLineEditSpecialized",
+    "QTAIconLabel",
     "HLinePlain",
     "VLinePlain",
 ]
 
 import logging
 
-from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QValidator, QColor
+from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtGui import QValidator, QColor, QIcon
 from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
+from typing import Union
 
 # noqa
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta
 
 from bapsf_motion.utils import ipv4_pattern as _ipv4_pattern
+
+
+class QTAIconLabel(QLabel):
+    def __init__(self, icon_name, parent=None):
+        super().__init__(parent=parent)
+
+        self._icon_name = None
+        self._icon = None
+        self.setIcon(icon_name)
+
+        self.setFixedSize(32)
+        self.setIconSize(28)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+
+    @property
+    def icon_name(self) -> str:
+        return self._icon_name
+
+    @property
+    def icon(self) -> QIcon:
+        return self._icon
+
+    def _get_icon(self):
+        return qta.icon(self._icon_name)
+
+    def setIcon(self, icon_name: str):  # noqa
+        try:
+            _icon = qta.icon(icon_name)
+        except Exception:  # noqa
+            return
+
+        self._icon_name = icon_name
+        self._icon = _icon
+
+    def setIconSize(self, size: int):  # noqa
+        if not isinstance(size, int):
+            return
+        elif size < 1:
+            return
+
+        self.setPixmap(self.icon.pixmap(size, size))
+
+    def setFixedSize(self, size: Union[QSize, int]):
+        if isinstance(size, QSize):
+            pass
+        elif not isinstance(size, int):
+            return
+        elif size < 1:
+            return
+        else:
+            size = QSize(size, size)
+
+        super().setFixedSize(size)
+
+    def setFixedWidth(self, w):
+        self.setFixedSize(w)
+
+    def setFixedHeight(self, h):
+        self.setFixedSize(h)
 
 
 class BatteryStatusIcon(QLabel):
