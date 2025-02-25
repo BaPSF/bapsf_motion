@@ -1942,6 +1942,72 @@ class MGWidget(QWidget):
         transform_sub_layout.addWidget(self.transform_dropdown)
         transform_sub_layout.addWidget(self.transform_btn)
 
+        _legend_txt = QLabel("LEGEND", parent=self)
+        font = _legend_txt.font()
+        font.setBold(True)
+        font.setPointSize(10)
+        _legend_txt.setFont(font)
+
+        valid_gear_legend_layout = QHBoxLayout()
+        valid_gear_legend_layout.setContentsMargins(0, 0, 0, 0)
+        _btn = GearValidButton(parent=self)
+        _btn.set_valid()
+        _btn.setFixedSize(24)
+        _btn.setIconSize(20)
+        valid_gear_legend_layout.addWidget(_btn)
+        valid_gear_legend_layout.addSpacing(4)
+        valid_gear_legend_layout.addWidget(
+            QLabel("Configuration valid. Click to edit.", parent=self)
+        )
+
+        invalid_gear_legend_layout = QHBoxLayout()
+        invalid_gear_legend_layout.setContentsMargins(0, 0, 0, 0)
+        _btn = GearValidButton(parent=self)
+        _btn.set_invalid()
+        _btn.setFixedSize(24)
+        _btn.setIconSize(20)
+        invalid_gear_legend_layout.addWidget(_btn)
+        invalid_gear_legend_layout.addSpacing(4)
+        invalid_gear_legend_layout.addWidget(
+            QLabel(
+                "Configuration invalid. Click to edit.\nHover for tooltip.",
+                parent=self,
+            ),
+        )
+
+        drive_legend_layout = QHBoxLayout()
+        drive_legend_layout.setContentsMargins(2, 0, 0, 0)
+        _icon = QTAIconLabel("mdi.steering", parent=self)
+        _icon.setFixedSize(20)
+        _icon.setIconSize(20)
+        drive_legend_layout.addWidget(_icon)
+        drive_legend_layout.addSpacing(6)
+        drive_legend_layout.addWidget(
+            QLabel("Drive configuration.", parent=self)
+        )
+
+        mb_legend_layout = QHBoxLayout()
+        mb_legend_layout.setContentsMargins(2, 0, 0, 0)
+        _icon = QTAIconLabel("mdi.motion", parent=self)
+        _icon.setFixedSize(20)
+        _icon.setIconSize(20)
+        mb_legend_layout.addWidget(_icon)
+        mb_legend_layout.addSpacing(6)
+        mb_legend_layout.addWidget(
+            QLabel("Motion Builder / Space configuration.", parent=self)
+        )
+
+        tr_legend_layout = QHBoxLayout()
+        tr_legend_layout.setContentsMargins(2, 0, 0, 0)
+        _icon = QTAIconLabel("fa5s.exchange-alt", parent=self)
+        _icon.setFixedSize(20)
+        _icon.setIconSize(20)
+        tr_legend_layout.addWidget(_icon)
+        tr_legend_layout.addSpacing(6)
+        tr_legend_layout.addWidget(
+            QLabel("Transformer configuration.", parent=self)
+        )
+
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addSpacing(18)
@@ -1950,6 +2016,18 @@ class MGWidget(QWidget):
         layout.addLayout(drive_sub_layout)
         layout.addLayout(mb_sub_layout)
         layout.addLayout(transform_sub_layout)
+        layout.addSpacing(8)
+        layout.addWidget(HLinePlain(parent=self))
+        layout.addWidget(
+            _legend_txt,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addLayout(valid_gear_legend_layout)
+        layout.addLayout(invalid_gear_legend_layout)
+        layout.addSpacing(4)
+        layout.addLayout(drive_legend_layout)
+        layout.addLayout(mb_legend_layout)
+        layout.addLayout(tr_legend_layout)
         layout.addStretch()
 
         _widget = QWidget(parent=self)
