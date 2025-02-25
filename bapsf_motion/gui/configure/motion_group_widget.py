@@ -565,6 +565,9 @@ class AxisControlWidget(QWidget):
         if self._mg.terminated:
             return
 
+        if not self.isEnabled():
+            return
+
         pos = self.position
         self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
 
