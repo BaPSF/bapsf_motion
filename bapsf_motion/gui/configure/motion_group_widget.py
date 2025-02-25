@@ -1859,7 +1859,10 @@ class MGWidget(QWidget):
         self.discard_btn.clicked.connect(self.close)
 
     def _update_position_in_plot(self):
-        position = self.drive_control_widget.position
+        if self.drive_control_widget.isEnabled():
+            position = self.drive_control_widget.position
+        else:
+            position = None
         self.mpl_canvas.update_position_plot(position)
 
     def _define_layout(self):
