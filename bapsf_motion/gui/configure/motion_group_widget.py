@@ -1888,10 +1888,11 @@ class MGWidget(QWidget):
 
     def _define_mg_builder_layout(self):
         layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addLayout(self._define_toml_layout())
-        layout.addSpacing(12)
+        layout.addSpacing(8)
         layout.addWidget(self._define_central_builder_widget())
-        layout.addSpacing(12)
+        layout.addSpacing(8)
         layout.addWidget(self.mpl_canvas)
 
         return layout
@@ -1913,10 +1914,7 @@ class MGWidget(QWidget):
 
     def _define_central_builder_widget(self):
 
-        _label = QLabel("Name:  ", parent=self)
-        _label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt. AlignmentFlag.AlignLeft
-        )
+        _label = QLabel("Name:", parent=self)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
         font.setPointSize(16)
@@ -1924,7 +1922,9 @@ class MGWidget(QWidget):
         name_label = _label
 
         title_sub_layout = QHBoxLayout()
+        title_sub_layout.setContentsMargins(12, 0, 12, 0)
         title_sub_layout.addWidget(name_label)
+        title_sub_layout.addSpacing(4)
         title_sub_layout.addWidget(self.mg_name_widget)
 
         drive_sub_layout = QHBoxLayout()
@@ -1943,9 +1943,10 @@ class MGWidget(QWidget):
         transform_sub_layout.addWidget(self.transform_btn)
 
         layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addSpacing(18)
         layout.addLayout(title_sub_layout)
-        layout.addSpacing(18)
+        layout.addSpacing(12)
         layout.addLayout(drive_sub_layout)
         layout.addLayout(mb_sub_layout)
         layout.addLayout(transform_sub_layout)
