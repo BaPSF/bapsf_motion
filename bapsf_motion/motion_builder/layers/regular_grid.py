@@ -94,11 +94,25 @@ class GridLayer(BaseLayer):
             self,
             ds: xr.Dataset,
             limits: List[List[float]],
-            steps: List[int],
+            npoints: List[int] = None,
             skip_ds_add: bool = False,
+            **kwargs,
     ):
+        if npoints is None and "steps" in kwargs.keys():
+            warnings.warn(
+                f"{self.__class__.__name__}.__init_() no longer uses argument "
+                f"'steps', argument has been renamed to 'npoints'.",
+                DeprecationWarning,
+            )
+            npoints = kwargs["steps"]
+        elif npoints is None:
+            raise TypeError(
+                f"{self.__class__.__name__}.__init__() missing 1 required"
+                f"positional argument: 'npoints'"
+            )
+
         # assign all, and only, instance variables above the super
-        super().__init__(ds, limits=limits, steps=steps, skip_ds_add=skip_ds_add)
+        super().__init__(ds, limits=limits, npoints=npoints, skip_ds_add=skip_ds_add)
 
     def _generate_point_matrix(self):
         """
@@ -130,14 +144,20 @@ class GridLayer(BaseLayer):
         Validate the input arguments passed during instantiation.
         These inputs are stored in :attr:`inputs`.
         """
-        limits = self.limits
-        steps = self.steps
+        limits = self._validate_limits(self.limits)
+        self.limits = limits
+
+        npoints = self._validate_npoints(self.npoints)
+        self.npoints = npoints
+
+    def _validate_limits(self, limits):
         mspace_ndims = self.mspace_ndims
 
-        # 1st pass on limits validation
+        # force to numpy array
         if not isinstance(limits, np.ndarray):
             limits = np.array(limits, dtype=np.float64)
 
+        # validate limits
         if limits.ndim not in (1, 2):
             raise ValueError(
                 "Keyword 'limits' needs to be a 2-element list "
@@ -150,7 +170,7 @@ class GridLayer(BaseLayer):
         elif limits.ndim == 2 and limits.shape[0] not in (1, mspace_ndims):
             raise ValueError(
                 "The number of specified limits needs to be one "
-                f"or equal to the dimensionallity of motion space {self.mspace_ndims}."
+                f"or equal to the dimensionality of motion space {self.mspace_ndims}."
             )
         elif limits.ndim == 1 and limits.shape[0] not in (2, mspace_ndims):
             raise ValueError(
@@ -158,53 +178,91 @@ class GridLayer(BaseLayer):
                 f"dimensionality of the motion space {self.mspace_ndims}."
             )
 
+        # repeat a single limit across all dimensions
         if limits.ndim == 1 or limits.shape[0] == 1:
             # only one limit has been defined, assume this is used for
             # all mspace dimensions
             if limits.ndim == 2:
                 limits = limits[0, ...]
 
-            limits = np.repeate(limits[np.newaxis, ...], mspace_ndims, axis=0)
+            limits = np.repeat(limits[np.newaxis, ...], mspace_ndims, axis=0)
 
-        # 1st pass on steps validation
-        if not isinstance(steps, np.ndarray):
-            steps = np.array(steps, dtype=np.int32)
+        return limits
 
-        if steps.ndim != 1:
-            raise ValueError("Keyword 'steps' needs to be 1D array_like.")
-        elif steps.size not in (1, mspace_ndims):
+    def _validate_npoints(self, npoints):
+        mspace_ndims = self.mspace_ndims
+
+        # force to numpy array
+        if not isinstance(npoints, np.ndarray):
+            npoints = np.array(npoints, dtype=np.int32)
+
+        # validate
+        if npoints.ndim != 1:
+            raise ValueError("Keyword 'npoints' needs to be 1D array_like.")
+        elif npoints.size not in (1, mspace_ndims):
             raise ValueError(
-                "Keyword 'steps' must be of size 1 or equal to the "
+                "Keyword 'npoints' must be of size 1 or equal to the "
                 f"dimensionality of the motion space {self.mspace_ndims}."
             )
-        elif steps.size == 1:
-            steps = np.repeat(steps, self.mspace_ndims)
+        elif npoints.size == 1:
+            npoints = np.repeat(npoints, self.mspace_ndims)
 
-        self.limits = limits
-        self.steps = steps
+        return npoints
 
     @property
-    def limits(self) -> List[List[float]]:
+    def limits(self) -> np.ndarray:
         """
-        A list of min and max pairs representing the range along
+        An array of min and max pairs representing the range along
         each :term:`motion space` dimensions that the point layer
-        resides in.
+        resides in.  Shape ``(N, 2)`` where ``N`` is the dimensionality
+        of the motion space.
         """
         return self.inputs["limits"]
 
     @limits.setter
     def limits(self, value):
         # TODO: Add some validation for `value`
-        self.inputs["limits"] = value
+        try:
+            new_limits = self._validate_limits(value)
+        except ValueError:
+            return
+
+        self.inputs["limits"] = new_limits
 
     @property
-    def steps(self) -> List[int]:
+    def npoints(self) -> np.ndarray:
         """
         The number of points used along each dimension of the motion
-        space.
+        space.  Shape ``(N, )`` where ``N`` is the dimensionality of the
+        motion space.
         """
-        return self.inputs["steps"]
+        return self.inputs["npoints"]
+
+    @npoints.setter
+    def npoints(self, value):
+        try:
+            new_npoints = self._validate_npoints(value)
+        except ValueError:
+            return
+
+        self.inputs["npoints"] = new_npoints
+
+    @property
+    def steps(self) -> np.ndarray:
+        """
+        The number of points used along each dimension of the motion
+        space.  Shape ``(N, )`` where ``N`` is the dimensionality of the
+        motion space.
+
+        **Deprecated since v0.2.4**
+        """
+        warnings.warn(
+            f"{self.__class__.__name__} no longer uses the property "
+            f"'steps', use property 'npoints' instead.",
+            DeprecationWarning,
+        )
+        return self.npoints
 
     @steps.setter
     def steps(self, value):
-        self.inputs["steps"] = value
+        self.npoints = value
