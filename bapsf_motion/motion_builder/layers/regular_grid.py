@@ -163,6 +163,7 @@ class GridLayer(BaseLayer):
         self.npoints = npoints
 
     def _validate_limits(self, limits):
+        """Validate the ``limits`` argument."""
         mspace_ndims = self.mspace_ndims
 
         # force to numpy array
@@ -202,6 +203,7 @@ class GridLayer(BaseLayer):
         return limits
 
     def _validate_npoints(self, npoints):
+        """Validate the ``npoints`` argument."""
         mspace_ndims = self.mspace_ndims
 
         # force to numpy array
@@ -420,6 +422,7 @@ class GridCNStepLayer(GridLayer):
         self.limits = limits
 
     def _validate_center(self, center):
+        """Validate the ``center`` argument."""
         mspace_ndims = self.mspace_ndims
 
         # force center into numpy array
@@ -442,6 +445,7 @@ class GridCNStepLayer(GridLayer):
         return center
 
     def _validate_step_size(self, step_size):
+        """Validate the ``step_size`` argument."""
         mspace_ndims = self.mspace_ndims
 
         # force to numpy array
@@ -467,6 +471,7 @@ class GridCNStepLayer(GridLayer):
 
     @property
     def center(self) -> np.ndarray:
+        """Coordinates for the center of the grid."""
         return self.inputs["center"]
 
     @center.setter
@@ -488,6 +493,7 @@ class GridCNStepLayer(GridLayer):
 
     @property
     def step_size(self) -> np.ndarray:
+        """Grid point steps size along each spacial dimension."""
         return self.inputs["step_size"]
 
     @step_size.setter
