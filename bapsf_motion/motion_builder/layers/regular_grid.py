@@ -285,6 +285,96 @@ class GridLayer(BaseLayer):
 
 @register_layer
 class GridCNStepLayer(GridLayer):
+    """
+    Class for defining a regularly spaced grid.  The grid is configured
+    by defining its ``center``, the number of points ``npoints`` along
+    each dimension, and the step size ``step_size`` between points.
+
+    **layer type:** ``'grid_CNStep'``
+
+    Parameters
+    ----------
+    ds: `~xarray.DataSet`
+        The `xarray` `~xarray.Dataset` the motion builder configuration
+        is constructed in.
+
+    center : :term:`array_like`
+        An array-like object containing the center coordinates of the
+        grid.  Size ``(N, )`` where ``N`` is the dimensionality of the
+        motion space.
+
+    npoints: :term:`array_like`
+        An array-like object containing the number of points in the
+        grid along each dimension.  Size ``(N, )`` where ``N`` is the
+        dimensionality of the motion space.  Each entry indicates the
+        number of points used along the associated axis.  For example,
+        a 2D space ``npoints`` would look like ``[Nx, Ny]``.
+
+    step_size: :term:`array_like`
+        An array-like object containing the step size between grid
+        points along each dimension.  Size ``(N, )`` where ``N`` is the
+        dimensionality of the motion space.  Each entry indicates the
+        step size for the associated axis.  For example, a 2D space
+        ``step_size`` would look like ``[dx, dy]``.
+
+    skip_ds_add: bool
+        If `True`, then skip generating the `~xarray.DataArray`
+        corresponding to the motion points and adding it to the
+        `~xarray.Dataset`.  This keyword is provided to facilitate
+        functionality of composite layers.  (DEFAULT: `False`)
+
+    Examples
+    --------
+
+    .. note::
+       The following examples include examples for direct instantiation,
+       as well as configuration passing at the |MotionGroup| and
+       |RunManager| levels.
+
+    Assume we have a 2D motion space and want to define a grid of
+    points centered at `(0, 10)` with 21 points along each dimension,
+    and a step size of `.1` along each dimension.  This would  look
+    like:
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          ly = GridCNStepLayer(
+              ds,
+              center=[0, 10],
+              npoints=[21, 21],
+              step_size=[.1, .1],
+          )
+
+       .. code-tab:: py Factory Function
+
+          ly = layer_factory(
+              ds,
+              ly_type = "grid",
+              **{
+                  "center": [0, 10],
+                  "npoints": [21, 21],
+                  "step_size": [.1, .1],
+              },
+          )
+
+       .. code-tab:: toml TOML
+
+          [...motion_builder.layers]
+          type = "grid"
+          center = [0, 10]
+          npoints = [21, 21]
+          step_size = [.1, .1]
+
+       .. code-tab:: py Dict Entry
+
+          config["motion_builder"]["layers"] = {
+              "type": "grid",
+              "center": [0, 10],
+              "npoints": [21, 21],
+              "step_size": [.1, .1],
+          }
+    """
     _layer_type = "grid_CNStep"
     _dimensionality = -1
 
