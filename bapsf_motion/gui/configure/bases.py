@@ -1,3 +1,7 @@
+"""
+Module contains base classes for various
+`~PySide6.QtWidgets.QWidget`\'s used in the Configuration GUI.
+"""
 __all__ = ["_ConfigOverlay", "_OverlayWidget",]
 
 import logging
