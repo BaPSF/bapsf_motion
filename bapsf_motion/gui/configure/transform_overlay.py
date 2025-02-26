@@ -1,3 +1,8 @@
+"""
+Module contains the functionality associated with the
+:term:`transformer` configuration overlay portion of the configuration
+GUI.
+"""
 __all__ = ["TransformConfigOverlay"]
 
 import ast
