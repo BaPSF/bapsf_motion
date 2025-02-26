@@ -2768,6 +2768,14 @@ class MGWidget(QWidget):
         vmg_name = self._validate_motion_group_name()
         vdrive = self._validate_drive()
 
+        # Enable / Disable Motion Builder Config
+        self.mb_dropdown.setEnabled(vdrive)
+        self.mb_btn.setEnabled(vdrive)
+
+        # Enable / Disable Transformer Config
+        self.transform_dropdown.setEnabled(vdrive)
+        self.transform_btn.setEnabled(vdrive)
+
         if not isinstance(self.mg, MotionGroup):
             mb = None
             transform = None
@@ -2779,15 +2787,14 @@ class MGWidget(QWidget):
             self.mb_btn.set_invalid()
             self.mb_btn.setToolTip("Motion space needs to be defined.")
             self.done_btn.setEnabled(False)
+        elif "layer" not in mb.config:
+            self.mb_btn.set_invalid()
+            self.mb_btn.setToolTip(
+                "A point layer needs to be defined to generate a motion list."
+            )
         else:
-            if "layer" not in mb.config:
-                self.mb_btn.set_invalid()
-                self.mb_btn.setToolTip(
-                    "A point layer needs to be defined to generate a motion list."
-                )
-            else:
-                self.mb_btn.set_valid()
-                self.mb_btn.setToolTip("")
+            self.mb_btn.set_valid()
+            self.mb_btn.setToolTip("")
 
         if not isinstance(transform, BaseTransform):
             self.transform_btn.set_invalid()
