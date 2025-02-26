@@ -234,6 +234,31 @@ class MotionSpaceDisplay(QFrame):
         # Draw current position
         self.update_position_plot(position=position)
 
+        # Draw legend
+        self.update_legend()
+
+        self.mpl_canvas.draw()
+
+    def update_legend(self):
+        _names = ["motion_list", "probe", "position", "target", "insertion_point"]
+
+        # gather handles for legend
+        handles = []
+        for name in _names:
+            stuff = self._get_plot_axis_by_name(name)
+            if stuff is None:
+                continue
+
+            ax, handle = stuff
+            handles.append(handle)
+
+        if len(handles) == 0:
+            self.mpl_canvas.draw()
+            return
+
+        ax = self.mpl_canvas.figure.gca()
+        ax.legend(handles=handles)
+
         self.mpl_canvas.draw()
 
     def update_target_position_plot(self, position):
@@ -271,6 +296,7 @@ class MotionSpaceDisplay(QFrame):
                 label=_label,
             )
 
+        self.update_legend()
         self.mpl_canvas.draw()
 
     def update_position_plot(self, position):
@@ -343,6 +369,7 @@ class MotionSpaceDisplay(QFrame):
                 label=_label,
             )
 
+        self.update_legend()
         self.mpl_canvas.draw()
 
     def closeEvent(self, event):
