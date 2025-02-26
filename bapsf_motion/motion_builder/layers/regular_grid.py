@@ -481,6 +481,7 @@ class GridCNStepLayer(GridLayer):
     @property
     def limits(self) -> np.ndarray:
         return self._limits
+    limits.__doc__ = GridLayer.limits.__doc__
 
     @limits.setter
     def limits(self, value: np.ndarray):
