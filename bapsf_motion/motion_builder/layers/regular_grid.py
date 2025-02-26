@@ -275,3 +275,125 @@ class GridLayer(BaseLayer):
     @steps.setter
     def steps(self, value):
         self.npoints = value
+
+
+@register_layer
+class Grid2Layer(GridLayer):
+    _layer_type = "grid2"
+    _dimensionality = -1
+
+    def __init__(
+        self,
+        ds: xr.Dataset,
+        center: List[float],
+        npoints: List[int],
+        step_size: List[float],
+        skip_ds_add: bool = False,
+    ):
+        self._limits = None
+
+        # assign all, and only, instance variables above the super
+        super(GridLayer, self).__init__(
+            ds,
+            center=center,
+            npoints=npoints,
+            step_size=step_size,
+            skip_ds_add=skip_ds_add,
+        )
+
+    def _validate_inputs(self):
+        """
+        Validate the input arguments passed during instantiation.
+        These inputs are stored in :attr:`inputs`.
+        """
+        center = self._validate_center(self.center)
+        self.center = center
+
+        npoints = self._validate_npoints(self.npoints)
+        self.npoints = npoints
+
+        step_size = self._validate_step_size(self.step_size)
+        self.step_size = step_size
+
+        # calculate limits
+        limits = np.empty((center.size, 2), dtype=np.float64)
+        limits[..., 1] = 0.5 * (npoints - 1) * step_size
+        limits[..., 0] = -limits[..., 1]
+        limits = limits + center[..., None]
+        limits = self._validate_limits(limits)
+        self.limits = limits
+
+    def _validate_center(self, center):
+        mspace_ndims = self.mspace_ndims
+
+        # force center into numpy array
+        if not isinstance(center, np.ndarray):
+            center = np.array(center, dtype=np.float64).squeeze()
+
+        # condition center
+        if center.ndim != 1:
+            raise ValueError(
+                f"Argument 'center' is a 1D array-like object, got a "
+                f"{center.ndim}D array."
+            )
+        elif center.size != mspace_ndims:
+            raise ValueError(
+                f"Argument 'center' does not have the same "
+                f"dimensionality as the motion space, got {center.size}"
+                f" and expect {mspace_ndims}."
+            )
+
+        return center
+
+    def _validate_step_size(self, step_size):
+        mspace_ndims = self.mspace_ndims
+
+        # force to numpy array
+        if not isinstance(step_size, np.ndarray):
+            step_size = np.array(step_size, dtype=np.float64).squeeze()
+
+        # validate
+        if step_size.ndim != 1:
+            raise ValueError(
+                "Argument 'step_size' needs to be 1D array-like, got "
+                f"{step_size.ndim}D array like."
+            )
+        elif step_size.size not in (1, mspace_ndims):
+            raise ValueError(
+                "Argument 'step_size' must be of size 1 or equal to the "
+                f"dimensionality of the motion space {self.mspace_ndims},"
+                f" got size {step_size.size}."
+            )
+        elif step_size.size == 1:
+            step_size = np.repeat(step_size, self.mspace_ndims)
+
+        return step_size
+
+    @property
+    def center(self) -> np.ndarray:
+        return self.inputs["center"]
+
+    @center.setter
+    def center(self, value: np.ndarray):
+        self.inputs["center"] = value
+
+    @property
+    def limits(self) -> np.ndarray:
+        return self._limits
+
+    @limits.setter
+    def limits(self, value: np.ndarray):
+        try:
+            new_limits = self._validate_limits(value)
+        except ValueError:
+            return
+
+        self._limits = new_limits
+
+    @property
+    def step_size(self) -> np.ndarray:
+        return self.inputs["step_size"]
+
+    @step_size.setter
+    def step_size(self, value: np.ndarray):
+        self.inputs["step_size"] = value
