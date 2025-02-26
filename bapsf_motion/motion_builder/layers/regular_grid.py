@@ -17,9 +17,9 @@ from bapsf_motion.motion_builder.layers.helpers import register_layer
 @register_layer
 class GridLayer(BaseLayer):
     """
-    Class for defining a regularly spaced grid along each of the
-    specified axes.  The generated points are inclusive of the
-    specified ``limits``.
+    Class for defining a regularly spaced grid.  The grid is configured
+    by defining the inclusive ``limits`` and the number of points
+    ``npoints`` along each dimension.
 
     **layer type:** ``'grid'``
 
