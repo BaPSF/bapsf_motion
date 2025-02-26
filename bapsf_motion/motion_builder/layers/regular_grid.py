@@ -231,7 +231,6 @@ class GridLayer(BaseLayer):
 
     @limits.setter
     def limits(self, value):
-        # TODO: Add some validation for `value`
         try:
             new_limits = self._validate_limits(value)
         except ValueError:
