@@ -2848,15 +2848,6 @@ class MGWidget(QWidget):
         if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
             self.done_btn.setEnabled(False)
 
-            self.mb_dropdown.setEnabled(False)
-            self.mb_btn.setEnabled(False)
-            self.mb_btn.set_invalid()
-            self.mb_btn.setToolTip("Motion space needs to be defined.")
-
-            self.transform_dropdown.setEnabled(False)
-            self.transform_btn.setEnabled(False)
-            self.transform_btn.set_invalid()
-
             self.drive_btn.set_invalid()
             self.drive_control_widget.setEnabled(False)
 
@@ -2865,12 +2856,6 @@ class MGWidget(QWidget):
 
         self.drive_dropdown.setEnabled(True)
         self.drive_btn.setEnabled(True)
-
-        self.mb_dropdown.setEnabled(True)
-        self.mb_btn.setEnabled(True)
-
-        self.transform_dropdown.setEnabled(True)
-        self.transform_btn.setEnabled(True)
 
         if self.mg.drive.terminated:
             self.drive_btn.set_invalid()
