@@ -91,8 +91,6 @@ class GridLayer(BaseLayer):
               "steps": [21, 21],
           }
     """
-    # TODO: Can the different code types in teh docstring be done with
-    #       tabs?
     _layer_type = "grid"
     _dimensionality = -1
 
