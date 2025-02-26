@@ -1,5 +1,8 @@
 """
 This module defines the configuration GUI for construction data runs.
+Module contains both the `~PySide6.QtWidgets.QMainWindow` in
+`ConfigureGUI` and the `~PySide6.QtWidgets.QApplication` in
+`ConfigureApp`.
 """
 __all__ = ["ConfigureGUI", "ConfigureApp"]
 
