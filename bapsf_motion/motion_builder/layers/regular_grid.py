@@ -204,11 +204,15 @@ class GridLayer(BaseLayer):
 
         # validate
         if npoints.ndim != 1:
-            raise ValueError("Keyword 'npoints' needs to be 1D array_like.")
+            raise ValueError(
+                "Argument 'npoints' needs to be 1D array-like, got "
+                f"{npoints.ndim}D array like."
+            )
         elif npoints.size not in (1, mspace_ndims):
             raise ValueError(
-                "Keyword 'npoints' must be of size 1 or equal to the "
-                f"dimensionality of the motion space {self.mspace_ndims}."
+                "Argument 'npoints' must be of size 1 or equal to the "
+                f"dimensionality of the motion space {self.mspace_ndims},"
+                f" got size {npoints.size}."
             )
         elif npoints.size == 1:
             npoints = np.repeat(npoints, self.mspace_ndims)
