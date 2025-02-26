@@ -24,8 +24,9 @@ class BaseLayer(MBItem):
 
     skip_ds_add: bool
         If `True`, then skip generating the `~xarray.DataArray`
-        corresponding to the motion points and skip adding it to the
-        `~xarray.Dataset`. (DEFAULT: `False`)
+        corresponding to the motion points and adding it to the
+        `~xarray.Dataset`.  This keyword is provided to facilitate
+        functionality of composite layers.  (DEFAULT: `False`)
 
     kwargs:
         Keyword arguments that are specific to the subclass.
