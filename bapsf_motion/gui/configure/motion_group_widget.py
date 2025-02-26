@@ -2791,11 +2791,14 @@ class MGWidget(QWidget):
 
         if not isinstance(transform, BaseTransform):
             self.transform_btn.set_invalid()
-            self.done_btn.setEnabled(False)
+            self.transform_btn.setToolTip("Transformer needs to be fully configured.")
 
+            self.done_btn.setEnabled(False)
             self.drive_control_widget.setEnabled(False)
         else:
             self.transform_btn.set_valid()
+            self.transform_btn.setToolTip("")
+
             self.drive_control_widget.setEnabled(True)
 
         if (
