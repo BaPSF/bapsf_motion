@@ -5,6 +5,7 @@ __all__ = ["GridLayer"]
 __mlayers__ = ["GridLayer"]
 
 import numpy as np
+import warnings
 import xarray as xr
 
 from typing import List
@@ -30,12 +31,17 @@ class GridLayer(BaseLayer):
 
     limits: :term:`array_like`
         A list of min and max pairs for each dimension of the
-        :term:`motion space` indicating the min and max span of the
-        layer.
+        :term:`motion space`. Shape ``(N, 2)`` where ``N`` is the
+        dimensionality of the motion space.  Each min and max pair
+        defines the inclusive range along that associated axis.  For
+        example, a 2D space ``limits`` would look like
+        ``[[xmin, xmax], [ymin, ymax]]``.
 
-    steps: List[int]
-        A list of equal length to ``limits`` indicating how many points
-        should be used along each dimension of the :term:`motion space`.
+    npoints: :term:`array_like`
+        An integer list or array of length ``N``, where ``N`` is the
+        dimensionality of the motion space.  Each entry indicates the
+        number of points used along the associated axis.  For example,
+        a 2D space ``npoints`` would look like ``[Nx, Ny]``.
 
     Examples
     --------
