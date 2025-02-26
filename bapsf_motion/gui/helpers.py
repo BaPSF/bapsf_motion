@@ -1,3 +1,7 @@
+"""
+A collection of helper functions to assist with the design and
+implementation of the package GUIs.
+"""
 __all__ = ["get_qapplication", "get_color_scheme", "cast_color_to_rgba_string"]
 
 import ast
