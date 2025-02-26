@@ -125,6 +125,8 @@ class ExclusionRegistry:
         sig = inspect.signature(ex).parameters.copy()
         sig.pop("ds", None)
         sig.pop("skip_ds_add", None)
+        sig.pop("args", None)
+        sig.pop("kwargs", None)
 
         doc = inspect.getdoc(ex)
         ndoc = NumpyDocString(doc)

@@ -127,6 +127,8 @@ class LayerRegistry:
         sig = inspect.signature(ly).parameters.copy()
         sig.pop("ds", None)
         sig.pop("skip_ds_add", None)
+        sig.pop("args", None)
+        sig.pop("kwargs", None)
 
         doc = inspect.getdoc(ly)
         ndoc = NumpyDocString(doc)
