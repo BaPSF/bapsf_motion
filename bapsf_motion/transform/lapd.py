@@ -126,8 +126,8 @@ class LaPDXYTransform(base.BaseTransform):
           pivot_to_drive = 133.51
           pivot_to_feedthru = 21.6
           probe_axis_offset = 20.16
-          drive_polarity = (1, 1)
-          mspace_polarity = (-1, 1)
+          drive_polarity = [1, 1]
+          mspace_polarity = [-1, 1]
 
        .. code-tab:: py Dict Entry
 
@@ -180,8 +180,8 @@ class LaPDXYTransform(base.BaseTransform):
           pivot_to_drive = 133.51
           pivot_to_feedthru = 21.6
           probe_axis_offset = 20.16
-          drive_polarity = (1, -1)
-          mspace_polarity = (1, 1)
+          drive_polarity = [1, -1]
+          mspace_polarity = [1, 1]
 
        .. code-tab:: py Dict Entry
 

@@ -366,7 +366,7 @@ class GridCNStepLayer(GridLayer):
           type = "grid_CNStep"
           center = [0, 10]
           npoints = [21, 21]
-          step_size = [.1, .1]
+          step_size = [0.1, 0.1]
 
        .. code-tab:: py Dict Entry
 
