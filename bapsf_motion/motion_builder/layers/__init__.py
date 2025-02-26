@@ -8,11 +8,14 @@ __all__ = [
     "register_layer",
     "BaseLayer",
 ]
-__mlayers__ = ["GridLayer"]
+__mlayers__ = ["GridLayer", "GridCNStepLayer"]
 __all__ += __mlayers__
 
 from bapsf_motion.motion_builder.layers.base import BaseLayer
-from bapsf_motion.motion_builder.layers.regular_grid import GridLayer
+from bapsf_motion.motion_builder.layers.regular_grid import (
+    GridLayer,
+    GridCNStepLayer,
+)
 from bapsf_motion.motion_builder.layers.helpers import (
     register_layer,
     layer_factory,
