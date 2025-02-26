@@ -352,7 +352,7 @@ class GridCNStepLayer(GridLayer):
 
           ly = layer_factory(
               ds,
-              ly_type = "grid",
+              ly_type = "grid_CNStep",
               **{
                   "center": [0, 10],
                   "npoints": [21, 21],
@@ -363,7 +363,7 @@ class GridCNStepLayer(GridLayer):
        .. code-tab:: toml TOML
 
           [...motion_builder.layers]
-          type = "grid"
+          type = "grid_CNStep"
           center = [0, 10]
           npoints = [21, 21]
           step_size = [.1, .1]
@@ -371,7 +371,7 @@ class GridCNStepLayer(GridLayer):
        .. code-tab:: py Dict Entry
 
           config["motion_builder"]["layers"] = {
-              "type": "grid",
+              "type": "grid_CNStep",
               "center": [0, 10],
               "npoints": [21, 21],
               "step_size": [.1, .1],
