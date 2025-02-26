@@ -38,10 +38,12 @@ class GridLayer(BaseLayer):
         ``[[xmin, xmax], [ymin, ymax]]``.
 
     npoints: :term:`array_like`
-        An integer list or array of length ``N``, where ``N`` is the
-        dimensionality of the motion space.  Each entry indicates the
-        number of points used along the associated axis.  For example,
-        a 2D space ``npoints`` would look like ``[Nx, Ny]``.
+        An array-like object containing the number of points in the
+        grid along each dimension.  Size ``(N, )`` where ``N`` is
+        the dimensionality of the motion space.  Each entry
+        indicates the number of points used along the associated
+        axis.  For example, a 2D space ``npoints`` would look like
+        ``[Nx, Ny]``.
 
     skip_ds_add: bool
         If `True`, then skip generating the `~xarray.DataArray`
