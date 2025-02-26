@@ -19,6 +19,11 @@ Glossary
    drive
       See :term:`probe drive`
 
+   event loop
+      An event loop is a programming design pattern that waits for and
+      dispatches events or messages in the program.  `bapsf_motion`
+      predominately utilizes the `asyncio` `event loop`_.
+
    exclusion layer
    exclusion layers
       See :term:`motion exclusion`
