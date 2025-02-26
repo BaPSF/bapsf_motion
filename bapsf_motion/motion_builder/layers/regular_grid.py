@@ -276,8 +276,8 @@ class GridLayer(BaseLayer):
 
 
 @register_layer
-class Grid2Layer(GridLayer):
-    _layer_type = "grid2"
+class GridCNStepLayer(GridLayer):
+    _layer_type = "grid_CNStep"
     _dimensionality = -1
 
     def __init__(
