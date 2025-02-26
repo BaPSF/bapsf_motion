@@ -1,3 +1,7 @@
+"""
+Module contains all the main functionality for the |MotionGroup|
+configuration portion of the configuration GUI.
+"""
 __all__ = ["MGWidget"]
 
 import asyncio
