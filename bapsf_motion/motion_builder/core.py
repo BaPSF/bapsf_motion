@@ -417,7 +417,7 @@ class MotionBuilder(MBItem):
 
     def get_insertion_point(self) -> Union[np.ndarray, None]:
         """
-        Get the insertion point associated with the `GovernExclusion.
+        Get the insertion point associated with the `GovernExclusion`.
         Returns `None` if no insertion point exists.
         """
         try:
