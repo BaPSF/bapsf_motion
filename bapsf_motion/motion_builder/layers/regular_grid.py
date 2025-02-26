@@ -70,7 +70,7 @@ class GridLayer(BaseLayer):
           ly = GridLayer(
               ds,
               limits = [[-10, 10], [0, 20]],
-              steps=[21, 21],
+              npoints=[21, 21],
           )
 
        .. code-tab:: py Factory Function
@@ -80,7 +80,7 @@ class GridLayer(BaseLayer):
               ly_type = "grid",
               **{
                   "limits": [[-10, 10], [0, 20]],
-                  "steps": [21, 21],
+                  "npoints": [21, 21],
               },
           )
 
@@ -89,14 +89,14 @@ class GridLayer(BaseLayer):
           [...motion_builder.layers]
           type = "grid"
           limits = [[-10, 10], [0, 20]]
-          steps = [21, 21]
+          npoints = [21, 21]
 
        .. code-tab:: py Dict Entry
 
           config["motion_builder"]["layers"] = {
               "type": "grid",
               "limits": [[-10, 10], [0, 20]],
-              "steps": [21, 21],
+              "npoints": [21, 21],
           }
     """
     _layer_type = "grid"
@@ -132,8 +132,8 @@ class GridLayer(BaseLayer):
         :term:`motion layer`.
         """
         axs = []
-        steps = []
-        for lims, num in zip(self.limits, self.steps):
+        npoints = []
+        for lims, num in zip(self.limits, self.npoints):
             if lims[0] == lims[1]:
                 # assume fixed along this axis
                 num = 1
@@ -141,10 +141,10 @@ class GridLayer(BaseLayer):
             axs.append(
                 np.linspace(lims[0], lims[1], num=num)
             )
-            steps.append(num)
+            npoints.append(num)
 
         pts = np.meshgrid(*axs, indexing="ij")
-        layer = np.empty(tuple(steps) + (self.mspace_ndims,))
+        layer = np.empty(tuple(npoints) + (self.mspace_ndims,))
         for ii, ax_pts in enumerate(pts):
             layer[..., ii] = ax_pts
 
