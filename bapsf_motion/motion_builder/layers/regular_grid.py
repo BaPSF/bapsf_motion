@@ -43,6 +43,12 @@ class GridLayer(BaseLayer):
         number of points used along the associated axis.  For example,
         a 2D space ``npoints`` would look like ``[Nx, Ny]``.
 
+    skip_ds_add: bool
+        If `True`, then skip generating the `~xarray.DataArray`
+        corresponding to the motion points and adding it to the
+        `~xarray.Dataset`.  This keyword is provided to facilitate
+        functionality of composite layers.  (DEFAULT: `False`)
+
     Examples
     --------
 
