@@ -112,6 +112,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         # SET UP PLOT WIDGET
         self.mpl_canvas = MotionSpaceDisplay(parent=self)
+        self.mpl_canvas.display_position = False
+        self.mpl_canvas.display_target_position = False
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
             self.mpl_canvas.link_motion_builder(self.mg.mb)
 
