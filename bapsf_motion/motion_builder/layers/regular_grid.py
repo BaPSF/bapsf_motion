@@ -170,8 +170,16 @@ class GridLayer(BaseLayer):
         if not isinstance(limits, np.ndarray):
             limits = np.array(limits, dtype=np.float64)
 
-        # validate limits
-        if limits.ndim not in (1, 2):
+        # validate
+        if (
+            not np.issubdtype(limits.dtype, np.floating)
+            or not np.issubdtype(limits.dtype, np.integer)
+        ):
+            raise ValueError(
+                f"Keyword 'limits' has dtype {limits.dtype}, but "
+                f"expected an integer or float dtype."
+            )
+        elif limits.ndim not in (1, 2):
             raise ValueError(
                 "Keyword 'limits' needs to be a 2-element list "
                 "or list of 2-element lists."
@@ -190,6 +198,14 @@ class GridLayer(BaseLayer):
                 "Needs to be array_like of size 2 or equal to the "
                 f"dimensionality of the motion space {self.mspace_ndims}."
             )
+        elif np.any(limits[..., 0] == limits[..., 1]):
+            raise ValueError(
+                "Keyword 'limits' is a 1D array of (min, max) pairs, "
+                "some pairs are equal."
+            )
+
+        # ensure limits go min to max
+        limits.sort(axis=1)
 
         # repeat a single limit across all dimensions
         if limits.ndim == 1 or limits.shape[0] == 1:
@@ -211,7 +227,12 @@ class GridLayer(BaseLayer):
             npoints = np.array(npoints, dtype=np.int32)
 
         # validate
-        if npoints.ndim != 1:
+        if not np.issubdtype(npoints.dtype, np.integer):
+            raise ValueError(
+                f"Keyword 'npoints' has dtype {npoints.dtype}, but "
+                f"expected an integer dtype."
+            )
+        elif npoints.ndim != 1:
             raise ValueError(
                 "Argument 'npoints' needs to be 1D array-like, got "
                 f"{npoints.ndim}D array like."
@@ -221,6 +242,10 @@ class GridLayer(BaseLayer):
                 "Argument 'npoints' must be of size 1 or equal to the "
                 f"dimensionality of the motion space {self.mspace_ndims},"
                 f" got size {npoints.size}."
+            )
+        elif np.any(npoints <= 0):
+            raise ValueError(
+                "All elements of 'npoints' must be a positive integer."
             )
         elif npoints.size == 1:
             npoints = np.repeat(npoints, self.mspace_ndims)
