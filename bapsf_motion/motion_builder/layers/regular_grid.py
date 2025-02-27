@@ -172,8 +172,10 @@ class GridLayer(BaseLayer):
 
         # validate
         if (
-            not np.issubdtype(limits.dtype, np.floating)
-            or not np.issubdtype(limits.dtype, np.integer)
+            not (
+                np.issubdtype(limits.dtype, np.floating)
+                or np.issubdtype(limits.dtype, np.integer)
+            )
         ):
             raise ValueError(
                 f"Keyword 'limits' has dtype {limits.dtype}, but "
@@ -438,8 +440,10 @@ class GridCNStepLayer(GridLayer):
 
         # validate
         if (
-            not np.issubdtype(center.dtype, np.floating)
-            or not np.issubdtype(center.dtype, np.integer)
+            not (
+                np.issubdtype(center.dtype, np.floating)
+                or np.issubdtype(center.dtype, np.integer)
+            )
         ):
             raise ValueError(
                 f"Keyword 'center' has dtype {center.dtype}, but "
@@ -469,8 +473,10 @@ class GridCNStepLayer(GridLayer):
 
         # validate
         if (
-            not np.issubdtype(step_size.dtype, np.floating)
-            or not np.issubdtype(step_size.dtype, np.integer)
+            not (
+                np.issubdtype(step_size.dtype, np.floating)
+                or np.issubdtype(step_size.dtype, np.integer)
+            )
         ):
             raise ValueError(
                 f"Keyword 'step_size' has dtype {step_size.dtype}, but "
