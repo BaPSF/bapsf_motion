@@ -546,6 +546,26 @@ class AxisControlWidget(QWidget):
         pos = self.position.value - self._get_jog_delta()
         self._move_to(pos)
 
+    def update_position_display(self, position: Union[u.Quantity, float]):
+        if not isinstance(position, (u.Quantity, float)):
+            return
+        elif isinstance(position, u.Quantity):
+            _txt = f"{position.value:.2f} {position.unit}"
+        else:
+            _txt = f"{position:.2f}"
+
+        self.position_label.setText(_txt)
+
+    def update_target_position_display(self, position):
+        if not isinstance(position, (u.Quantity, float)):
+            return
+        elif isinstance(position, u.Quantity):
+            _txt = f"{position.value:.2f} {position.unit}"
+        else:
+            _txt = f"{position:.2f}"
+
+        self.target_position_label.setText(_txt)
+
     def _move_to(self, target_ax_pos):
         target_pos = self.mg.position.value
         target_pos[self.axis_index] = target_ax_pos
