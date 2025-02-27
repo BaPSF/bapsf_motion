@@ -546,6 +546,26 @@ class AxisControlWidget(QWidget):
         pos = self.position.value - self._get_jog_delta()
         self._move_to(pos)
 
+    def update_position_display(self, position: Union[u.Quantity, float]):
+        if not isinstance(position, (u.Quantity, float)):
+            return
+        elif isinstance(position, u.Quantity):
+            _txt = f"{position.value:.2f} {position.unit}"
+        else:
+            _txt = f"{position:.2f}"
+
+        self.position_label.setText(_txt)
+
+    def update_target_position_display(self, position):
+        if not isinstance(position, (u.Quantity, float)):
+            return
+        elif isinstance(position, u.Quantity):
+            _txt = f"{position.value:.2f} {position.unit}"
+        else:
+            _txt = f"{position:.2f}"
+
+        self.target_position_label.setText(_txt)
+
     def _move_to(self, target_ax_pos):
         target_pos = self.mg.position.value
         target_pos[self.axis_index] = target_ax_pos
@@ -573,10 +593,9 @@ class AxisControlWidget(QWidget):
             return
 
         pos = self.position
-        self.position_label.setText(f"{pos.value:.2f} {pos.unit}")
-
+        self.update_position_display(pos)
         if self.target_position_label.text() == "":
-            self.target_position_label.setText(f"{pos.value:.2f}")
+            self.update_position_display(pos)
 
         limits = self.axis.motor.status["limits"]
         self.limit_fwd_btn.set_valid(state=limits["CW"])
@@ -1017,7 +1036,7 @@ class DriveDesktopController(DriveBaseController):
 
         for ii, pos in enumerate(target_position):
             acw = self._axis_control_widgets[ii]
-            acw.target_position_label.setText(f"{pos}")
+            acw.update_target_position_display(pos)
 
     def disable_motion_buttons(self):
         self.move_to_btn.setEnabled(False)
