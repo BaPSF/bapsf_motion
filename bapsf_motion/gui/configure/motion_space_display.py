@@ -41,6 +41,9 @@ class MotionSpaceDisplay(QFrame):
 
         self._mb = None
         self.link_motion_builder(mb)
+        self._display_position = True
+        self._display_target_position = True
+        self._display_probe = True
 
         self.setStyleSheet(
             """
@@ -87,6 +90,43 @@ class MotionSpaceDisplay(QFrame):
     def mb(self) -> Union[MotionBuilder, None]:
         return self._mb
 
+    @property
+    def display_position(self) -> bool:
+        return self._display_position
+
+    @display_position.setter
+    def display_position(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
+        self._display_position = value
+        if not value:
+            self._display_probe = value
+
+    @property
+    def display_target_position(self) -> bool:
+        return self._display_target_position
+
+    @display_target_position.setter
+    def display_target_position(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
+        self._display_target_position = value
+
+    @property
+    def display_probe(self) -> bool:
+        return self._display_probe
+
+    @display_probe.setter
+    def display_probe(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
+        self._display_probe = value
+        if value:
+            self._display_position = value
+
     def _get_plot_axis_by_name(self, name: str):
         fig_axes = self.mpl_canvas.figure.axes
         for ax in fig_axes:
@@ -105,6 +145,9 @@ class MotionSpaceDisplay(QFrame):
         return None
 
     def on_pick(self, event: PickEvent):
+        if not self.display_target_position:
+            return
+
         gui_event = event.guiEvent  # type: QMouseEvent
 
         artist = event.artist  # noqa
@@ -234,10 +277,12 @@ class MotionSpaceDisplay(QFrame):
             ax.set_ylim(ylim)
 
         # Draw target position
-        self.update_target_position_plot(position=target_position)
+        if self.display_target_position:
+            self.update_target_position_plot(position=target_position)
 
         # Draw current position
-        self.update_position_plot(position=position)
+        if self.display_position:
+            self.update_position_plot(position=position)
 
         # Draw legend
         self.update_legend()
@@ -269,7 +314,9 @@ class MotionSpaceDisplay(QFrame):
     def update_target_position_plot(self, position):
         self.logger.info(f"Drawing target position {position}")
 
-        if isinstance(position, np.ndarray):
+        if not self.display_target_position:
+            position = None
+        elif isinstance(position, np.ndarray):
             position = position.squeeze()
             position = position.tolist()
 
@@ -307,7 +354,9 @@ class MotionSpaceDisplay(QFrame):
     def update_position_plot(self, position):
         self.logger.debug(f"Drawing target position {position}")
 
-        if isinstance(position, np.ndarray):
+        if not self.display_position:
+            position = None
+        elif isinstance(position, np.ndarray):
             position = position.squeeze()
             position = position.tolist()
 
@@ -343,11 +392,14 @@ class MotionSpaceDisplay(QFrame):
         _label = "probe"
         stuff = self._get_plot_axis_by_name(_label)
         insertion_point = self.mb.get_insertion_point()
-        if (insertion_point is None or position is None) and stuff is not None:
+        if (
+            (insertion_point is None or position is None or not self.display_probe)
+            and stuff is not None
+        ):
             # not enough to update plot, so remove EXISTING plot
             ax, handler = stuff
             handler.remove()
-        elif insertion_point is None or position is None:
+        elif insertion_point is None or position is None or not self.display_probe:
             # nothing to plot and plot does NOT already exist
             pass
         elif stuff is not None:
