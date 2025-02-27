@@ -1,8 +1,8 @@
 """
 Module that defines the `GridLayer` class.
 """
-__all__ = ["GridLayer", "GridCNStepLayer"]
-__mlayers__ = ["GridLayer", "GridCNStepLayer"]
+__all__ = ["GridLayer", "GridCNStepLayer", "GridCNSizeLayer"]
+__mlayers__ = ["GridLayer", "GridCNStepLayer", "GridCNSizeLayer"]
 
 import numpy as np
 import warnings
