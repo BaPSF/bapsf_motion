@@ -16,7 +16,7 @@ def get_qapplication() -> Union[QApplication, None]:
     """
     Get the current active instance of
     `~PySide6.QtWidgets.QApplication`.  This is a convinces function
-    to :func:`~PySide6.QtCore.QCoreApplication.instance`.
+    to `~PySide6.QtCore.QCoreApplication.instance`.
     """
     app = QApplication.instance()
     return app
