@@ -157,10 +157,10 @@ class GridLayer(BaseLayer):
         These inputs are stored in :attr:`inputs`.
         """
         limits = self._validate_limits(self.limits)
-        self.limits = limits
+        self._set_limits(limits)
 
         npoints = self._validate_npoints(self.npoints)
-        self.npoints = npoints
+        self._set_npoints(npoints)
 
     def _validate_limits(self, limits):
         """Validate the ``limits`` argument."""
@@ -237,14 +237,8 @@ class GridLayer(BaseLayer):
         """
         return self.inputs["limits"]
 
-    @limits.setter
-    def limits(self, value):
-        try:
-            new_limits = self._validate_limits(value)
-        except ValueError:
-            return
-
-        self.inputs["limits"] = new_limits
+    def _set_limits(self, value):
+        self.inputs["limits"] = value
 
     @property
     def npoints(self) -> np.ndarray:
@@ -255,14 +249,8 @@ class GridLayer(BaseLayer):
         """
         return self.inputs["npoints"]
 
-    @npoints.setter
-    def npoints(self, value):
-        try:
-            new_npoints = self._validate_npoints(value)
-        except ValueError:
-            return
-
-        self.inputs["npoints"] = new_npoints
+    def _set_npoints(self, value):
+        self.inputs["npoints"] = value
 
     @property
     def steps(self) -> np.ndarray:
@@ -279,10 +267,6 @@ class GridLayer(BaseLayer):
             DeprecationWarning,
         )
         return self.npoints
-
-    @steps.setter
-    def steps(self, value):
-        self.npoints = value
 
 
 @register_layer
@@ -405,13 +389,13 @@ class GridCNStepLayer(GridLayer):
         These inputs are stored in :attr:`inputs`.
         """
         center = self._validate_center(self.center)
-        self.center = center
+        self._set_center(center)
 
         npoints = self._validate_npoints(self.npoints)
-        self.npoints = npoints
+        self._set_npoints(npoints)
 
         step_size = self._validate_step_size(self.step_size)
-        self.step_size = step_size
+        self._set_step_size(step_size)
 
         # calculate limits
         limits = np.empty((center.size, 2), dtype=np.float64)
@@ -419,7 +403,7 @@ class GridCNStepLayer(GridLayer):
         limits[..., 0] = -limits[..., 1]
         limits = limits + center[..., None]
         limits = self._validate_limits(limits)
-        self.limits = limits
+        self._set_limits(limits)
 
     def _validate_center(self, center):
         """Validate the ``center`` argument."""
@@ -474,29 +458,13 @@ class GridCNStepLayer(GridLayer):
         """Coordinates for the center of the grid."""
         return self.inputs["center"]
 
-    @center.setter
-    def center(self, value: np.ndarray):
+    def _set_center(self, value: np.ndarray):
         self.inputs["center"] = value
-
-    @property
-    def limits(self) -> np.ndarray:
-        return self._limits
-    limits.__doc__ = GridLayer.limits.__doc__
-
-    @limits.setter
-    def limits(self, value: np.ndarray):
-        try:
-            new_limits = self._validate_limits(value)
-        except ValueError:
-            return
-
-        self._limits = new_limits
 
     @property
     def step_size(self) -> np.ndarray:
         """Grid point steps size along each spacial dimension."""
         return self.inputs["step_size"]
 
-    @step_size.setter
-    def step_size(self, value: np.ndarray):
+    def _set_step_size(self, value: np.ndarray):
         self.inputs["step_size"] = value
