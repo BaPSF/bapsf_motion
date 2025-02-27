@@ -1,3 +1,6 @@
+"""
+Module containing all the elements for the Configuration GUI.
+"""
 __all__ = ["ConfigureGUI"]
 from bapsf_motion.gui.configure.configure_ import ConfigureGUI
 

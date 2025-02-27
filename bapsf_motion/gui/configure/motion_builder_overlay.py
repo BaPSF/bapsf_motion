@@ -1,3 +1,7 @@
+"""
+Module contains the functionality associated with the |MotionBuilder|
+configuration overlay portion of the configuration GUI.
+"""
 __all__ = ["MotionBuilderConfigOverlay"]
 
 import ast

@@ -1,3 +1,8 @@
+"""
+Module contains the functionality associated with the |Drive|
+configuration overlay portion of the configuration GUI.
+"""
+
 __all__ = ["AxisConfigWidget", "DriveConfigOverlay"]
 
 import asyncio
