@@ -397,8 +397,6 @@ class GridCNStepLayer(GridLayer):
         step_size: List[float],
         skip_ds_add: bool = False,
     ):
-        self._limits = None
-
         # assign all, and only, instance variables above the super
         super(GridLayer, self).__init__(
             ds,
