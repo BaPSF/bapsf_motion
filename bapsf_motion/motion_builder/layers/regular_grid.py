@@ -523,7 +523,7 @@ class GridCNSizeLayer(GridCNStepLayer):
     """
     Class for defining a regularly spaced grid.  The grid is configured
     by defining its ``center``, the number of points ``npoints`` along
-    each dimension, and the step size ``step_size`` between points.
+    each dimension, and the size (or length) ``size`` of each grid side.
 
     **layer type:** ``'grid_CNSize'``
 
@@ -545,12 +545,12 @@ class GridCNSizeLayer(GridCNStepLayer):
         number of points used along the associated axis.  For example,
         a 2D space ``npoints`` would look like ``[Nx, Ny]``.
 
-    step_size: :term:`array_like`
-        An array-like object containing the step size between grid
-        points along each dimension.  Size ``(N, )`` where ``N`` is the
+    size: :term:`array_like`
+        An array-like object containing the size (or length) of the grid
+        side along each dimension.  Size ``(N, )`` where ``N`` is the
         dimensionality of the motion space.  Each entry indicates the
-        step size for the associated axis.  For example, a 2D space
-        ``step_size`` would look like ``[dx, dy]``.
+        size (or length) for the grid along the associated axis.
+        For example, a 2D space ``size`` would look like ``[Lx, Ly]``.
 
     skip_ds_add: bool
         If `True`, then skip generating the `~xarray.DataArray`
@@ -568,46 +568,45 @@ class GridCNSizeLayer(GridCNStepLayer):
 
     Assume we have a 2D motion space and want to define a grid of
     points centered at `(0, 10)` with 21 points along each dimension,
-    and a step size of `.1` along each dimension.  This would  look
-    like:
+    and a size of 15 by 20.  This would  look like:
 
     .. tabs::
        .. code-tab:: py Class Instantiation
 
-          ly = GridCNStepLayer(
+          ly = GridCNSizeLayer(
               ds,
               center=[0, 10],
               npoints=[21, 21],
-              step_size=[.1, .1],
+              size=[15, 20],
           )
 
        .. code-tab:: py Factory Function
 
           ly = layer_factory(
               ds,
-              ly_type = "grid_CNStep",
+              ly_type = "grid_CNSize",
               **{
                   "center": [0, 10],
                   "npoints": [21, 21],
-                  "step_size": [.1, .1],
+                  "size": [15, 20],
               },
           )
 
        .. code-tab:: toml TOML
 
           [...motion_builder.layers]
-          type = "grid_CNStep"
+          type = "grid_CNSize"
           center = [0, 10]
           npoints = [21, 21]
-          step_size = [0.1, 0.1]
+          size = [15, 20]
 
        .. code-tab:: py Dict Entry
 
           config["motion_builder"]["layers"] = {
-              "type": "grid_CNStep",
+              "type": "grid_CNSize",
               "center": [0, 10],
               "npoints": [21, 21],
-              "step_size": [.1, .1],
+              "size": [15, 20],
           }
     """
     _layer_type = "grid_CNSize"
