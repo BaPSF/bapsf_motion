@@ -641,7 +641,12 @@ class GridCNSizeLayer(GridCNStepLayer):
         npoints = self._validate_npoints(self.npoints)
         self._set_npoints(npoints)
 
-        step_size = self._validate_step_size(self.step_size)
+        size = self._validate_size(self.size)
+        self._set_size(size)
+
+        # calculate step_size
+        step_size = size / (npoints - 1)
+        step_size = self._validate_step_size(step_size)
         self._set_step_size(step_size)
 
         # calculate limits
@@ -658,4 +663,42 @@ class GridCNSizeLayer(GridCNStepLayer):
 
         # force into numpy array
         if not isinstance(size, np.ndarray):
-            center = np.array(size, dtype=np.float64).squeeze()
+            size = np.array(size, dtype=np.float64).squeeze()
+
+        # validate
+        if (
+            not (
+                np.issubdtype(size.dtype, np.floating)
+                or np.issubdtype(size.dtype, np.integer)
+            )
+        ):
+            raise ValueError(
+                f"Keyword 'size' has dtype {size.dtype}, but "
+                f"expected an integer or float dtype."
+            )
+        elif size.ndim != 1:
+            raise ValueError(
+                "Argument 'size' needs to be 1D array-like, got "
+                f"{size.ndim}D array like."
+            )
+        elif size.size not in (1, mspace_ndims):
+            raise ValueError(
+                "Argument 'size' must be of size 1 or equal to the "
+                f"dimensionality of the motion space {self.mspace_ndims},"
+                f" got size {size.size}."
+            )
+        elif size.size == 1:
+            size = np.repeat(size, self.mspace_ndims)
+
+        # ensure all values of size are position
+        size = np.abs(size)
+
+        return size
+
+    @property
+    def size(self) -> np.ndarray:
+        """Size (or length) of the grid along each spacial dimension."""
+        return self.inputs["size"]
+
+    def _set_size(self, value: np.ndarray):
+        self.inputs["size"] = value
