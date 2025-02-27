@@ -432,12 +432,20 @@ class GridCNStepLayer(GridLayer):
         """Validate the ``center`` argument."""
         mspace_ndims = self.mspace_ndims
 
-        # force center into numpy array
+        # force into numpy array
         if not isinstance(center, np.ndarray):
             center = np.array(center, dtype=np.float64).squeeze()
 
-        # condition center
-        if center.ndim != 1:
+        # validate
+        if (
+            not np.issubdtype(center.dtype, np.floating)
+            or not np.issubdtype(center.dtype, np.integer)
+        ):
+            raise ValueError(
+                f"Keyword 'center' has dtype {center.dtype}, but "
+                f"expected an integer or float dtype."
+            )
+        elif center.ndim != 1:
             raise ValueError(
                 f"Argument 'center' is a 1D array-like object, got a "
                 f"{center.ndim}D array."
@@ -460,7 +468,15 @@ class GridCNStepLayer(GridLayer):
             step_size = np.array(step_size, dtype=np.float64).squeeze()
 
         # validate
-        if step_size.ndim != 1:
+        if (
+            not np.issubdtype(step_size.dtype, np.floating)
+            or not np.issubdtype(step_size.dtype, np.integer)
+        ):
+            raise ValueError(
+                f"Keyword 'step_size' has dtype {step_size.dtype}, but "
+                f"expected an integer or float dtype."
+            )
+        elif step_size.ndim != 1:
             raise ValueError(
                 "Argument 'step_size' needs to be 1D array-like, got "
                 f"{step_size.ndim}D array like."
@@ -473,6 +489,9 @@ class GridCNStepLayer(GridLayer):
             )
         elif step_size.size == 1:
             step_size = np.repeat(step_size, self.mspace_ndims)
+
+        # ensure all values of step_size are position
+        step_size = np.abs(step_size)
 
         return step_size
 
@@ -491,3 +510,146 @@ class GridCNStepLayer(GridLayer):
 
     def _set_step_size(self, value: np.ndarray):
         self.inputs["step_size"] = value
+
+
+@register_layer
+class GridCNSizeLayer(GridCNStepLayer):
+    """
+    Class for defining a regularly spaced grid.  The grid is configured
+    by defining its ``center``, the number of points ``npoints`` along
+    each dimension, and the step size ``step_size`` between points.
+
+    **layer type:** ``'grid_CNSize'``
+
+    Parameters
+    ----------
+    ds: `~xarray.DataSet`
+        The `xarray` `~xarray.Dataset` the motion builder configuration
+        is constructed in.
+
+    center : :term:`array_like`
+        An array-like object containing the center coordinates of the
+        grid.  Size ``(N, )`` where ``N`` is the dimensionality of the
+        motion space.
+
+    npoints: :term:`array_like`
+        An array-like object containing the number of points in the
+        grid along each dimension.  Size ``(N, )`` where ``N`` is the
+        dimensionality of the motion space.  Each entry indicates the
+        number of points used along the associated axis.  For example,
+        a 2D space ``npoints`` would look like ``[Nx, Ny]``.
+
+    step_size: :term:`array_like`
+        An array-like object containing the step size between grid
+        points along each dimension.  Size ``(N, )`` where ``N`` is the
+        dimensionality of the motion space.  Each entry indicates the
+        step size for the associated axis.  For example, a 2D space
+        ``step_size`` would look like ``[dx, dy]``.
+
+    skip_ds_add: bool
+        If `True`, then skip generating the `~xarray.DataArray`
+        corresponding to the motion points and adding it to the
+        `~xarray.Dataset`.  This keyword is provided to facilitate
+        functionality of composite layers.  (DEFAULT: `False`)
+
+    Examples
+    --------
+
+    .. note::
+       The following examples include examples for direct instantiation,
+       as well as configuration passing at the |MotionGroup| and
+       |RunManager| levels.
+
+    Assume we have a 2D motion space and want to define a grid of
+    points centered at `(0, 10)` with 21 points along each dimension,
+    and a step size of `.1` along each dimension.  This would  look
+    like:
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          ly = GridCNStepLayer(
+              ds,
+              center=[0, 10],
+              npoints=[21, 21],
+              step_size=[.1, .1],
+          )
+
+       .. code-tab:: py Factory Function
+
+          ly = layer_factory(
+              ds,
+              ly_type = "grid_CNStep",
+              **{
+                  "center": [0, 10],
+                  "npoints": [21, 21],
+                  "step_size": [.1, .1],
+              },
+          )
+
+       .. code-tab:: toml TOML
+
+          [...motion_builder.layers]
+          type = "grid_CNStep"
+          center = [0, 10]
+          npoints = [21, 21]
+          step_size = [0.1, 0.1]
+
+       .. code-tab:: py Dict Entry
+
+          config["motion_builder"]["layers"] = {
+              "type": "grid_CNStep",
+              "center": [0, 10],
+              "npoints": [21, 21],
+              "step_size": [.1, .1],
+          }
+    """
+    _layer_type = "grid_CNSize"
+    _dimensionality = -1
+
+    def __init__(
+        self,
+        ds: xr.Dataset,
+        center: List[float],
+        npoints: List[int],
+        size: List[float],
+        skip_ds_add: bool = False,
+    ):
+        # assign all, and only, instance variables above the super
+        super(GridLayer, self).__init__(
+            ds,
+            center=center,
+            npoints=npoints,
+            size=size,
+            skip_ds_add=skip_ds_add,
+        )
+
+    def _validate_inputs(self):
+        """
+        Validate the input arguments passed during instantiation.
+        These inputs are stored in :attr:`inputs`.
+        """
+        center = self._validate_center(self.center)
+        self._set_center(center)
+
+        npoints = self._validate_npoints(self.npoints)
+        self._set_npoints(npoints)
+
+        step_size = self._validate_step_size(self.step_size)
+        self._set_step_size(step_size)
+
+        # calculate limits
+        limits = np.empty((center.size, 2), dtype=np.float64)
+        limits[..., 1] = 0.5 * (npoints - 1) * step_size
+        limits[..., 0] = -limits[..., 1]
+        limits = limits + center[..., None]
+        limits = self._validate_limits(limits)
+        self._set_limits(limits)
+
+    def _validate_size(self, size):
+        """Validate the ``size`` argument."""
+        mspace_ndims = self.mspace_ndims
+
+        # force into numpy array
+        if not isinstance(size, np.ndarray):
+            center = np.array(size, dtype=np.float64).squeeze()
