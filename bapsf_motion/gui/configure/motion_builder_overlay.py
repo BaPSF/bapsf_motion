@@ -964,8 +964,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _input = ast.literal_eval(_input_string)
         except (ValueError, SyntaxError) as err:
             params = _registry.get_input_parameters(_type)
-            _type = params[param]["param"].annotation
-            if inspect.isclass(_type) and issubclass(_type, str):
+            anno = params[param]["param"].annotation
+
+            if inspect.isclass(anno) and issubclass(anno, str):
                 _input = _input_string
             elif _input_string == "":
                 _input = None
