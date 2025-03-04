@@ -862,7 +862,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.configChanged.emit()
 
     def _refresh_params_combo_box(
-        self, items, icons=None, current: Optional[str] = None, _type: Optional[str] = None,
+        self,
+        items,
+        icons=None,
+        current: Optional[str] = None,
+        _type: Optional[str] = None,
     ):
         # disable combo box signals during depopulation
         self.params_combo_box.blockSignals(True)
