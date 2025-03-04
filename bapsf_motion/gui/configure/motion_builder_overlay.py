@@ -10,6 +10,7 @@ import math
 import numpy as np
 import matplotlib as mpl
 import re
+import xarray as xr
 
 from PySide6.QtCore import Qt, Slot, QSize
 from PySide6.QtGui import QDoubleValidator
@@ -1111,8 +1112,26 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 return
 
         try:
+            # let's spawn with a lower res space to reduce validation
+            # time
+            size = 11
+            new_coords = {}
+            for coord in self.mb.mask.coords.values():
+                new_coords[coord.name] = np.linspace(
+                    np.min(coord), np.max(coord), num=size
+                )
+            _ds = xr.Dataset(
+                {
+                    "mask": (
+                        tuple(new_coords.keys()),
+                        np.ones([size] * self.mb.mask.ndim, dtype=bool),
+                    )
+                },
+                coords=new_coords,
+            )
+
             _layer = _registry.factory(
-                self.mb._ds,
+                _ds,
                 _type=_type,
                 skip_ds_add=True,
                 **_inputs,
