@@ -273,9 +273,9 @@ class LaPDXYExclusion(GovernExclusion):
             raise ValueError
         elif 0 <= cone_angle >= 180:  # noqa
             raise ValueError
-        elif 0.5 * cone_angle > max_angle:
+        elif cone_angle > max_angle:
             cone_angle = max_angle
-        self.inputs["full_cone_angle"] = cone_angle
+        self.inputs["cone_full_angle"] = cone_angle
 
     def _combine_exclusions(self):
         """Combine all sub-exclusions into one exclusion array."""
