@@ -10,6 +10,7 @@ import math
 import numpy as np
 import matplotlib as mpl
 import re
+import typing
 import xarray as xr
 
 from PySide6.QtCore import Qt, Slot, QSize
@@ -967,6 +968,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             anno = params[param]["param"].annotation
 
             if inspect.isclass(anno) and issubclass(anno, str):
+                _input = _input_string
+            elif (
+                typing.get_origin(anno) is Union
+                and str in typing.get_args(anno)
+            ):
                 _input = _input_string
             elif _input_string == "":
                 _input = None
