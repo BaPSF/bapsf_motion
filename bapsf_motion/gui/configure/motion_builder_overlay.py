@@ -1117,7 +1117,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 skip_ds_add=True,
                 **_inputs,
             )
-            # self._transform = transform
             self.change_validation_state(True)
         except (ValueError, TypeError) as err:
             self.logger.exception(
