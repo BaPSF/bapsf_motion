@@ -222,6 +222,8 @@ class LaPDXYExclusion(GovernExclusion):
     def _validate_inputs(self):
         """Validate input arguments."""
         # TODO: fill-out ValueError messages
+
+        # validate diameter
         self.inputs["diameter"] = np.abs(self.diameter)
 
         if not self.include_cone:
@@ -234,16 +236,13 @@ class LaPDXYExclusion(GovernExclusion):
             )
             return
 
+        # validate pivot_radius
         self.inputs["pivot_radius"] = np.abs(self.pivot_radius)
 
-        if not isinstance(self.cone_full_angle, (float, int)):
-            raise ValueError
-        elif 0 <= self.cone_full_angle >= 180:
-            raise ValueError
-
+        # validate port_location
         if isinstance(self.port_location, str):
             if self.port_location.casefold() not in map(
-                str.casefold, self._port_location_to_angle
+                    str.casefold, self._port_location_to_angle
             ):
                 raise ValueError
 
@@ -266,6 +265,17 @@ class LaPDXYExclusion(GovernExclusion):
                 self.pivot_radius * np.sin(np.deg2rad(self.port_location)),
             ],
         )
+
+        # validate cone_full_angle
+        max_angle = np.rad2deg(2 * np.arcsin(0.5 * self.diameter / self.pivot_radius))
+        cone_angle = self.cone_full_angle
+        if not isinstance(cone_angle, (float, int)):
+            raise ValueError
+        elif 0 <= cone_angle >= 180:  # noqa
+            raise ValueError
+        elif 0.5 * cone_angle > max_angle:
+            cone_angle = max_angle
+        self.inputs["full_cone_angle"] = cone_angle
 
     def _combine_exclusions(self):
         """Combine all sub-exclusions into one exclusion array."""
