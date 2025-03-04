@@ -749,8 +749,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         _icons = [None] * len(_available)
         _exclude_governors = (
-                bool(self.mb.exclusions)
-                and isinstance(self.mb.exclusions[0], GovernExclusion)
+            bool(self.mb.exclusions)
+            and isinstance(self.mb.exclusions[0], GovernExclusion)
+            and not isinstance(current_ex, GovernExclusion)
         )
         _govern_icon = qta.icon("mdi.crown")
         for ii, name in enumerate(tuple(_available)):
