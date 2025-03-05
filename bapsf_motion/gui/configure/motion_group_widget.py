@@ -6,6 +6,8 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
+import re
+
 import numpy as np
 import os
 import warnings
@@ -915,7 +917,6 @@ class DriveDesktopController(DriveBaseController):
     def _initialize_widgets(self):
         # BUTTON WIDGETS
         _btn = StyleButton("Move \n To", parent=self)
-        _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
         font = _btn.font()
         font.setPointSize(20)
@@ -923,7 +924,6 @@ class DriveDesktopController(DriveBaseController):
         self.move_to_btn = _btn
 
         _btn = StyleButton("Home \n All", parent=self)
-        _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
         _btn.setFont(font)
         _btn.setEnabled(False)
@@ -931,10 +931,57 @@ class DriveDesktopController(DriveBaseController):
         self.home_btn.setVisible(False)
 
         _btn = ZeroButton("Zero \n All", parent=self)
-        _btn.setFixedWidth(100)
         _btn.setMinimumHeight(100)
         _btn.setFont(font)
         self.zero_all_btn = _btn
+
+        _btn = StyleButton("Holding\nCurrent", parent=self)
+        _btn.setFixedHeight(44)
+        font = _btn.font()
+        font.setPointSize(10)
+        _btn.setFont(font)
+        _btn.update_style_sheet(
+            styles={
+                "background-color": re.sub(
+                    " +",
+                    " ",
+                    """qlineargradient(
+                        x1:0,
+                        y1:0, 
+                        x2:1, 
+                        y2:0,
+                        stop: 0 rgb(52, 161, 219),
+                        stop: 0.1 rgb(52, 161, 219),
+                        stop: 0.4 rgb(163, 163, 163),
+                        stop: 1 rgb(163, 163, 163)
+                    )""".replace("\n", "")
+                ),
+            },
+            action="base",
+        )
+        _btn.update_style_sheet(
+            styles={
+                "background-color": re.sub(
+                    " +",
+                    " ",
+                    """qlineargradient(
+                        x1:0,
+                        y1:0, 
+                        x2:1, 
+                        y2:0,
+                        stop: 0 rgb(163, 163, 163),
+                        stop: 0.6 rgb(163, 163, 163),
+                        stop: 0.9 rgb(250, 66, 45)
+                        stop: 1 rgb(250, 66, 45)
+                    )""".replace("\n", "")
+                ),
+            },
+            action="checked",
+        )
+        _btn.setCheckable(True)
+        _btn.setChecked(False)
+        self.hold_current_btn = _btn
+        self.logger.info(f"Holding curring style sheet:\n{self.hold_current_btn.styleSheet()}")
 
     def _connect_signals(self):
         super()._connect_signals()
@@ -943,13 +990,44 @@ class DriveDesktopController(DriveBaseController):
         self.move_to_btn.clicked.connect(self._move_to)
 
     def _define_layout(self) -> QLayout:
+        _on = QLabel("O\nN", parent=self)
+        font = _on.font()
+        font.setBold(True)
+        _on.setFont(font)
+        _on.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _on.setFixedWidth(10)
+        _on.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+
+        _off = QLabel("O\nF\nF", parent=self)
+        _off.setFont(font)
+        _off.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _off.setFixedWidth(10)
+        _off.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+
+        holding_current_layout = QHBoxLayout()
+        holding_current_layout.setContentsMargins(0, 0, 0, 0)
+        holding_current_layout.addWidget(
+            _on,
+            alignment=Qt.AlignmentFlag.AlignVCenter,
+        )
+        holding_current_layout.addWidget(self.hold_current_btn)
+        holding_current_layout.addWidget(
+            _off,
+            alignment=Qt.AlignmentFlag.AlignVCenter,
+        )
+
         # Sub-Layout #1
         sub_layout = QVBoxLayout()
+        sub_layout.setContentsMargins(0, 0, 0, 0)
         sub_layout.addWidget(self.move_to_btn)
         sub_layout.addStretch()
-        sub_layout.addWidget(self.home_btn)
+        # sub_layout.addWidget(self.home_btn)
+        sub_layout.addLayout(holding_current_layout)
         sub_layout.addStretch()
         sub_layout.addWidget(self.zero_all_btn)
+        sub_widget = QWidget(parent=self)
+        sub_widget.setLayout(sub_layout)
+        sub_widget.setFixedWidth(140)
 
         # Sub-Layout #2
         _text = QLabel("Position", parent=self)
@@ -990,7 +1068,7 @@ class DriveDesktopController(DriveBaseController):
         sub_layout2.addStretch(1)
 
         layout = QHBoxLayout()
-        layout.addLayout(sub_layout)
+        layout.addWidget(sub_widget)
         layout.addLayout(sub_layout2)
         for acw in self._axis_control_widgets:
             layout.addWidget(acw)
