@@ -988,6 +988,7 @@ class DriveDesktopController(DriveBaseController):
 
         self.zero_all_btn.clicked.connect(self.zeroDrive.emit)
         self.move_to_btn.clicked.connect(self._move_to)
+        self.hold_current_btn.clicked.connect(self._toggle_holding_current)
 
     def _define_layout(self) -> QLayout:
         _on = QLabel("O\nN", parent=self)
@@ -1099,6 +1100,14 @@ class DriveDesktopController(DriveBaseController):
             return
 
         self.moveTo.emit(target_pos)
+
+    def _toggle_holding_current(self):
+        hold_current = not self.hold_current_btn.isChecked()
+        if hold_current:
+            self.mg.drive.send_command("reset_currents")
+        else:
+            idle_currents = [0] * self.mg.drive.naxes
+            self.mg.drive.send_command("set_idle_current", *idle_currents)
 
     def set_target_position(self, target_position: List[float]):
         npos = len(target_position)
