@@ -362,7 +362,6 @@ class AxisConfigWidget(QWidget):
         limit_mode = self.axis_config["motor_settings"]["limit_mode"]
         self.limit_mode_slider.setValue(limit_mode)
 
-
     def _validate_ip(self, ip):
         if ip == self.axis_config["ip"]:
             # ip did not change
