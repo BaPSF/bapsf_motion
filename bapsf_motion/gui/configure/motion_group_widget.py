@@ -1128,12 +1128,14 @@ class DriveDesktopController(DriveBaseController):
     def disable_motion_buttons(self):
         self.move_to_btn.setEnabled(False)
         self.zero_all_btn.setEnabled(False)
+        self.hold_current_btn.setEnabled(False)
 
         super().disable_motion_buttons()
 
     def enable_motion_buttons(self):
         self.move_to_btn.setEnabled(True)
         self.zero_all_btn.setEnabled(True)
+        self.hold_current_btn.setEnabled(True)
 
         super().enable_motion_buttons()
 
