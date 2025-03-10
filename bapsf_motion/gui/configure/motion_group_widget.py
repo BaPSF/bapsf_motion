@@ -1090,7 +1090,7 @@ class DriveDesktopController(DriveBaseController):
 
         sub_layout2 = QVBoxLayout()
         sub_layout2.setSpacing(8)
-        sub_layout2.addSpacing(32)
+        sub_layout2.addSpacing(58)
         sub_layout2.addWidget(
             _pos_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
