@@ -3,6 +3,7 @@ __all__ = [
     "BannerButton",
     "DiscardButton",
     "DoneButton",
+    "EnableIndicator",
     "GearButton",
     "GearValidButton",
     "IconButton",
@@ -580,3 +581,37 @@ class ZeroButton(StyleButton):
             styles={"background-color": "rgb(52, 161, 219)"},
             action="pressed",
         )
+
+
+class EnableIndicator(StyleButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._enabled_text = "ENABLED"
+        self._disabled_text = "DISABLED"
+
+        # define styles
+        self.update_style_sheet(
+            styles={"background-color": "rgb(250, 66, 45)"},
+            action="base",
+        )
+        self.update_style_sheet(
+            styles={"background-color": "rgb(52, 161, 219)"},
+            action="checked",
+        )
+
+        self.setCheckable(True)
+        self.setChecked(False)
+
+        self.clicked.connect(self._maintain_check_state)
+
+    def setChecked(self, arg__1):
+        super().setChecked(arg__1)
+
+        _text = self._enabled_text if arg__1 else self._disabled_text
+        self.setText(_text)
+
+    def _maintain_check_state(self):
+        # do not allow button clicks to change check state
+        _state = self.isChecked()
+        self.setChecked(not _state)
