@@ -1951,6 +1951,10 @@ class Motor(EventActor):
             )
             return
 
+        # enable motor before zeroing so holding current is in effect
+        enable_state = self.status["enabled"]
+        self.send_command("enable")
+
         self.set_current(1)
         self.set_idle_current(self._motor["DEFAULTS"]["max_idle_current"])
 
@@ -1959,6 +1963,10 @@ class Motor(EventActor):
 
         self.send_command("current", curr)
         self.send_command("idle_current", ic)
+
+        # return to previous enabled state
+        if not enable_state:
+            self.disable()
 
     def zero(self):
         """Define current motor position as zero."""
