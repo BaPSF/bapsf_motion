@@ -52,6 +52,7 @@ from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.widgets import (
     DiscardButton,
     DoneButton,
+    EnableIndicator,
     GearValidButton,
     HLinePlain,
     IconButton,
@@ -354,6 +355,14 @@ class AxisControlWidget(QWidget):
         _btn = ZeroButton("ZERO", parent=self)
         self.zero_btn = _btn
 
+        _btn = EnableIndicator(parent=self)
+        font = self.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.setFixedHeight(20)
+        self.enable_btn = _btn
+
         # Define TEXT WIDGETS
         _txt = QLabel("Name", parent=self)
         font = _txt.font()
@@ -421,10 +430,17 @@ class AxisControlWidget(QWidget):
         if layout is None:
             layout = QVBoxLayout()
 
+        enabled_layout = QHBoxLayout()
+        enabled_layout.setContentsMargins(0, 0, 0, 0)
+        enabled_layout.addSpacing(16)
+        enabled_layout.addWidget(self.enable_btn)
+        enabled_layout.addSpacing(16)
+
         layout.addWidget(
             self.axis_name_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
+        layout.addLayout(enabled_layout)
         layout.addWidget(
             self.position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
