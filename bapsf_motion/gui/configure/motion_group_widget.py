@@ -698,11 +698,13 @@ class AxisControlWidget(QWidget):
         self.zero_btn.setEnabled(True)
         self.jog_forward_btn.setEnabled(True)
         self.jog_backward_btn.setEnabled(True)
+        self.enable_btn.setEnabled(True)
 
     def disable_motion_buttons(self):
         self.zero_btn.setEnabled(False)
         self.jog_forward_btn.setEnabled(False)
         self.jog_backward_btn.setEnabled(False)
+        self.enable_btn.setEnabled(False)
 
     def closeEvent(self, event):
         self.logger.info("Closing AxisControlWidget")
