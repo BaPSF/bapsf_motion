@@ -432,17 +432,11 @@ class AxisControlWidget(QWidget):
         if layout is None:
             layout = QVBoxLayout()
 
-        enabled_layout = QHBoxLayout()
-        enabled_layout.setContentsMargins(0, 0, 0, 0)
-        enabled_layout.addSpacing(16)
-        enabled_layout.addWidget(self.enable_btn)
-        enabled_layout.addSpacing(16)
-
         layout.addWidget(
             self.axis_name_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
-        layout.addLayout(enabled_layout)
+        layout.addLayout(self._define_enable_btn_layout())
         layout.addWidget(
             self.position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
@@ -498,6 +492,8 @@ class AxisControlWidget(QWidget):
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
         layout.addSpacing(4)
+        layout.addLayout(self._define_enable_btn_layout())
+        layout.addSpacing(4)
         layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addSpacing(8)
         layout.addWidget(
@@ -515,6 +511,15 @@ class AxisControlWidget(QWidget):
         layout.addStretch(1)
 
         return layout
+
+    def _define_enable_btn_layout(self):
+        enabled_layout = QHBoxLayout()
+        enabled_layout.setContentsMargins(0, 0, 0, 0)
+        enabled_layout.addSpacing(16)
+        enabled_layout.addWidget(self.enable_btn)
+        enabled_layout.addSpacing(16)
+
+        return enabled_layout
 
     @property
     def logger(self) -> logging.Logger:
