@@ -1016,6 +1016,9 @@ class DriveDesktopController(DriveBaseController):
             _off,
             alignment=Qt.AlignmentFlag.AlignVCenter,
         )
+        _on.setVisible(False)
+        _off.setVisible(False)
+        self.hold_current_btn.setVisible(False)
 
         # Sub-Layout #1
         sub_layout = QVBoxLayout()
