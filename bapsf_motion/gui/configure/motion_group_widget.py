@@ -414,6 +414,7 @@ class AxisControlWidget(QWidget):
             self._validate_target_position_value
         )
         self.enable_btn.clicked.connect(self._set_motor_enabled_state)
+        self.movementStopped.connect(self._disable_motor)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -584,6 +585,9 @@ class AxisControlWidget(QWidget):
             _txt = f"{position:.2f}"
 
         self.target_position_label.setText(_txt)
+
+    def _disable_motor(self):
+        self.axis.send_command("disable")
 
     def _move_to(self, target_ax_pos):
         target_pos = self.mg.position.value
