@@ -619,6 +619,9 @@ class AxisControlWidget(QWidget):
         self.limit_fwd_btn.set_valid(state=limits["CW"])
         self.limit_bwd_btn.set_valid(state=limits["CCW"])
 
+        enabled_state = self.axis.motor.status["enabled"]
+        self.enable_btn.setChecked(enabled_state)
+
     def _validate_jog_value(self):
         _txt = self.jog_delta_label.text()
         val = 0.0 if _txt == "" else float(_txt)
