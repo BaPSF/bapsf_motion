@@ -413,6 +413,7 @@ class AxisControlWidget(QWidget):
         self.target_position_label.editingFinished.connect(
             self._validate_target_position_value
         )
+        self.enable_btn.clicked.connect(self._set_motor_enabled_state)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -602,6 +603,11 @@ class AxisControlWidget(QWidget):
 
         if proceed:
             self.mg.move_to(target_pos)
+
+    def _set_motor_enabled_state(self):
+        current_enabled_state = self.axis.motor.status["enabled"]
+        cmd_string = "disable" if current_enabled_state else "enable"
+        self.axis.send_command(cmd_string)
 
     def _update_display_of_axis_status(self):
         if self._mg.terminated:
