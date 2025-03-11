@@ -431,9 +431,12 @@ class GridCNStepLayer(GridLayer):
         self._set_step_size(step_size)
 
         # calculate limits
-        limits = np.empty((center.size, 2), dtype=np.float64)
-        limits[..., 1] = 0.5 * (npoints - 1) * step_size
-        limits[..., 0] = -limits[..., 1]
+        npoints_mask = npoints == 1
+        limits = np.zeros((center.size, 2), dtype=np.float64)
+        _size = (npoints - 1) * step_size
+        _size[npoints_mask] = 0
+        limits[..., 1] = 0.5 * _size
+        limits[..., 0] = -0.5 * _size
         limits = limits + center[..., None]
         limits = self._validate_limits(limits)
         self._set_limits(limits)
