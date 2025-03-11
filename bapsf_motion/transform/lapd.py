@@ -285,7 +285,7 @@ class LaPDXYTransform(base.BaseTransform):
                 )
             elif key == "pivot_to_center":
                 self._deployed_side = "East" if val >= 0.0 else "West"
-                inputs["pivot_to_center"] = np.abs(val)
+                val = np.abs(val)
             elif val < 0.0:
                 # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
                 #       "probe_axis_offset"
