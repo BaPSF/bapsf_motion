@@ -235,6 +235,9 @@ class DroopCorrectABC(ABC):
         # make sure points is a numpy array
         if not isinstance(points, np.ndarray):
             points = np.array(points)
+        else:
+            # copy the array so we do NOT write to the original array
+            points = points.copy()
 
         # make sure points is always an N X M matrix
         if points.ndim == 1 and points.size == self.naxes:
@@ -245,7 +248,8 @@ class DroopCorrectABC(ABC):
                 f"Expected a 2D array of shape (N, {self.naxes}) for "
                 f"'points', but got a {points.ndim}-D array."
             )
-        elif self.naxes not in points.shape:
+
+        if self.naxes not in points.shape:
             raise ValueError(
                 f"Expected a 2D array of shape (N, {self.naxes}) for "
                 f"'points', but got shape {points.shape}."
@@ -526,12 +530,19 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         #      - non-droop x > droop x for theta < 0
         #
         i = 0
-        while not np.allclose(test_points, points, rtol=0, atol=1e-8):
+        while not np.allclose(test_points, points, rtol=0, atol=1e-9):
             i += 1
-            ndroop_points[..., 0] += -1.5 * (test_points[..., 0] - points[..., 0])
-            ndroop_points[..., 1] += -1.5 * (test_points[..., 1] - points[..., 1])
+            mask = np.logical_not(
+                np.all(
+                    np.isclose(test_points, points, rtol=0, atol=1e-9),
+                    axis=1,
+                )
+            )
+            ndroop_points[mask, 0] += -1.1 * (test_points[mask, 0] - points[mask, 0])
+            ndroop_points[mask, 1] += -1.1 * (test_points[mask, 1] - points[mask, 1])
 
-            test_points = self._convert_to_droop_points(ndroop_points)
+            updated_test_points = self._convert_to_droop_points(ndroop_points[mask, :])
+            test_points[mask, :] = updated_test_points[..., :]
 
             if i == 100:
                 print(i)

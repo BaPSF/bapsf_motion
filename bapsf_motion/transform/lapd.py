@@ -234,37 +234,41 @@ class LaPDXYTransform(base.BaseTransform):
             return super().__call__(points=points, to_coords=to_coords)
 
         if to_coords == "drive":
+            _sign = 1 if self.deployed_side == "East" else -1
+            pivot_to_center = np.abs(self.pivot_to_center)
+
             # - points is in LaPD motion space coordinates
             # - need to convert motion space coordinates to non-droop
             #   scenario before doing matrix multiplication
             points = self._condition_points(points)
 
             # 1. convert to ball valve coords
-            _sign = 1 if self.deployed_side == "East" else -1
-            points[..., 0] = np.absolute(_sign * self.pivot_to_center - points[..., 0])
+            points[..., 0] = np.absolute(_sign * pivot_to_center - points[..., 0])
 
             # 2. droop correct to non-droop coords
             points = self.droop_correct(points, to_points="non-droop")
 
             # 3. back to LaPD coords
-            points[..., 0] = _sign * (self.pivot_to_center - points[..., 0])
+            points[..., 0] = _sign * (pivot_to_center - points[..., 0])
 
         tr_points = super().__call__(points=points, to_coords=to_coords)
             
         if to_coords != "drive":  # to motion space
+            _sign = 1 if self.deployed_side == "East" else -1
+            pivot_to_center = np.abs(self.pivot_to_center)
+
             # - tr_points is in LaPD motion space coordinates
             # - need to convert motion space coordinates to droop scenario
             # 1. convert to ball valve coords
-            _sign = 1 if self.deployed_side == "East" else -1
             tr_points[..., 0] = np.absolute(
-                _sign * self.pivot_to_center - tr_points[..., 0]
+                _sign * pivot_to_center - tr_points[..., 0]
             )
 
             # 2. droop correct to droop coords
             tr_points = self.droop_correct(tr_points, to_points="droop")
 
             # 3. back to LaPD coords
-            tr_points[..., 0] = _sign * (self.pivot_to_center - tr_points[..., 0])
+            tr_points[..., 0] = _sign * (pivot_to_center - tr_points[..., 0])
 
         return tr_points
 
@@ -285,7 +289,9 @@ class LaPDXYTransform(base.BaseTransform):
                 )
             elif key == "pivot_to_center":
                 self._deployed_side = "East" if val >= 0.0 else "West"
-                inputs["pivot_to_center"] = np.abs(val)
+                # do not take the absolute value here, so the config
+                # dict properly maintains the negative value
+                # val = np.abs(val)
             elif val < 0.0:
                 # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
                 #       "probe_axis_offset"
@@ -339,13 +345,15 @@ class LaPDXYTransform(base.BaseTransform):
         points = self.mspace_polarity * points  # type: np.ndarray
         npoints = points.shape[0]
 
-        tan_theta = points[..., 1] / (points[..., 0] + self.pivot_to_center)
+        pivot_to_center = np.abs(self.pivot_to_center)
+
+        tan_theta = points[..., 1] / (points[..., 0] + pivot_to_center)
         theta = -np.arctan(tan_theta)
 
         T0 = np.zeros((npoints, 3, 3)).squeeze()
         T0[..., 0, 2] = np.sqrt(
-            points[..., 1]**2 + (self.pivot_to_center + points[..., 0])**2
-        ) - self.pivot_to_center
+            points[..., 1]**2 + (pivot_to_center + points[..., 0])**2
+        ) - pivot_to_center
         T0[..., 1, 2] = (
             self.pivot_to_drive * np.tan(theta)
             + self.probe_axis_offset * (1 - (1 / np.cos(theta)))
@@ -369,6 +377,8 @@ class LaPDXYTransform(base.BaseTransform):
         points = self.drive_polarity * points  # type: np.ndarray
         npoints = points.shape[0]
 
+        pivot_to_center = np.abs(self.pivot_to_center)
+
         # Angle Defs:
         # - theta = angle between the horizontal and the probe shaft
         # - beta = angle between the horizontal and the probe drive pivot
@@ -391,9 +401,9 @@ class LaPDXYTransform(base.BaseTransform):
 
         T0 = np.zeros((npoints, 3, 3)).squeeze()
         T0[..., 0, 0] = np.cos(theta)
-        T0[..., 0, 2] = -self.pivot_to_center * (1 - np.cos(theta))
+        T0[..., 0, 2] = -pivot_to_center * (1 - np.cos(theta))
         T0[..., 1, 0] = np.sin(theta)
-        T0[..., 1, 2] = self.pivot_to_center * np.sin(theta)
+        T0[..., 1, 2] = pivot_to_center * np.sin(theta)
         T0[..., 2, 2] = 1.0
 
         T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
