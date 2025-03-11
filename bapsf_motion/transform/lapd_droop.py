@@ -248,7 +248,8 @@ class DroopCorrectABC(ABC):
                 f"Expected a 2D array of shape (N, {self.naxes}) for "
                 f"'points', but got a {points.ndim}-D array."
             )
-        elif self.naxes not in points.shape:
+
+        if self.naxes not in points.shape:
             raise ValueError(
                 f"Expected a 2D array of shape (N, {self.naxes}) for "
                 f"'points', but got shape {points.shape}."
