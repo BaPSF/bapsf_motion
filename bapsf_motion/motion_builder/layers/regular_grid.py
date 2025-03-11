@@ -156,11 +156,24 @@ class GridLayer(BaseLayer):
         Validate the input arguments passed during instantiation.
         These inputs are stored in :attr:`inputs`.
         """
+        npoints = self._validate_npoints(self.npoints)
+        self._set_npoints(npoints)
+
         limits = self._validate_limits(self.limits)
         self._set_limits(limits)
 
-        npoints = self._validate_npoints(self.npoints)
-        self._set_npoints(npoints)
+        # default to 1 point if limits are equal
+        mask = limits[..., 0] == limits[..., 1]
+        if np.any(mask):
+            npoints[mask] = 1
+
+        # limits are NOT equal if npoints is 1
+        npoints_mask = npoints == 1
+        if np.any(np.logical_xor(npoints_mask, mask)):
+            raise ValueError(
+                "Keyword `npoints` defines some axes as 1 point, but the "
+                "associated `limits` does NOT have an equal min/max pair."
+            )
 
     def _validate_limits(self, limits):
         """Validate the ``limits`` argument."""
@@ -199,11 +212,6 @@ class GridLayer(BaseLayer):
             raise ValueError(
                 "Needs to be array_like of size 2 or equal to the "
                 f"dimensionality of the motion space {self.mspace_ndims}."
-            )
-        elif np.any(limits[..., 0] == limits[..., 1]):
-            raise ValueError(
-                "Keyword 'limits' is a 1D array of (min, max) pairs, "
-                "some pairs are equal."
             )
 
         # ensure limits go min to max
