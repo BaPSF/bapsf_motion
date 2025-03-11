@@ -434,8 +434,9 @@ class GridCNStepLayer(GridLayer):
         npoints_mask = npoints == 1
         if np.any(step_size[np.logical_not(npoints_mask)] == 0):
             raise ValueError(
-                "Keyword 'npoints' has axes with 0 points. Need at least "
-                "one point along each motion space axis."
+                "Keyword 'step_size' has axes with 0 size. Each motion "
+                "space axis with more than 1 point needs a physical "
+                "step size greater than 0."
             )
 
         # calculate limits
