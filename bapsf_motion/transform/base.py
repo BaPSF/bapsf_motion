@@ -242,6 +242,9 @@ class BaseTransform(ABC):
         # make sure points is a numpy array
         if not isinstance(points, np.ndarray):
             points = np.array(points)
+        else:
+            # copy the array so we do NOT write to the original array
+            points = points.copy()
 
         # make sure points is always an N X M matrix
         if points.ndim == 1 and points.size == self.naxes:
@@ -252,7 +255,8 @@ class BaseTransform(ABC):
                 f"Expected a 2D array of shape (N, {self.naxes}) for "
                 f"'points', but got a {points.ndim}-D array."
             )
-        elif self.naxes not in points.shape:
+
+        if self.naxes not in points.shape:
             raise ValueError(
                 f"Expected a 2D array of shape (N, {self.naxes}) for "
                 f"'points', but got shape {points.shape}."
