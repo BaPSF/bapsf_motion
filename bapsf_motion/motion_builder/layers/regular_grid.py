@@ -430,8 +430,15 @@ class GridCNStepLayer(GridLayer):
         step_size = self._validate_step_size(self.step_size)
         self._set_step_size(step_size)
 
-        # calculate limits
+        # Check for zero step_size
         npoints_mask = npoints == 1
+        if np.any(step_size[np.logical_not(npoints_mask)] == 0):
+            raise ValueError(
+                "Keyword 'npoints' has axes with 0 points. Need at least "
+                "one point along each motion space axis."
+            )
+
+        # calculate limits
         limits = np.zeros((center.size, 2), dtype=np.float64)
         _size = (npoints - 1) * step_size
         _size[npoints_mask] = 0
