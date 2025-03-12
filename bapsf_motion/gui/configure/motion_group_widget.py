@@ -2355,10 +2355,10 @@ class MGWidget(QWidget):
 
         # now update displays
         self._update_ml_name_widget()
-        self._update_toml_widget()
         self._update_drive_dropdown()
         self._update_mb_dropdown()
         self._update_transform_dropdown()
+        self._update_toml_widget()
         self._update_mpl_canvas_mb()
 
         # updating the drive control widget should always be the last
