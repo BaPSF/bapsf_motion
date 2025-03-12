@@ -1017,7 +1017,6 @@ class DriveDesktopController(DriveBaseController):
         _btn.setCheckable(True)
         _btn.setChecked(False)
         self.hold_current_btn = _btn
-        self.logger.info(f"Holding curring style sheet:\n{self.hold_current_btn.styleSheet()}")
 
     def _connect_signals(self):
         super()._connect_signals()
