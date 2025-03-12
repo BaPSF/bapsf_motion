@@ -2684,6 +2684,13 @@ class MGWidget(QWidget):
 
         self._spawn_motion_group()
 
+        if self.mg is None:
+            # motion group is None, so do NOT need to do any more
+            # Note: self._refresh_drive_control() will be triggered
+            #       by the emitted configChanged signal in
+            #       self._spawn_motion_group()
+            return
+
         self.mb_btn.setEnabled(True)
         self.transform_btn.setEnabled(True)
 
