@@ -1829,7 +1829,7 @@ class MGWidget(QWidget):
         font.setPointSize(16)
         _widget.setFont(font)
         _widget.setMinimumWidth(220)
-        self.mg_name_widget = _widget
+        self.ml_name_widget = _widget
 
         # Define BUTTONS
 
@@ -1981,7 +1981,7 @@ class MGWidget(QWidget):
         self.transform_btn.clicked.connect(self._popup_transform_configuration)
         self.mb_btn.clicked.connect(self._popup_motion_builder_configuration)
 
-        self.mg_name_widget.editingFinished.connect(self._rename_motion_group)
+        self.ml_name_widget.editingFinished.connect(self._rename_motion_group)
 
         self.configChanged.connect(self._config_changed_handler)
 
@@ -2076,7 +2076,7 @@ class MGWidget(QWidget):
         title_sub_layout.setContentsMargins(12, 0, 12, 0)
         title_sub_layout.addWidget(name_label)
         title_sub_layout.addSpacing(4)
-        title_sub_layout.addWidget(self.mg_name_widget)
+        title_sub_layout.addWidget(self.ml_name_widget)
 
         drive_sub_layout = QHBoxLayout()
         drive_sub_layout.addWidget(self.drive_label)
@@ -2673,7 +2673,7 @@ class MGWidget(QWidget):
             self._mg_config = self.mg.config
             return self._mg_config
         elif self._mg_config is None:
-            name = self.mg_name_widget.text()
+            name = self.ml_name_widget.text()
             self._mg_config = {"name": name}
 
         return self._mg_config
@@ -2798,7 +2798,7 @@ class MGWidget(QWidget):
         self.toml_widget.setText(toml.as_toml_string(self.mg_config))
 
     def _update_mg_name_widget(self):
-        self.mg_name_widget.setText(self.mg_config["name"])
+        self.ml_name_widget.setText(self.mg_config["name"])
 
     def _update_drive_control_widget(self):
         if not self.drive_control_widget.isEnabled():
@@ -2830,7 +2830,7 @@ class MGWidget(QWidget):
 
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
-        self.mg.config["name"] = self.mg_name_widget.text()
+        self.mg.config["name"] = self.ml_name_widget.text()
         self.configChanged.emit()
 
     @staticmethod
@@ -2971,31 +2971,31 @@ class MGWidget(QWidget):
             self.done_btn.setEnabled(False)
 
     def _validate_motion_group_name(self) -> bool:
-        mg_name = self.mg_name_widget.text()
+        mg_name = self.ml_name_widget.text()
         self.logger.info(f"Validating motion group name '{mg_name}'.")
 
         # clear previous tooltips and actions
-        self.mg_name_widget.setToolTip("")
-        for action in self.mg_name_widget.actions():
-            self.mg_name_widget.removeAction(action)
+        self.ml_name_widget.setToolTip("")
+        for action in self.ml_name_widget.actions():
+            self.ml_name_widget.removeAction(action)
 
         if mg_name == "":
-            self.mg_name_widget.addAction(
+            self.ml_name_widget.addAction(
                 qta.icon("fa5.window-close", color="red"),
                 QLineEdit.ActionPosition.LeadingPosition,
             )
-            self.mg_name_widget.setToolTip("Must enter a non-null name.")
+            self.ml_name_widget.setToolTip("Must enter a non-null name.")
             return False
 
         if mg_name in self._deployed_restrictions["mg_names"]:
-            self.mg_name_widget.addAction(
+            self.ml_name_widget.addAction(
                 qta.icon("fa5.window-close", color="red"),
                 QLineEdit.ActionPosition.LeadingPosition,
             )
             deployed_mg_names = [
                 f"'{name}'" for name in self._deployed_restrictions["mg_names"]
             ]
-            self.mg_name_widget.setToolTip(
+            self.ml_name_widget.setToolTip(
                 "Motion group must have a unique name.  The following names "
                 f"are already in used {', '.join(deployed_mg_names)}."
             )
