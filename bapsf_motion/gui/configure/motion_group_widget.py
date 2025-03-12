@@ -2445,7 +2445,6 @@ class MGWidget(QWidget):
             and bool(self.mg_config["motion_builder"])
         ):
             _config = _deepcopy_dict(self.mg_config["motion_builder"])
-            pass
         elif (
             not isinstance(self.mg, MotionGroup)
             or not isinstance(self.mg.mb, MotionBuilder)
@@ -2670,7 +2669,6 @@ class MGWidget(QWidget):
     def mg_config(self) -> Union[Dict[str, Any], "MotionGroupConfig"]:
         if isinstance(self.mg, MotionGroup):
             self._mg_config = self.mg.config
-            return self._mg_config
         elif self._mg_config is None:
             name = self.ml_name_widget.text()
             self._mg_config = {"name": name}
