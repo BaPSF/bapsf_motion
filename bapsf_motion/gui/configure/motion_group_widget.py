@@ -1971,7 +1971,7 @@ class MGWidget(QWidget):
 
         self.logger.info(f"Starting mg_config:\n {self._mg_config}")
 
-        self._update_mg_name_widget()
+        self._update_ml_name_widget()
 
         self._spawn_motion_group()
         self._refresh_drive_control()
@@ -2355,7 +2355,7 @@ class MGWidget(QWidget):
         self._validate_motion_group()
 
         # now update displays
-        self._update_mg_name_widget()
+        self._update_ml_name_widget()
         self._update_toml_widget()
         self._update_drive_dropdown()
         self._update_mb_dropdown()
@@ -2797,7 +2797,7 @@ class MGWidget(QWidget):
     def _update_toml_widget(self):
         self.toml_widget.setText(toml.as_toml_string(self.mg_config))
 
-    def _update_mg_name_widget(self):
+    def _update_ml_name_widget(self):
         self.ml_name_widget.setText(self.mg_config["name"])
 
     def _update_drive_control_widget(self):
