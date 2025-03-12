@@ -2866,7 +2866,7 @@ class MGWidget(QWidget):
         mg = None
         try:
             mg = MotionGroup(
-                config=self.mg_config,
+                config=_deepcopy_dict(self.mg_config),
                 logger=logging.getLogger(f"{self.logger.name}.MG"),
                 loop=self.mg_loop,
                 auto_run=True,
