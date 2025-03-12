@@ -2064,18 +2064,13 @@ class MGWidget(QWidget):
 
     def _define_central_builder_widget(self):
 
-        _label = QLabel("Name:", parent=self)
+        _label = QLabel("Motion List Name", parent=self)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
-        font.setPointSize(16)
+        font.setPointSize(12)
         _label.setFont(font)
+        _label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         name_label = _label
-
-        title_sub_layout = QHBoxLayout()
-        title_sub_layout.setContentsMargins(12, 0, 12, 0)
-        title_sub_layout.addWidget(name_label)
-        title_sub_layout.addSpacing(4)
-        title_sub_layout.addWidget(self.ml_name_widget)
 
         drive_sub_layout = QHBoxLayout()
         drive_sub_layout.addWidget(self.drive_label)
@@ -2160,8 +2155,9 @@ class MGWidget(QWidget):
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addSpacing(18)
-        layout.addLayout(title_sub_layout)
+        layout.addSpacing(12)
+        layout.addWidget(name_label, alignment=Qt.AlignmentFlag.AlignCenter)
+        layout.addWidget(self.ml_name_widget)
         layout.addSpacing(12)
         layout.addLayout(drive_sub_layout)
         layout.addLayout(mb_sub_layout)
