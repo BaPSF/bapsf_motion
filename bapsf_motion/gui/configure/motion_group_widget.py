@@ -2857,6 +2857,19 @@ class MGWidget(QWidget):
 
         self.configChanged.emit()
 
+    def _split_motion_group_name(self):
+        match = re.compile(
+            r"(<)(?P<drive_name>[\w\s-]+)(>)\s+(?P<ml_name>[\w\s-]+)"
+        ).fullmatch(self.mg_config["name"])
+        if match is not None:
+            drive_name = match.group("drive_name").strip()
+            ml_name = match.group("ml_name").strip()
+        else:
+            drive_name = None
+            ml_name = self.mg_config["name"].strip()
+
+        return drive_name, ml_name
+
     @staticmethod
     def _spawn_motion_builder(config: Dict[str, Any]) -> Union[MotionBuilder, None]:
         """Return an instance of |MotionBuilder|."""
