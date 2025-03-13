@@ -2668,7 +2668,7 @@ class MGWidget(QWidget):
     @property
     def mg_config(self) -> Union[Dict[str, Any], "MotionGroupConfig"]:
         if isinstance(self.mg, MotionGroup):
-            self._mg_config = self.mg.config
+            self._mg_config = _deepcopy_dict(self.mg.config)
         elif self._mg_config is None:
             name = self.ml_name_widget.text()
             self._mg_config = {"name": name}
