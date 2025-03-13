@@ -2670,8 +2670,8 @@ class MGWidget(QWidget):
         if isinstance(self.mg, MotionGroup):
             self._mg_config = _deepcopy_dict(self.mg.config)
         elif self._mg_config is None:
-            name = self.ml_name_widget.text()
-            self._mg_config = {"name": name}
+            self._mg_config = dict()
+            self._rename_motion_group()
 
         return self._mg_config
 
