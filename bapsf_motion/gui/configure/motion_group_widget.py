@@ -2971,7 +2971,9 @@ class MGWidget(QWidget):
             self.done_btn.setEnabled(False)
 
     def _validate_motion_group_name(self) -> bool:
-        mg_name = self.ml_name_widget.text()
+        mg_name = self.mg_config["name"]
+        ml_name = self.ml_name_widget.text().strip()
+
         self.logger.info(f"Validating motion group name '{mg_name}'.")
 
         # clear previous tooltips and actions
@@ -2979,7 +2981,7 @@ class MGWidget(QWidget):
         for action in self.ml_name_widget.actions():
             self.ml_name_widget.removeAction(action)
 
-        if mg_name == "":
+        if ml_name == "":
             self.ml_name_widget.addAction(
                 qta.icon("fa5.window-close", color="red"),
                 QLineEdit.ActionPosition.LeadingPosition,
