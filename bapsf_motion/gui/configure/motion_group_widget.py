@@ -2834,7 +2834,27 @@ class MGWidget(QWidget):
 
     def _rename_motion_group(self):
         self.logger.info("Renaming motion group")
-        self.mg.config["name"] = self.ml_name_widget.text()
+        try:
+            drive_name = self.mg_config["drive"]["name"]
+        except (KeyError, TypeError):
+            drive_name = self.drive_dropdown.currentText()
+
+        ml_name = self.ml_name_widget.text()
+        mg_name = f"<{drive_name}>    {ml_name}"
+
+        if isinstance(self.mg, MotionGroup):
+            if self.mg.config["name"] == mg_name:
+                return
+
+            self.mg.config["name"] = mg_name
+        elif self._mg_config is None:
+            self._mg_config = {"name": mg_name}
+        else:
+            if self._mg_config.get("name") == mg_name:
+                return
+
+            self._mg_config["name"] = mg_name
+
         self.configChanged.emit()
 
     @staticmethod
