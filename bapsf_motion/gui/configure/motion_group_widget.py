@@ -2802,7 +2802,8 @@ class MGWidget(QWidget):
         self.toml_widget.setText(toml.as_toml_string(self.mg_config))
 
     def _update_ml_name_widget(self):
-        self.ml_name_widget.setText(self.mg_config["name"])
+        drive_name, ml_name = self._split_motion_group_name()
+        self.ml_name_widget.setText(ml_name)
 
     def _update_drive_control_widget(self):
         if not self.drive_control_widget.isEnabled():
