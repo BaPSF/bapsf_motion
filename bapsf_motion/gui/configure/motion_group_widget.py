@@ -2347,10 +2347,14 @@ class MGWidget(QWidget):
     def _config_changed_handler(self):
         # Note: none of the methods executed here should cause a
         #       configChanged event
+        self.blockSignals(True)
+        self._rename_motion_group()
+        self._update_ml_name_widget()
+        self.blockSignals(False)
+
         self._validate_motion_group()
 
         # now update displays
-        self._update_ml_name_widget()
         self._update_drive_dropdown()
         self._update_mb_dropdown()
         self._update_transform_dropdown()
