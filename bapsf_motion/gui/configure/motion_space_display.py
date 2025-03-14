@@ -391,7 +391,10 @@ class MotionSpaceDisplay(QFrame):
         # add probe shaft (line from insertion to position
         _label = "probe"
         stuff = self._get_plot_axis_by_name(_label)
-        insertion_point = self.mb.get_insertion_point()
+        insertion_point = (
+            None if not isinstance(self.mb, MotionBuilder)
+            else self.mb.get_insertion_point()
+        )
         if (
             (insertion_point is None or position is None or not self.display_probe)
             and stuff is not None
