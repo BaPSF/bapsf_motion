@@ -28,8 +28,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QMessageBox,
+    QPlainTextEdit,
     QSizePolicy,
-    QTextEdit,
     QVBoxLayout,
     QWidget,
     QStackedWidget,
@@ -1812,7 +1812,7 @@ class MGWidget(QWidget):
 
         # Define TEXT WIDGETS
 
-        _widget = QTextEdit(parent=self)
+        _widget = QPlainTextEdit(parent=self)
         _widget.setSizePolicy(
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Expanding,
@@ -2799,7 +2799,7 @@ class MGWidget(QWidget):
         self._populate_transform_dropdown()
 
     def _update_toml_widget(self):
-        self.toml_widget.setText(toml.as_toml_string(self.mg_config))
+        self.toml_widget.setPlainText(toml.as_toml_string(self.mg_config))
 
     def _update_ml_name_widget(self):
         drive_name, ml_name = self._split_motion_group_name()
