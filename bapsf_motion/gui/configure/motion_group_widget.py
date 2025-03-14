@@ -2802,7 +2802,7 @@ class MGWidget(QWidget):
         self.toml_widget.setPlainText(toml.as_toml_string(self.mg_config))
 
     def _update_ml_name_widget(self):
-        drive_name, ml_name = self._split_motion_group_name()
+        drive_name, ml_name = self.split_motion_group_name(self.mg_config["name"])
         self.ml_name_widget.setText(ml_name)
 
     def _update_drive_control_widget(self):
@@ -2858,16 +2858,17 @@ class MGWidget(QWidget):
 
         self.configChanged.emit()
 
-    def _split_motion_group_name(self):
+    @staticmethod
+    def split_motion_group_name(mg_name):
         match = re.compile(
             r"(<)(?P<drive_name>[\w\s-]+)(>)\s+(?P<ml_name>[\w\s-]+)"
-        ).fullmatch(self.mg_config["name"])
+        ).fullmatch(mg_name)
         if match is not None:
             drive_name = match.group("drive_name").strip()
             ml_name = match.group("ml_name").strip()
         else:
             drive_name = None
-            ml_name = self.mg_config["name"].strip()
+            ml_name = mg_name.strip()
 
         return drive_name, ml_name
 
