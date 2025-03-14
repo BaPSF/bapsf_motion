@@ -279,6 +279,12 @@ class ConfigureGUI(QMainWindow):
         self._log_widget = QLogger(self._logger, parent=self)
         self._run_widget = RunWidget(parent=self)
         self._mg_widget = None  # type: Union[MGWidget, None]
+        if (
+            self.defaults is not None
+            and "run_name" in self.defaults
+            and self.defaults["run_name"] != ""
+        ):
+            self._run_widget.set_visible_run_name(False)
 
         self._stacked_widget = QStackedWidget(parent=self)
         self._stacked_widget.addWidget(self._run_widget)
