@@ -57,10 +57,13 @@ _HERE = Path(__file__).parent
 
 
 class RunWidget(QWidget):
-    def __init__(self, parent: "ConfigureGUI"):
+    def __init__(self, parent: "ConfigureGUI", *, enable_run_name: bool = True):
         super().__init__(parent=parent)
 
         self._logger = gui_logger
+        self._enable_run_name = (
+            enable_run_name if isinstance(enable_run_name, bool) else True
+        )
 
         # Define BUTTONS
 
@@ -109,6 +112,7 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         _txt_widget.setFont(font)
         self.run_name_widget = _txt_widget
+        self.run_name_widget.setVisible(self._enable_run_name)
 
         _txt = QLabel("Run Name:  ", parent=self)
         _txt.setAlignment(
@@ -119,6 +123,7 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         _txt.setFont(font)
         self.run_name_label = _txt
+        self.run_name_label.setVisible(self._enable_run_name)
 
         self.setLayout(self._define_layout())
 
@@ -198,12 +203,14 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         mg_label.setFont(font)
 
-        sub_layout = QHBoxLayout()
-        sub_layout.addWidget(self.run_name_label)
-        sub_layout.addWidget(self.run_name_widget)
-        layout.addSpacing(18)
-        layout.addLayout(sub_layout)
-        layout.addSpacing(18)
+        if self._enable_run_name:
+            sub_layout = QHBoxLayout()
+            sub_layout.addWidget(self.run_name_label)
+            sub_layout.addWidget(self.run_name_widget)
+            layout.addSpacing(18)
+            layout.addLayout(sub_layout)
+            layout.addSpacing(18)
+
         layout.addWidget(mg_label)
         layout.addWidget(self.mg_list_widget)
 
@@ -275,16 +282,16 @@ class ConfigureGUI(QMainWindow):
 
         self._define_main_window()
 
-        # define "important" qt widgets
-        self._log_widget = QLogger(self._logger, parent=self)
-        self._run_widget = RunWidget(parent=self)
-        self._mg_widget = None  # type: Union[MGWidget, None]
-        if (
+        enable_run_name = False if (
             self.defaults is not None
             and "run_name" in self.defaults
             and self.defaults["run_name"] != ""
-        ):
-            self._run_widget.set_visible_run_name(False)
+        ) else True
+
+        # define "important" qt widgets
+        self._log_widget = QLogger(self._logger, parent=self)
+        self._run_widget = RunWidget(parent=self, enable_run_name=enable_run_name)
+        self._mg_widget = None  # type: Union[MGWidget, None]
 
         self._stacked_widget = QStackedWidget(parent=self)
         self._stacked_widget.addWidget(self._run_widget)
