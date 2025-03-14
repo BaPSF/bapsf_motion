@@ -243,13 +243,6 @@ class RunWidget(QWidget):
         except AttributeError:
             return None
 
-    def set_visible_run_name(self, value: bool):
-        if not isinstance(value, bool):
-            return
-
-        self.run_name_widget.setVisible(value)
-        self.run_name_label.setVisible(value)
-
     def closeEvent(self, event):
         self.logger.info("Closing RunWidget")
         event.accept()
