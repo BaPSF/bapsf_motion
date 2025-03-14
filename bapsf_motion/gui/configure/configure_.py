@@ -297,7 +297,11 @@ class ConfigureGUI(QMainWindow):
             config = None
 
         if config is None:
-            config = {"name": "A New Run"}
+            run_name = (
+                "A New Run" if self.defaults is None
+                else self.defaults.get("run_name", "A New Run")
+            )
+            config = {"name": run_name}
 
         self.replace_rm(config=config)
 
