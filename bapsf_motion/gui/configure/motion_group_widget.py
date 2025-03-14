@@ -2678,7 +2678,7 @@ class MGWidget(QWidget):
     @Slot(object)
     def _change_drive(self, config: Dict[str, Any]):
         self.logger.info(f"Replacing the motion group's drive with config...\n{config}")
-        mg_config = _deepcopy_dict(self.mg_config)
+        mg_config = self.mg_config
         mg_config["drive"] = _deepcopy_dict(config)
         self._mg_config = mg_config
 
@@ -3166,7 +3166,7 @@ class MGWidget(QWidget):
         self._validate_motion_group()
 
     def return_and_close(self):
-        config = _deepcopy_dict(self.mg.config)
+        config = self.mg_config
         index = -1 if self._mg_index is None else self._mg_index
 
         self.logger.info(
