@@ -110,6 +110,16 @@ class RunWidget(QWidget):
         _txt_widget.setFont(font)
         self.run_name_widget = _txt_widget
 
+        _txt = QLabel("Run Name:  ", parent=self)
+        _txt.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+        )
+        _txt.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _txt.font()
+        font.setPointSize(16)
+        _txt.setFont(font)
+        self.run_name_label = _txt
+
         self.setLayout(self._define_layout())
 
         self._connect_signals()
@@ -180,15 +190,6 @@ class RunWidget(QWidget):
     def _define_control_layout(self):
         layout = QVBoxLayout()
 
-        run_label = QLabel("Run Name:  ", parent=self)
-        run_label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt. AlignmentFlag.AlignLeft
-        )
-        run_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        font = run_label.font()
-        font.setPointSize(16)
-        run_label.setFont(font)
-
         mg_label = QLabel("Defined Motion Groups", parent=self)
         mg_label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
@@ -198,7 +199,7 @@ class RunWidget(QWidget):
         mg_label.setFont(font)
 
         sub_layout = QHBoxLayout()
-        sub_layout.addWidget(run_label)
+        sub_layout.addWidget(self.run_name_label)
         sub_layout.addWidget(self.run_name_widget)
         layout.addSpacing(18)
         layout.addLayout(sub_layout)
