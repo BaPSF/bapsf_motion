@@ -1,5 +1,8 @@
-[bapsf_motion.defaults.drive]
-default = "benchtop_2D"
+[bapsf_motion.defaults]
+run_name = "bapsf_motion run configuration"
+drive.default = "benchtop_2D"
+motion_builder.default = "East - Generic XY"
+transform.default = "identity"
 
 [bapsf_motion.defaults.drive.0]
 name = "benchtop_2D"
@@ -25,9 +28,6 @@ axes.1.ip = "192.168.0.140"
 axes.1.units = "cm"
 axes.1.units_per_rev = 0.508
 
-[bapsf_motion.defaults.transform]
-default = "identity"
-
 [bapsf_motion.defaults.transform.0]
 name = "East - Generic XY"
 type = "lapd_xy"
@@ -51,9 +51,6 @@ pivot_to_drive = 112.7624  # 0.81 in + 22 cm + .75" + 82.5cm + 4.3cm
 pivot_to_feedthru = 21.6574  # 19.6 cm + 0.81"
 droop_correct = true
 droop_scale = 1.0
-
-[bapsf_motion.defaults.motion_builder]
-default = "East - Generic XY"
 
 [bapsf_motion.defaults.motion_builder.0]
 name = "East - Generic XY"
