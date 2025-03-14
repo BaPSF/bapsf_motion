@@ -519,10 +519,16 @@ class ConfigureGUI(QMainWindow):
                 f"Expected 'defaults' to be of type dict, got type {type(defaults)}."
             )
 
-        if "bapsf_motion" not in defaults.keys():
+        if (
+            "bapsf_motion" not in defaults.keys()
+            or not isinstance(defaults["bapsf_motion"], dict)
+        ):
             # dictionary does not contain a setup for bapsf_motion
             defaults = None
-        elif "defaults" not in defaults["bapsf_motion"].keys():
+        elif (
+            "defaults" not in defaults["bapsf_motion"].keys()
+            or not isinstance(defaults["bapsf_motion"]["defaults"], dict)
+        ):
             # dictionary does not contain a defaults setup for bapsf_motion
             defaults = None
         else:
