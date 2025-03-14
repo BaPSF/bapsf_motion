@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QWidget,
     QSizePolicy,
-    QTextEdit,
+    QPlainTextEdit,
     QListWidget,
     QVBoxLayout,
     QLineEdit,
@@ -101,7 +101,7 @@ class RunWidget(QWidget):
 
         # Define TEXT WIDGETS
 
-        self.config_widget = QTextEdit(parent=self)
+        self.config_widget = QPlainTextEdit(parent=self)
         self.mg_list_widget = QListWidget(parent=self)
         _font = self.mg_list_widget.font()
         _font.setPointSize(14)
@@ -437,7 +437,7 @@ class ConfigureGUI(QMainWindow):
 
     def update_display_config_text(self):
         self.logger.info(f"Updating the run config toml: {self.rm.config.as_toml_string}")
-        self._run_widget.config_widget.setText(self.rm.config.as_toml_string)
+        self._run_widget.config_widget.setPlainText(self.rm.config.as_toml_string)
 
     def update_display_rm_name(self):
         rm_name = self.rm.config["name"]
