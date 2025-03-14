@@ -466,7 +466,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def _define_layer_list_layout(self):
 
-        _txt = QLabel("Point Layers", parent=self)
+        _txt = QLabel('Point "Motion List" Layers', parent=self)
         font = _txt.font()
         font.setPointSize(16)
         font.setBold(True)
