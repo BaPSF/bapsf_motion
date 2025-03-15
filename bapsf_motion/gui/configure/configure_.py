@@ -270,7 +270,8 @@ class ConfigureGUI(QMainWindow):
         self._rm_logger = logging.getLogger("RM")
 
         # setup defaults
-        self._defaults = None
+        self._defaults = None  # original defaults
+        self._defaults_updated = None  # updated with configs from configured MGs
         self._set_defaults(defaults=defaults)
 
         self._define_main_window()
@@ -355,6 +356,8 @@ class ConfigureGUI(QMainWindow):
 
     @property
     def defaults(self) -> Dict[str, Any]:
+        if self._defaults_updated is not None:
+            return self._defaults_updated
         return self._defaults
 
     @property
@@ -545,6 +548,50 @@ class ConfigureGUI(QMainWindow):
             defaults = defaults["bapsf_motion"]["defaults"]
 
         self._defaults = defaults
+
+    def _update_motion_builder_defaults(self):
+        if not isinstance(self.rm, RunManager):
+            self._defaults_updated = None
+            return
+
+        if len(self.rm.mgs) == 0:
+            self._defaults_updated = None
+            return
+
+        if self.defaults is None:
+            self._defaults_updated = {"motion_builder": {}}
+        else:
+            self._defaults_updated = _deepcopy_dict(self._defaults)
+
+        if "motion_builder" not in self._defaults:
+            self._defaults_updated["motion_builder"] = {}
+        else:
+            self._defaults_updated["motion_builder"] = _deepcopy_dict(
+                self._defaults["motion_builder"]
+            )
+
+        mb_defaults = self._defaults_updated["motion_builder"]
+        n_mb_configs = len(mb_defaults) - 1
+        for mg in self.rm.mgs.values():
+            drive_name, ml_name = MGWidget.split_motion_group_name(mg.config["name"])
+
+            _id = None
+            for _default_id in mb_defaults.keys():
+                if _default_id == "default":
+                    continue
+
+                if ml_name == mb_defaults[_default_id]["name"]:
+                    _id = _default_id
+                    break
+
+            if _id is None:
+                _id = f"{n_mb_configs}"
+                n_mb_configs += 1
+
+            mb_defaults[_id] = {
+                "name": ml_name,
+                **_deepcopy_dict(mg.config["motion_builder"]),
+            }
 
     def _spawn_mg_widget(self, mg: MotionGroup = None):
         config = None if not isinstance(mg, MotionGroup) else mg.config
