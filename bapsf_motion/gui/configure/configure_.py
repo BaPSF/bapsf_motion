@@ -328,9 +328,7 @@ class ConfigureGUI(QMainWindow):
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
-        self.configChanged.connect(self.update_display_config_text)
-        self.configChanged.connect(self.update_display_rm_name)
-        self.configChanged.connect(self.update_display_mg_list)
+        self.configChanged.connect(self._config_changed_handler)
 
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
@@ -380,6 +378,12 @@ class ConfigureGUI(QMainWindow):
     @property
     def logging_config_dict(self):
         return self._logging_config_dict
+
+    def _config_changed_handler(self):
+        self.update_display_config_text()
+        self.update_display_rm_name()
+        self.update_display_mg_list()
+        self._update_motion_builder_defaults()
 
     def replace_rm(self, config):
         if isinstance(self.rm, RunManager):
