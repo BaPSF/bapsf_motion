@@ -91,26 +91,18 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._params_widget.setSizePolicy(size_policy)
 
         # SET UP LEFT WIDGETS (i.e. list boxes)
-        self.layer_list_box = QListWidget(parent=self)
-        self.layer_list_box.setMinimumHeight(250)
-        _font = self.layer_list_box.font()
-        _font.setPointSize(12)
-        self.layer_list_box.setFont(_font)
-        self.exclusion_list_box = QListWidget(parent=self)
-        self.exclusion_list_box.setMinimumHeight(250)
-        self.exclusion_list_box.setFont(_font)
 
-        self.add_ly_btn = self._generate_btn_widget("ADD")
-        self.remove_ly_btn = self._generate_btn_widget("REMOVE")
-        self.remove_ly_btn.setEnabled(False)
-        self.edit_ly_btn = self._generate_btn_widget("EDIT")
-        self.edit_ly_btn.setEnabled(False)
+        self.exclusion_list_box = None
+        self.add_ex_btn = None
+        self.remove_ex_btn = None
+        self.edit_ex_btn = None
+        self._initialize_exclusion_list_layout_widgets()
 
-        self.add_ex_btn = self._generate_btn_widget("ADD")
-        self.remove_ex_btn = self._generate_btn_widget("REMOVE")
-        self.remove_ex_btn.setEnabled(False)
-        self.edit_ex_btn = self._generate_btn_widget("EDIT")
-        self.edit_ex_btn.setEnabled(False)
+        self.layer_list_box = None
+        self.add_ly_btn = None
+        self.remove_ly_btn = None
+        self.edit_ly_btn = None
+        self._initialize_layer_list_layout_widgets()
 
         # SET UP PLOT WIDGET
         self.mpl_canvas = MotionSpaceDisplay(parent=self)
@@ -619,6 +611,32 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         _widget.setLayout(layout)
         return _widget
+
+    def _initialize_exclusion_list_layout_widgets(self):
+        self.exclusion_list_box = QListWidget(parent=self)
+        self.exclusion_list_box.setMinimumHeight(250)
+        self.exclusion_list_box.font().setPointSize(12)
+
+        self.add_ex_btn = self._generate_btn_widget("ADD")
+
+        self.remove_ex_btn = self._generate_btn_widget("REMOVE")
+        self.remove_ex_btn.setEnabled(False)
+
+        self.edit_ex_btn = self._generate_btn_widget("EDIT")
+        self.edit_ex_btn.setEnabled(False)
+
+    def _initialize_layer_list_layout_widgets(self):
+        self.layer_list_box = QListWidget(parent=self)
+        self.layer_list_box.setMinimumHeight(250)
+        self.layer_list_box.font().setPointSize(12)
+
+        self.add_ly_btn = self._generate_btn_widget("ADD")
+
+        self.remove_ly_btn = self._generate_btn_widget("REMOVE")
+        self.remove_ly_btn.setEnabled(False)
+
+        self.edit_ly_btn = self._generate_btn_widget("EDIT")
+        self.edit_ly_btn.setEnabled(False)
 
     def _initialize_exclusion_list_box(self):
         ex_types = set(ex.exclusion_type for ex in self.mb.exclusions)
