@@ -76,7 +76,7 @@ class MotionBuilder(MBItem):
             name_pattern=re.compile(r"motion_builder")
         )
 
-        self.layers = []  # type: List[BaseLayer]
+        self._layers = []  # type: List[BaseLayer]
         if layers is not None:
             # add each defined layer
             for layer in layers:
@@ -122,6 +122,11 @@ class MotionBuilder(MBItem):
     def exclusions(self) -> List[BaseExclusion]:
         """List of added exclusion layers."""
         return self._exclusions
+
+    @property
+    def layers(self) -> List[BaseLayer]:
+        """List of added point "motion list" layers."""
+        return self._layers
 
     @staticmethod
     def _validate_space(space: List[Dict[str, Any]]):
@@ -235,7 +240,7 @@ class MotionBuilder(MBItem):
         """
         # TODO: add ref in docstring to documented available layers
         layer = layer_factory(self._ds, ly_type=ly_type, **settings)
-        self.layers.append(layer)
+        self._layers.append(layer)
         self.clear_motion_list()
 
     def remove_layer(self, name: str):
@@ -253,7 +258,7 @@ class MotionBuilder(MBItem):
             if layer.name == name:
                 # TODO: can we define a __del__ in BaseLayer that would
                 #       handle cleanup for layer classes
-                del self.layers[ii]
+                del self._layers[ii]
                 self.drop_vars(name)
                 break
 
