@@ -84,11 +84,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._params_widget = QWidget(parent=self)
         self._params_field_widget = QWidget(parent=self._params_widget)
         self._params_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
-
-        self._params_widget.setMinimumHeight(300)
-        size_policy = self._params_widget.sizePolicy()
-        size_policy.setRetainSizeWhenHidden(True)
-        self._params_widget.setSizePolicy(size_policy)
+        self.params_label = None
+        self.params_add_btn = None
+        self.params_discard_btn = None
+        self.select_type_label = None
+        self.params_combo_box = None
+        self._initialize_params_layout_widgets()
 
         # SET UP LEFT WIDGETS (i.e. list boxes)
 
@@ -110,46 +111,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mpl_canvas.display_target_position = False
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
             self.mpl_canvas.link_motion_builder(self.mg.mb)
-
-        # SET UP INPUT WIDGETS (those in self._params_widget)
-
-        _txt = QLabel("", parent=self._params_widget)
-        _font = _txt.font()
-        _font.setPixelSize(16)
-        _font.setFamily("Courier New")
-        _font.setBold(True)
-        _txt.setFont(_font)
-        self.params_label = _txt
-
-        _btn = DoneButton("Add / Update", parent=self._params_widget)
-        _btn.setFixedHeight(34)
-        _font = _btn.font()
-        _font.setPointSize(12)
-        _btn.setFont(_font)
-        _btn.shrink_width()
-        self.params_add_btn = _btn
-
-        _btn = DiscardButton(parent=self._params_widget)
-        _btn.setFixedHeight(34)
-        _btn.setFont(_font)
-        _btn.shrink_width(scale=2)
-        self.params_discard_btn = _btn
-
-        _txt = QLabel("Type :", parent=self._params_widget)
-        _font = _txt.font()
-        _font.setPixelSize(16)
-        _font.setBold(False)
-        _txt.setFont(_font)
-        self.select_type_label = _txt
-
-        _txt = QComboBox(parent=self._params_widget)
-        _txt.setFixedHeight(34)
-        _txt.setFixedWidth(250)
-        _txt.setEditable(False)
-        font = _txt.font()
-        font.setPointSize(12)
-        _txt.setFont(font)
-        self.params_combo_box = _txt
 
         # non-widget initialization
 
@@ -639,6 +600,52 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.edit_ly_btn = self._generate_btn_widget("EDIT")
         self.edit_ly_btn.setEnabled(False)
+
+    def _initialize_params_layout_widgets(self):
+        self._params_widget.setMinimumHeight(300)
+        size_policy = self._params_widget.sizePolicy()
+        size_policy.setRetainSizeWhenHidden(True)
+        self._params_widget.setSizePolicy(size_policy)
+
+        _txt = QLabel("", parent=self._params_widget)
+        _font = _txt.font()
+        _font.setPointSize(14)
+        _font.setFamily("Courier New")
+        _font.setBold(True)
+        _txt.setFont(_font)
+        self.params_label = _txt
+
+        _btn = DoneButton("Add / Update", parent=self._params_widget)
+        _btn.setFixedHeight(34)
+        _font = _btn.font()
+        _font.setPointSize(12)
+        _btn.setFont(_font)
+        _btn.shrink_width()
+        self.params_add_btn = _btn
+
+        _btn = DiscardButton(parent=self._params_widget)
+        _btn.setFixedHeight(34)
+        _font = _btn.font()
+        _font.setPointSize(12)
+        _btn.setFont(_font)
+        _btn.shrink_width(scale=2)
+        self.params_discard_btn = _btn
+
+        _txt = QLabel("Type :", parent=self._params_widget)
+        _font = _txt.font()
+        _font.setPixelSize(16)
+        _font.setBold(False)
+        _txt.setFont(_font)
+        self.select_type_label = _txt
+
+        _txt = QComboBox(parent=self._params_widget)
+        _txt.setFixedHeight(34)
+        _txt.setFixedWidth(250)
+        _txt.setEditable(False)
+        font = _txt.font()
+        font.setPointSize(12)
+        _txt.setFont(font)
+        self.params_combo_box = _txt
 
     def _initialize_exclusion_list_box(self):
         ex_types = set(ex.exclusion_type for ex in self.mb.exclusions)
