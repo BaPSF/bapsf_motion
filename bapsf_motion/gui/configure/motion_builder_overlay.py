@@ -463,9 +463,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         return layout
 
-    def _define_plot_layout(self):
-        ...
-
     def _define_params_widget(self):
 
         self.params_add_btn.setEnabled(False)
