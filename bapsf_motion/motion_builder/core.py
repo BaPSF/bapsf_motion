@@ -47,6 +47,13 @@ class MotionBuilder(MBItem):
     space
     layers
     exclusions
+    layer_to_motionlist_scheme : `str`
+        (``'sequential'`` or ``'merge'``) The style in which the point
+        layers are combined to form the motion list.  ``'sequential'``
+        means that the point layers are added sequentially to form the
+        motion list, and ``'merge'`` means the point layers are merged
+        together (i.e. removing duplicate points and sorting points) to
+        form one "global" motion list. (DEFAULT ``'sequential'``)
     """
     # TODO: ^ fully write out the above docstring
 
@@ -67,8 +74,13 @@ class MotionBuilder(MBItem):
             space: Union[str, List[Dict[str, Any]]],
             layers: Optional[List[Dict[str, Any]]] = None,
             exclusions: Optional[List[Dict[str, Any]]] = None,
+            layer_to_motionlist_scheme: str = "sequential",
     ):
         self._space = self._validate_space(space)
+
+        if layer_to_motionlist_scheme not in ("merge", "sequential"):
+            layer_to_motionlist_scheme = "sequential"
+        self._layer_to_motionlist_scheme = layer_to_motionlist_scheme
 
         super().__init__(
             self._build_initial_ds(),
@@ -98,7 +110,10 @@ class MotionBuilder(MBItem):
         Dictionary containing the full configuration of the
         :term:`motion builder`.
         """
-        _config = {"space": {}}
+        _config = {
+            "space": {},
+            "layer_to_motionlist_scheme": self.layer_to_motionlist_scheme,
+        }
 
         # pack the space config
         for ii, item in enumerate(self._space):
@@ -127,6 +142,26 @@ class MotionBuilder(MBItem):
     def layers(self) -> List[BaseLayer]:
         """List of added point "motion list" layers."""
         return self._layers
+
+    @property
+    def layer_to_motionlist_scheme(self) -> str:
+        """
+        The style in which the point layers are combined to form the
+        motion list.  ``'sequential'`` means that the point layers are
+        added sequentially to form the motion list, and ``'merge'``
+        means the point layers are merged together (i.e. remove
+        duplicate points and sort points) to form one "global" motion
+        list.
+        """
+        return self._layer_to_motionlist_scheme
+
+    @layer_to_motionlist_scheme.setter
+    def layer_to_motionlist_scheme(self, value: str) -> None:
+        if value not in ("sequential", "merge"):
+            return
+
+        self._layer_to_motionlist_scheme = value
+        self.generate()
 
     @staticmethod
     def _validate_space(space: List[Dict[str, Any]]):
@@ -408,12 +443,17 @@ class MotionBuilder(MBItem):
 
         points = np.concatenate(for_concatenation, axis=0)
 
+        if self.layer_to_motionlist_scheme == "merge":
+            points = np.unique(points, axis=0)
+
         select = {}
         for ii, dim_name in enumerate(self.mask.dims):
             select[dim_name] = points[..., ii]
 
-        # TODO: Does this properly exclude points that are outside the
-        #       motion space?
+        # Note: np.diag is used here since xr.sel will search for all
+        #       combinations of given indexers, but we are only
+        #       interested in the points along the diagonal of this
+        #       forced combination
         mask = np.diag(self.mask.sel(method="nearest", **select))
         self._ds["motion_list"] = xr.DataArray(
             data=points[mask, ...],
