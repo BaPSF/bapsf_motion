@@ -443,12 +443,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _txt.setFont(font)
         title = _txt
 
-        sub_layout = QHBoxLayout()
-        sub_layout.setContentsMargins(0, 0, 0, 0)
-        sub_layout.setSpacing(8)
-        sub_layout.addWidget(self.add_ly_btn)
-        sub_layout.addWidget(self.remove_ly_btn)
-        sub_layout.addWidget(self.edit_ly_btn)
+        btn_layout = QHBoxLayout()
+        btn_layout.setContentsMargins(0, 0, 0, 0)
+        btn_layout.setSpacing(8)
+        btn_layout.addWidget(self.add_ly_btn)
+        btn_layout.addWidget(self.remove_ly_btn)
+        btn_layout.addWidget(self.edit_ly_btn)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -459,7 +459,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         layout.addSpacing(2)
         layout.addWidget(self.layer_list_box)
-        layout.addLayout(sub_layout)
+        layout.addLayout(btn_layout)
 
         return layout
 
