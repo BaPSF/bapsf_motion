@@ -106,6 +106,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ly_btn = None
         self.layer_move_up_btn = None
         self.layer_move_down_btn = None
+        self.layer_ml_combine_toggle = None
         self._initialize_layer_list_layout_widgets()
 
         # SET UP PLOT WIDGET
@@ -407,6 +408,18 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _font.setBold(True)
         order_label.setFont(_font)
 
+        _txt = QLabel("Merge", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        _font = _txt.font()
+        _font.setPointSize(12)
+        _txt.setFont(_font)
+        _merge_txt = _txt
+
+        _txt = QLabel("Sequential", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        _txt.setFont(_font)
+        _sequential_txt = _txt
+
         btn_layout = QHBoxLayout()
         btn_layout.setContentsMargins(0, 0, 0, 0)
         btn_layout.setSpacing(8)
@@ -431,6 +444,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         list_layout.addWidget(order_label)
         list_layout.addWidget(order_widget)
 
+        ml_combine_layout = QHBoxLayout()
+        ml_combine_layout.setContentsMargins(0, 0, 0, 0)
+        ml_combine_layout.addStretch()
+        ml_combine_layout.addWidget(_sequential_txt)
+        ml_combine_layout.addWidget(self.layer_ml_combine_toggle)
+        ml_combine_layout.addWidget(_merge_txt)
+        ml_combine_layout.addStretch()
+        ml_combine_layout.addSpacing(24+10+12)
+
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
@@ -440,6 +462,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         layout.addSpacing(2)
         layout.addLayout(list_layout)
+        layout.addLayout(ml_combine_layout)
         layout.addLayout(btn_layout)
 
         return layout
@@ -641,6 +664,55 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_move_down_btn.setIconSize(18)
         self.layer_move_down_btn.setFixedWidth(24)
         self.layer_move_down_btn.setFixedHeight(48)
+
+        _btn = StyleButton("ML Combine", parent=self)
+        _btn.setFixedHeight(24)
+        font = _btn.font()
+        font.setPointSize(10)
+        _btn.setFont(font)
+        _color_str = "rgb(52, 161, 219)"
+        _btn.update_style_sheet(
+            styles={
+                "background-color": re.sub(
+                    " +",
+                    " ",
+                    f"""qlineargradient(
+                        x1:0,
+                        y1:0, 
+                        x2:1, 
+                        y2:0,
+                        stop: 0 {_color_str},
+                        stop: 0.1 {_color_str},
+                        stop: 0.15 rgb(163, 163, 163),
+                        stop: 1 rgb(163, 163, 163)
+                    )""".replace("\n", "")
+                ),
+            },
+            action="base",
+        )
+        _btn.update_style_sheet(
+            styles={
+                "background-color": re.sub(
+                    " +",
+                    " ",
+                    f"""qlineargradient(
+                        x1:0,
+                        y1:0, 
+                        x2:1, 
+                        y2:0,
+                        stop: 0 rgb(163, 163, 163),
+                        stop: 0.85 rgb(163, 163, 163),
+                        stop: 0.9 {_color_str},
+                        stop: 1 {_color_str}
+                    )""".replace("\n", "")
+                ),
+            },
+            action="checked",
+        )
+        _btn.setCheckable(True)
+        _btn.setChecked(False)
+        _btn.setFixedWidth(180)
+        self.layer_ml_combine_toggle = _btn
 
     def _initialize_params_layout_widgets(self):
         self._params_widget.setMinimumHeight(300)
