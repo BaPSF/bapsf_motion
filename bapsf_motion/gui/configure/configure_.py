@@ -383,7 +383,7 @@ class ConfigureGUI(QMainWindow):
         self.update_display_config_text()
         self.update_display_rm_name()
         self.update_display_mg_list()
-        self._update_motion_builder_defaults()
+        self.update_motion_builder_defaults()
 
     def replace_rm(self, config):
         if isinstance(self.rm, RunManager):
@@ -553,7 +553,7 @@ class ConfigureGUI(QMainWindow):
 
         self._defaults = defaults
 
-    def _update_motion_builder_defaults(self):
+    def update_motion_builder_defaults(self):
         if not isinstance(self.rm, RunManager):
             self._defaults_updated = None
             return
