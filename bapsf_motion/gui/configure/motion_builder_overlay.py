@@ -39,6 +39,7 @@ from bapsf_motion.gui.widgets import (
     DiscardButton,
     DoneButton,
     HLinePlain,
+    IconButton,
     QLineEditSpecialized,
     StyleButton,
     VLinePlain,
@@ -103,6 +104,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.add_ly_btn = None
         self.remove_ly_btn = None
         self.edit_ly_btn = None
+        self.layer_move_up_btn = None
+        self.layer_move_down_btn = None
         self._initialize_layer_list_layout_widgets()
 
         # SET UP PLOT WIDGET
@@ -396,12 +399,37 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _txt.setFont(font)
         title = _txt
 
+        order_label = QLabel("\n".join(list("ORDER ITEM")), parent=self)
+        order_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        order_label.setFixedWidth(10)
+        order_label.setSizePolicy(QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Minimum)
+        _font = order_label.font()
+        _font.setBold(True)
+        order_label.setFont(_font)
+
         btn_layout = QHBoxLayout()
         btn_layout.setContentsMargins(0, 0, 0, 0)
         btn_layout.setSpacing(8)
         btn_layout.addWidget(self.add_ly_btn)
         btn_layout.addWidget(self.remove_ly_btn)
         btn_layout.addWidget(self.edit_ly_btn)
+
+        order_layout = QVBoxLayout()
+        order_layout.setContentsMargins(0, 0, 0, 0)
+        order_layout.addStretch()
+        order_layout.addWidget(self.layer_move_up_btn)
+        order_layout.addSpacing(4)
+        order_layout.addWidget(self.layer_move_down_btn)
+        order_layout.addStretch()
+        order_widget = QWidget(parent=self)
+        order_widget.setLayout(order_layout)
+        order_widget.setFixedWidth(24)
+
+        list_layout = QHBoxLayout()
+        list_layout.setContentsMargins(0, 0, 0, 0)
+        list_layout.addWidget(self.layer_list_box)
+        list_layout.addWidget(order_label)
+        list_layout.addWidget(order_widget)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -411,7 +439,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter,
         )
         layout.addSpacing(2)
-        layout.addWidget(self.layer_list_box)
+        layout.addLayout(list_layout)
         layout.addLayout(btn_layout)
 
         return layout
@@ -604,6 +632,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.edit_ly_btn = self._generate_btn_widget("EDIT")
         self.edit_ly_btn.setEnabled(False)
+
+        self.layer_move_up_btn = IconButton("fa.arrow-up", parent=self)
+        self.layer_move_up_btn.setIconSize(20)
+        self.layer_move_up_btn.setFixedWidth(24)
+        self.layer_move_up_btn.setFixedHeight(48)
+        self.layer_move_down_btn = IconButton("fa.arrow-down", parent=self)
+        self.layer_move_down_btn.setIconSize(18)
+        self.layer_move_down_btn.setFixedWidth(24)
+        self.layer_move_down_btn.setFixedHeight(48)
 
     def _initialize_params_layout_widgets(self):
         self._params_widget.setMinimumHeight(300)
