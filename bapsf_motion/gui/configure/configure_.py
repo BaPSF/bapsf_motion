@@ -562,12 +562,12 @@ class ConfigureGUI(QMainWindow):
             self._defaults_updated = None
             return
 
-        if self.defaults is None:
-            self._defaults_updated = {"motion_builder": {}}
-        else:
+        if self._defaults is not None:
             self._defaults_updated = _deepcopy_dict(self._defaults)
 
-        if "motion_builder" not in self._defaults:
+        if self._defaults is None:
+            self._defaults_updated = {"motion_builder": {}}
+        elif "motion_builder" not in self._defaults:
             self._defaults_updated["motion_builder"] = {}
         else:
             self._defaults_updated["motion_builder"] = _deepcopy_dict(
