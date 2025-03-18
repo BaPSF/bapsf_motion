@@ -683,7 +683,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                         y2:0,
                         stop: 0 {_color_str},
                         stop: 0.1 {_color_str},
-                        stop: 0.15 rgb(163, 163, 163),
+                        stop: 0.12 rgb(163, 163, 163),
                         stop: 1 rgb(163, 163, 163)
                     )""".replace("\n", "")
                 ),
@@ -701,7 +701,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                         x2:1, 
                         y2:0,
                         stop: 0 rgb(163, 163, 163),
-                        stop: 0.85 rgb(163, 163, 163),
+                        stop: 0.88 rgb(163, 163, 163),
                         stop: 0.9 {_color_str},
                         stop: 1 {_color_str}
                     )""".replace("\n", "")
