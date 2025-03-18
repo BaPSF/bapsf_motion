@@ -162,6 +162,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # non-widget initialization
 
         self._initialize_motion_builder()
+        self._initialize_exclusion_list_box()
+        self._initialize_layer_list_box()
         self.setLayout(self._define_layout())
 
         self.update_exclusion_list_box()
@@ -412,38 +414,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _txt.setFont(font)
         title = _txt
 
-        ex_types = set(ex.exclusion_type for ex in self.mb.exclusions)
-
-        _available = self.exclusion_registry.get_names_by_dimensionality(
-            self.dimensionality
-        )
-        ex_names = []
-        if not _available:
-            self.logger.warning(
-                "There are no coded exclusion layers that work with the "
-                f"dimensionality of the existing probe drive, {self.dimensionality}."
-            )
-            self.add_ex_btn.setEnabled(False)
-            self.remove_ex_btn.setEnabled(False)
-            self.edit_ex_btn.setEnabled(False)
-
-            exclusions = self.mb.exclusions.copy()
-            for ex in exclusions:
-                self.mb.remove_exclusion(ex.name)
-
-        elif ex_types - _available:
-            exclusions = self.mb.exclusions.copy()
-            for ex in exclusions:
-                if ex.exclusion_type in _available:
-                    ex_names.append(
-                        self._generate_list_name(ex.name, ex.exclusion_type)
-                    )
-                    continue
-
-                self.mb.remove_exclusion(ex.name)
-
-        self.exclusion_list_box.addItems(ex_names)
-
         sub_layout = QHBoxLayout()
         sub_layout.setContentsMargins(0, 0, 0, 0)
         sub_layout.setSpacing(8)
@@ -472,38 +442,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         font.setBold(True)
         _txt.setFont(font)
         title = _txt
-
-        ly_types = set(ly.layer_type for ly in self.mb.layers)
-
-        _available = self.layer_registry.get_names_by_dimensionality(
-            self.dimensionality
-        )
-        ly_names = []
-        if not _available:
-            self.logger.warning(
-                "There are no coded point layers that work with the "
-                f"dimensionality of the existing probe drive, {self.dimensionality}."
-            )
-            self.add_ly_btn.setEnabled(False)
-            self.remove_ly_btn.setEnabled(False)
-            self.edit_ly_btn.setEnabled(False)
-
-            layers = self.mb.layers.copy()
-            for ly in layers:
-                self.mb.remove_layer(ly.name)
-
-        elif ly_types - _available:
-            layers = self.mb.layers.copy()
-            for ly in layers:
-                if ly.layer_type in _available:
-                    ly_names.append(
-                        self._generate_list_name(ly.name, ly.layer_type)
-                    )
-                    continue
-
-                self.mb.remove_layer(ly.name)
-
-        self.layer_list_box.addItems(ly_names)
 
         sub_layout = QHBoxLayout()
         sub_layout.setContentsMargins(0, 0, 0, 0)
@@ -684,6 +622,72 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         _widget.setLayout(layout)
         return _widget
+
+    def _initialize_exclusion_list_box(self):
+        ex_types = set(ex.exclusion_type for ex in self.mb.exclusions)
+
+        _available = self.exclusion_registry.get_names_by_dimensionality(
+            self.dimensionality
+        )
+        ex_names = []
+        if not _available:
+            self.logger.warning(
+                "There are no coded exclusion layers that work with the "
+                f"dimensionality of the existing probe drive, {self.dimensionality}."
+            )
+            self.add_ex_btn.setEnabled(False)
+            self.remove_ex_btn.setEnabled(False)
+            self.edit_ex_btn.setEnabled(False)
+
+            exclusions = self.mb.exclusions.copy()
+            for ex in exclusions:
+                self.mb.remove_exclusion(ex.name)
+
+        elif ex_types - _available:
+            exclusions = self.mb.exclusions.copy()
+            for ex in exclusions:
+                if ex.exclusion_type in _available:
+                    ex_names.append(
+                        self._generate_list_name(ex.name, ex.exclusion_type)
+                    )
+                    continue
+
+                self.mb.remove_exclusion(ex.name)
+
+        self.exclusion_list_box.addItems(ex_names)
+
+    def _initialize_layer_list_box(self):
+        ly_types = set(ly.layer_type for ly in self.mb.layers)
+
+        _available = self.layer_registry.get_names_by_dimensionality(
+            self.dimensionality
+        )
+        ly_names = []
+        if not _available:
+            self.logger.warning(
+                "There are no coded point layers that work with the "
+                f"dimensionality of the existing probe drive, {self.dimensionality}."
+            )
+            self.add_ly_btn.setEnabled(False)
+            self.remove_ly_btn.setEnabled(False)
+            self.edit_ly_btn.setEnabled(False)
+
+            layers = self.mb.layers.copy()
+            for ly in layers:
+                self.mb.remove_layer(ly.name)
+
+        elif ly_types - _available:
+            layers = self.mb.layers.copy()
+            for ly in layers:
+                if ly.layer_type in _available:
+                    ly_names.append(
+                        self._generate_list_name(ly.name, ly.layer_type)
+                    )
+                    continue
+
+                self.mb.remove_layer(ly.name)
+
+        self.layer_list_box.addItems(ly_names)
 
     # -- WIDGET INTERACTION FUNCTIONALITY --
 
