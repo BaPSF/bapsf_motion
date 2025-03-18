@@ -241,7 +241,7 @@ class MotionGroupConfig(UserDict):
 
     #: optional keys for the motion group configuration dictionary
     _optional_metadata = {
-        "motion_builder": {"exclusion", "layer"},
+        "motion_builder": {"exclusion", "layer", "layer_to_motionlist_scheme"},
         "drive.axes": {"motor_settings"},
     }
 
@@ -478,12 +478,16 @@ class MotionGroupConfig(UserDict):
 
         config = self._handle_user_meta(config, set.union(req_meta, opt_meta))
 
-        # now check for requited meta keys of the lower level required
-        # keys (i.e. layers and exceptions)
+        # now check for "optional" keys
         for key in opt_meta:
             try:
                 sub_config = config[key]
             except KeyError:
+                continue
+
+            if key not in ("layer", "exclusion"):
+                # this is a true optional key that MotionBuilder will give
+                # a default value to if the value is incorrect
                 continue
 
             if not isinstance(sub_config, dict):
@@ -843,6 +847,9 @@ class MotionGroup(EventActor):
                 _inputs[_kwarg] = list(mb_config.pop(key).values())
             except KeyError:
                 continue
+
+        # add back normal kwargs
+        _inputs.update(mb_config)
 
         self._mb = MotionBuilder(**_inputs)
         return self._mb
