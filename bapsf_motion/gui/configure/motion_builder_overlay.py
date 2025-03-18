@@ -578,7 +578,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _initialize_exclusion_list_layout_widgets(self):
         self.exclusion_list_box = QListWidget(parent=self)
         self.exclusion_list_box.setMinimumHeight(250)
-        self.exclusion_list_box.font().setPointSize(12)
+        _font = self.exclusion_list_box.font()
+        _font.setPointSize(11)
+        self.exclusion_list_box.setFont(_font)
 
         self.add_ex_btn = self._generate_btn_widget("ADD")
 
@@ -591,7 +593,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _initialize_layer_list_layout_widgets(self):
         self.layer_list_box = QListWidget(parent=self)
         self.layer_list_box.setMinimumHeight(250)
-        self.layer_list_box.font().setPointSize(12)
+        _font = self.layer_list_box.font()
+        _font.setPointSize(11)
+        self.layer_list_box.setFont(_font)
 
         self.add_ly_btn = self._generate_btn_widget("ADD")
 
