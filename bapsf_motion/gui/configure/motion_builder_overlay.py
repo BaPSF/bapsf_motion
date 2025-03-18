@@ -455,8 +455,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         return layout
 
-    def _define_params_widget(self):
-
+    def _define_params_layout(self):
         self.params_add_btn.setEnabled(False)
 
         banner_layout = QHBoxLayout()
@@ -501,7 +500,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layout.addWidget(self._params_field_widget)
         layout.addStretch()
 
-        self._params_widget.setLayout(layout)
+        return layout
+
+    def _define_params_widget(self):
+        self._params_widget.setLayout(self._define_params_layout())
         self._params_widget.hide()
         return self._params_widget
 
