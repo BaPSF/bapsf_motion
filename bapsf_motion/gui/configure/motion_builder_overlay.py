@@ -125,6 +125,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.update_exclusion_list_box()
         self.update_layer_list_box()
+        self.update_layer_ml_combine_toggle()
         self.update_canvas()
 
         self._connect_signals()
@@ -843,6 +844,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # now update displays
         self.update_exclusion_list_box()
         self.update_layer_list_box()
+        self.update_layer_ml_combine_toggle()
         self.update_canvas()
 
     def _exclusion_configure_new(self):
@@ -1408,6 +1410,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             return
 
         self.layer_list_box.addItems(ly_names)
+
+    def update_layer_ml_combine_toggle(self):
+        _scheme = self.mb.layer_to_motionlist_scheme
+        self.logger.info(f"Updating Layer ML Combine Toggle - {_scheme}")
+        _check_state = False if _scheme == "sequential" else True
+        self.layer_ml_combine_toggle.setChecked(_check_state)
 
     # -- NORMAL METHODS --
 
