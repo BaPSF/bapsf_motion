@@ -100,7 +100,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ex_btn = None
         self._initialize_exclusion_list_layout_widgets()
 
-        self.layer_list_box = None
+        self.layer_list_box = None  # type: Union[QListWidget, None]
         self.add_ly_btn = None
         self.remove_ly_btn = None
         self.edit_ly_btn = None
@@ -989,6 +989,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layer = self.mb.layers.pop(current_index)  # noqa
         self.mb.layers.insert(move_to_index, layer)
         self.configChanged.emit()
+        self.layer_list_box.setCurrentRow(move_to_index)
 
     def _layer_list_item_move_down(self):
         item = self.layer_list_box.currentItem()
@@ -1015,6 +1016,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layer = self.mb.layers.pop(current_index)  # noqa
         self.mb.layers.insert(move_to_index, layer)
         self.configChanged.emit()
+        self.layer_list_box.setCurrentRow(move_to_index)
 
     def _layer_modify_existing(self):
         item = self.layer_list_box.currentItem()
