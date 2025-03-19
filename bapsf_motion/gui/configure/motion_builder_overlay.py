@@ -95,7 +95,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         # SET UP LEFT WIDGETS (i.e. list boxes)
 
-        self.exclusion_list_box = None
+        self.exclusion_list_box = None  # type: Union[QListWidget, None]
         self.add_ex_btn = None
         self.remove_ex_btn = None
         self.edit_ex_btn = None
