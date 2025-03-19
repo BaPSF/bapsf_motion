@@ -32,6 +32,10 @@ class MotionSpaceDisplay(QFrame):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
 
+    _default_legend_names = [
+        "motion_list", "probe", "position", "target", "insertion_point"
+    ]
+
     def __init__(
         self, mb: MotionBuilder = None, parent=None
     ):
@@ -44,6 +48,8 @@ class MotionSpaceDisplay(QFrame):
         self._display_position = True
         self._display_target_position = True
         self._display_probe = True
+
+        self._motionlist_plot_names = None  # type: Union[None, List[str]]
 
         self.setStyleSheet(
             """
@@ -234,18 +240,7 @@ class MotionSpaceDisplay(QFrame):
         fig.tight_layout()
 
         # Draw motion list
-        pts = self.mb.motion_list
-        if pts is not None:
-            ax.scatter(
-                x=pts[..., 0],
-                y=pts[..., 1],
-                linewidth=1,
-                s=3 ** 2,
-                facecolors="deepskyblue",
-                edgecolors="black",
-                picker=True,
-                label="motion_list",
-            )
+        self.update_motion_list()
 
         # Draw insertion point
         insertion_point = self.mb.get_insertion_point()
@@ -309,6 +304,110 @@ class MotionSpaceDisplay(QFrame):
         ax = self.mpl_canvas.figure.gca()
         ax.legend(handles=handles)
 
+        self.mpl_canvas.draw()
+
+    def update_motion_list(self):
+
+        _layer_names = [layer.name for layer in self.mb.layers]
+        _plotted_layer_names = (
+            [] if self._motionlist_plot_names is None else self._motionlist_plot_names
+        )
+        _labels = set(_layer_names + _plotted_layer_names)
+        _plotted_layer_names = []
+        edgecolor = "none"
+        facecolors = [
+            "deepskyblue",
+            "orangered",
+            "slategrey",
+            "teal",
+            "darkorange",
+            "darkviolet",
+            "deeppink",
+        ]
+        color_index = 0
+        for _label in _labels:
+            stuff = self._get_plot_axis_by_name(_label)
+            if stuff is not None:
+                ax, handler = stuff  # type: plt.Axes, PathCollection
+
+                if (
+                    _label not in _layer_names
+                    or self.mb.layer_to_motionlist_scheme == "merge"
+                ):
+                    handler.remove()
+                else:
+                    data = self.mb._ds[_label].data
+                    pts = self.mb.flatten_points(data)
+                    handler.set_offsets(pts)
+                    handler.set_facecolor(facecolors[color_index])
+                    handler.set_edgecolor(edgecolor)
+
+                    color_index += 1
+                    _plotted_layer_names.append(_label)
+            elif (
+                _label not in _layer_names
+                or self.mb.layer_to_motionlist_scheme == "merge"
+            ):
+                pass
+            else:
+                ax = self.mpl_canvas.figure.gca()
+
+                data = self.mb._ds[_label].data
+                pts = self.mb.flatten_points(data)
+
+                ax.scatter(
+                    x=pts[..., 0],
+                    y=pts[..., 1],
+                    s=4 ** 2,
+                    facecolors=facecolors[color_index],
+                    edgecolors=edgecolor,
+                    label=_label,
+                )
+
+                color_index += 1
+                _plotted_layer_names.append(_label)
+
+            color_index = color_index % len(facecolors)
+        self._motionlist_plot_names = _plotted_layer_names
+
+        # add motion list "base" plot
+        _label = "motion_list"
+        motion_list = self.mb.motion_list
+        facecolors = (
+            "none" if (
+                motion_list is None
+                or (
+                    len(self.mb.layers) > 1
+                    and self.mb.layer_to_motionlist_scheme == "sequential"
+                )
+            ) else "deepskyblue"
+        )
+        stuff = self._get_plot_axis_by_name(_label)
+        if stuff is not None:
+            ax, handler = stuff  # type: plt.Axes, PathCollection
+
+            if motion_list is None:
+                handler.remove()
+            else:
+                handler.set_offsets(motion_list)
+                handler.set_facecolor(facecolors)
+        elif motion_list is None:
+            pass
+        else:
+            ax = self.mpl_canvas.figure.gca()
+
+            ax.scatter(
+                x=motion_list[..., 0],
+                y=motion_list[..., 1],
+                s=4 ** 2,
+                linewidth=1,
+                facecolors=facecolors,
+                edgecolors="black",
+                picker=True,
+                label=_label,
+            )
+
+        self.update_legend()
         self.mpl_canvas.draw()
 
     def update_target_position_plot(self, position):
