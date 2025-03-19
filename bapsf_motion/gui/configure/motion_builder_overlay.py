@@ -1298,11 +1298,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             return
 
         space_config[axis_index] = axis_config
-        config = {
-            "space": space_config,
-            "exclusion": self.mb.config.get("exclusion", None),
-            "layer": self.mb.config.get("layer", None),
-        }
+        config = {**self.mb.config, "space": space_config}
         self._spawn_motion_builder(config)
 
     def _validate_inputs(self):
@@ -1507,21 +1503,22 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def _spawn_motion_builder(self, config):
         self.logger.info("Rebuilding motion builder...")
-        space = list(config["space"].values())
+        mb_config = _deepcopy_dict(config)
+        mb_config["space"] = list(config["space"].values())
 
-        exclusions = config.get("exclusion", None)
+        exclusions = mb_config.pop("exclusion", None)
         if exclusions is not None:
-            exclusions = list(exclusions.values())
+            mb_config["exclusions"] = list(exclusions.values())
 
-        layers = config.get("layer", None)
+        layers = mb_config.pop("layer", None)
         if layers is not None:
-            layers = list(layers.values())
+            mb_config["layers"] = list(layers.values())
 
-        self.logger.info(f"space looks like : {space}")
-        self.logger.info(f"exclusion look like : {exclusions}")
-        self.logger.info(f"layer looks like : {layers}")
+        self.logger.info(f"space looks like : {mb_config['space']}")
+        self.logger.info(f"exclusion look like : {mb_config['exclusions']}")
+        self.logger.info(f"layer looks like : {mb_config['layers']}")
 
-        self._mb = MotionBuilder(space=space, exclusions=exclusions, layers=layers)
+        self._mb = MotionBuilder(**mb_config)
         self.mpl_canvas.link_motion_builder(self._mb)
         self.configChanged.emit()
         return self._mb
