@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QVBoxLayout,
     QComboBox,
+    QFrame,
 )
 from typing import Any, Dict, Optional, Union
 
@@ -115,6 +116,39 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mpl_canvas.display_target_position = False
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
             self.mpl_canvas.link_motion_builder(self.mg.mb)
+
+        self.animate_ml_widget = QFrame(parent=self)
+        self.animate_ml_widget.setObjectName("animate_ml_controls")
+        self.animate_ml_widget.setStyleSheet(
+            """
+            QFrame#animate_ml_controls {
+                border: 2px solid rgb(125, 125, 125);
+                border-radius: 5px; 
+                padding: 0px;
+                margin: 0px;
+            }
+            """
+        )
+        self.animate_ml_widget.setFixedWidth(72)
+        self.animate_ml_widget.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding
+        )
+
+        _btn = StyleButton("\n".join(list("ANIMATE")), parent=self.animate_ml_widget)
+        _btn.setFixedWidth(44)
+        _btn.setFixedHeight(130)
+        _font = _btn.font()
+        _font.setBold(True)
+        _btn.setFont(_font)
+        self.animate_ml_btn = _btn
+
+        _btn = StyleButton("\n".join(list("CLEAR")), parent=self.animate_ml_widget)
+        _btn.setFixedWidth(44)
+        _btn.setFixedHeight(100)
+        _font = _btn.font()
+        _font.setBold(True)
+        _btn.setFont(_font)
+        self.animate_ml_clear_btn = _btn
 
         # non-widget initialization
 
@@ -259,15 +293,44 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return _widget
 
     def _define_right_area_widget(self):
-        _widget = QWidget(parent=self)
-        _widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        _txt = QLabel("Motion\nList\nAnimate", parent=self.animate_ml_widget)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _animate_title = _txt
 
-        layout = QVBoxLayout(_widget)
+        animate_layout = QVBoxLayout()
+        animate_layout.setContentsMargins(8, 4, 8, 8)
+        animate_layout.addWidget(_animate_title)
+        animate_layout.addSpacing(4)
+        animate_layout.addWidget(
+            self.animate_ml_btn,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
+        animate_layout.addWidget(
+            self.animate_ml_clear_btn,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
+        animate_layout.addStretch()
+        self.animate_ml_widget.setLayout(animate_layout)
+
+        side_control_layout = QVBoxLayout()
+        side_control_layout.setContentsMargins(0, 0, 0, 0)
+        side_control_layout.addWidget(self.animate_ml_widget)
+        side_control_layout.addStretch()
+
+        plot_layout = QHBoxLayout()
+        plot_layout.setContentsMargins(0, 0, 0, 0)
+        plot_layout.addLayout(side_control_layout)
+        plot_layout.addWidget(self.mpl_canvas)
+
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.mpl_canvas)
+        layout.addLayout(plot_layout)
         layout.addWidget(self._define_params_widget())
         layout.addStretch(1)
 
+        _widget = QWidget(parent=self)
+        _widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        _widget.setLayout(layout)
         return _widget
 
     def _define_motion_space_layout(self):
