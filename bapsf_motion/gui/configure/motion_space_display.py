@@ -312,10 +312,10 @@ class MotionSpaceDisplay(QFrame):
     def update_motion_list(self):
 
         _layer_names = [layer.name for layer in self.mb.layers]
-        _plotted_layer_names = (
+        _plotted_layer_names = set(
             [] if self._motionlist_plot_names is None else self._motionlist_plot_names
         )
-        _labels = set(_layer_names + _plotted_layer_names)
+        _labels = _layer_names + list(_plotted_layer_names - set(_layer_names))
         _plotted_layer_names = []
         edgecolor = "none"
         facecolors = [
