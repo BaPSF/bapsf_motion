@@ -285,7 +285,10 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.draw()
 
     def update_legend(self):
-        _names = ["motion_list", "probe", "position", "target", "insertion_point"]
+        _plotted_layers = (
+            [] if self._motionlist_plot_names is None else self._motionlist_plot_names
+        )
+        _names = set(self._default_legend_names + _plotted_layers)
 
         # gather handles for legend
         handles = []
