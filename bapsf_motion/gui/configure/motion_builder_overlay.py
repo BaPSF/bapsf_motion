@@ -1324,9 +1324,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.remove_ex_btn.setEnabled(False)
         self.edit_ex_btn.setEnabled(False)
 
-        ex_names = set(
-            self._generate_list_name(ex.name, ex.exclusion_type)
-            for ex in self.mb.exclusions
+        ex_names = (
+            self._generate_list_name(ii, ex.name, ex.exclusion_type)
+            for ii, ex in enumerate(self.mb.exclusions)
         )
         self.exclusion_list_box.clear()
 
@@ -1340,9 +1340,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.remove_ly_btn.setEnabled(False)
         self.edit_ly_btn.setEnabled(False)
 
-        ly_names = set(
-            self._generate_list_name(ly.name, ly.layer_type)
-            for ly in self.mb.layers
+        ly_names = (
+            self._generate_list_name(ii, ly.name, ly.layer_type)
+            for ii, ly in enumerate(self.mb.layers)
         )
 
         self.layer_list_box.clear()
