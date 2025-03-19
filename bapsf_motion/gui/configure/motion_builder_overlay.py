@@ -1386,13 +1386,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return btn
 
     @staticmethod
-    def _generate_list_name(name, _type):
-        return f"{name:<17} <type = {_type}>"
+    def _generate_list_name(_index, name, _type):
+        return f"[{_index:02d}]  {name:<17} <type = {_type}>"
 
     @staticmethod
     def _get_layer_name_from_list_name(list_name):
         match = re.compile(
-            r"(?P<name>\S+)\s+(<type = )(?P<type>\S+)(>)"
+            r"(\[)(?P<index>\d+)(])\s+(?P<name>\S+)\s+(<type = )(?P<type>\S+)(>)"
         ).fullmatch(list_name)
         return None if match is None else match.group("name")
 
