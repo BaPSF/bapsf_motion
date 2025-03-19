@@ -156,6 +156,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.exclusion_list_box_set_btn_enable
         )
 
+        self.layer_ml_combine_toggle.clicked.connect(
+            self._toggle_layer_to_motionlist_scheme
+        )
+
     def _define_layout(self):
         #
         #  +-------------------------------------------------------+
@@ -1079,6 +1083,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _show_params_widget(self):
         self._params_field_widget.setEnabled(True)
         self._params_widget.show()
+
+    def _toggle_layer_to_motionlist_scheme(self):
+        if not isinstance(self.mb, MotionBuilder):
+            return
+
+        _scheme = "merge" if self.layer_ml_combine_toggle.isChecked() else "sequential"
+        self.logger.info(f"Toggling motion list scheme to {_scheme}.")
+        self.mb.layer_to_motionlist_scheme = _scheme
+        self.configChanged.emit()
 
     @Slot(object)
     def _update_param_inputs(self, input_widget: "QLineEditSpecialized"):
