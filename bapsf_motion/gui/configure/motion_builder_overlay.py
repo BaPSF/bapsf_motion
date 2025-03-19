@@ -160,6 +160,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self._toggle_layer_to_motionlist_scheme
         )
 
+        self.layer_move_up_btn.clicked.connect(self._layer_list_item_move_up)
+
     def _define_layout(self):
         #
         #  +-------------------------------------------------------+
@@ -960,6 +962,32 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self._refresh_params_widget()
         self._show_params_widget()
+
+    def _layer_list_item_move_up(self):
+        item = self.layer_list_box.currentItem()
+        if item is None:
+            # no item is selected
+            return
+
+        item_name = item.text()
+        layer_name = self._get_layer_name_from_list_name(item_name)
+        move_to_index = None
+        for ii, layer in enumerate(self.mb.layers):
+            if layer_name == layer.name:
+                current_index = ii
+                move_to_index = current_index - 1
+                break
+
+        if move_to_index is None:
+            # item was not found, do nothing
+            return
+        elif move_to_index == -1:
+            # item is already at the top of the list
+            return
+
+        layer = self.mb.layers.pop(current_index)  # noqa
+        self.mb.layers.insert(move_to_index, layer)
+        self.configChanged.emit()
 
     def _layer_modify_existing(self):
         item = self.layer_list_box.currentItem()
