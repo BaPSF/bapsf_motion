@@ -336,6 +336,7 @@ class MotionSpaceDisplay(QFrame):
                 if (
                     _label not in _layer_names
                     or self.mb.layer_to_motionlist_scheme == "merge"
+                    or len(self.mb.layers) == 1
                 ):
                     handler.remove()
                 else:
@@ -350,6 +351,7 @@ class MotionSpaceDisplay(QFrame):
             elif (
                 _label not in _layer_names
                 or self.mb.layer_to_motionlist_scheme == "merge"
+                or len(self.mb.layers) == 1
             ):
                 pass
             else:
