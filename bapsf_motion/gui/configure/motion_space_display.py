@@ -373,10 +373,9 @@ class MotionSpaceDisplay(QFrame):
 
         # stop motion list animation while re-plotting
         is_animating = self.is_animating_motion_list
-        if is_animating:
-            self.blockSignals(True)
-            self.animate_motion_list_clear()
-            self.blockSignals(False)
+        self.blockSignals(True)
+        self.animate_motion_list_clear()
+        self.blockSignals(False)
 
         # retrieve last position
         stuff = self._get_plot_axis_by_name("position")
