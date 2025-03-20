@@ -1074,6 +1074,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         layer = self.mb.layers.pop(current_index)  # noqa
         self.mb.layers.insert(move_to_index, layer)
+        self.mb.generate()
         self.configChanged.emit()
         self.layer_list_box.setCurrentRow(move_to_index)
 
@@ -1101,6 +1102,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         layer = self.mb.layers.pop(current_index)  # noqa
         self.mb.layers.insert(move_to_index, layer)
+        self.mb.generate()
         self.configChanged.emit()
         self.layer_list_box.setCurrentRow(move_to_index)
 
