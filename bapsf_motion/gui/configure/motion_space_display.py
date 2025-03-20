@@ -363,8 +363,14 @@ class MotionSpaceDisplay(QFrame):
         if self.isHidden():
             self.setHidden(False)
 
-        self.logger.info("Redrawing plot...")
-        self.logger.info(f"MB config = {self.mb.config}")
+        self.logger.info("Redrawing Motion Space Display...")
+
+        # stop motion list animation while re-plotting
+        is_animating = self.is_animating_motion_list
+        if is_animating:
+            self.blockSignals(True)
+            self.animate_motion_list_clear()
+            self.blockSignals(False)
 
         # retrieve last position
         stuff = self._get_plot_axis_by_name("position")
@@ -435,6 +441,12 @@ class MotionSpaceDisplay(QFrame):
         self.update_legend()
 
         self.mpl_canvas.draw()
+
+        # re-start the motion list animation
+        if is_animating:
+            self.blockSignals(True)
+            self.animate_motion_list()
+            self.blockSignals(False)
 
     def update_legend(self):
         _plotted_layers = (
