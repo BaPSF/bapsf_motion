@@ -31,7 +31,10 @@ from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as Navigation
 class MotionSpaceDisplay(QFrame):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
+    animateMotionListStarted = Signal()
     animateMotionListFinished = Signal()
+    animateMotionListPaused = Signal()
+    animateMotionListCleared = Signal()
 
     _default_legend_names = [
         "motion_list", "probe", "position", "target", "insertion_point"
