@@ -446,6 +446,54 @@ class MotionBuilder(MBItem):
         if self.layer_to_motionlist_scheme == "merge":
             points = np.unique(points, axis=0)
 
+        mask = self.generate_excluded_mask(points)
+        self._ds["motion_list"] = xr.DataArray(
+            data=points[mask, ...],
+            dims=("index", "space")
+        )
+
+    def generate_excluded_mask(self, points) -> np.ndarray:
+        """
+        Generate a boolean mask for the given set of ``points`` where
+        `True` indicates the point is valid and `False` the point is
+        in an excluded region.  ``points`` should be a
+        :math:`M \times n` array where :math:`M` is the number of points
+        to examine and :math:`N` is equal to the motion space
+        dimensionality.
+        """
+        if not isinstance(points, np.ndarray):
+            points = np.array(points)
+        else:
+            points = points.copy()
+
+        # make sure points is always an M X N matrix
+        if points.ndim == 1 and points.size == self.mspace_ndims:
+            # single point was given
+            points = points[np.newaxis, ...]
+        elif points.ndim != 2:
+            raise ValueError(
+                f"Expected a 2D array of shape (M, {self.mspace_ndims}) "
+                f"for 'points', but got a {points.ndim}-D array."
+            )
+        elif self.mspace_ndims not in points.shape:
+            raise ValueError(
+                f"Expected a 2D array of shape (M, {self.mspace_ndims}) "
+                f"for 'points', but got shape {points.shape}."
+            )
+        elif points.shape[1] != self.mspace_ndims:
+            # dimensions are flipped from expected
+            points = np.swapaxes(points, 0, 1)
+
+        if np.issubdtype(points.dtype, np.floating):
+            pass
+        elif np.issubdtype(points.dtype, np.integer):
+            points = points.astype(np.float64)
+        else:
+            raise ValueError(
+                "Expected a 2D array of dtype integer or floating, but "
+                f"got dtype {points.dtype}."
+            )
+
         select = {}
         for ii, dim_name in enumerate(self.mask.dims):
             select[dim_name] = points[..., ii]
@@ -455,10 +503,7 @@ class MotionBuilder(MBItem):
         #       interested in the points along the diagonal of this
         #       forced combination
         mask = np.diag(self.mask.sel(method="nearest", **select))
-        self._ds["motion_list"] = xr.DataArray(
-            data=points[mask, ...],
-            dims=("index", "space")
-        )
+        return mask
 
     def get_insertion_point(self) -> Union[np.ndarray, None]:
         """
