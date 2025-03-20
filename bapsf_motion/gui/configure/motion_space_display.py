@@ -180,6 +180,9 @@ class MotionSpaceDisplay(QFrame):
         elif self._animate_payload is not None:
             self.animate_motion_list_clear()
             self._animate_payload = None
+        elif self.mb.motion_list is None:
+            self.animate_motion_list_clear()
+            return
 
         self._animate_motion_list_init_payload()
         self._animate_payload["timer"].start()  # noqa
