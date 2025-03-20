@@ -201,7 +201,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mpl_canvas.animateMotionListFinished.connect(
             self._animate_motion_list_finished
         )
+        self.mpl_canvas.animateMotionListCleared.connect(
+            self._animate_motion_list_finished
+        )
         self.animate_ml_btn.clicked.connect(self._animate_motion_list)
+        self.animate_ml_clear_btn.clicked.connect(self.mpl_canvas.animate_motion_list_clear)
 
     def _define_layout(self):
         #
