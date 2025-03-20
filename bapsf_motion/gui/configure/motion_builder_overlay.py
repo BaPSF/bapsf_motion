@@ -204,8 +204,16 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mpl_canvas.animateMotionListCleared.connect(
             self._animate_motion_list_finished
         )
+        self.mpl_canvas.animateMotionListStarted.connect(
+            self._animate_motion_list_btn_txt_to_pause
+        )
+        self.mpl_canvas.animateMotionListPaused.connect(
+            self._animate_motion_list_btn_txt_to_animate
+        )
         self.animate_ml_btn.clicked.connect(self._animate_motion_list)
-        self.animate_ml_clear_btn.clicked.connect(self.mpl_canvas.animate_motion_list_clear)
+        self.animate_ml_clear_btn.clicked.connect(
+            self.mpl_canvas.animate_motion_list_clear
+        )
 
     def _define_layout(self):
         #
@@ -923,10 +931,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _btn_text = self.animate_ml_btn.text().replace("\n", "")
         if _btn_text == "PAUSE":
             self.mpl_canvas.animate_motion_list_pause()
-            self.animate_ml_btn.setText("\n".join(list("ANIMATE")))
         else:
             self.mpl_canvas.animate_motion_list()
-            self.animate_ml_btn.setText("\n".join(list("PAUSE")))
+
+    def _animate_motion_list_btn_txt_to_animate(self):
+        self.animate_ml_btn.setText("\n".join(list("ANIMATE")))
+
+    def _animate_motion_list_btn_txt_to_pause(self):
+        self.animate_ml_btn.setText("\n".join(list("PAUSE")))
 
     def _animate_motion_list_finished(self):
         self.animate_ml_btn.setText("\n".join(list("ANIMATE")))
