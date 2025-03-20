@@ -84,6 +84,7 @@ class MotionSpaceDisplay(QFrame):
             "pick_event", self.on_pick  # noqa
         )
         self.targetPositionSelected.connect(self.update_target_position_plot)
+        self.animateMotionListFinished.connect(self.animate_motion_list_pause)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -166,6 +167,8 @@ class MotionSpaceDisplay(QFrame):
         self._animate_motion_list_init_payload()
         self._animate_payload["timer"].start()  # noqa
 
+        self.animateMotionListStarted.emit()
+
     def _animate_motion_list_init_payload(self):
         delay = 200  # msec
         _timer = QTimer(parent=self)
@@ -190,6 +193,9 @@ class MotionSpaceDisplay(QFrame):
 
         self._animate_payload["timer"].stop()
 
+        if not self._animate_payload["finished"]:
+            self.animateMotionListPaused.emit()
+
     def animate_motion_list_clear(self):
         if self._animate_payload is None:
             return
@@ -206,6 +212,10 @@ class MotionSpaceDisplay(QFrame):
 
             ax, handler = stuff
             handler.remove()
+
+        self.mpl_canvas.draw()
+
+        self.animateMotionListCleared.emit()
 
     def _update_motion_list_trace(self, *, to_index: int = None):
         if to_index is None and self._animate_payload is None:
