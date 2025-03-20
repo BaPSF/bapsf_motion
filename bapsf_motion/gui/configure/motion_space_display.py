@@ -139,6 +139,17 @@ class MotionSpaceDisplay(QFrame):
         if value:
             self._display_position = value
 
+    @property
+    def is_animating_motion_list(self):
+        if self._animate_payload is None:
+            return False
+
+        if self._animate_payload["finished"]:
+            return False
+
+        _timer = self._animate_payload["timer"]  # type: QTimer
+        return _timer.isActive()
+
     def _get_plot_axis_by_name(self, name: str):
         fig_axes = self.mpl_canvas.figure.axes
         for ax in fig_axes:
