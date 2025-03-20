@@ -176,6 +176,7 @@ class MotionSpaceDisplay(QFrame):
     def animate_motion_list(self):
         if self._animate_payload is not None and not self._animate_payload["finished"]:
             self._animate_payload["timer"].start()
+            self.animateMotionListStarted.emit()
             return
         elif self._animate_payload is not None:
             self.animate_motion_list_clear()
