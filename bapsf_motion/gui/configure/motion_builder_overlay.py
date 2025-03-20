@@ -1612,9 +1612,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         if layers is not None:
             mb_config["layers"] = list(layers.values())
 
-        self.logger.info(f"space looks like : {mb_config['space']}")
-        self.logger.info(f"exclusion look like : {mb_config['exclusions']}")
-        self.logger.info(f"layer looks like : {mb_config['layers']}")
+        self.logger.info(f"space looks like : {mb_config.get('space', None)}")
+        self.logger.info(f"exclusion look like : {mb_config.get('exclusions', None)}")
+        self.logger.info(f"layer looks like : {mb_config.get('layers', None)}")
 
         self._mb = MotionBuilder(**mb_config)
         self.mpl_canvas.link_motion_builder(self._mb)
