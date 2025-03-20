@@ -153,9 +153,12 @@ class MotionSpaceDisplay(QFrame):
         return None
 
     def animate_motion_list(self):
-        if self._animate_payload is not None:
+        if self._animate_payload is not None and not self._animate_payload["finished"]:
             self._animate_payload["timer"].start()
             return
+        elif self._animate_payload is not None:
+            self.animate_motion_list_clear()
+            self._animate_payload = None
 
         self._animate_motion_list_init_payload()
         self._animate_payload["timer"].start()  # noqa
@@ -175,6 +178,7 @@ class MotionSpaceDisplay(QFrame):
             "index_step": index_step,  # type: int
             "delay": delay,  # type: int
             "timer": _timer,  # type: QTimer
+            "finished": False,
         }
 
     def animate_motion_list_pause(self):
@@ -205,10 +209,9 @@ class MotionSpaceDisplay(QFrame):
             return
         elif to_index is None:
             to_index = self._animate_payload["index"]
-
-        if to_index >= self.mb.motion_list.shape[0]:
-            self.animate_motion_list_pause()
-            self.animateMotionListFinished.emit()
+        elif self._animate_payload is None:
+            return
+        elif self._animate_payload["finished"]:
             return
 
         # update plot
@@ -264,6 +267,15 @@ class MotionSpaceDisplay(QFrame):
                 )
 
         self.mpl_canvas.draw()
+        if to_index == self.mb.motion_list.shape[0]-1:
+            self._animate_payload["finished"] = True
+            self.animateMotionListFinished.emit()
+            return
+
+        to_index += self._animate_payload["index_step"]
+        if to_index >= self.mb.motion_list.shape[0]:
+            to_index = self.mb.motion_list.shape[0] - 1
+
         self._animate_payload["index"] = to_index + self._animate_payload["index_step"]
 
     def on_pick(self, event: PickEvent):
