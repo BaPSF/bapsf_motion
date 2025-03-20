@@ -300,7 +300,7 @@ class MotionSpaceDisplay(QFrame):
         if to_index >= self.mb.motion_list.shape[0]:
             to_index = self.mb.motion_list.shape[0] - 1
 
-        self._animate_payload["index"] = to_index + self._animate_payload["index_step"]
+        self._animate_payload["index"] = to_index
 
     def on_pick(self, event: PickEvent):
         if not self.display_target_position:
