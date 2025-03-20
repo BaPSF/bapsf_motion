@@ -311,6 +311,7 @@ class MotionSpaceDisplay(QFrame):
 
     def update_motion_list(self):
 
+        # plot the individual point layers (if join scheme is sequential)
         _layer_names = [layer.name for layer in self.mb.layers]
         _plotted_layer_names = set(
             [] if self._motionlist_plot_names is None else self._motionlist_plot_names
@@ -342,6 +343,9 @@ class MotionSpaceDisplay(QFrame):
                 else:
                     data = self.mb._ds[_label].data
                     pts = self.mb.flatten_points(data)
+                    mask = self.mb.generate_excluded_mask(pts)
+                    pts = pts[mask, ...]
+
                     handler.set_offsets(pts)
                     handler.set_facecolor(facecolors[color_index])
                     handler.set_edgecolor(edgecolor)
@@ -359,6 +363,8 @@ class MotionSpaceDisplay(QFrame):
 
                 data = self.mb._ds[_label].data
                 pts = self.mb.flatten_points(data)
+                mask = self.mb.generate_excluded_mask(pts)
+                pts = pts[mask, ...]
 
                 ax.scatter(
                     x=pts[..., 0],
