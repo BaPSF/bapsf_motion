@@ -447,6 +447,13 @@ class MotionBuilder(MBItem):
             points = np.unique(points, axis=0)
 
         mask = self.generate_excluded_mask(points)
+
+        if (
+            "motion_list" in self._ds.keys()
+            and self._ds["motion_list"].shape[0] != mask.shape[0]
+        ):
+            self.drop_vars("motion_list")
+
         self._ds["motion_list"] = xr.DataArray(
             data=points[mask, ...],
             dims=("index", "space")
