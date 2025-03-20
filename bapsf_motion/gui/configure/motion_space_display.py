@@ -40,6 +40,10 @@ class MotionSpaceDisplay(QFrame):
         "motion_list", "probe", "position", "target", "insertion_point"
     ]
 
+    _default_legend_names = [
+        "motion_list", "probe", "position", "target", "insertion_point"
+    ]
+
     def __init__(
         self, mb: MotionBuilder = None, parent=None
     ):
@@ -53,6 +57,8 @@ class MotionSpaceDisplay(QFrame):
         self._display_target_position = True
         self._display_probe = True
         self._animate_payload = None
+
+        self._motionlist_plot_names = None  # type: Union[None, List[str]]
 
         self._motionlist_plot_names = None  # type: Union[None, List[str]]
 
