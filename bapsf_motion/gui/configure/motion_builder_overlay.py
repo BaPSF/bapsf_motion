@@ -198,6 +198,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_move_up_btn.clicked.connect(self._layer_list_item_move_up)
         self.layer_move_down_btn.clicked.connect(self._layer_list_item_move_down)
 
+        self.mpl_canvas.animateMotionListFinished.connect(
+            self._animate_motion_list_finished
+        )
+        self.animate_ml_btn.clicked.connect(self._animate_motion_list)
+
     def _define_layout(self):
         #
         #  +-------------------------------------------------------+
@@ -909,6 +914,18 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.update_layer_list_box()
         self.update_layer_ml_combine_toggle()
         self.update_canvas()
+
+    def _animate_motion_list(self):
+        _btn_text = self.animate_ml_btn.text().replace("\n", "")
+        if _btn_text == "PAUSE":
+            self.mpl_canvas.animate_motion_list_pause()
+            self.animate_ml_btn.setText("\n".join(list("ANIMATE")))
+        else:
+            self.mpl_canvas.animate_motion_list()
+            self.animate_ml_btn.setText("\n".join(list("PAUSE")))
+
+    def _animate_motion_list_finished(self):
+        self.animate_ml_btn.setText("\n".join(list("ANIMATE")))
 
     def _exclusion_configure_new(self):
         if not self._params_widget.isHidden():
