@@ -248,7 +248,7 @@ class MotionSpaceDisplay(QFrame):
                 ax, handler = stuff  # type: plt.Axes, PathCollection
 
                 index = 0 if _label == "motionlist_start" else to_index
-                point = self.mb.motion_list[index,...].squeeze()
+                point = self.mb.motion_list[index, ...].squeeze()
 
                 handler.set_offsets(point)
             elif stuff is not None:
