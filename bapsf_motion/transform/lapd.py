@@ -489,3 +489,80 @@ class LaPDXYTransform(base.BaseTransform):
     @property
     def deployed_side(self):
         return self._deployed_side
+
+
+@register_transform
+class LaPD6KTransform(LaPDXYTransform):
+    _transform_type = "lapd_6k"
+    _dimensionality = 2
+
+    def __init__(
+        self,
+        dirve,
+        *,
+        pivot_to_center: float = 58.771,
+        pivot_to_drive: float,
+        pivot_to_feedthru: float,
+        probe_axis_offset: float = 9.37,
+        drive_polarity: Tuple[int, int] = (1, 1),
+        mspace_polarity: Tuple[int, int] = (-1, 1),
+        six_k_arm_length: float = 93.345,
+        droop_correct: bool = False,
+        droop_scale: Union[int, float] = 1.0,
+    ):
+        self._droop_correct_callable = None
+        self._deployed_side = None
+        self._pivot_to_drive_pinion = None
+        super(LaPDXYTransform, self).__init__(
+            dirve,
+            pivot_to_center=pivot_to_center,
+            pivot_to_drive=pivot_to_drive,
+            pivot_to_feedthru=pivot_to_feedthru,
+            probe_axis_offset=probe_axis_offset,
+            drive_polarity=drive_polarity,
+            mspace_polarity=mspace_polarity,
+            six_k_arm_length=six_k_arm_length,
+            droop_correct=droop_correct,
+            droop_scale=droop_scale,
+        )
+
+    def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+        _inputs = super()._validate_inputs(inputs)
+
+        # validate argument six_k_arm_length
+        key = "six_k_arm_length"
+        val = _inputs[key]
+        if not isinstance(val, (float, np.floating, int, np.integer)):
+            raise TypeError(
+                f"Keyword '{key}' expected type float or int, "
+                f"got type {type(val)}."
+            )
+        elif val < 0.0:
+            # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
+            #       "probe_axis_offset"
+            val = np.abs(val)
+            warn(
+                f"Keyword '{val}' is NOT supposed to be negative, "
+                f"assuming the absolute value {val}."
+            )
+        _inputs[key] = val
+
+        # calculate distance between ball valve center (pivot) to the
+        # pivot (pinion) point on the probe drive arm
+        self._pivot_to_drive_pinion = np.sqrt(
+            _inputs["pivot_to_drive"]**2 + _inputs["probe_axis_offset"]**2
+        )
+
+        return _inputs
+
+    def _matrix_to_drive(self, points: np.ndarray) -> np.ndarray: ...
+
+    def _matrix_to_motion_space(self, points: np.ndarray) -> np.ndarray: ...
+
+    @property
+    def six_k_arm_length(self) -> float:
+        return self.inputs["six_k_arm_length"]
+
+    @ property
+    def pivot_to_drive_pinion(self) -> float:
+        return self._pivot_to_drive_pinion
