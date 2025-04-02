@@ -538,8 +538,6 @@ class LaPD6KTransform(LaPDXYTransform):
                 f"got type {type(val)}."
             )
         elif val < 0.0:
-            # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
-            #       "probe_axis_offset"
             val = np.abs(val)
             warn(
                 f"Keyword '{val}' is NOT supposed to be negative, "
