@@ -555,7 +555,87 @@ class LaPD6KTransform(LaPDXYTransform):
 
     def _matrix_to_drive(self, points: np.ndarray) -> np.ndarray: ...
 
-    def _matrix_to_motion_space(self, points: np.ndarray) -> np.ndarray: ...
+    def _matrix_to_motion_space(self, points: np.ndarray) -> np.ndarray:
+        # given points are in drive (e0, e1) coordinates
+
+        # polarity needs to be adjusted first, since the parameters for
+        # the following transformation matrices depend on the adjusted
+        # coordinate space
+        points = self.drive_polarity * points  # type: np.ndarray
+        npoints = points.shape[0]
+
+        pivot_to_center = np.abs(self.pivot_to_center)
+
+        # calculate the distance between the ball valve pivot point (pivot) to the
+        # pivot point on the probe drive vertical axis (vpinion)
+        pivot_to_vpinion = np.sqrt(
+            self.pivot_to_drive**2
+            + (self.six_k_arm_length - self.probe_axis_offset + points[..., 1])**2
+        ).squeeze()
+
+        # calculate the angle (gamma) the line intersecting the ball valve
+        # pivot (pivot) and probe drive vertical pinion (vpinion) makes
+        # with the horizontal plane
+        gamma = np.arctan(
+            (self.six_k_arm_length - self.probe_axis_offset + points[..., 1])
+            / self.pivot_to_drive
+        ).squeeze()
+
+        # imagine two circles:
+        #   1. circle one located at the ball valve pivot (pivot) with a
+        #      radius pivot_to_drive_pinion
+        #   2. circle two located at the vpinion with a readius six_k_arm_length
+        #
+        # The probe drive will be oriented at the lower intersection of these
+        # two circles.
+        #
+        # If we select a coordinate system where the line intersecting
+        # pivot and vpinion defines the "x-axis", then circle 1 is located
+        # at the origin and circle 2 is on the "x-axis" at an offset of
+        # pivot_to_vpinion.
+        #
+        # Let's calculate the angle (psi) these intersection points make
+        # with the above mentioned "x-axis".
+        #
+        tan_2_psi = (
+            2 * pivot_to_vpinion * self.pivot_to_drive_pinion / (
+                self.six_k_arm_length**2
+                - self.pivot_to_drive_pinion**2
+                - pivot_to_vpinion**2
+            )
+        )**2 - 1
+        psi = np.arctan(np.sqrt(tan_2_psi))
+
+        # calculate beta - the angular drop from the probe shaft to the
+        #   probe drive pinion
+        #
+        #           ________ pivot_to_drive ________x (ball valve pivot)
+        #          |                      _________/
+        #  probe_axis_offset   __________/
+        #          |__________/     ^-- pivot_to_drive_pinion
+        #
+        beta = np.arctan(self.probe_axis_offset / self.pivot_to_drive)
+
+        # calculate theta - the angle the probe shaft makes with the
+        #  true horizontal ... theta is signed s.t. negative means
+        #  the back of the probe is below horizontal and positive means
+        #  the back of the probe is above horizontal
+        theta = gamma + beta - np.abs(psi)
+
+        T0 = np.zeros((npoints, 3, 3)).squeeze()
+        T0[..., 0, 0] = np.cos(theta)
+        T0[..., 0, 2] = -pivot_to_center * (1 - np.cos(theta))
+        T0[..., 1, 0] = np.sin(-theta)
+        T0[..., 1, 2] = pivot_to_center * np.sin(-theta)
+        T0[..., 2, 2] = 1.0
+
+        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
+        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
+
+        return np.matmul(
+            T_mpolarity,
+            np.matmul(T0, T_dpolarity),
+        )
 
     @property
     def six_k_arm_length(self) -> float:
