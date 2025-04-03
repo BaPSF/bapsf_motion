@@ -513,6 +513,7 @@ class LaPD6KTransform(LaPDXYTransform):
         self._droop_correct_callable = None
         self._deployed_side = None
         self._pivot_to_drive_pinion = None
+        self._beta = None
         super(LaPDXYTransform, self).__init__(
             dirve,
             pivot_to_center=pivot_to_center,
@@ -550,6 +551,16 @@ class LaPD6KTransform(LaPDXYTransform):
         self._pivot_to_drive_pinion = np.sqrt(
             _inputs["pivot_to_drive"]**2 + _inputs["probe_axis_offset"]**2
         )
+
+        # calculate beta - the angular drop from the probe shaft to the
+        #   probe drive pinion
+        #
+        #           ________ pivot_to_drive ________x (ball valve pivot)
+        #          |                      _________/
+        #  probe_axis_offset   __________/
+        #          |__________/     ^-- pivot_to_drive_pinion
+        #
+        self._beta = np.arctan(_inputs["probe_axis_offset"] / _inputs["pivot_to_drive"])
 
         return _inputs
 
@@ -606,21 +617,11 @@ class LaPD6KTransform(LaPDXYTransform):
         )**2 - 1
         psi = np.arctan(np.sqrt(tan_2_psi))
 
-        # calculate beta - the angular drop from the probe shaft to the
-        #   probe drive pinion
-        #
-        #           ________ pivot_to_drive ________x (ball valve pivot)
-        #          |                      _________/
-        #  probe_axis_offset   __________/
-        #          |__________/     ^-- pivot_to_drive_pinion
-        #
-        beta = np.arctan(self.probe_axis_offset / self.pivot_to_drive)
-
         # calculate theta - the angle the probe shaft makes with the
         #  true horizontal ... theta is signed s.t. negative means
         #  the back of the probe is below horizontal and positive means
         #  the back of the probe is above horizontal
-        theta = gamma + beta - np.abs(psi)
+        theta = gamma + self.beta - np.abs(psi)
 
         T0 = np.zeros((npoints, 3, 3)).squeeze()
         T0[..., 0, 0] = np.cos(theta)
@@ -641,6 +642,12 @@ class LaPD6KTransform(LaPDXYTransform):
     def six_k_arm_length(self) -> float:
         return self.inputs["six_k_arm_length"]
 
-    @ property
+    @property
     def pivot_to_drive_pinion(self) -> float:
         return self._pivot_to_drive_pinion
+
+    @property
+    def beta(self) -> float:
+        # angle swept from the probe shaft to the probe drive pinion with
+        # respect to the ball valve pivot
+        return self._beta
