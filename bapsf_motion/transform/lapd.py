@@ -1,6 +1,6 @@
 """Module that defines the LaPD related transform classes."""
-__all__ = ["LaPDXYTransform"]
-__transformer__ = ["LaPDXYTransform"]
+__all__ = ["LaPDXYTransform", "LaPD6KTransform"]
+__transformer__ = ["LaPDXYTransform", "LaPD6KTransform"]
 
 import numpy as np
 
