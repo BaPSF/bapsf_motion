@@ -564,7 +564,49 @@ class LaPD6KTransform(LaPDXYTransform):
 
         return _inputs
 
-    def _matrix_to_drive(self, points: np.ndarray) -> np.ndarray: ...
+    def _matrix_to_drive(self, points: np.ndarray) -> np.ndarray:
+        # given points are in motion space "LaPD" (x, y) coordinates
+
+        # polarity needs to be adjusted first, since the parameters for
+        # the following transformation matrices depend on the adjusted
+        # coordinate space
+        points = self.mspace_polarity * points  # type: np.ndarray
+        npoints = points.shape[0]
+
+        pivot_to_center = np.abs(self.pivot_to_center)
+
+        # calculate theta ... the angle made by the probe shaft on the
+        #  drive side of the ball valve
+        tan_theta = points[..., 1] / (points[..., 0] + pivot_to_center)
+        theta = -np.arctan(tan_theta)
+
+        # calculate phi .. the angle to the probe drive pinion
+        phi = theta - self.beta
+
+        # calculate alpha ... the angle made by the 6K arm and the vertical
+        #  axis of the probe drive
+        alpha = np.arcsin(
+            (self.pivot_to_drive - self.pivot_to_drive_pinion * np.cos(phi))
+            / self.six_k_arm_length
+        )
+
+        T0 = np.zeros((npoints, 3, 3)).squeeze()  # noqa
+        T0[..., 0, 0] = 1 / np.cos(theta)
+        T0[..., 0, 2] = pivot_to_center * ((1 / np.cos(theta)) - 1)
+        T0[..., 1, 2] = (
+            self.six_k_arm_length * (np.cos(alpha) - 1)
+            + self.probe_axis_offset
+            + self.pivot_to_drive_pinion * np.sin(phi)
+        )
+        T0[..., 2, 2] = 1.0
+
+        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])  # noqa
+        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])  # noqa
+
+        return np.matmul(
+            T_dpolarity,
+            np.matmul(T0, T_mpolarity),
+        )
 
     def _matrix_to_motion_space(self, points: np.ndarray) -> np.ndarray:
         # given points are in drive (e0, e1) coordinates
