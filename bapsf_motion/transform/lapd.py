@@ -674,6 +674,12 @@ class LaPD6KTransform(LaPDXYTransform):
               "six_k_arm_length": 93.345,
               "mspace_polarity": (1, 1),
           }
+
+    See Also
+    --------
+
+    For further details reference the jupyter notebook for
+    :ref:`LaPD6KYTransform </notebooks/transform/LaPD6KTransform.ipynb>`.
     """
     _transform_type = "lapd_6k"
     _dimensionality = 2
