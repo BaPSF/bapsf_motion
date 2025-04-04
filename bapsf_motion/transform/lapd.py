@@ -498,7 +498,7 @@ class LaPD6KTransform(LaPDXYTransform):
 
     def __init__(
         self,
-        dirve,
+        drive,
         *,
         pivot_to_center: float = 58.771,
         pivot_to_drive: float,
@@ -515,7 +515,7 @@ class LaPD6KTransform(LaPDXYTransform):
         self._pivot_to_drive_pinion = None
         self._beta = None
         super(LaPDXYTransform, self).__init__(
-            dirve,
+            drive,
             pivot_to_center=pivot_to_center,
             pivot_to_drive=pivot_to_drive,
             pivot_to_feedthru=pivot_to_feedthru,
