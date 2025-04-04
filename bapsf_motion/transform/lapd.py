@@ -493,6 +493,188 @@ class LaPDXYTransform(base.BaseTransform):
 
 @register_transform
 class LaPD6KTransform(LaPDXYTransform):
+    """
+    Class that defines a coordinate transform for a :term:`LaPD`
+    "6K Compumotor" :term:`probe drive`.
+
+    **transform type:** ``'lapd_6k'``
+
+    Parameters
+    ----------
+    drive: |Drive|
+        The instance of |Drive| the coordinate transformer will be
+        working with.
+
+    pivot_to_center: `float`
+        Distance from the center of the :term:`LaPD` to the center
+        "pivot" point of the ball valve.  A positive value indicates
+        the probe drive is set up on the East side of the LaPD and a
+        negative value indicates the West side. (DEFAULT: ``58.771``)
+
+    pivot_to_drive: `float`
+        Distance from the center line of the :term:`probe drive`
+        vertical axis to the center "pivot" point of the ball valve.
+
+    pivot_to_feedthru: `float`
+        Distance from the center "pivot" point of the ball valve to the
+        nearest face of the probe drive feed-through.
+
+    probe_axis_offset: `float`
+        Perpendicular distance from the center line of the probe shaft
+        to the :term:`probe drive` pivot point on the vertical axis.
+        (DEFAULT: ``9.37``)
+
+    drive_polarity: 2D tuple, optional
+        A two element tuple of +/- 1 values indicating the polarity of
+        the probe drive motion to how the math was done for the
+        underlying matrix transformations.  For example, a value
+        of ``(1, 1)`` would indicate that positive movement (in
+        probe drive coordinates) of the drive would be inwards and
+        downwards.  However, this is inconsistent if the vertical axis
+        has the motor mounted to the bottom of the axis.  In this case
+        the ``drive_polarity`` would be ``(1, -1)``.
+        (DEFAULT: ``(1, 1)``)
+
+    mspace_polarity: 2D tuple, optional
+        A two element tuple of +/- 1 values indicating the polarity of
+        the motion space motion to how the math was done for the
+        underlying matrix transformations.  For example, a value
+        of ``(-1, 1)`` for a probe mounted on an East port would
+        indicate that inward probe drive movement would correspond to
+        a LaPD -X movement and downward probe drive movement
+        would correspond to LaPD +Y.  If the probe was mounted on a
+        West port then the polarity would need to be ``(1, 1)`` since
+        inward probe drive movement corresponds to +X LaPD coordinate
+        movement.  (DEFAULT: ``(-1, 1)``)
+
+    six_k_arm_length : `float`
+        Length of the vertical pivoting arm of the 6K Compumotor probe
+        drive. (DEFAULT: ``93.345``)
+
+    droop_correct : bool
+        Set `True` for the coordinate transform to correct for the
+        droop of a probe shaft.  This will use
+        `~bapsf_motion.transform.lapd_droop.LaPDXYDroopCorrect` to
+        correct for the droop of a stainless steel 304 probe shaft of
+        size .375" OD x 0.035" wall.  Set `False` for no droop
+        correction.  (DEFAULT: `False`)
+
+    droop_scale : `float`
+        (DEFAULT ``1.0``)  A float `>= 0.0` indicating how much to scale
+        the droop calculation by.  A value of ``0`` would indicate no
+        droop.  A value between ``0`` and ``1`` indicates a droop less
+        than the default model.  A value of ``1`` indicates the default
+        model droop. A value ``> 1`` indicates more droop.
+
+    Examples
+    --------
+
+    Let's set up a :term:`transformer` for a probe drive mounted on
+    an east port.  In this case the motor for the vertical axis is
+    mounted at the base of the probe drive vertical axis.  (Values are
+    NOT accurate to actual LaPD values.)
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          tr = LaPD6KTransform(
+              drive,
+              pivot_to_center = 58.771,
+              pivot_to_drive = 133.51,
+              pivot_to_feedthru = 53.22,
+              probe_axis_offset = 9.37,
+              six_k_arm_length = 93.345,
+          )
+
+       .. code-tab:: py Factory Function
+
+          tr = transform_factory(
+              drive,
+              tr_type = "lapd_6k",
+              **{
+                  "pivot_to_center": 58.771,
+                  "pivot_to_drive": 133.51,
+                  "pivot_to_feedthru": 53.22,
+                  "probe_axis_offset": 9.37,
+                  "six_k_arm_length": 93.345,
+              },
+          )
+
+       .. code-tab:: toml TOML
+
+          [...transform]
+          type = "lapd_6k"
+          pivot_to_center = 58.771
+          pivot_to_drive = 133.51
+          pivot_to_feedthru = 53.22
+          probe_axis_offset = 9.37
+          six_k_arm_length = 93.345
+
+       .. code-tab:: py Dict Entry
+
+          config["transform"] = {
+              "type": "lapd_6k",
+              "pivot_to_center": 58.771,
+              "pivot_to_drive": 133.51,
+              "pivot_to_feedthru": 53.22,
+              "probe_axis_offset": 9.37,
+              "six_k_arm_length": 93.345,
+          }
+
+    Now, let's do the same thing for a probe drive mounted on a West
+    port and has the vertical axis motor mounted at the base.
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          tr = LaPD6KTransform(
+              drive,
+              pivot_to_center = -62.94,
+              pivot_to_drive = 133.51,
+              pivot_to_feedthru = 21.6,
+              probe_axis_offset = 20.16,
+              six_k_arm_length = 93.345,
+              mspace_polarity = (1, 1),
+          )
+
+       .. code-tab:: py Factory Function
+
+          tr = transform_factory(
+              drive,
+              tr_type = "lapd_6k",
+              **{
+                  "pivot_to_center": -62.94,
+                  "pivot_to_drive": 133.51,
+                  "pivot_to_feedthru": 21.6,
+                  "probe_axis_offset": 20.16,
+                  "six_k_arm_length": 93.345,
+                  "mspace_polarity": (1, 1),
+              },
+          )
+
+       .. code-tab:: toml TOML
+
+          [...transform]
+          type = "lapd_6k"
+          pivot_to_center = -62.94
+          pivot_to_drive = 133.51
+          pivot_to_feedthru = 21.6
+          probe_axis_offset = 20.16
+          six_k_arm_length = 93.345
+          mspace_polarity = [1, 1]
+
+       .. code-tab:: py Dict Entry
+
+          config["transform"] = {
+              "type": "lapd_6k",
+              "pivot_to_center": -62.94,
+              "pivot_to_drive": 133.51,
+              "pivot_to_feedthru": 21.6,
+              "probe_axis_offset": 20.16,
+              "six_k_arm_length": 93.345,
+              "mspace_polarity": (1, 1),
+          }
+    """
     _transform_type = "lapd_6k"
     _dimensionality = 2
 
