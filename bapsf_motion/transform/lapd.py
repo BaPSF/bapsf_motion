@@ -647,23 +647,23 @@ class LaPD6KTransform(LaPDXYTransform):
         # at the origin and circle 2 is on the "x-axis" at an offset of
         # pivot_to_vpinion.
         #
-        # Let's calculate the angle (psi) these intersection points make
+        # Let's calculate the angle (phi) these intersection points make
         # with the above mentioned "x-axis".
         #
-        tan_2_psi = (
+        tan_2_phi = (
             2 * pivot_to_vpinion * self.pivot_to_drive_pinion / (
                 self.six_k_arm_length**2
                 - self.pivot_to_drive_pinion**2
                 - pivot_to_vpinion**2
             )
         )**2 - 1
-        psi = np.arctan(np.sqrt(tan_2_psi))
+        phi = np.arctan(np.sqrt(tan_2_phi))
 
         # calculate theta - the angle the probe shaft makes with the
         #  true horizontal ... theta is signed s.t. negative means
         #  the back of the probe is below horizontal and positive means
         #  the back of the probe is above horizontal
-        theta = gamma + self.beta - np.abs(psi)
+        theta = gamma + self.beta - np.abs(phi)
 
         T0 = np.zeros((npoints, 3, 3)).squeeze()
         T0[..., 0, 0] = np.cos(theta)
