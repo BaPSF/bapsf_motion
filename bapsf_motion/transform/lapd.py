@@ -675,11 +675,10 @@ class LaPD6KTransform(LaPDXYTransform):
               "mspace_polarity": (1, 1),
           }
 
-    See Also
-    --------
+    .. note::
+        For further details reference the jupyter notebook for
+        :ref:`LaPD6KYTransform </notebooks/transform/LaPD6KTransform.ipynb>`.
 
-    For further details reference the jupyter notebook for
-    :ref:`LaPD6KYTransform </notebooks/transform/LaPD6KTransform.ipynb>`.
     """
     _transform_type = "lapd_6k"
     _dimensionality = 2
