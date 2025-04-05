@@ -687,8 +687,8 @@ class Motor(EventActor):
                 "accel": 25,
                 "decel": 25,
                 "idle_current": 0.3,  # 30% of current
-                "current": 4.0,  # 4.0 amps
-                "max_idle_current": .9,  # 90% of current
+                "current": 0.8,  # 80% of max_current (4.0 amps)
+                "max_idle_current": 0.9,  # 90% of current
                 "max_current": 5.0  # 5 amps
             },
             "speed": None,
@@ -1906,7 +1906,8 @@ class Motor(EventActor):
         """
         Reset running and idle currents to their default values.
         """
-        curr = self._motor["DEFAULTS"]["current"]
+        max_curr = self._motor["DEFAULTS"]["max_current"]
+        curr = self._motor["DEFAULTS"]["current"] * max_curr
         new_ic = self._motor["DEFAULTS"]["idle_current"] * curr
 
         self.send_command("current", curr)
