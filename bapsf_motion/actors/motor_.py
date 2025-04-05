@@ -887,6 +887,7 @@ class Motor(EventActor):
             "name": self.name,
             "ip": self.ip,
             "limit_mode": self.motor["define_limits"],
+            "current": self.motor["DEFAULTS"]["current"],
         }
     config.__doc__ = EventActor.config.__doc__
 
