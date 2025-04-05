@@ -771,6 +771,10 @@ class Motor(EventActor):
         self.send_command("speed", 4.0)
         self.send_command("jog_speed", 4.0)
 
+        # set currents
+        self.send_command("set_current", self.motor["DEFAULTS"]["current"])
+        self.send_command("set_idle_current", self.motor["DEFAULTS"]["idle_current"])
+
     def _read_and_set_protocol(self):
         """
         Read and set the motor protocol settings.  For proper
