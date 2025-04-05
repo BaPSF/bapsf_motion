@@ -28,6 +28,21 @@ axes.1.ip = "192.168.0.140"
 axes.1.units = "cm"
 axes.1.units_per_rev = 0.508
 
+[bapsf_motion.defaults.drive.2]
+name = "Fenix"
+axes.0.name = "X"
+axes.0.ip = "192.168.6.15"
+axes.0.units = "cm"
+axes.0.units_per_rev = 0.254
+axes.0.motor_settings.limit_mode = 3  # no limits
+axes.0.motor_settings.current = 0.6
+axes.1.name = "Y"
+axes.1.ip = "192.168.6.16"
+axes.1.units = "cm"
+axes.1.units_per_rev = 0.3175
+axes.1.motor_settings.limit_mode = 3  # no limits
+axes.1.motor_settings.current = 1.0
+
 [bapsf_motion.defaults.transform.0]
 name = "East - Generic XY"
 type = "lapd_xy"
