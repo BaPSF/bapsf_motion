@@ -29,7 +29,7 @@ axes.1.units = "cm"
 axes.1.units_per_rev = 0.508
 
 [bapsf_motion.defaults.drive.2]
-name = "Fenix"
+name = "Fenix-2"
 axes.0.name = "X"
 axes.0.ip = "192.168.6.15"
 axes.0.units = "cm"
