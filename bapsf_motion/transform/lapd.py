@@ -509,20 +509,22 @@ class LaPD6KTransform(LaPDXYTransform):
         Distance from the center of the :term:`LaPD` to the center
         "pivot" point of the ball valve.  A positive value indicates
         the probe drive is set up on the East side of the LaPD and a
-        negative value indicates the West side. (DEFAULT: ``58.771``)
+        negative value indicates the West side. (DEFAULT: ``58.771`` cm)
 
     pivot_to_drive: `float`
         Distance from the center line of the :term:`probe drive`
         vertical axis to the center "pivot" point of the ball valve.
+        (DEFAULT: ``116.84`` cm)
 
     pivot_to_feedthru: `float`
         Distance from the center "pivot" point of the ball valve to the
         nearest face of the probe drive feed-through.
+        (DEFAULT: ``53.76926`` cm)
 
     probe_axis_offset: `float`
         Perpendicular distance from the center line of the probe shaft
         to the :term:`probe drive` pivot point on the vertical axis.
-        (DEFAULT: ``9.37``)
+        (DEFAULT: ``9.36752`` cm)
 
     drive_polarity: 2D tuple, optional
         A two element tuple of +/- 1 values indicating the polarity of
@@ -533,7 +535,7 @@ class LaPD6KTransform(LaPDXYTransform):
         downwards.  However, this is inconsistent if the vertical axis
         has the motor mounted to the bottom of the axis.  In this case
         the ``drive_polarity`` would be ``(1, -1)``.
-        (DEFAULT: ``(1, 1)``)
+        (DEFAULT: ``(1, -1)``)
 
     mspace_polarity: 2D tuple, optional
         A two element tuple of +/- 1 values indicating the polarity of
@@ -549,7 +551,7 @@ class LaPD6KTransform(LaPDXYTransform):
 
     six_k_arm_length : `float`
         Length of the vertical pivoting arm of the 6K Compumotor probe
-        drive. (DEFAULT: ``93.345``)
+        drive. (DEFAULT: ``93.345`` cm)
 
     droop_correct : bool
         Set `True` for the coordinate transform to correct for the
@@ -689,11 +691,11 @@ class LaPD6KTransform(LaPDXYTransform):
         *,
         pivot_to_center: float = 58.771,
         pivot_to_drive: float = 116.84,
-        pivot_to_feedthru: float = 53.7693,
-        probe_axis_offset: float = 9.37,
+        pivot_to_feedthru: float = 53.76926,
+        probe_axis_offset: float = 9.36752,
         drive_polarity: Tuple[int, int] = (1, -1),
         mspace_polarity: Tuple[int, int] = (-1, 1),
-        six_k_arm_length: float = 93.35,
+        six_k_arm_length: float = 93.345,
         droop_correct: bool = False,
         droop_scale: Union[int, float] = 1.0,
     ):
