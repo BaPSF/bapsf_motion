@@ -67,6 +67,32 @@ pivot_to_feedthru = 21.6574  # 19.6 cm + 0.81"
 droop_correct = true
 droop_scale = 1.0
 
+[bapsf_motion.defaults.transform.2]
+name = "6K East - Default"
+type = "lapd_6k"
+mspace_polarity = [-1, 1]
+drive_polarity = [1, -1]
+pivot_to_center = 58.771
+probe_axis_offset = 9.36752  # pulled from velum file
+pivot_to_drive = 116.84  # pulled from velum file, 46"
+pivot_to_feedthru = 53.76926  # pulled from velum file, 21.169"
+six_k_arm_length = 93.345  # pulled from velum file, 36.75"
+droop_correct = true
+droop_scale = 1.0
+
+[bapsf_motion.defaults.transform.3]
+name = "6K East - Far"
+type = "lapd_6k"
+mspace_polarity = [-1, 1]
+drive_polarity = [1, -1]
+pivot_to_center = 58.771
+probe_axis_offset = 9.36752  # pulled from velum file
+pivot_to_drive = 130.23342  # pulled from velum file, 51.273"
+pivot_to_feedthru = 53.76926  # pulled from velum file, 21.169"
+six_k_arm_length = 93.345  # pulled from velum file, 36.75"
+droop_correct = true
+droop_scale = 1.0
+
 [bapsf_motion.defaults.motion_builder.0]
 name = "East - Generic XY"
 space.0.label = "X"
