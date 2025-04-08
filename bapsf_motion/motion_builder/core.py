@@ -423,6 +423,31 @@ class MotionBuilder(MBItem):
         flat_ax = np.prod(points.shape[:-1])
         return np.reshape(points, (flat_ax, points.shape[-1]))
 
+    def _sort_motion_list(self, points):
+        shape = points.shape
+        nspace = shape[1]
+
+        _isort = np.argsort(points[..., nspace - 1], axis=0)
+        points = points[_isort, :]
+
+        if nspace == 1:
+            return points
+
+        prev_axis = np.unique(points[..., nspace - 1])
+        for val in prev_axis:
+            mask = points[..., nspace - 1] == val
+            _slice = points[mask, :]
+            _isort = np.argsort(_slice[..., nspace - 2], axis=0)
+            _slice = _slice[_isort, :]
+
+            if nspace > 2:
+                _sub_slice = self._sort_motion_list(_slice[..., :-1])
+                _slice[..., :-1] = _sub_slice
+
+            points[mask, :] = _slice
+
+        return points
+
     def generate(self):
         """
         Generated the :term:`motion list` from the currently defined
@@ -454,10 +479,10 @@ class MotionBuilder(MBItem):
         ):
             self.drop_vars("motion_list")
 
-        self._ds["motion_list"] = xr.DataArray(
-            data=points[mask, ...],
-            dims=("index", "space")
-        )
+        points = self._sort_motion_list(points[mask, ...])
+        print(f"Motion list points: {points}")
+
+        self._ds["motion_list"] = xr.DataArray(data=points, dims=("index", "space"))
 
     def generate_excluded_mask(self, points) -> np.ndarray:
         """
