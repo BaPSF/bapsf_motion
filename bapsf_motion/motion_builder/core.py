@@ -469,12 +469,17 @@ class MotionBuilder(MBItem):
         for layer in self.layers:
             points = layer.points.data.copy()
             points = self.flatten_points(points)
+
+            if self.layer_to_motionlist_scheme == "sequential":
+                points = self._sort_motion_list(points)
+
             for_concatenation.append(points)
 
         points = np.concatenate(for_concatenation, axis=0)
 
         if self.layer_to_motionlist_scheme == "merge":
             points = np.unique(points, axis=0)
+            points = self._sort_motion_list(points)
 
         mask = self.generate_excluded_mask(points)
 
@@ -483,9 +488,6 @@ class MotionBuilder(MBItem):
             and self._ds["motion_list"].shape[0] != mask.shape[0]
         ):
             self.drop_vars("motion_list")
-
-        points = self._sort_motion_list(points[mask, ...])
-        print(f"Motion list points: {points}")
 
         self._ds["motion_list"] = xr.DataArray(data=points, dims=("index", "space"))
 
