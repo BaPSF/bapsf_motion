@@ -7,7 +7,7 @@ __all__ = ["_ConfigOverlay", "_OverlayWidget",]
 import logging
 
 from abc import abstractmethod
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QWidget, QSizePolicy
 from typing import Union
@@ -118,6 +118,7 @@ class _ConfigOverlay(_OverlayWidget):
         return self._mg
 
     @abstractmethod
+    @Slot()
     def return_and_close(self):
         ...
 

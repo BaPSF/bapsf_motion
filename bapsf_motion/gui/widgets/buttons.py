@@ -16,7 +16,7 @@ __all__ = [
 
 import math
 
-from PySide6.QtCore import QSize
+from PySide6.QtCore import QSize, Slot
 from PySide6.QtGui import QFontMetrics, QColor, QIcon, QFont
 from PySide6.QtWidgets import QPushButton
 from typing import Optional, Union
@@ -376,6 +376,7 @@ class ValidButton(StyleButton):
     def set_invalid(self):
         self.set_valid(False)
 
+    @Slot()
     def _enforce_checked_state(self):
         self.setChecked(self.is_valid)
 
@@ -611,6 +612,7 @@ class EnableIndicator(StyleButton):
         _text = self._enabled_text if arg__1 else self._disabled_text
         self.setText(_text)
 
+    @Slot()
     def _maintain_check_state(self):
         # do not allow button clicks to change check state
         _state = self.isChecked()

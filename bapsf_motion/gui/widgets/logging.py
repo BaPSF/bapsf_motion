@@ -7,7 +7,7 @@ __all__ = ["QLogHandler", "QLogger"]
 import logging
 import logging.config
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
     QTextEdit,
     QPlainTextEdit,
@@ -170,6 +170,7 @@ class QLogger(QWidget):
 
         return handler
 
+    @Slot()
     def update_log_verbosity(self):
         vindex = self.slider_widget.value() - 1
         vkey = list(self._verbosity.keys())[vindex]
@@ -293,6 +294,7 @@ class DemoQLogger(QMainWindow):
 
         return layout
 
+    @Slot()
     def enter_log(self):
         message = self._msg_widget.text()
         lvl_key = self._level_widget.currentText()

@@ -226,6 +226,7 @@ class RunWidget(QWidget):
     def _connect_signals(self):
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
 
+    @Slot()
     def enable_mg_buttons(self):
         self.add_mg_btn.setEnabled(True)
         self.remove_mg_btn.setEnabled(True)
@@ -379,6 +380,7 @@ class ConfigureGUI(QMainWindow):
     def logging_config_dict(self):
         return self._logging_config_dict
 
+    @Slot()
     def _config_changed_handler(self):
         self.update_display_config_text()
         self.update_display_rm_name()
@@ -408,15 +410,18 @@ class ConfigureGUI(QMainWindow):
         self.rm = _rm
         self.configChanged.emit()
 
+    @Slot()
     def save_and_close(self):
         # save the toml configuration
         # TODO: write code to save current toml configuration to a tmp file
 
         self.close()
 
+    @Slot()
     def toml_export(self):
         ...
 
+    @Slot()
     def toml_import(self):
         path = QDir.currentPath() if self._OPENED_FILE is None \
             else f"{self._OPENED_FILE.parent}"
@@ -471,6 +476,7 @@ class ConfigureGUI(QMainWindow):
                 listview=self._run_widget.mg_list_widget,
             )
 
+    @Slot()
     def change_run_name(self):
         name = self._run_widget.run_name_widget.text()
 
@@ -480,10 +486,12 @@ class ConfigureGUI(QMainWindow):
             self.rm.config.update_run_name(name)
             self.configChanged.emit()
 
+    @Slot()
     def _motion_group_configure_new(self):
         self._spawn_mg_widget()
         self._switch_stack()
 
+    @Slot()
     def _motion_group_modify_existing(self):
         item = self._run_widget.mg_list_widget.currentItem()
         key, mg_name = self._get_mg_name_from_list_name(item.text())
@@ -497,12 +505,14 @@ class ConfigureGUI(QMainWindow):
         self._mg_widget.mg_index = key
         self._switch_stack()
 
+    @Slot()
     def _motion_group_remove_from_rm(self):
         item = self._run_widget.mg_list_widget.currentItem()
         identifier, mg_name = self._get_mg_name_from_list_name(item.text())
         self.rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
+    @Slot()
     def _restart_run_manager(self):
         if isinstance(self.rm, RunManager) and not self.rm.terminated:
             # RunManager is still running, no need to restart
@@ -616,6 +626,7 @@ class ConfigureGUI(QMainWindow):
 
         return self._mg_widget
 
+    @Slot()
     def _switch_stack(self):
         _w = self._stacked_widget.currentWidget()
         if isinstance(_w, RunWidget):

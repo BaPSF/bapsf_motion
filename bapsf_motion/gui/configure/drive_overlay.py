@@ -9,7 +9,7 @@ import asyncio
 import logging
 import warnings
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
     QFrame,
@@ -267,6 +267,7 @@ class AxisConfigWidget(QWidget):
         self._spawn_axis()
         return True
 
+    @Slot()
     def _change_cm_per_rev(self):
         try:
             new_cpr = float(self.cm_per_rev_widget.text())
@@ -284,6 +285,7 @@ class AxisConfigWidget(QWidget):
         self.configChanged.emit()
         self._check_axis_completeness()
 
+    @Slot()
     def _change_ip_address(self):
         new_ip = self.ip_widget.text()
         new_ip = self._validate_ip(new_ip)
@@ -306,6 +308,7 @@ class AxisConfigWidget(QWidget):
         self.configChanged.emit()
         self._check_axis_completeness()
 
+    @Slot()
     def _change_limit_mode(self):
         new_limit_mode = self.limit_mode_slider.value()
         limit_mode = self.axis_config["motor_settings"]["limit_mode"]
@@ -343,13 +346,16 @@ class AxisConfigWidget(QWidget):
         self.axis = axis
         return axis
 
+    @Slot()
     def _update_cm_per_rev_widget(self):
         self.cm_per_rev_widget.setText(f"{self.axis_config['units_per_rev']}")
 
+    @Slot()
     def _update_ip_widget(self):
         self.logger.info(f"Updating IP widget with {self.axis_config['ip']}")
         self.ip_widget.setText(self.axis_config["ip"])
 
+    @Slot()
     def _update_online_led(self):
         online = False
 
@@ -358,6 +364,7 @@ class AxisConfigWidget(QWidget):
 
         self.online_led.setChecked(online)
 
+    @Slot()
     def _update_limit_mode_widget(self):
         limit_mode = self.axis_config["motor_settings"]["limit_mode"]
         self.limit_mode_slider.setValue(limit_mode)
@@ -610,6 +617,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         return [axw.axis_config["ip"] for axw in self.axis_widgets]
 
+    @Slot()
     def _change_drive_name(self):
         self.logger.info("Renaming drive...")
         new_name = self.dr_name_widget.text()
@@ -620,6 +628,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         self.configChanged.emit()
 
+    @Slot()
     def _change_validation_state(self, validate=False):
         self.logger.info(f"Changing validation state to {validate}.")
         self.validate_led.setChecked(validate)
@@ -633,6 +642,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
             self.drive_config = config
 
+    @Slot()
     def _update_dr_name_widget(self):
         self.dr_name_widget.setText(self.drive_config["name"])
 
@@ -649,6 +659,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         return ip
 
+    @Slot()
     def _validate_drive(self):
         # What to validate?
         # 1. All axis widgets have an instantiated axis.
@@ -749,6 +760,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         return drive
 
+    @Slot()
     def _terminate_drive(self):
         if not isinstance(self.drive, Drive):
             return

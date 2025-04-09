@@ -9,7 +9,7 @@ import logging
 import numpy as np
 import warnings
 
-from PySide6.QtCore import Signal, QTimer
+from PySide6.QtCore import Signal, QTimer, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
 from typing import List, Union
@@ -35,10 +35,6 @@ class MotionSpaceDisplay(QFrame):
     animateMotionListFinished = Signal()
     animateMotionListPaused = Signal()
     animateMotionListCleared = Signal()
-
-    _default_legend_names = [
-        "motion_list", "probe", "position", "target", "insertion_point"
-    ]
 
     _default_legend_names = [
         "motion_list", "probe", "position", "target", "insertion_point"
@@ -208,6 +204,7 @@ class MotionSpaceDisplay(QFrame):
             "finished": False,
         }
 
+    @Slot()
     def animate_motion_list_pause(self):
         if self._animate_payload is None:
             return
@@ -217,6 +214,7 @@ class MotionSpaceDisplay(QFrame):
         if not self._animate_payload["finished"]:
             self.animateMotionListPaused.emit()
 
+    @Slot()
     def animate_motion_list_clear(self):
         if self._animate_payload is None:
             return
@@ -238,6 +236,7 @@ class MotionSpaceDisplay(QFrame):
 
         self.animateMotionListCleared.emit()
 
+    @Slot()
     def _update_motion_list_trace(self, *, to_index: int = None):
         if to_index is None and self._animate_payload is None:
             return
@@ -365,6 +364,7 @@ class MotionSpaceDisplay(QFrame):
         self.setHidden(True)
         self.mbChanged.emit()
 
+    @Slot()
     def update_canvas(self):
         if not isinstance(self.mb, MotionBuilder):
             self.setHidden(True)
@@ -594,6 +594,7 @@ class MotionSpaceDisplay(QFrame):
         self.update_legend()
         self.mpl_canvas.draw()
 
+    @Slot(list)
     def update_target_position_plot(self, position):
         self.logger.info(f"Drawing target position {position}")
 

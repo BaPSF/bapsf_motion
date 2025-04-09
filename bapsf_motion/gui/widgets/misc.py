@@ -10,7 +10,7 @@ __all__ = [
 
 import logging
 
-from PySide6.QtCore import Qt, Signal, QSize
+from PySide6.QtCore import Qt, Signal, QSize, Slot
 from PySide6.QtGui import QValidator, QColor, QIcon
 from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
 from typing import Union
@@ -142,6 +142,7 @@ class QLineEditSpecialized(QLineEdit):
 
         self.editingFinished.connect(self._send_payload)
 
+    @Slot()
     def _send_payload(self):
         self.editingFinishedPayload.emit(self)
 
