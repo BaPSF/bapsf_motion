@@ -427,7 +427,12 @@ class MotionBuilder(MBItem):
         shape = points.shape
         nspace = shape[1]
 
+        reverse_y = True if nspace == 2 else False
+
         _isort = np.argsort(points[..., nspace - 1], axis=0)
+        if reverse_y:
+            _isort = _isort[::-1]
+
         points = points[_isort, :]
 
         if nspace == 1:
