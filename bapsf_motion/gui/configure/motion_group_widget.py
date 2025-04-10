@@ -19,7 +19,16 @@ os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
 import pygame  # noqa
 
 from abc import abstractmethod
-from PySide6.QtCore import Qt, Signal, Slot, QRunnable, QSize, QThreadPool, QObject
+from PySide6.QtCore import (
+    QObject,
+    QRunnable,
+    QSize,
+    Qt,
+    QThreadPool,
+    QTimer,
+    Signal,
+    Slot,
+)
 from PySide6.QtGui import QDoubleValidator, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -312,6 +321,10 @@ class AxisControlWidget(QWidget):
         self._mg = None
         self._axis_index = None
 
+        self._update_display_interval = 250  # in msec
+        self._update_display_timer = QTimer()
+        self._update_display_timer.setSingleShot(True)
+
         if axis_display_mode not in ("interactive", "readonly"):
             self._logger.info(
                 f"Forcing display mode of {self.__class__.__name__} to be"
@@ -407,6 +420,10 @@ class AxisControlWidget(QWidget):
         self._connect_signals()
 
     def _connect_signals(self):
+        self._update_display_timer.timeout.connect(
+            self._update_display_of_axis_status
+        )
+
         self.jog_forward_btn.clicked.connect(self.jog_forward)
         self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
@@ -624,6 +641,9 @@ class AxisControlWidget(QWidget):
         self.axis.send_command(cmd_string)
 
     @Slot()
+    def update_display_of_axis_status(self):
+        self._update_display_timer.start(self._update_display_interval)
+
     def _update_display_of_axis_status(self):
         if self._mg.terminated:
             return
@@ -680,24 +700,24 @@ class AxisControlWidget(QWidget):
         self._axis_index = ax_index
 
         self.axis_name_label.setText(self.axis.name)
-        self.axis.motor.status_changed.connect(self._update_display_of_axis_status)
+        self.axis.motor.status_changed.connect(self.update_display_of_axis_status)
         self.axis.motor.status_changed.connect(self.axisStatusChanged.emit)
         self.axis.motor.movement_started.connect(self._emit_movement_started)
         self.axis.motor.movement_finished.connect(self._emit_movement_finished)
-        self.axis.motor.movement_finished.connect(self._update_display_of_axis_status)
-        self._update_display_of_axis_status()
+        self.axis.motor.movement_finished.connect(self.update_display_of_axis_status)
+        self.update_display_of_axis_status()
 
         self.axisLinked.emit()
 
     def unlink_axis(self):
         if self.axis is not None:
             # self.axis.terminate(delay_loop_stop=True)
-            self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.status_changed.disconnect(self.update_display_of_axis_status)
             self.axis.motor.status_changed.connect(self.axisStatusChanged.emit)
             self.axis.motor.movement_started.connect(self._emit_movement_started)
             self.axis.motor.movement_finished.connect(self._emit_movement_finished)
             self.axis.motor.movement_finished.disconnect(
-                self._update_display_of_axis_status
+                self.update_display_of_axis_status
             )
 
         self._mg = None
@@ -728,12 +748,12 @@ class AxisControlWidget(QWidget):
         self.logger.info("Closing AxisControlWidget")
 
         if isinstance(self.axis, Axis):
-            self.axis.motor.status_changed.disconnect(self._update_display_of_axis_status)
+            self.axis.motor.status_changed.disconnect(self.update_display_of_axis_status)
             self.axis.motor.status_changed.disconnect(self.axisStatusChanged.emit)
             self.axis.motor.movement_started.disconnect(self._emit_movement_started)
             self.axis.motor.movement_finished.disconnect(self._emit_movement_finished)
             self.axis.motor.movement_finished.disconnect(
-                self._update_display_of_axis_status
+                self.update_display_of_axis_status
             )
 
         event.accept()
@@ -905,7 +925,7 @@ class DriveBaseController(QWidget):
             # elif acw.axis.is_moving:
             #     continue
 
-            acw._update_display_of_axis_status()
+            acw.update_display_of_axis_status()
 
     @Slot()
     def disable_motion_buttons(self):
