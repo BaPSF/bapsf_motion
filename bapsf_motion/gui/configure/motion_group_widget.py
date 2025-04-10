@@ -642,6 +642,9 @@ class AxisControlWidget(QWidget):
 
     @Slot()
     def update_display_of_axis_status(self):
+        if not self._update_display_timer.isActive():
+            self._update_display_of_axis_status()
+
         self._update_display_timer.start(self._update_display_interval)
 
     def _update_display_of_axis_status(self):
