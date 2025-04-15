@@ -607,7 +607,7 @@ class AxisControlWidget(QWidget):
         if not isinstance(position, (u.Quantity, float)):
             return
         elif isinstance(position, u.Quantity):
-            _txt = f"{position.value:.2f} {position.unit}"
+            _txt = f"{position.value:.2f}"
         else:
             _txt = f"{position:.2f}"
 
@@ -665,7 +665,7 @@ class AxisControlWidget(QWidget):
         pos = self.position
         self.update_position_display(pos)
         if self.target_position_label.text() == "":
-            self.update_position_display(pos)
+            self.update_target_position_display(pos)
 
         _motor_status = self.axis.motor.status
 
