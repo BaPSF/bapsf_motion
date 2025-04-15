@@ -1860,6 +1860,11 @@ class MGWidget(QWidget):
         self._mb_combo_last_index = -1
         self._build_mb_defaults()
 
+        self._update_plot_interval = 200  # in msec
+        self._update_plot_timer = QTimer()
+        self._update_plot_timer.setSingleShot(True)
+        self._plot_timer_issue_new_single_shot = False
+
         # Define TEXT WIDGETS
 
         _widget = QPlainTextEdit(parent=self)
@@ -2048,15 +2053,40 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.movementStarted.connect(self.disable_config_controls)
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
+        self.drive_control_widget.movementStopped.connect(
+            self._update_position_in_plot
+        )
         self.drive_control_widget.targetPositionChanged.connect(
             self.mpl_canvas.update_target_position_plot
         )
         self.drive_control_widget.driveStatusChanged.connect(
-            self._update_position_in_plot
+            self.update_position_in_plot
         )
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
+
+        self._update_plot_timer.timeout.connect(
+            self._update_position_in_plot
+        )
+
+    @Slot()
+    def update_position_in_plot(self):
+        if not self.mg.is_moving:
+            # no position to change since motion group is NOT moving,
+            # to force a position update use _update_position_in_plot()
+            self._plot_timer_issue_new_single_shot = False
+            return
+
+        timer_active = self._update_plot_timer.isActive()
+        if timer_active:
+            self._plot_timer_issue_new_single_shot = True
+        else:
+            self._update_position_in_plot()
+
+            # start a timed update to start update frequency control
+            self._update_plot_timer.start(self._update_plot_interval)
+            self._plot_timer_issue_new_single_shot = False
 
     @Slot()
     def _update_position_in_plot(self):
@@ -2065,6 +2095,12 @@ class MGWidget(QWidget):
         else:
             position = None
         self.mpl_canvas.update_position_plot(position)
+
+        if self._plot_timer_issue_new_single_shot:
+            # start another single shot if update_position_in_plot() was
+            # triggered during the wait for the last single shot
+            self._update_plot_timer.start(self._update_plot_interval)
+            self._plot_timer_issue_new_single_shot = False
 
     def _define_layout(self):
 
