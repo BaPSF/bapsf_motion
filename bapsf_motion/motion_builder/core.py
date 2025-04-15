@@ -423,14 +423,30 @@ class MotionBuilder(MBItem):
         flat_ax = np.prod(points.shape[:-1])
         return np.reshape(points, (flat_ax, points.shape[-1]))
 
-    def _sort_motion_list(self, points):
+    def _sort_motion_list(self, points, order=None):
+        # points :
+        #   is an N x M array where N is the number of points to be sorted
+        #   and M is the same dimensionality of the motion spaces (i.e. the
+        #   actual point)
+        #
+        # order
+        #   is an M array of 1 or -1 values.  A 1 indicates that axes
+        #   should be sorted in ascending order, and -1 indicates a
+        #   descending order
+        #
         shape = points.shape
         nspace = shape[1]
 
-        reverse_y = True if nspace == 2 else False
+        if order is not None:
+            pass
+        elif nspace > 1:
+            order = np.ones(nspace, dtype=int)
+            order[1] = -1
+        else:
+            order = np.ones(nspace, dtype=int)
 
         _isort = np.argsort(points[..., nspace - 1], axis=0)
-        if reverse_y:
+        if order[nspace - 1] == -1:
             _isort = _isort[::-1]
 
         points = points[_isort, :]
@@ -443,10 +459,13 @@ class MotionBuilder(MBItem):
             mask = points[..., nspace - 1] == val
             _slice = points[mask, :]
             _isort = np.argsort(_slice[..., nspace - 2], axis=0)
+            if order[nspace - 2] == -1:
+                _isort = _isort[::-1]
+
             _slice = _slice[_isort, :]
 
             if nspace > 2:
-                _sub_slice = self._sort_motion_list(_slice[..., :-1])
+                _sub_slice = self._sort_motion_list(_slice[..., :-1], order[:-1])
                 _slice[..., :-1] = _sub_slice
 
             points[mask, :] = _slice
