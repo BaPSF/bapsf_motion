@@ -665,7 +665,7 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.draw()
 
     def update_position_plot(self, position):
-        self.logger.debug(f"Drawing target position {position}")
+        self.logger.info(f"Drawing position {position}")
 
         if not self.display_position:
             position = None
