@@ -2086,7 +2086,7 @@ class MGWidget(QWidget):
 
     @Slot()
     def update_position_in_plot(self):
-        if not self.mg.is_moving:
+        if not isinstance(self.mg, MotionGroup) or not self.mg.is_moving:
             # no position to change since motion group is NOT moving,
             # to force a position update use _update_position_in_plot()
             self._plot_timer_issue_new_single_shot = False
