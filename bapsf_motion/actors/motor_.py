@@ -19,7 +19,7 @@ from enum import Enum
 from typing import Any, AnyStr, Callable, Dict, NamedTuple, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
-from bapsf_motion.utils import ipv4_pattern, SimpleSignal
+from bapsf_motion.utils import ipv4_pattern, SimpleSignal, dict_equal
 from bapsf_motion.utils import units as u
 
 
@@ -1011,15 +1011,12 @@ class Motor(EventActor):
         """
         old_status = self.status.copy()
         new_status = {**old_status, **values}
-        changed = {}
-        for key, value in new_status.items():
-            if key not in old_status or (key in old_status and old_status[key] != value):
-                changed[key] = value
 
-        if changed:
-            self._status = new_status
-            self.logger.debug(f"Motor status changed, new values are {changed}.")
-            self.status_changed.emit()
+        if dict_equal(old_status, new_status):
+            return
+
+        self._status = new_status
+        self.status_changed.emit()
 
     def connect(self):
         """
