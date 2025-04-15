@@ -324,6 +324,7 @@ class AxisControlWidget(QWidget):
         self._update_display_interval = 250  # in msec
         self._update_display_timer = QTimer()
         self._update_display_timer.setSingleShot(True)
+        self._display_timer_issue_new_single_shot = False
 
         if axis_display_mode not in ("interactive", "readonly"):
             self._logger.info(
@@ -433,6 +434,7 @@ class AxisControlWidget(QWidget):
         )
         self.enable_btn.clicked.connect(self._set_motor_enabled_state)
         self.movementStopped.connect(self._disable_motor)
+        self.movementStopped.connect(self._update_display_of_axis_status)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -642,11 +644,17 @@ class AxisControlWidget(QWidget):
 
     @Slot()
     def update_display_of_axis_status(self):
-        if not self._update_display_timer.isActive():
+        timer_active = self._update_display_timer.isActive()
+        if timer_active:
+            self._display_timer_issue_new_single_shot = True
+        else:
             self._update_display_of_axis_status()
 
-        self._update_display_timer.start(self._update_display_interval)
+            # start a timed update to start update frequency control
+            self._update_display_timer.start(self._update_display_interval)
+            self._display_timer_issue_new_single_shot = False
 
+    @Slot()
     def _update_display_of_axis_status(self):
         if self._mg.terminated:
             return
@@ -667,6 +675,12 @@ class AxisControlWidget(QWidget):
 
         enabled_state = _motor_status["enabled"]
         self.enable_btn.setChecked(enabled_state)
+
+        if self._display_timer_issue_new_single_shot:
+            # start another single shot if update_display_of_axis_status()
+            # was triggered during the wait for the last single shot
+            self._update_display_timer.start(self._update_display_interval)
+            self._display_timer_issue_new_single_shot = False
 
     @Slot()
     def _validate_jog_value(self):
