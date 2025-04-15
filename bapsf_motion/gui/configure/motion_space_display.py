@@ -23,7 +23,7 @@ import matplotlib as mpl
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
 from matplotlib import pyplot as plt
 from matplotlib.collections import PathCollection
-from matplotlib.backend_bases import Event, MouseEvent, PickEvent
+from matplotlib.backend_bases import Event, MouseEvent, PickEvent, DrawEvent
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar  # noqa
 
@@ -77,16 +77,22 @@ class MotionSpaceDisplay(QFrame):
 
         self.setLayout(self._define_layout())
 
+        self._cid_on_draw = None
+        self._draw_all = True
+
         self._mpl_pick_callback_id = None
         self._connect_signals()
 
     def _connect_signals(self):
         self.mbChanged.connect(self.update_canvas)
+        self.targetPositionSelected.connect(self.update_target_position_plot)
+        self.animateMotionListFinished.connect(self.animate_motion_list_pause)
+
+        # matplotlib events
         self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
             "pick_event", self.on_pick  # noqa
         )
-        self.targetPositionSelected.connect(self.update_target_position_plot)
-        self.animateMotionListFinished.connect(self.animate_motion_list_pause)
+        self._cid_on_draw = self.mpl_canvas.mpl_connect("draw_event", self.on_draw)  # noqa
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -311,6 +317,25 @@ class MotionSpaceDisplay(QFrame):
 
         self._animate_payload["index"] = to_index
 
+    def on_draw(self, event: DrawEvent):
+        if self._draw_all:
+            self.mpl_canvas.mpl_disconnect(self._cid_on_draw)
+            self.mpl_canvas.draw()
+            self._cid_on_draw = self.mpl_canvas.mpl_connect("draw_event", self.on_draw)
+            self._draw_all = False
+        else:
+            fig = self.mpl_canvas.figure
+            fig_axes = fig.axes  # type: List[plt.Axes]
+            for ax in fig_axes:
+                artists = ax.get_children()
+                for artist in artists:
+                    if not artist.get_animated():
+                        continue
+
+                    fig.draw_artist(artist)
+
+            self.mpl_canvas.blit(fig.bbox)
+
     def on_pick(self, event: PickEvent):
         if not self.display_target_position:
             return
@@ -397,6 +422,7 @@ class MotionSpaceDisplay(QFrame):
         else:
             target_position = None
 
+        self._draw_all = True
         fig = self.mpl_canvas.figure
         fig.clear()
         ax = fig.gca()
@@ -546,6 +572,7 @@ class MotionSpaceDisplay(QFrame):
                     facecolors=facecolors[color_index],
                     edgecolors=edgecolor,
                     label=_label,
+                    animated=True,
                 )
 
                 color_index += 1
@@ -589,6 +616,7 @@ class MotionSpaceDisplay(QFrame):
                 edgecolors="black",
                 picker=True,
                 label=_label,
+                animated=True,
             )
 
         self.update_legend()
@@ -630,6 +658,7 @@ class MotionSpaceDisplay(QFrame):
                 facecolors="none",
                 edgecolors="blue",
                 label=_label,
+                animated=True,
             )
 
         self.update_legend()
@@ -670,6 +699,7 @@ class MotionSpaceDisplay(QFrame):
                 facecolors="none",
                 edgecolors="black",
                 label=_label,
+                animated=True,
             )
 
         # add probe shaft (line from insertion to position
@@ -711,6 +741,7 @@ class MotionSpaceDisplay(QFrame):
                 color="black",
                 linewidth=2,
                 label=_label,
+                animated=True,
             )
 
         self.update_legend()
