@@ -511,6 +511,7 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.draw()
 
     def update_motion_list(self):
+        self.animate_motion_list_clear()
 
         # plot the individual point layers (if join scheme is sequential)
         _layer_names = [layer.name for layer in self.mb.layers]
