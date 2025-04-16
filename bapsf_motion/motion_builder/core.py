@@ -508,7 +508,10 @@ class MotionBuilder(MBItem):
         ):
             self.drop_vars("motion_list")
 
-        self._ds["motion_list"] = xr.DataArray(data=points, dims=("index", "space"))
+        self._ds["motion_list"] = xr.DataArray(
+            data=points[mask, ...],
+            dims=("index", "space")
+        )
 
     def generate_excluded_mask(self, points) -> np.ndarray:
         """
