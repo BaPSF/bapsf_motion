@@ -337,7 +337,6 @@ class MotionSpaceDisplay(QFrame):
                     fig.draw_artist(artist)
 
             self.mpl_canvas.blit(fig.bbox)
-        self.mpl_canvas.flush_events()
 
     def on_pick(self, event: PickEvent):
         if not self.display_target_position:
