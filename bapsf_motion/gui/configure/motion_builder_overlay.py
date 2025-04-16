@@ -66,6 +66,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._mb = None
 
         self._space_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
+        self._mpl_canvas_full_draw = True
 
         # _param_inputs:
         #     dictionary of input parameters for instantiating an exclusion or
@@ -1098,6 +1099,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layer = self.mb.layers.pop(current_index)  # noqa
         self.mb.layers.insert(move_to_index, layer)
         self.mb.generate()
+        self._mpl_canvas_full_draw = False
         self.configChanged.emit()
         self.layer_list_box.setCurrentRow(move_to_index)
 
@@ -1127,6 +1129,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layer = self.mb.layers.pop(current_index)  # noqa
         self.mb.layers.insert(move_to_index, layer)
         self.mb.generate()
+        self._mpl_canvas_full_draw = False
         self.configChanged.emit()
         self.layer_list_box.setCurrentRow(move_to_index)
 
@@ -1177,6 +1180,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # TODO: remove params_widget if the removed exclusion is currently
         #       populating the params_widget
 
+        self._mpl_canvas_full_draw = False
         self.configChanged.emit()
 
     def _refresh_params_combo_box(
@@ -1264,6 +1268,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _scheme = "merge" if self.layer_ml_combine_toggle.isChecked() else "sequential"
         self.logger.info(f"Toggling motion list scheme to {_scheme}.")
         self.mb.layer_to_motionlist_scheme = _scheme
+        self._mpl_canvas_full_draw = False
         self.configChanged.emit()
 
     @Slot(object)
@@ -1488,7 +1493,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.remove_ly_btn.setEnabled(enable)
 
     def update_canvas(self):
-        self.mpl_canvas.update_canvas()
+        if self._mpl_canvas_full_draw:
+            self.mpl_canvas.update_canvas()
+        else:
+            self.mpl_canvas.update_motion_list()
 
     def update_exclusion_list_box(self):
         self.logger.info("Updating Exclusion List Box")
@@ -1546,9 +1554,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.mb.add_exclusion(_type, **_inputs)
         elif _name == "New Layer":
             self.mb.add_layer(_type, **_inputs)
+            self._mpl_canvas_full_draw = False
         else:
             self.mb.remove_layer(_name)
             self.mb.add_layer(_type, **_inputs)
+            self._mpl_canvas_full_draw = False
 
         self._hide_and_clear_params_widget()
         self.configChanged.emit()
