@@ -486,6 +486,8 @@ class MotionSpaceDisplay(QFrame):
             self.animate_motion_list()
             self.blockSignals(False)
 
+        self.logger.info("Re-draw DONE.")
+
     def update_legend(self):
         _plotted_layers = (
             [] if self._motionlist_plot_names is None else self._motionlist_plot_names
