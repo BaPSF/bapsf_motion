@@ -288,6 +288,7 @@ class MotionSpaceDisplay(QFrame):
                     color="black",
                     linewidth=1,
                     label=_label,
+                    animated=True,
                 )
             else:
                 # this is the start and end points
@@ -303,6 +304,7 @@ class MotionSpaceDisplay(QFrame):
                     facecolors="none",
                     edgecolors="black",
                     label=_label,
+                    animated=True,
                 )
 
         self.mpl_canvas.draw()
