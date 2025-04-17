@@ -1,6 +1,8 @@
+import ast
+import re
 
 from pathlib import Path
-from PySide6.QtCore import Qt, QPoint
+from PySide6.QtCore import Qt, QPoint, Slot
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -12,6 +14,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QLineEdit,
 )
+from typing import Union
 
 _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / "_images").resolve()
@@ -132,7 +135,8 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.setFixedHeight(height)
 
     def _connect_signals(self):
-        ...
+        self.measure_1_label.editingFinished.connect(self._validate_measure_1)
+        self.measure_2_label.editingFinished.connect(self._validate_measure_2)
 
     def _define_layout(self):
         image_layout = QVBoxLayout()
@@ -163,6 +167,74 @@ class LaPDXYTransformCalculator(QMainWindow):
             + 0.5 * self.velmex_rail_width
         )
 
+    def recalculate_parameters(self):
+        self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
+        self.pivot_to_drive = self.calc_pivot_to_drive()
+
+        self._update_all_labels()
+
+    def _update_all_labels(self):
+        self._update_measure_1_label()
+        self._update_measure_2_label()
+        self._update_pivot_to_feedthru_label()
+        self._update_pivot_to_drive_label()
+
+    def _update_pivot_to_feedthru_label(self):
+        _txt = f"{self.pivot_to_feedthru:.3f} cm"
+        self.pivot_to_feedthru_label.setText(_txt)
+
+    def _update_pivot_to_drive_label(self):
+        _txt = f"{self.pivot_to_drive:.3f} cm"
+        self.pivot_to_drive_label.setText(_txt)
+
+    def _update_measure_1_label(self):
+        _txt = f"{self.measure_1:.2f} cm"
+        self.measure_1_label.setText(_txt)
+
+    def _update_measure_2_label(self):
+        _txt = f"{self.measure_2:.2f} cm"
+        self.measure_2_label.setText(_txt)
+
+    @staticmethod
+    def _validate_measure(text: str) -> Union[float, None]:
+        match = re.compile(r"(?P<value>\d+(.\d*)?)(\s*cm)?").fullmatch(text)
+
+        if match is None:
+            return None
+
+        value = ast.literal_eval(match.group("value"))
+
+        if value == 0:
+            return None
+
+        return float(value)
+
+    @Slot()
+    def _validate_measure_1(self):
+        _txt = self.measure_1_label.text()
+        value = self._validate_measure(_txt)
+
+        if value is None:
+            pass
+        elif value <= self.probe_kf40_thickness:
+            # not physically possible
+            pass
+        else:
+            self.measure_1 = value
+            self.recalculate_parameters()
+
+        self._update_all_labels()
+
+    @Slot()
+    def _validate_measure_2(self):
+        _txt = self.measure_2_label.text()
+        value = self._validate_measure(_txt)
+
+        if value is not None:
+            self.measure_2 = value
+            self.recalculate_parameters()
+
+        self._update_all_labels()
 
 
 class LaPDXYTransformCalculatorApp(QApplication):
