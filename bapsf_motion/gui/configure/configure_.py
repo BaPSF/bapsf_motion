@@ -10,6 +10,7 @@ import logging
 import logging.config
 import re
 
+from functools import partial
 from pathlib import Path
 from PySide6.QtCore import (
     Qt,
@@ -17,7 +18,7 @@ from PySide6.QtCore import (
     Signal,
     Slot,
 )
-from PySide6.QtGui import QCloseEvent, QIcon
+from PySide6.QtGui import QCloseEvent, QIcon, QAction
 from PySide6.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -43,6 +44,7 @@ import qtawesome as qta
 from bapsf_motion.actors import RunManager, RunManagerConfig, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
+from bapsf_motion.gui.lapd_xy_transform_calculator import LaPDXYTransformCalculator
 from bapsf_motion.gui.widgets import (
     DiscardButton,
     DoneButton,
@@ -291,6 +293,10 @@ class ConfigureGUI(QMainWindow):
         self._stacked_widget = QStackedWidget(parent=self)
         self._stacked_widget.addWidget(self._run_widget)
 
+        # set up menu bar
+        self._launched_windows = dict()  # type: Dict[str, Union[QMainWindow, QWidget]]
+        self._define_menu_bar()
+
         layout = self._define_layout()
 
         widget = QWidget(parent=self)
@@ -336,6 +342,16 @@ class ConfigureGUI(QMainWindow):
         self.resize(1760, 990)
         self.setMinimumHeight(990)
         self.setMinimumWidth(1760)
+
+    def _define_menu_bar(self):
+        menu = self.menuBar()
+
+        # calculator drop-down menu
+        lapd_xy_calc_action = QAction("lapd_xy parameters", parent=self)
+        lapd_xy_calc_action.triggered.connect(self._launch_lapd_xy_calculator)
+
+        calc_menu = menu.addMenu("Calculators")
+        calc_menu.addAction(lapd_xy_calc_action)
 
     def _define_layout(self):
 
@@ -667,6 +683,31 @@ class ConfigureGUI(QMainWindow):
             else (int(match.group("index")), match.group("name"))
         )
 
+    def _launch_lapd_xy_calculator(self):
+        if "lapd_xy_calculator" in self._launched_windows:
+            _window = self._launched_windows["lapd_xy_calculator"]
+            _window.show()
+            _window.activateWindow()
+            _window.closing.connect(  # noqa
+                partial(self._launched_windows_closed, "lapd_xy_calculator")
+            )
+            return
+
+        _window = LaPDXYTransformCalculator()
+        _window.setObjectName("lapd_xy_calculator")
+        _window.show()
+        _window.activateWindow()
+
+        self._launched_windows["lapd_xy_calculator"] = _window
+
+    @Slot(str)
+    def _launched_windows_closed(self, name: str):
+        if name not in self._launched_windows:
+            return
+
+        _window = self._launched_windows.pop(name)
+        _window.deleteLater()
+
     def closeEvent(self, event: "QCloseEvent") -> None:
         self.logger.info("Closing ConfigureGUI")
 
@@ -680,6 +721,11 @@ class ConfigureGUI(QMainWindow):
             self._mg_widget.close()
 
         self._run_widget.close()
+
+        for _window in self._launched_windows.values():
+            _window.close()
+            _window.deleteLater()
+        self._launched_windows = dict()
 
         event.accept()
 
