@@ -69,6 +69,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.pivot_to_center = 58.771
         _txt = QLineEdit(f"{self.pivot_to_center:.3f} cm", parent=self)
         _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
@@ -80,6 +81,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_1 = 54.2
         _txt = QLineEdit(f"{self.measure_1:.2f} cm", parent=self)
         _txt.setReadOnly(False)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
@@ -92,6 +94,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_2 = 58.0
         _txt = QLineEdit(f"{self.measure_2:.2f} cm", parent=self)
         _txt.setReadOnly(False)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
@@ -104,6 +107,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
         _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
@@ -115,6 +119,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.pivot_to_drive = self.calc_pivot_to_drive()
         _txt = QLineEdit(f"{self.pivot_to_drive:.3f} cm", parent=self)
         _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
