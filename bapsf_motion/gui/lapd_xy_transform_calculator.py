@@ -41,6 +41,11 @@ class LaPDXYTransformCalculator(QMainWindow):
         QLineEdit { border: 2px solid black; border-radius: 5px }
         QLineEdit#measure_1 { border: 2px solid rgb(255, 0, 0) }
         QLineEdit#measure_2 { border: 2px solid rgb(255, 0, 0) }
+        
+        QLineEdit#ball_valve_cap_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
         """
         self.setStyleSheet(_stylesheet)
 
@@ -127,6 +132,19 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.move(p)
         _txt.setFixedWidth(120)
         self.pivot_to_drive_label = _txt
+
+        _txt = QLineEdit(f"{self.ball_valve_cap_thickness:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(12)
+        font.setBold(True)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(702, 184)
+        _txt.move(p)
+        _txt.setFixedWidth(86)
+        _txt.setObjectName("ball_valve_cap_thickness")
+        self.ball_valve_cap_thickness_label = _txt
 
         layout = self._define_layout()
         self.centralWidget().setLayout(layout)
