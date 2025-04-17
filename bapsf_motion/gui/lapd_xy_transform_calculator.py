@@ -4,7 +4,7 @@ import ast
 import re
 
 from pathlib import Path
-from PySide6.QtCore import Qt, QPoint, Slot
+from PySide6.QtCore import Qt, QPoint, Signal, Slot
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -23,6 +23,8 @@ _IMAGES_PATH = (_HERE / "_images").resolve()
 
 
 class LaPDXYTransformCalculator(QMainWindow):
+    closing = Signal()
+
     def __init__(self):
         super().__init__()
 
@@ -237,6 +239,10 @@ class LaPDXYTransformCalculator(QMainWindow):
             self.recalculate_parameters()
 
         self._update_all_labels()
+
+    def closeEvent(self, event):
+        self.closing.emit()
+        super().closeEvent(event)
 
 
 class LaPDXYTransformCalculatorApp(QApplication):
