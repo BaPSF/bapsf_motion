@@ -46,6 +46,18 @@ class LaPDXYTransformCalculator(QMainWindow):
             border: 2px solid rgb(68, 114, 196);
             color: rgb(68, 114, 196);
         }
+        QLineEdit#probe_kf40_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#probe_drive_endplate_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#velmex_rail_width {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
         """
         self.setStyleSheet(_stylesheet)
 
@@ -145,6 +157,45 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setFixedWidth(86)
         _txt.setObjectName("ball_valve_cap_thickness")
         self.ball_valve_cap_thickness_label = _txt
+
+        _txt = QLineEdit(f"{self.probe_kf40_thickness:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(12)
+        font.setBold(True)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(1235, 181)
+        _txt.move(p)
+        _txt.setFixedWidth(86)
+        _txt.setObjectName("probe_kf40_thickness")
+        self.probe_kf40_thickness_label = _txt
+
+        _txt = QLineEdit(f"{self.probe_drive_endplate_thickness:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(12)
+        font.setBold(True)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(1313, 226)
+        _txt.move(p)
+        _txt.setFixedWidth(86)
+        _txt.setObjectName("probe_drive_endplate_thickness")
+        self.probe_drive_endplate_thickness_label = _txt
+
+        _txt = QLineEdit(f"{self.velmex_rail_width:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(12)
+        font.setBold(True)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(1522, 124)
+        _txt.move(p)
+        _txt.setFixedWidth(86)
+        _txt.setObjectName("velmex_rail_width")
+        self.velmex_rail_width_label = _txt
 
         layout = self._define_layout()
         self.centralWidget().setLayout(layout)
