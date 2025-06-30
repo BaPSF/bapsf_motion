@@ -366,9 +366,10 @@ class LaPDXYTransformCalculator(QMainWindow):
 
         if value is not None:
             self.measure_2a = value
+            self.measure_2b = self.convert_measure_2a_to_measure_2b()
             self.recalculate_parameters()
-
-        self._update_all_labels()
+        else:
+            self._update_all_labels()
 
     def closeEvent(self, event):
         self.closing.emit()
