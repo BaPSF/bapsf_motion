@@ -365,10 +365,19 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt = self.measure_2a_label.text()
         value = self._validate_measure(_txt)
 
-        if value is not None:
+        if value is None:
+            pass
+        elif value <= 0:
+            # not physically possible
+            pass
+        else:
             self.measure_2a = value
             self.measure_2b = self.convert_measure_2a_to_measure_2b()
             self.recalculate_parameters()
+            return
+
+        self._update_all_labels()
+
     @Slot()
     def _validate_measure_2b(self):
         _txt = self.measure_2b_label.text()
@@ -380,7 +389,6 @@ class LaPDXYTransformCalculator(QMainWindow):
             # not physically possible
             pass
         else:
-            self._update_all_labels()
             self.measure_2b = value
             self.measure_2a = self.convert_measure_2b_to_measure_2a()
             self.recalculate_parameters()
