@@ -40,7 +40,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         
         QLineEdit { border: 2px solid black; border-radius: 5px }
         QLineEdit#measure_1 { border: 2px solid rgb(255, 0, 0) }
-        QLineEdit#measure_2 { border: 2px solid rgb(255, 0, 0) }
+        QLineEdit#measure_2a { border: 2px solid rgb(255, 0, 0) }
         
         QLineEdit#ball_valve_cap_thickness {
             border: 2px solid rgb(68, 114, 196);
@@ -109,8 +109,8 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setObjectName("measure_1")
         self.measure_1_label = _txt
 
-        self.measure_2 = 58.0
-        _txt = QLineEdit(f"{self.measure_2:.2f} cm", parent=self)
+        self.measure_2a = 58.0
+        _txt = QLineEdit(f"{self.measure_2a:.2f} cm", parent=self)
         _txt.setReadOnly(False)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
@@ -119,8 +119,8 @@ class LaPDXYTransformCalculator(QMainWindow):
         p = self.geometry().topLeft() + QPoint(1250, 455)
         _txt.move(p)
         _txt.setFixedWidth(120)
-        _txt.setObjectName("measure_2")
-        self.measure_2_label = _txt
+        _txt.setObjectName("measure_2a")
+        self.measure_2a_label = _txt
 
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
@@ -228,7 +228,7 @@ class LaPDXYTransformCalculator(QMainWindow):
 
     def _connect_signals(self):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
-        self.measure_2_label.editingFinished.connect(self._validate_measure_2)
+        self.measure_2a_label.editingFinished.connect(self._validate_measure_2a)
 
     def _define_layout(self):
         image_layout = QVBoxLayout()
@@ -267,7 +267,7 @@ class LaPDXYTransformCalculator(QMainWindow):
 
     def _update_all_labels(self):
         self._update_measure_1_label()
-        self._update_measure_2_label()
+        self._update_measure_2a_label()
         self._update_pivot_to_feedthru_label()
         self._update_pivot_to_drive_label()
 
@@ -283,9 +283,9 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt = f"{self.measure_1:.2f} cm"
         self.measure_1_label.setText(_txt)
 
-    def _update_measure_2_label(self):
-        _txt = f"{self.measure_2:.2f} cm"
-        self.measure_2_label.setText(_txt)
+    def _update_measure_2a_label(self):
+        _txt = f"{self.measure_2a:.2f} cm"
+        self.measure_2a_label.setText(_txt)
 
     @staticmethod
     def _validate_measure(text: str) -> Union[float, None]:
@@ -318,12 +318,12 @@ class LaPDXYTransformCalculator(QMainWindow):
         self._update_all_labels()
 
     @Slot()
-    def _validate_measure_2(self):
-        _txt = self.measure_2_label.text()
+    def _validate_measure_2a(self):
+        _txt = self.measure_2a_label.text()
         value = self._validate_measure(_txt)
 
         if value is not None:
-            self.measure_2 = value
+            self.measure_2a = value
             self.recalculate_parameters()
 
         self._update_all_labels()
