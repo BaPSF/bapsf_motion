@@ -84,7 +84,16 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.velmex_rail_width = 3.4 * 2.54  # cm
         self.fiducial_width = 1.775 * 2.54  # cm
 
+        # constants need to be defined first
+        self.measure_1 = 54.2
+        self.measure_2a = 58.0
+        self.measure_2b = self.calc_measure_2a_to_measure_2b()
+
+        # mesures and constants need to be defined first
         self.pivot_to_center = 58.771
+        self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
+        self.pivot_to_drive = self.calc_pivot_to_drive()
+
         _txt = QLineEdit(f"{self.pivot_to_center:.3f} cm", parent=self)
         _txt.setReadOnly(True)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -96,7 +105,6 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setFixedWidth(120)
         self.pivot_to_center_label = _txt
 
-        self.measure_1 = 54.2
         _txt = QLineEdit(f"{self.measure_1:.2f} cm", parent=self)
         _txt.setReadOnly(False)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -109,7 +117,6 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setObjectName("measure_1")
         self.measure_1_label = _txt
 
-        self.measure_2a = 58.0
         _txt = QLineEdit(f"{self.measure_2a:.2f} cm", parent=self)
         _txt.setReadOnly(False)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -122,7 +129,6 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setObjectName("measure_2a")
         self.measure_2a_label = _txt
 
-        self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
         _txt.setReadOnly(True)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -134,7 +140,6 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setFixedWidth(120)
         self.pivot_to_feedthru_label = _txt
 
-        self.pivot_to_drive = self.calc_pivot_to_drive()
         _txt = QLineEdit(f"{self.pivot_to_drive:.3f} cm", parent=self)
         _txt.setReadOnly(True)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
