@@ -250,6 +250,7 @@ class LaPDXYTransformCalculator(QMainWindow):
     def _connect_signals(self):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
         self.measure_2a_label.editingFinished.connect(self._validate_measure_2a)
+        self.measure_2b_label.editingFinished.connect(self._validate_measure_2b)
 
     def _define_layout(self):
         image_layout = QVBoxLayout()
@@ -368,8 +369,24 @@ class LaPDXYTransformCalculator(QMainWindow):
             self.measure_2a = value
             self.measure_2b = self.convert_measure_2a_to_measure_2b()
             self.recalculate_parameters()
+    @Slot()
+    def _validate_measure_2b(self):
+        _txt = self.measure_2b_label.text()
+        value = self._validate_measure(_txt)
+
+        if value is None:
+            pass
+        elif value <= self.velmex_rail_width + self.fiducial_width:
+            # not physically possible
+            pass
         else:
             self._update_all_labels()
+            self.measure_2b = value
+            self.measure_2a = self.convert_measure_2b_to_measure_2a()
+            self.recalculate_parameters()
+            return
+
+        self._update_all_labels()
 
     def closeEvent(self, event):
         self.closing.emit()
