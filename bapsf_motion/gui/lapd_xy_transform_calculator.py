@@ -66,13 +66,14 @@ class LaPDXYTransformCalculator(QMainWindow):
         """
         self.setStyleSheet(_stylesheet)
 
-        self._window_margin = 12
-        self._define_main_window()
         self.setCentralWidget(QWidget(parent=self))
 
         self._image_file_path = (_IMAGES_PATH / "LaPDXYTransform_diagram.png").resolve()
         pixmap = QPixmap(f"{self._image_file_path}")
-        self._image = pixmap.scaledToWidth(self.width() - 2 * self._window_margin)
+        self._image = pixmap
+
+        self._window_margin = 12
+        self._define_main_window()
 
         self.image_label = QLabel(parent=self)
         self.image_label.setPixmap(self._image)
@@ -240,10 +241,8 @@ class LaPDXYTransformCalculator(QMainWindow):
 
     def _define_main_window(self):
         self.setWindowTitle("LaPD XY Transform Calculator")
-        height = 500
-        width = int(3.52 * height)
-        width += 2 * self._window_margin
-        height += 2 * self._window_margin
+        width = self._image.width() + 2 * self._window_margin
+        height = self._image.height() + 2 * self._window_margin
         self.resize(width, height)
         self.setFixedWidth(width)
         self.setFixedHeight(height)
