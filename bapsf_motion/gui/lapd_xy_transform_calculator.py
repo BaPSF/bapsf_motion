@@ -93,7 +93,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         # constants need to be defined first
         self.measure_1 = 54.2
         self.measure_2a = 58.0
-        self.measure_2b = self.calc_measure_2a_to_measure_2b()
+        self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
         # mesures and constants need to be defined first
         self.pivot_to_center = 58.771
@@ -264,13 +264,17 @@ class LaPDXYTransformCalculator(QMainWindow):
         layout.addStretch()
         return layout
 
-    def calc_measure_2a_to_measure_2b(self, measure_2a: Optional[float] = None) -> float:
+    def convert_measure_2a_to_measure_2b(
+        self, measure_2a: Optional[float] = None
+    ) -> float:
         if measure_2a is None:
             measure_2a = self.measure_2a
 
         return measure_2a + self.velmex_rail_width + self.fiducial_width
 
-    def calc_measure_2b_to_measure_2a(self, measure_2b: Optional[float] = None) -> float:
+    def convert_measure_2b_to_measure_2a(
+        self, measure_2b: Optional[float] = None
+    ) -> float:
         if measure_2b is None:
             measure_2b = self.measure_2b
 
