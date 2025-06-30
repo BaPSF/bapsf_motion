@@ -243,6 +243,17 @@ class LaPDXYTransformCalculator(QMainWindow):
         layout.addStretch()
         return layout
 
+    def calc_measure_2a_to_measure_2b(self, measure_2a: Optional[float] = None) -> float:
+        if measure_2a is None:
+            measure_2a = self.measure_2a
+
+        return measure_2a + self.velmex_rail_width + self.fiducial_width
+
+    def calc_measure_2b_to_measure_2a(self, measure_2b: Optional[float] = None) -> float:
+        if measure_2b is None:
+            measure_2b = self.measure_2b
+
+        return measure_2b - self.velmex_rail_width - self.fiducial_width
 
     def calc_pivot_to_feedthru(self):
         return (
