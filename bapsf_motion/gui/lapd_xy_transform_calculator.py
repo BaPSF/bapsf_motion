@@ -198,6 +198,19 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setObjectName("velmex_rail_width")
         self.velmex_rail_width_label = _txt
 
+        _txt = QLineEdit(f"{self.fiducial_width:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(12)
+        font.setBold(True)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(1522, 124)
+        _txt.move(p)
+        _txt.setFixedWidth(86)
+        _txt.setObjectName("fiducial_width")
+        self.fiducial_width_label = _txt
+
         layout = self._define_layout()
         self.centralWidget().setLayout(layout)
 
