@@ -16,7 +16,7 @@ from PySide6.QtWidgets import (
     QFrame,
     QLineEdit,
 )
-from typing import Union
+from typing import Union, Optional
 
 _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / "_images").resolve()
