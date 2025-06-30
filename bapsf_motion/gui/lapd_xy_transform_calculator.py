@@ -305,6 +305,7 @@ class LaPDXYTransformCalculator(QMainWindow):
     def _update_all_labels(self):
         self._update_measure_1_label()
         self._update_measure_2a_label()
+        self._update_measure_2b_label()
         self._update_pivot_to_feedthru_label()
         self._update_pivot_to_drive_label()
 
@@ -323,6 +324,10 @@ class LaPDXYTransformCalculator(QMainWindow):
     def _update_measure_2a_label(self):
         _txt = f"{self.measure_2a:.2f} cm"
         self.measure_2a_label.setText(_txt)
+
+    def _update_measure_2b_label(self):
+        _txt = f"{self.measure_2b:.2f} cm"
+        self.measure_2b_label.setText(_txt)
 
     @staticmethod
     def _validate_measure(text: str) -> Union[float, None]:
