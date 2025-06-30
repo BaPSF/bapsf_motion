@@ -82,6 +82,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.probe_drive_endplate_thickness = 0.75 * 2.54  # cm
         self.probe_kf40_thickness = 2.54  # cm
         self.velmex_rail_width = 3.4 * 2.54  # cm
+        self.fiducial_width = 1.775 * 2.54  # cm
 
         self.pivot_to_center = 58.771
         _txt = QLineEdit(f"{self.pivot_to_center:.3f} cm", parent=self)
