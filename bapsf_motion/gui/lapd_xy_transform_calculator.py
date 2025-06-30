@@ -59,6 +59,10 @@ class LaPDXYTransformCalculator(QMainWindow):
             border: 2px solid rgb(68, 114, 196);
             color: rgb(68, 114, 196);
         }
+        QLineEdit#fiducial_width {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
         """
         self.setStyleSheet(_stylesheet)
 
