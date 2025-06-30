@@ -357,6 +357,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         else:
             self.measure_1 = value
             self.recalculate_parameters()
+            return
 
         self._update_all_labels()
 
