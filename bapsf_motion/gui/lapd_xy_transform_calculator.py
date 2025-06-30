@@ -243,9 +243,6 @@ class LaPDXYTransformCalculator(QMainWindow):
         layout.addStretch()
         return layout
 
-    @property
-    def measure_2(self):
-        return self.measure_2a
 
     def calc_pivot_to_feedthru(self):
         return (
@@ -259,7 +256,7 @@ class LaPDXYTransformCalculator(QMainWindow):
             self.ball_valve_cap_thickness
             + self.measure_1
             + self.probe_drive_endplate_thickness
-            + self.measure_2
+            + self.measure_2a
             + 0.5 * self.velmex_rail_width
         )
 
