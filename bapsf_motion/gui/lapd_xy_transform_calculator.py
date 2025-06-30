@@ -41,6 +41,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         QLineEdit { border: 2px solid black; border-radius: 5px }
         QLineEdit#measure_1 { border: 2px solid rgb(255, 0, 0) }
         QLineEdit#measure_2a { border: 2px solid rgb(255, 0, 0) }
+        QLineEdit#measure_2b { border: 2px solid rgb(255, 0, 0) }
         
         QLineEdit#ball_valve_cap_thickness {
             border: 2px solid rgb(68, 114, 196);
@@ -128,6 +129,18 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setFixedWidth(120)
         _txt.setObjectName("measure_2a")
         self.measure_2a_label = _txt
+
+        _txt = QLineEdit(f"{self.measure_2b:.2f} cm", parent=self)
+        _txt.setReadOnly(False)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(1250, 455)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        _txt.setObjectName("measure_2b")
+        self.measure_2b_label = _txt
 
         _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
         _txt.setReadOnly(True)
