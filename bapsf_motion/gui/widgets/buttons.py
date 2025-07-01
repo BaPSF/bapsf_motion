@@ -96,10 +96,10 @@ class StyleButton(QPushButton):
         # disable_string = f"color: rgba{color.getRgb()}"
 
         object_name = self.objectName()
-        if object_name is not None:
-            object_name = f"#{object_name}"
-        else:
+        if object_name is None or not isinstance(object_name, str):
             object_name = ""
+        elif object_name != "":
+            object_name = f"#{object_name}"
 
         header = f"{_cls_name}{object_name}"
 
