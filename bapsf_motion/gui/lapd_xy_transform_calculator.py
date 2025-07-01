@@ -18,6 +18,9 @@ from PySide6.QtWidgets import (
 )
 from typing import Union, Optional
 
+from bapsf_motion.gui.widgets import StyleButton
+
+
 _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / "_images").resolve()
 
@@ -240,6 +243,19 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setObjectName("fiducial_width")
         self.fiducial_width_label = _txt
 
+        _btn = StyleButton("Reset to Defaults", parent=self)
+        _btn.setObjectName("xy_calc_reset_to_defaults")
+        _btn.update_style_sheet(
+            styles={"border": "2px solid rgb(30, 60, 90)"},
+            action="hover",
+        )
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(36)
+        _btn.setPointSize(14)
+        p = self.geometry().topLeft() + QPoint(32, 472)
+        _btn.move(p)
+        self.reset_btn = _btn
+
         layout = self._define_layout()
         self.centralWidget().setLayout(layout)
 
@@ -257,6 +273,8 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
         self.measure_2a_label.editingFinished.connect(self._validate_measure_2a)
         self.measure_2b_label.editingFinished.connect(self._validate_measure_2b)
+
+        self.reset_btn.clicked.connect(self._reset_measure_values)
 
     def _define_layout(self):
         image_layout = QVBoxLayout()
@@ -306,6 +324,13 @@ class LaPDXYTransformCalculator(QMainWindow):
     def recalculate_parameters(self):
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_drive = self.calc_pivot_to_drive()
+
+        self._update_all_labels()
+
+    def _reset_measure_values(self):
+        self.measure_1 = self._defaults["measure_1"]
+        self.measure_2a = self._defaults["measure_2a"]
+        self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
         self._update_all_labels()
 
