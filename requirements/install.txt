@@ -1,13 +1,7 @@
 # these are dependencies required to use the package
 # ought to mirror 'install_requires' under 'options' in setup.cfg
 -r build.txt
-# restrictions due to supporting 32bit architecture
-# - PEP508 does not allow for architecture based dependencies
-kiwisolver < 1.4.7  # kiwisolver is a matplotlip dependency, 1.4.7 does not work on Windows x86
-numpy >= 1.18.1, < 2.0
-matplotlib >= 3.3.0, < 3.9.0
-pandas <= 2.0.3
-# normal dependencies...these must follow the 32bit dependencies
+
 astropy
 importlib_metadata; python_version < '3.8'
 numpydoc
