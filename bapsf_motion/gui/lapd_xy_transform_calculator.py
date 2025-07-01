@@ -25,6 +25,11 @@ _IMAGES_PATH = (_HERE / "_images").resolve()
 class LaPDXYTransformCalculator(QMainWindow):
     closing = Signal()
 
+    _defaults = {  # all values in cm
+        "measure_1": 54.2,
+        "measure_2a": 58.0,
+    }
+
     def __init__(self):
         super().__init__()
 
@@ -84,15 +89,16 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.image_frame.setFixedWidth(self.width() - 2 * self._window_margin)
         self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
 
-        self.ball_valve_cap_thickness = 0.81 * 2.54  # cm
-        self.probe_drive_endplate_thickness = 0.75 * 2.54  # cm
-        self.probe_kf40_thickness = 2.54  # cm
-        self.velmex_rail_width = 3.4 * 2.54  # cm
-        self.fiducial_width = 1.775 * 2.54  # cm
+        # all values in cm
+        self.ball_valve_cap_thickness = 0.81 * 2.54
+        self.probe_drive_endplate_thickness = 0.75 * 2.54
+        self.probe_kf40_thickness = 2.54
+        self.velmex_rail_width = 3.4 * 2.54
+        self.fiducial_width = 1.775 * 2.54
 
         # constants need to be defined first
-        self.measure_1 = 54.2
-        self.measure_2a = 58.0
+        self.measure_1 = self._defaults["measure_1"]
+        self.measure_2a = self._defaults["measure_2a"]
         self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
         # mesures and constants need to be defined first
