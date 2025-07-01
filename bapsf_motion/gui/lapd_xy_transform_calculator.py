@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QFrame,
     QLineEdit,
+    QRadioButton,
 )
 from typing import Union, Optional
 
@@ -155,6 +156,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setFixedWidth(120)
         _txt.setObjectName("measure_2b")
         self.measure_2b_label = _txt
+        self.measure_2b_label.setEnabled(False)
 
         _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
         _txt.setReadOnly(True)
@@ -256,6 +258,17 @@ class LaPDXYTransformCalculator(QMainWindow):
         _btn.move(p)
         self.reset_btn = _btn
 
+        _btn = QRadioButton(parent=self)
+        p = self.measure_2a_label.pos() + QPoint(self.measure_2a_label.width() + 6, 0)
+        _btn.move(p)
+        _btn.setChecked(True)
+        self.measure_2a_btn = _btn
+
+        _btn = QRadioButton(parent=self)
+        p = self.measure_2b_label.pos() + QPoint(self.measure_2b_label.width() + 6, 0)
+        _btn.move(p)
+        self.measure_2b_btn = _btn
+
         layout = self._define_layout()
         self.centralWidget().setLayout(layout)
 
@@ -275,6 +288,9 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_2b_label.editingFinished.connect(self._validate_measure_2b)
 
         self.reset_btn.clicked.connect(self._reset_measure_values)
+
+        self.measure_2a_btn.toggled.connect(self._measure_2a_input_selected)
+        self.measure_2b_btn.toggled.connect(self._measure_2b_input_selected)
 
     def _define_layout(self):
         image_layout = QVBoxLayout()
@@ -326,6 +342,14 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.pivot_to_drive = self.calc_pivot_to_drive()
 
         self._update_all_labels()
+
+    def _measure_2a_input_selected(self):
+        self.measure_2a_label.setEnabled(True)
+        self.measure_2b_label.setEnabled(False)
+
+    def _measure_2b_input_selected(self):
+        self.measure_2a_label.setEnabled(False)
+        self.measure_2b_label.setEnabled(True)
 
     def _reset_measure_values(self):
         self.measure_1 = self._defaults["measure_1"]
