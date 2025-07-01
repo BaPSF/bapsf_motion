@@ -246,11 +246,6 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.fiducial_width_label = _txt
 
         _btn = StyleButton("Reset to Defaults", parent=self)
-        _btn.setObjectName("xy_calc_reset_to_defaults")
-        _btn.update_style_sheet(
-            styles={"border": "2px solid rgb(30, 60, 90)"},
-            action="hover",
-        )
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(36)
         _btn.setPointSize(14)
