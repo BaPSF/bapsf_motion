@@ -332,7 +332,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_2a = self._defaults["measure_2a"]
         self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
-        self._update_all_labels()
+        self.recalculate_parameters()
 
     def _update_all_labels(self):
         self._update_measure_1_label()
