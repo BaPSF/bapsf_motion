@@ -1577,6 +1577,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _inputs = self._param_inputs.copy()
         _type = _inputs.pop("_type")
         _registry = _inputs.pop("_registry")
+        _hints = _inputs.pop("_hints")
         _name = self.params_label.text()
 
         if _registry is self.exclusion_registry and _name == "New Exclusion":
