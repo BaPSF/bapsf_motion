@@ -1,8 +1,8 @@
 [hints.transform.lapd_xy]
-pivot_to_center = "58.771"
-pivot_to_drive = "116.84"
-pivot_to_feedthru = "53.8"
-probe_axis_offset = "21.5"
+pivot_to_center = "58.771  # ball valve pivot to LaPD center"
+pivot_to_drive = "116.84  # ball valve pivot to vertical drive centerline"
+pivot_to_feedthru = "53.8  # ball valve pivot to front of probe feedthru"
+probe_axis_offset = "21.5  # distance from probe shaft to vertical drive pivot"
 
 [hints.exclusion.circle]
 radius = "5.0"
