@@ -12,11 +12,11 @@ BaPSF Motion Documentation
    :caption: First Steps
    :maxdepth: 1
 
+   Installing <install>
    Notebooks <notebooks_>
    toml/index
    available_transformers
 
-.. Installing <install>
 .. getting_started
 .. examples
 .. COMMUNICATION

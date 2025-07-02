@@ -518,5 +518,10 @@ nbsphinx_prolog = r"""
 
 
 def setup(app: Sphinx) -> None:
+    from docutils.parsers.rst import roles
+    from functools import partial
+
     app.add_config_value("revision", "", True)
     app.add_css_file("css/overrides.css", priority=600)
+
+    app.add_role("ibf", partial(roles.generic_custom_role, options={"class": ["ibf"]}))

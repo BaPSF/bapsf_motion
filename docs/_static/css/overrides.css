@@ -6,3 +6,9 @@
 .rst-content div.nbsphinx-gallery a {
   background-color: rgb(240, 240, 225)
 }
+
+/* italic bold face role*/
+.ibf {
+    font-weight: bold;
+    font-style: italic;
+}
