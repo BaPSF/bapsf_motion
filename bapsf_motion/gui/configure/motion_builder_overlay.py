@@ -1078,6 +1078,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # TODO: remove params_widget if the removed exclusion is currently
         #       populating the params_widget
 
+        self._mpl_canvas_full_draw = True
         self.configChanged.emit()
 
     @Slot()
@@ -1528,6 +1529,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         else:
             self.mpl_canvas.update_motion_list()
 
+        self._mpl_canvas_full_draw = False
+
     def update_exclusion_list_box(self):
         self.logger.info("Updating Exclusion List Box")
         self.remove_ex_btn.setEnabled(False)
@@ -1578,10 +1581,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         if _registry is self.exclusion_registry and _name == "New Exclusion":
             self.mb.add_exclusion(_type, **_inputs)
+            self._mpl_canvas_full_draw = True
         elif _registry is self.exclusion_registry:
             # modifying existing exclusion
             self.mb.remove_exclusion(_name)
             self.mb.add_exclusion(_type, **_inputs)
+            self._mpl_canvas_full_draw = True
         elif _name == "New Layer":
             self.mb.add_layer(_type, **_inputs)
             self._mpl_canvas_full_draw = False
@@ -1677,6 +1682,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self._mb = MotionBuilder(**mb_config)
         self.mpl_canvas.link_motion_builder(self._mb)
+        self._mpl_canvas_full_draw = True
         self.configChanged.emit()
         return self._mb
 
