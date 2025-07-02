@@ -133,7 +133,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python: [ '3.10', '3.11', '3.12' ]
+        python: [ '3.10', '3.11', '3.12', '3.13' ]
         os: [ubuntu-latest]
         architecture: [x64]
 
@@ -175,7 +175,7 @@ jobs:
       - name: Install 'bapsf_motion' dependencies (32bit)
         if: ${{ matrix.architecture == 'x86' }}
         run: |
-          python -m pip install -r requirements/install.txt
+          python -m pip install -r requirements/32bit.txt
       - name: Import 'bapsf_motion'
         run: |
           python -c 'import bapsf_motion'
