@@ -161,7 +161,7 @@ class LaPDXYExclusion(GovernExclusion):
         diameter: float = 100,
         pivot_radius: float = 58.771,
         port_location: Union[str, float] = "E",
-        cone_full_angle: float = 80,
+        cone_full_angle: float = 58,
         include_cone: bool = True,
         skip_ds_add: bool = False,
     ):
