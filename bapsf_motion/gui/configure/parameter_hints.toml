@@ -4,6 +4,18 @@ pivot_to_drive = "116.84"
 pivot_to_feedthru = "53.8"
 probe_axis_offset = "21.5"
 
+[hints.exclusion.circle]
+radius = "5.0"
+center = "[0, 0]"
+exclude = "inside  # possible options outside or inside"
+
+[hints.exclusion.divider]
+mb = "[slope, intercept]  # use inf for vertical line"
+exclude = "-e0  # negative/left side of the line"
+
+[hints.exclusion.shadow]
+source_point = "[x, y]  # source of shadow caster"
+
 [hints.layer.grid]
 limits = "[[x_min, x_max], [y_min, y_max], ...]"
 npoints = "[Nx, Ny, ...]"
