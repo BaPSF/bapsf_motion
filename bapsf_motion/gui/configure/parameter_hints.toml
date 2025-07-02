@@ -6,14 +6,14 @@ probe_axis_offset = "21.5"
 
 [hints.exclusion.circle]
 radius = "5.0"
-center = "[0, 0]"
-exclude = "inside  # possible options outside or inside"
+center = "[x, y]"
+exclude = "inside  # possible options: outside or inside"
 
 [hints.exclusion.divider]
-mb = "[slope, intercept]  # use inf for vertical line"
+mb = "[slope, intercept]  # use [inf, x] for vertical line"
 exclude = "-e0  # negative/left side of the line"
 
-[hints.exclusion.shadow]
+[hints.exclusion.shadow_2d]
 source_point = "[x, y]  # source of shadow caster"
 
 [hints.layer.grid]
