@@ -1349,7 +1349,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._param_inputs[param] = _input
 
         self.logger.info(
-            f"Updating input parameter {param} to {_input} for transformation "
+            f"Updating input parameter {param} to {_input} for layer/exclusion "
             f"type {_type}."
         )
 
