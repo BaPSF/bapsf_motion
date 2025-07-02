@@ -1,3 +1,28 @@
+# This TOML file contains the hints used to populate the placeholder text
+# for input fields associated with configuring layers, exlusions, and
+# transforms.
+#
+# Adding any hints should folow the pattern:
+#
+# [hints.<entity>.<type>]
+# param1 = "placeholder text"
+# param2 = "placeholder text"
+#
+# where,
+#   <entity> :
+#       is the layer, exclusion, or transform
+#   <type> :
+#       is the "type" of <entity> class.  e.g. the transform LaPDXYTransform
+#       has <type> == lapd_xy, and exclusion CircularLayer has
+#       <type> == circle
+#   param1, param2, ... :
+#       are the input arguments for the class being configurated,  e.g.
+#       CircularExlusion would have param1 == radius, param2 == center,
+#       and param3 == exlude
+#
+#       Note that not all input parameters need configured.  You only
+#       need to configure input you want to add placeholder test for.
+#
 [hints.transform.lapd_xy]
 pivot_to_center = "58.771  # ball valve pivot to LaPD center"
 pivot_to_drive = "116.84  # ball valve pivot to vertical drive centerline"
