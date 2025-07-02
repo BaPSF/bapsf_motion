@@ -28,6 +28,7 @@ import qtawesome as qta
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
+from bapsf_motion.gui.configure.helpers import read_parameter_hints
 from bapsf_motion.gui.widgets import HLinePlain, QLineEditSpecialized
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
@@ -43,6 +44,9 @@ class TransformConfigOverlay(_ConfigOverlay):
         self._transform = None
         self._params_widget = None  # type: Union[None, QWidget]
         self._transform_inputs = None
+
+        _hints = read_parameter_hints()
+        self._parameter_hints = _hints.pop("transform", None)
 
         # determine starting transform
         if isinstance(self.mg.transform, BaseTransform):
@@ -128,6 +132,13 @@ class TransformConfigOverlay(_ConfigOverlay):
         return layout
 
     @property
+    def parameter_hints(self):
+        if self._parameter_hints is None:
+            self._parameter_hints = dict()
+
+        return self._parameter_hints
+
+    @property
     def transform(self) -> BaseTransform:
         """
         The transform object that been constructed for :attr:`mg`.
@@ -158,6 +169,7 @@ class TransformConfigOverlay(_ConfigOverlay):
     def _define_params_widget(self, tr_type: str):
         # re-initialized the transform_inputs dictionary
         params = self.registry.get_input_parameters(tr_type)
+        _hints = self.parameter_hints.get(tr_type, None)
 
         if (
             self.transform_inputs is not None
@@ -208,6 +220,9 @@ class TransformConfigOverlay(_ConfigOverlay):
                 default = None
                 self.transform_inputs[key] = default
 
+            # determine parameter hing
+            _hint = None if (_hints is None or key not in _hints) else _hints[key]
+
             _txt = QLabel(key, parent=_widget)
             _txt.setFixedHeight(_row_height)
             _txt.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
@@ -242,6 +257,8 @@ class TransformConfigOverlay(_ConfigOverlay):
             font.setPointSize(14)
             _txt.setFont(font)
             _input = _txt
+            if _hint is not None:
+                _input.setPlaceholderText(_hint)
             _input.editingFinishedPayload.connect(self._update_transform_inputs)
 
             _txt = QLabel("", parent=_widget)
