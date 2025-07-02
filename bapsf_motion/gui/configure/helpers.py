@@ -1,9 +1,15 @@
 """
 Module of helper functions for the Configuration GUI.
 """
-__all__ = ["gui_logger", "gui_logger_config_dict"]
+__all__ = ["gui_logger", "gui_logger_config_dict", "read_parameters_hints"]
 
 import logging
+
+from pathlib import Path
+
+from bapsf_motion.utils import toml
+
+_HERE = Path(__file__)
 
 gui_logger = logging.getLogger("GUI")
 
@@ -56,3 +62,18 @@ association with the `bapsf_motion.gui.configure` functionality.
 This dictionary is intended to be passed directly to 
 `logging.config.dictConfig`.
 """
+
+
+def read_parameters_hints() -> dict:
+    """
+    Read the parameter hints file :file:`parameter_hints.toml` and
+    return the dictionary of hints.
+    """
+    filepath = (_HERE.parent / "parameter_hints.toml").resolve()
+    with open(filepath, "rb") as f:
+        hints = toml.load(f)
+
+    if "hints" not in hints:
+        return dict()
+
+    return hints["hints"]

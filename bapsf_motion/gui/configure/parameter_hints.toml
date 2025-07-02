@@ -1,0 +1,19 @@
+[hints.transform.lapd_xy]
+pivot_to_center = "58.771"
+pivot_to_drive = "116.84"
+pivot_to_feedthru = "53.8"
+probe_axis_offset = "21.5"
+
+[hints.layer.grid]
+limits = "[[x_min, x_max], [y_min, y_max], ...]"
+npoints = "[Nx, Ny, ...]"
+
+[hints.layer.grid_CNStep]
+center = "[x_0, y_0, ...]"
+npoints = "[Nx, Ny, ...]"
+step_size = "[dx, dy, ...]"
+
+[hints.layer.grid_CNSize]
+center = "[x_0, y_0, ...]"
+npoints = "[Nx, Ny, ...]"
+size = "[Lx, Ly, ...]"
