@@ -637,7 +637,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             else self.parameter_hints_layer
         )
         _hints = None if _type not in _hints else _hints[_type]
-        self.logger.info(f"Hints == {_hints}")
 
         self._param_inputs.update(
             {"_type": _type, "_registry": _registry, "_hints": _hints}
