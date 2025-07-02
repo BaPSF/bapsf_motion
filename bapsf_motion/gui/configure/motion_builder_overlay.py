@@ -35,7 +35,7 @@ import qtawesome as qta
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
-from bapsf_motion.gui.configure.helpers import read_parameters_hints
+from bapsf_motion.gui.configure.helpers import read_parameter_hints
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
 from bapsf_motion.gui.widgets import (
     DiscardButton,
@@ -69,7 +69,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._space_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
         self._mpl_canvas_full_draw = True
 
-        _parameter_hints = read_parameters_hints()
+        _parameter_hints = read_parameter_hints()
         self._parameter_hints_layer = _parameter_hints.pop("layer", None)
         self._parameter_hints_exclusion = _parameter_hints.pop("exclusion", None)
 
