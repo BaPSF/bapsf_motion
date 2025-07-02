@@ -49,3 +49,10 @@ gui_logger_config_dict = {
         },
     },
 }
+"""
+Configuration dictionary to setup/configure the logging environment
+association with the `bapsf_motion.gui.configure` functionality.
+
+This dictionary is intended to be passed directly to 
+`logging.config.dictConfig`.
+"""
