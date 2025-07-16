@@ -1718,21 +1718,29 @@ class Motor(EventActor):
             )
             return
 
+        if not self._moveable():
+            alarm_msg = self.status["alarm_message"]
+            self.logger.error(
+                f"Motor alarm active, could not move. Alarm Status: {alarm_msg}"
+            )
+            return
+
         if self.status["alarm"]:
-            self.send_command("alarm_reset")
-            alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
+            # on a limit switch, check if move direction is off limit
 
-            if self._lost_connection(alarm_msg) or alarm_msg["alarm_message"]:
-                self.logger.error(
-                    f"Motor alarm could not be reset. -- {alarm_msg}"
+            if direction == "forward" and self.status["limits"]["CW"]:
+                self.logger.warning(
+                    "Motor can NOT move forward, currently on forward limit."
                 )
-                return None
-
-        self.enable()
+            elif direction == "backward" and self.status["limits"]["CCW"]:
+                self.logger.warning(
+                    "Motor can NOT move backward, currently on backward limit."
+                )
 
         # The direction of the commence_jogging is defined by the side
         # of the target_distance (DI) command
         direction = -1 if direction == "backward" else 1
+        self.enable()
         self.send_command("target_distance", direction)
         self.send_command("commence_jogging")
 
@@ -1749,15 +1757,25 @@ class Motor(EventActor):
         pos: int
             Position (in steps) for the motor to move to.
         """
-        if self.status["alarm"]:
-            self.send_command("alarm_reset")
-            alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
+        if not self._moveable():
+            alarm_msg = self.status["alarm_message"]
+            self.logger.error(
+                f"Motor alarm active, could not move. Alarm Status: {alarm_msg}"
+            )
+            return
 
-            if self._lost_connection(alarm_msg) or alarm_msg["alarm_message"]:
-                self.logger.error(
-                    f"Motor alarm could not be reset. -- {alarm_msg}"
+        if self.status["alarm"]:
+            # on a limit switch, check if move direction is off limit
+            delta = pos - self.position.value
+
+            if delta > 0 and self.status["limits"]["CW"]:
+                self.logger.warning(
+                    "Motor can NOT move forward, currently on forward limit."
                 )
-                return
+            elif delta < 0 and self.status["limits"]["CCW"]:
+                self.logger.warning(
+                    "Motor can NOT move backward, currently on backward limit."
+                )
 
         # Note:  The Applied Motion Command Reference pdf states for
         #        ethernet enabled motors the position should not be
