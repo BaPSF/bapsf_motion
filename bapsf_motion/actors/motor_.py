@@ -1789,20 +1789,16 @@ class Motor(EventActor):
 
     def move_off_limit(self):
         """
-        Try to move the motor off of a CW or CCW limit switch.
+        Move the motor off of a CW (forward) or CCW (backward) limit
+        switch.
         """
 
-        # TODO: There could still be a more efficient and safe way to do
-        #       this...should contemplate
-
-        # are we on a limit?
-        if not any(self.status["limits"].values()):
-            self.logger.debug(f"Motor is NOT on a limit, doing nothing.")
-            return
-        elif all(self.status["limits"].values()):
-            self.logger.error(
-                "Both CW and CCW limits activated, can not do anything."
-            )
+        alarm_status = self.retrieve_motor_alarm()
+        if (
+            not alarm_status["alarm"]
+            or (not alarm_status["limits"]["CCW"] and not alarm_status["limits"]["CW"])
+        ):
+            # not on limits
             return
 
         off_direction = -1 if self.status["limits"]["CW"] else 1
@@ -1827,23 +1823,23 @@ class Motor(EventActor):
 
             pos = pos.value
             move_to_pos = pos + off_direction * 0.5 * self.steps_per_rev.value
-
-            # disable limit alarm so the motor can be moved
-            self.logger.warning("Moving off limits - disable limits")
-            self.send_command("define_limits", 3)
-            self.send_command("alarm_reset")
-
             self.move_to(move_to_pos)
 
-            self.logger.warning("Moving off limits - enable limits")
-            self.send_command("define_limits", self.motor["define_limits"])
-            self.sleep(4 * self.heartrate.ACTIVE)
+            # wait until motor stops moving
+            self.sleep(2 * self.heartrate.ACTIVE)
+            while self.is_moving:
+                self.sleep(self.heartrate.ACTIVE)
 
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
             if self._lost_connection(alarm_msg):
                 self.logger.error("Unable to move off limit due to a lost connection.")
                 break
             on_limits = any(alarm_msg["limits"].values())
+
+            # reverse direction if motor did not move
+            if np.isclose(self.position.value, pos):
+                # no movement happened, try reversing direction
+                off_direction = -off_direction
 
             counts += 1
 
