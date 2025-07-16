@@ -1587,6 +1587,7 @@ class Motor(EventActor):
             self.logger.error(f"Motor returned alarm(s): {alarm_message}")
 
         alarm_status = {
+            "alarm": rtn != "0000",
             "alarm_message": alarm_message,
             "limits": {
                 "CCW": True if 2 in codes else False,
