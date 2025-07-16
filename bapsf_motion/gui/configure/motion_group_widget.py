@@ -425,6 +425,9 @@ class AxisControlWidget(QWidget):
             self._update_display_of_axis_status
         )
 
+        self.limit_fwd_btn.clicked.connect(self._move_off_limit)
+        self.limit_bwd_btn.clicked.connect(self._move_off_limit)
+
         self.jog_forward_btn.clicked.connect(self.jog_forward)
         self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
@@ -616,6 +619,14 @@ class AxisControlWidget(QWidget):
     @Slot()
     def _disable_motor(self):
         self.axis.send_command("disable")
+
+    @Slot()
+    def _move_off_limit(self):
+        axis = self.axis
+        if axis is None:
+            return
+
+        axis.motor.move_off_limit()
 
     def _move_to(self, target_ax_pos):
         target_pos = self.mg.position.value
