@@ -1712,6 +1712,12 @@ class Motor(EventActor):
         Start a continuous jog.  The motor will not stop until
         commanded to.
         """
+        if direction not in ["forward", "backward"]:
+            self.logger.error(
+                "ValueError: Argument `direction` value must be 'forward' or 'backward'."
+            )
+            return
+
         if self.status["alarm"]:
             self.send_command("alarm_reset")
             alarm_msg = self.retrieve_motor_alarm(defer_status_update=True)
