@@ -1805,6 +1805,7 @@ class Motor(EventActor):
 
         counts = 1
         on_limits = any(self.status["limits"].values())
+        switched_directions = False
         while on_limits:
 
             if counts > 10:
@@ -1838,8 +1839,17 @@ class Motor(EventActor):
 
             # reverse direction if motor did not move
             if np.isclose(self.position.value, pos):
+                if switched_directions:
+                    # off direction has already flipped once
+                    self.logger.warning(
+                        "Attempted to move off limit in both directions and "
+                        "was unsuccessful."
+                    )
+                    break
+
                 # no movement happened, try reversing direction
                 off_direction = -off_direction
+                switched_directions = True
 
             counts += 1
 
