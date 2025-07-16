@@ -1677,6 +1677,36 @@ class Motor(EventActor):
         except AttributeError:
             pass
 
+    def _moveable(self) -> bool:
+        """
+        Return `True` if a movement command can be sent to the motor.
+        """
+        if self.is_moving:
+            return False
+
+        if self.status["alarm"]:
+            self.send_command("alarm_reset")
+            alarm_status = self.retrieve_motor_alarm()
+            alarm_messages = alarm_status["alarm_message"].split("::")
+
+            self.logger.info(f"Alarm status: {alarm_status}")
+            if (
+                self._lost_connection(alarm_status)
+                or len(alarm_messages) > 1
+                or (
+                    len(alarm_messages) == 1
+                    and not alarm_status["limits"]["CCW"]
+                    and not alarm_status["limits"]["CW"]
+                )
+            ):
+                # lost connection or a non-limit alarm is active
+                return False
+
+        # alarm was successfully reset
+        # or only the forward/backward limit is hit
+        # or the motor is idle
+        return True
+
     def continuous_jog(self, direction="forward"):
         """
         Start a continuous jog.  The motor will not stop until
