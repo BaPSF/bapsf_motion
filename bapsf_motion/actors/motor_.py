@@ -871,8 +871,8 @@ class Motor(EventActor):
         #       ip argument
         if self._motor["ip"] is not None:
             self.logger.warning(
-                "The motor's IP address can only be defined at object"
-                " instantiation."
+                "The motor's IP address can only be defined at object "
+                "instantiation."
             )
             return
 
@@ -1032,8 +1032,8 @@ class Motor(EventActor):
                 socket_ip, socket_port = self.socket.getpeername()
             except OSError as err:
                 self.logger.error(
-                    "Appears the socket is bad.  It was likely disconnected by"
-                    " the sever or the client.",
+                    "Appears the socket is bad.  It was likely disconnected by "
+                    "the sever or the client.",
                     exc_info=err,
                 )
             else:
@@ -1116,7 +1116,7 @@ class Motor(EventActor):
 
         except (ConnectionError, TimeoutError, OSError) as err:
             # Note: if the Ack/Nack protocol is not properly set (see method
-            #       read_and_set_protocol(), then TimeoutErrors can occur
+            #       read_and_set_protocol()), then TimeoutErrors can occur
             #       even if the connection is still established.
             #
             self.logger.error(
@@ -1328,7 +1328,7 @@ class Motor(EventActor):
             # command and motor buffer have come out of sync
             #
             # Note:  this will not be an infinite loop, if the buffer
-            #        size is zero and we missed the response, then
+            #        size is zero, and we missed the response, then
             #        self._recv will issue a TimeoutError
 
             recv = self._recv()
@@ -1916,8 +1916,8 @@ class Motor(EventActor):
             return
         elif ic == self.ack_flags.MALFORMED:
             self.logger.error(
-                "Unable to set current due to the motor response not matching"
-                " the expected response."
+                "Unable to set current due to the motor response not matching "
+                "the expected response."
             )
             return
         new_ic = np.min(
@@ -1961,8 +1961,8 @@ class Motor(EventActor):
             return
         elif curr == self.ack_flags.MALFORMED:
             self.logger.error(
-                "Unable to set idle current due to the motor response not"
-                " matching the expected response."
+                "Unable to set idle current due to the motor response not "
+                "matching the expected response."
             )
             return
         new_ic = percent * curr
@@ -2002,8 +2002,8 @@ class Motor(EventActor):
             return
         elif ic == self.ack_flags.MALFORMED:
             self.logger.error(
-                "Unable to confirm set position due to the motor response"
-                " not matching the expected response."
+                "Unable to confirm set position due to the motor response "
+                "not matching the expected response."
             )
             return
 
@@ -2013,8 +2013,8 @@ class Motor(EventActor):
             return
         elif curr == self.ack_flags.MALFORMED:
             self.logger.error(
-                "Unable to confirm set position due to motor response"
-                " not matching the expected response."
+                "Unable to confirm set position due to motor response "
+                "not matching the expected response."
             )
             return
 
