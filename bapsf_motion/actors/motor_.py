@@ -1312,9 +1312,9 @@ class Motor(EventActor):
         _rtn = self._process_command_return_string(command, recv_str)
 
         if (
-                len(args) == 0
-                and (_rtn == self.ack_flags.ACK or _rtn == self.ack_flags.ACK_QUEUED)
-                and self._commands[command]["recv"] is not None
+            len(args) == 0
+            and (_rtn == self.ack_flags.ACK or _rtn == self.ack_flags.ACK_QUEUED)
+            and self._commands[command]["recv"] is not None
         ):
             # command had NO arguments and expected a response with data
             # suspecting the command got buffered and acknowledge, and the
