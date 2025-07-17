@@ -1027,26 +1027,14 @@ class Motor(EventActor):
         if not isinstance(self.socket, socket.socket):
             # socket has not been created yet, self.socket is likely None
             pass
+        elif self._lost_connection():
+            # connection to motor was lost, ensure the socket is closed before
+            # trying to re-establish connection
+            self.socket.close()
         else:
-            try:
-                socket_ip, socket_port = self.socket.getpeername()
-            except OSError as err:
-                self.logger.error(
-                    "Appears the socket is bad.  It was likely disconnected by "
-                    "the sever or the client.",
-                    exc_info=err,
-                )
-            else:
-                if self.ip != socket_ip or self.port != socket_port:
-                    self.logger.error(
-                        f"Socket IPv4 address {socket_ip}:{socket_port} does"
-                        f" NOT match assigned IPv4 address {self.ip}:{self.port}.  "
-                        f"Suspect improper re-assignment of address."
-                    )
-                    return
-                elif self.socket.fileno() != -1:
-                    # socket is created and running
-                    return
+            # all is currently good, will not know if connection is lost
+            # until the next command send attempt
+            return
 
         _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
