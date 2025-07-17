@@ -1114,6 +1114,9 @@ class Motor(EventActor):
 
             _rtn = self._process_command_return(command, *args, recv_str=recv_str)
 
+            if not self._lost_connection(_rtn):
+                self._update_status(connected=True)
+
         except (ConnectionError, TimeoutError, OSError) as err:
             # Note: if the Ack/Nack protocol is not properly set (see method
             #       read_and_set_protocol()), then TimeoutErrors can occur
