@@ -1160,11 +1160,11 @@ class Motor(EventActor):
             (thread_id is not None and threading.current_thread().ident == thread_id)
             or (threading.current_thread().ident == self._thread_id)
         ):
-            # we are in the same thread as the running event loop, just
-            # send the command directly
-            tk = self.loop.create_task(self._send_command_async(command, *args))
-            self.loop.run_until_complete(tk)
-            return tk.result()
+            # we are in the same thread as the running event loop, only
+            # the event loop should be in this thread so commands should
+            # have been sent from coroutines.  Thus, just send the
+            # command directly.
+            return self._send_command(command, *args)
 
         # the event loop is running and the command is being sent from
         # outside the event loop thread
