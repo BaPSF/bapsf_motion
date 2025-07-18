@@ -1172,7 +1172,7 @@ class Motor(EventActor):
             self._send_command_async(command, *args),
             self.loop
         )
-        return future.result(5)
+        return future.result(3 * self.heartrate.BASE)
 
     def _process_command(self, command: str, *args) -> str:
         """
