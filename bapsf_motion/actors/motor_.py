@@ -6,6 +6,7 @@ __all__ = ["do_nothing", "CommandEntry", "Motor"]
 __actors__ = ["Motor"]
 
 import asyncio
+import concurrent.futures
 import errno
 import logging
 import numpy as np
@@ -1863,15 +1864,21 @@ class Motor(EventActor):
         """
         if not self.loop.is_running():
             time.sleep(delay)
-        elif threading.current_thread().ident == self._thread_id:
-            tk = self.loop.create_task(self._sleep_async(delay))
-            self.loop.run_until_complete(tk)
+            return None
 
-        future = asyncio.run_coroutine_threadsafe(
-            self._sleep_async(delay),
-            self.loop
-        )
-        future.result(5)
+        try:
+            future = asyncio.run_coroutine_threadsafe(
+                self._sleep_async(delay),
+                self.loop
+            )
+            future.result(delay)
+        except (concurrent.futures.TimeoutError, TimeoutError):
+            # Note: This is cheating if self.sleep is called by an asycnio
+            #       Task.  In this scenario the Future will be blocked
+            #       by the coroutine Task.  However, this timeout at
+            #       the same delay interval, so the result is the same
+            #       as sleeping.
+            pass
 
     def set_current(self, percent):
         r"""
