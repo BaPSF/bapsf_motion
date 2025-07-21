@@ -1089,12 +1089,15 @@ class Motor(EventActor):
                 # connection established, break for-loop
                 break
             except (
-                TimeoutError,
-                InterruptedError,
-                ConnectionRefusedError,
+                ConnectionError,
                 OSError,
-                socket.timeout,
             ) as err:
+                # Note:
+                #   - All types of connection errors are subclasses of
+                #     ConnectionError
+                #   - TimeoutError, InterruptError, and socket.timeout
+                #     are all subclasses of OSError
+                #
                 msg = f"...attempt {_count+1} of {_allowed_attempts} failed"
                 if _count+1 < _allowed_attempts:
                     self.logger.warning(msg)
