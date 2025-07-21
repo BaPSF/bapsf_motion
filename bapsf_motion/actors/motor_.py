@@ -1039,6 +1039,16 @@ class Motor(EventActor):
         if dict_equal(old_status, new_status):
             return
 
+        if (
+            "connected" in new_status
+            and (new_status["connected"] is not self.status["connected"])
+        ):
+            # connection status changed
+            if new_status["connected"]:
+                self.signals.connection_established.emit()
+            else:
+                self.signals.connection_lost.emit()
+
         self._status = new_status
         self.status_changed.emit()
 
