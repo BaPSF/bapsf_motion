@@ -179,6 +179,16 @@ class CommandEntry(UserDict):
         return self._command
 
 
+class MotorSignals:
+    r"""Class to define all the `SimpleSignal`\ 's used by `Motor`."""
+    def __init__(self):
+        self.status_changed = SimpleSignal()
+        self.movement_started = SimpleSignal()
+        self.movement_finished = SimpleSignal()
+        self.connection_lost = SimpleSignal()
+        self.connection_established = SimpleSignal()
+
+
 class Motor(EventActor):
     """
     An actor class for directly communicating to an ethernet based
@@ -568,9 +578,7 @@ class Motor(EventActor):
             self._motor["DEFAULTS"]["current"] = current
 
         # simple signal to tell handlers that _status changed
-        self.status_changed = SimpleSignal()
-        self.movement_started = SimpleSignal()
-        self.movement_finished = SimpleSignal()
+        self.signals = MotorSignals()
 
         self.ip = ip
 
