@@ -752,6 +752,21 @@ class Motor(EventActor):
         # TODO: dictionary keys and explanations to the docstring
         return self._status
 
+    @property
+    def status_changed(self) -> SimpleSignal:
+        """`SimpleSignal` emitted when the motor `status` is changes."""
+        return self.signals.status_changed
+
+    @property
+    def movement_started(self) -> SimpleSignal:
+        """`SimpleSignal` emitted when the motor movement is started."""
+        return self.signals.movement_started
+
+    @property
+    def movement_finished(self) -> SimpleSignal:
+        """`SimpleSignal` emitted when the motor movement is completed."""
+        return self.signals.movement_finished
+
     def _lost_connection(self, rtn: Any = None):
         """
         Check if the motor connection was lost by examining the return
