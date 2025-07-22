@@ -1066,10 +1066,13 @@ class Motor(EventActor):
         if not isinstance(self.socket, socket.socket):
             # socket has not been created yet, self.socket is likely None
             pass
+
         elif self._lost_connection():
             # connection to motor was lost, ensure the socket is closed before
             # trying to re-establish connection
+            self.socket.shutdown(socket.SHUT_RDWR)
             self.socket.close()
+            self.socket = None
         else:
             # all is currently good, will not know if connection is lost
             # until the next command send attempt
