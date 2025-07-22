@@ -1365,7 +1365,8 @@ class Motor(EventActor):
             #
             # Note:  this will not be an infinite loop, if the buffer
             #        size is zero, and we missed the response, then
-            #        self._recv will issue a TimeoutError
+            #        socket.recv will issue a TimeoutError and
+            #        self._recv() will exit with an ack_flags.LOST_CONNECTION
 
             recv = self._recv()
             if self._lost_connection(recv):
