@@ -642,7 +642,7 @@ class Motor(EventActor):
     def _initialize_tasks(self):
         # The heartbeat task was initialized in _configure_before_run
         # self.start_heartbeat()
-        return
+        return None
 
     def run(self, auto_run=True):
 
