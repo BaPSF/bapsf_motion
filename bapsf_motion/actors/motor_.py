@@ -593,7 +593,7 @@ class Motor(EventActor):
             self._motor["DEFAULTS"]["current"] = current
 
         # simple signal to tell handlers that _status changed
-        self.signals = MotorSignals()
+        self._signals = MotorSignals()
 
         self.ip = ip
 
@@ -737,6 +737,16 @@ class Motor(EventActor):
         motor.
         """
         return self._motor
+
+    @property
+    def signals(self) -> MotorSignals:
+        """
+        Collection of all the signals emitted by the `Motor` class.
+
+        See `MotorSignals` for additional documentation on the
+        individual signals.
+        """
+        return self._signals
 
     @property
     def _status_defaults(self) -> Dict[str, Any]:
