@@ -1392,31 +1392,21 @@ class Motor(EventActor):
             The "unmodified" return string from the motor.
 
         """
-        try:
-            self._send(cmd)
-        except ConnectionError as err:
-            self.logger.error(
-                f"Lost connection to motor while trying to send "
-                f"command '{cmd}'",
-                exc_info=err,
-            )
         if self._lost_connection():
             try:
                 self.connect()
             except ConnectionError:
                 return self.ack_flags.LOST_CONNECTION
 
+        rtn = self._send(cmd)
+        if self._lost_connection(rtn):
             return self.ack_flags.LOST_CONNECTION
 
-        try:
-            return self._recv().decode("ASCII")
-        except TimeoutError as err:
-            self.logger.error(
-                f"Lost connection while trying to receive response to "
-                f"commend '{cmd}'.",
-                exc_info=err,
-            )
+        rtn = self._recv()
+        if self._lost_connection(rtn):
             return self.ack_flags.LOST_CONNECTION
+
+        return rtn.decode("ASCII")
 
     def _send(self, cmd: str):
         """
