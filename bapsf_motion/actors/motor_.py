@@ -1400,6 +1400,12 @@ class Motor(EventActor):
                 f"command '{cmd}'",
                 exc_info=err,
             )
+        if self._lost_connection():
+            try:
+                self.connect()
+            except ConnectionError:
+                return self.ack_flags.LOST_CONNECTION
+
             return self.ack_flags.LOST_CONNECTION
 
         try:
