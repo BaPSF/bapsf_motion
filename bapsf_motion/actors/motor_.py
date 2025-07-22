@@ -1454,9 +1454,11 @@ class Motor(EventActor):
             )
 
             self._update_status(connected=False)
-            self.connect()
-            if self.status["connected"]:
+            try:
+                self.connect()
                 self.socket.sendall(cmd_str)
+            except ConnectionError:
+                return self.ack_flags.LOST_CONNECTION
 
     def _recv(self) -> AnyStr:
         """
