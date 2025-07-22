@@ -1439,7 +1439,6 @@ class Motor(EventActor):
                 self.logger.error(
                     "It appears the server (motor) has closed the connection."
                 )
-                self.socket.close()
             elif err.errno == errno.ESHUTDOWN:
                 self.logger.error(
                     "It appears the socket has been closed."
