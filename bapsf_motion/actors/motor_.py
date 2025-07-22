@@ -2,7 +2,7 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.motor_.Motor` actor class.
 """
-__all__ = ["do_nothing", "CommandEntry", "Motor"]
+__all__ = ["do_nothing", "CommandEntry", "Motor", "MotorSignals"]
 __actors__ = ["Motor"]
 
 import asyncio
