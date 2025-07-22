@@ -730,9 +730,9 @@ class AxisControlWidget(QWidget):
         self.axis_name_label.setText(self.axis.name)
         self.axis.motor.signals.status_changed.connect(self.update_display_of_axis_status)
         self.axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
-        self.axis.motor.movement_started.connect(self._emit_movement_started)
-        self.axis.motor.movement_finished.connect(self._emit_movement_finished)
-        self.axis.motor.movement_finished.connect(self.update_display_of_axis_status)
+        self.axis.motor.signals.movement_started.connect(self._emit_movement_started)
+        self.axis.motor.signals.movement_finished.connect(self._emit_movement_finished)
+        self.axis.motor.signals.movement_finished.connect(self.update_display_of_axis_status)
         self.update_display_of_axis_status()
 
         self.axisLinked.emit()
@@ -742,9 +742,9 @@ class AxisControlWidget(QWidget):
             # self.axis.terminate(delay_loop_stop=True)
             self.axis.motor.signals.status_changed.disconnect(self.update_display_of_axis_status)
             self.axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
-            self.axis.motor.movement_started.connect(self._emit_movement_started)
-            self.axis.motor.movement_finished.connect(self._emit_movement_finished)
-            self.axis.motor.movement_finished.disconnect(
+            self.axis.motor.signals.movement_started.connect(self._emit_movement_started)
+            self.axis.motor.signals.movement_finished.connect(self._emit_movement_finished)
+            self.axis.motor.signals.movement_finished.disconnect(
                 self.update_display_of_axis_status
             )
 
@@ -778,9 +778,9 @@ class AxisControlWidget(QWidget):
         if isinstance(self.axis, Axis):
             self.axis.motor.signals.status_changed.disconnect(self.update_display_of_axis_status)
             self.axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
-            self.axis.motor.movement_started.disconnect(self._emit_movement_started)
-            self.axis.motor.movement_finished.disconnect(self._emit_movement_finished)
-            self.axis.motor.movement_finished.disconnect(
+            self.axis.motor.signals.movement_started.disconnect(self._emit_movement_started)
+            self.axis.motor.signals.movement_finished.disconnect(self._emit_movement_finished)
+            self.axis.motor.signals.movement_finished.disconnect(
                 self.update_display_of_axis_status
             )
 

@@ -776,16 +776,6 @@ class Motor(EventActor):
         # TODO: dictionary keys and explanations to the docstring
         return self._status
 
-    @property
-    def movement_started(self) -> SimpleSignal:
-        """`SimpleSignal` emitted when the motor movement is started."""
-        return self.signals.movement_started
-
-    @property
-    def movement_finished(self) -> SimpleSignal:
-        """`SimpleSignal` emitted when the motor movement is completed."""
-        return self.signals.movement_finished
-
     def _lost_connection(self, rtn: Any = None):
         """
         Check if the motor connection was lost by examining the return
@@ -1573,9 +1563,9 @@ class Motor(EventActor):
         if "moving" not in _status:
             pass
         elif _status["moving"] and not self._status["moving"]:
-            self.movement_started.emit()
+            self.signals.movement_started.emit()
         elif not _status["moving"] and self._status["moving"]:
-            self.movement_finished.emit()
+            self.signals.movement_finished.emit()
 
         self._update_status(**_status)
 
@@ -1705,8 +1695,8 @@ class Motor(EventActor):
 
         # disconnect all signals before terminating
         self.signals.status_changed.disconnect_all()
-        self.movement_started.disconnect_all()
-        self.movement_finished.disconnect_all()
+        self.signals.movement_started.disconnect_all()
+        self.signals.movement_finished.disconnect_all()
 
         if not self.terminated and self._status["connected"]:
             self.stop()
