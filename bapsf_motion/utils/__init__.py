@@ -19,7 +19,7 @@ from astropy import units
 from collections import UserDict
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Callable, List, Optional, Union
 
 from bapsf_motion.utils import exceptions, toml
 from bapsf_motion.utils.units_ import units, counts, steps, rev
@@ -32,28 +32,46 @@ ipv4_pattern = re.compile(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
 
 
 class SimpleSignal:
+    """
+    A very simple, rudimentary class for creating signals.
+    """
     _handlers = None
 
     @property
-    def handlers(self):
+    def handlers(self) -> Union[None, List[Callable]]:
+        """List of callbacks/handlers connect to the signal."""
         if self._handlers is None:
             self._handlers = []
         return self._handlers
 
-    def connect(self, func):
+    def connect(self, func: Callable):
+        """
+        Connect the callback/handler ``func`` to the signal.  The
+        callback should take no arguments.
+        """
+        if not callable(func):
+            return None
+
         if func not in self.handlers:
             self.handlers.append(func)
 
     def disconnect(self, func=None):
+        """
+        Disconnect the callback/handler ``func`` from the signal.
+        """
         try:
             self.handlers.remove(func)
         except ValueError:
             pass
 
     def disconnect_all(self):
+        """
+        Disconnect all callbacks/handlers for the signal.
+        """
         self._handlers = None
 
     def emit(self):
+        """Emit the signal, which executes all the connected handlers."""
         for handler in self.handlers:
             handler()
 
