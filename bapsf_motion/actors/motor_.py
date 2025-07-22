@@ -628,10 +628,10 @@ class Motor(EventActor):
         else:
             self.motor["define_limits"] = self._limit_mode
 
-        self.connect()
-
-        # self.start_heartbeat()
-        # self._pause_heartbeat = True
+        try:
+            self.connect()
+        except ConnectionError:
+            return None
 
         self._configure_motor()
         self._get_motor_parameters()
