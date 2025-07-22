@@ -6,6 +6,7 @@ __all__ = ["do_nothing", "CommandEntry", "Motor", "MotorSignals"]
 __actors__ = ["Motor"]
 
 import asyncio
+import concurrent.futures
 import errno
 import logging
 import numpy as np
@@ -16,7 +17,7 @@ import time
 
 from collections import UserDict
 from enum import Enum
-from typing import Any, AnyStr, Callable, Dict, NamedTuple, Optional, Union
+from typing import Any, AnyStr, Callable, Dict, NamedTuple, Optional, Tuple, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.utils import ipv4_pattern, SimpleSignal, dict_equal
@@ -185,16 +186,35 @@ class MotorSignals:
     used by `Motor`.
     """
     def __init__(self):
-        self._status_changed = SimpleSignal()
-        self._movement_started = SimpleSignal()
+        self._connection_established = SimpleSignal()
+        self._connection_lost = SimpleSignal()
         self._movement_finished = SimpleSignal()
+        self._movement_started = SimpleSignal()
+        self._status_changed = SimpleSignal()
 
     @property
-    def status_changed(self) -> SimpleSignal:
+    def connection_established(self) -> SimpleSignal:
+        """
+        `~bapsf_motion.utils.SimpleSignal` emitted when the `Motor`
+        class establishes a TCP connection with the physical motor.
+        """
+        return self._connection_established
+
+    @property
+    def connection_lost(self) -> SimpleSignal:
+        """
+        `~bapsf_motion.utils.SimpleSignal` emitted when the `Motor`
+        class loses the TCP connection with the physical motor.
+        """
+        return self._connection_lost
+
+    @property
+    def movement_finished(self) -> SimpleSignal:
         """
         `~bapsf_motion.utils.SimpleSignal` emitted when the motor
-        `~Motor.status` is changes."""
-        return self._status_changed
+        movement is completed.
+        """
+        return self._movement_finished
 
     @property
     def movement_started(self) -> SimpleSignal:
@@ -205,12 +225,11 @@ class MotorSignals:
         return self._movement_started
 
     @property
-    def movement_finished(self) -> SimpleSignal:
+    def status_changed(self) -> SimpleSignal:
         """
         `~bapsf_motion.utils.SimpleSignal` emitted when the motor
-        movement is completed.
-        """
-        return self._movement_finished
+        `~Motor.status` is changes."""
+        return self._status_changed
 
 
 class Motor(EventActor):
@@ -618,6 +637,7 @@ class Motor(EventActor):
             )
         except ConnectionError as err:
             self.logger.warning("Unable to connect to motor.", exc_info=err)
+            self._update_status(connected=False)
             self.terminate(delay_loop_stop=True)
 
         if not self.terminated:
@@ -651,21 +671,19 @@ class Motor(EventActor):
         else:
             self.motor["define_limits"] = self._limit_mode
 
-        self.connect()
-
-        # self.start_heartbeat()
-        # self._pause_heartbeat = True
+        try:
+            self.connect()
+        except ConnectionError:
+            return None
 
         self._configure_motor()
         self._get_motor_parameters()
         self.send_command("retrieve_motor_status")
 
-        # self._pause_heartbeat = False
-
     def _initialize_tasks(self):
         # The heartbeat task was initialized in _configure_before_run
         # self.start_heartbeat()
-        return
+        return None
 
     def run(self, auto_run=True):
 
@@ -695,6 +713,7 @@ class Motor(EventActor):
             "max_connection_attempts": 1,
             "heartrate": _HeartRate(),  # in seconds
             "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
+            "local_address": None,
         }
 
     @property
@@ -944,6 +963,10 @@ class Motor(EventActor):
         return self._setup["heartrate"]
 
     @property
+    def local_address(self) -> Union[None, Tuple[str, int]]:
+        return self._setup["local_address"]
+
+    @property
     def steps_per_rev(self) -> u.steps/u.rev:
         """The number of steps the motor does per revolution."""
         return self._motor["gearing"]
@@ -960,10 +983,12 @@ class Motor(EventActor):
 
     @socket.setter
     def socket(self, value):
-        if not isinstance(value, socket.socket):
+        if not isinstance(value, socket.socket) and value is not None:
             raise TypeError(f"Expected type {socket.socket}, got type {type(value)}.")
 
         self._setup["socket"] = value
+        if value is not None:
+            self._setup["local_address"] = value.getsockname()
 
     @property
     def is_moving(self) -> bool:
@@ -1057,6 +1082,16 @@ class Motor(EventActor):
         if dict_equal(old_status, new_status):
             return
 
+        if (
+            "connected" in new_status
+            and (new_status["connected"] is not self.status["connected"])
+        ):
+            # connection status changed
+            if new_status["connected"]:
+                self.signals.connection_established.emit()
+            else:
+                self.signals.connection_lost.emit()
+
         self._status = new_status
         self.signals.status_changed.emit()
 
@@ -1069,26 +1104,17 @@ class Motor(EventActor):
         if not isinstance(self.socket, socket.socket):
             # socket has not been created yet, self.socket is likely None
             pass
+
+        elif self._lost_connection():
+            # connection to motor was lost, ensure the socket is closed before
+            # trying to re-establish connection
+            self.socket.shutdown(socket.SHUT_RDWR)
+            self.socket.close()
+            self.socket = None
         else:
-            try:
-                socket_ip, socket_port = self.socket.getpeername()
-            except OSError as err:
-                self.logger.error(
-                    "Appears the socket is bad.  It was likely disconnected by "
-                    "the sever or the client.",
-                    exc_info=err,
-                )
-            else:
-                if self.ip != socket_ip or self.port != socket_port:
-                    self.logger.error(
-                        f"Socket IPv4 address {socket_ip}:{socket_port} does"
-                        f" NOT match assigned IPv4 address {self.ip}:{self.port}.  "
-                        f"Suspect improper re-assignment of address."
-                    )
-                    return
-                elif self.socket.fileno() != -1:
-                    # socket is created and running
-                    return
+            # all is currently good, will not know if connection is lost
+            # until the next command send attempt
+            return None
 
         _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
@@ -1096,7 +1122,7 @@ class Motor(EventActor):
                 msg = f"Connecting to {self.ip}:{self.port} ..."
                 self.logger.info(msg)
 
-                socket.setdefaulttimeout(3)
+                socket.setdefaulttimeout(1)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.settimeout(1)  # 1 second timeout
                 s.connect((self.ip, self.port))
@@ -1109,12 +1135,15 @@ class Motor(EventActor):
                 # connection established, break for-loop
                 break
             except (
-                TimeoutError,
-                InterruptedError,
-                ConnectionRefusedError,
+                ConnectionError,
                 OSError,
-                socket.timeout,
             ) as err:
+                # Note:
+                #   - All types of connection errors are subclasses of
+                #     ConnectionError
+                #   - TimeoutError, InterruptError, and socket.timeout
+                #     are all subclasses of OSError
+                #
                 msg = f"...attempt {_count+1} of {_allowed_attempts} failed"
                 if _count+1 < _allowed_attempts:
                     self.logger.warning(msg)
@@ -1147,27 +1176,17 @@ class Motor(EventActor):
         ):
             self.start_heartbeat()
 
-        try:
-            cmd_str = self._process_command(command, *args)
-            recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
+        cmd_str = self._process_command(command, *args)
+        recv_str = cmd_str if "?" in cmd_str else self._send_raw_command(cmd_str)
 
-            if recv_str == self.ack_flags.LOST_CONNECTION:
-                raise ConnectionError("Lost connection to motor.")
-
-            _rtn = self._process_command_return(command, *args, recv_str=recv_str)
-
-        except (ConnectionError, TimeoutError, OSError) as err:
-            # Note: if the Ack/Nack protocol is not properly set (see method
-            #       read_and_set_protocol()), then TimeoutErrors can occur
-            #       even if the connection is still established.
-            #
+        if self._lost_connection(recv_str):
             self.logger.error(
-                f"Last command '{command}' was not executed.",
-                exc_info=err,
+                f"Motor communication issue...Last command '{command}' returned "
+                f"message: '{recv_str}'.",
             )
+            return self.ack_flags.LOST_CONNECTION
 
-            _rtn = self.ack_flags.LOST_CONNECTION
-            self._update_status(connected=False)
+        _rtn = self._process_command_return(command, *args, recv_str=recv_str)
 
         return _rtn
 
@@ -1211,11 +1230,11 @@ class Motor(EventActor):
             (thread_id is not None and threading.current_thread().ident == thread_id)
             or (threading.current_thread().ident == self._thread_id)
         ):
-            # we are in the same thread as the running event loop, just
-            # send the command directly
-            tk = self.loop.create_task(self._send_command_async(command, *args))
-            self.loop.run_until_complete(tk)
-            return tk.result()
+            # we are in the same thread as the running event loop, only
+            # the event loop should be in this thread so commands should
+            # have been sent from coroutines.  Thus, just send the
+            # command directly.
+            return self._send_command(command, *args)
 
         # the event loop is running and the command is being sent from
         # outside the event loop thread
@@ -1223,7 +1242,7 @@ class Motor(EventActor):
             self._send_command_async(command, *args),
             self.loop
         )
-        return future.result(5)
+        return future.result(3 * self.heartrate.BASE)
 
     def _process_command(self, command: str, *args) -> str:
         """
@@ -1354,9 +1373,9 @@ class Motor(EventActor):
         _rtn = self._process_command_return_string(command, recv_str)
 
         if (
-                len(args) == 0
-                and (_rtn == self.ack_flags.ACK or _rtn == self.ack_flags.ACK_QUEUED)
-                and self._commands[command]["recv"] is not None
+            len(args) == 0
+            and (_rtn == self.ack_flags.ACK or _rtn == self.ack_flags.ACK_QUEUED)
+            and self._commands[command]["recv"] is not None
         ):
             # command had NO arguments and expected a response with data
             # suspecting the command got buffered and acknowledge, and the
@@ -1371,9 +1390,13 @@ class Motor(EventActor):
             #
             # Note:  this will not be an infinite loop, if the buffer
             #        size is zero, and we missed the response, then
-            #        self._recv will issue a TimeoutError
+            #        socket.recv will issue a TimeoutError and
+            #        self._recv() will exit with an ack_flags.LOST_CONNECTION
 
             recv = self._recv()
+            if self._lost_connection(recv):
+                return self.ack_flags.LOST_CONNECTION
+
             recv_str = recv.decode("ASCII")
             _rtn = self._process_command_return(command, *args, recv_str=recv_str)
 
@@ -1398,17 +1421,21 @@ class Motor(EventActor):
             The "unmodified" return string from the motor.
 
         """
-        self._send(cmd)
+        if self._lost_connection():
+            try:
+                self.connect()
+            except ConnectionError:
+                return self.ack_flags.LOST_CONNECTION
 
-        try:
-            return self._recv().decode("ASCII")
-        except TimeoutError as err:
-            self.logger.warning(
-                f"Lost connection while trying to receive response to "
-                f"commend '{cmd}'.",
-                exc_info=err,
-            )
+        rtn = self._send(cmd)
+        if self._lost_connection(rtn):
             return self.ack_flags.LOST_CONNECTION
+
+        rtn = self._recv()
+        if self._lost_connection(rtn):
+            return self.ack_flags.LOST_CONNECTION
+
+        return rtn.decode("ASCII")
 
     def _send(self, cmd: str):
         """
@@ -1437,7 +1464,6 @@ class Motor(EventActor):
                 self.logger.error(
                     "It appears the server (motor) has closed the connection."
                 )
-                self.socket.close()
             elif err.errno == errno.ESHUTDOWN:
                 self.logger.error(
                     "It appears the socket has been closed."
@@ -1453,9 +1479,11 @@ class Motor(EventActor):
             )
 
             self._update_status(connected=False)
-            self.connect()
-            if self.status["connected"]:
+            try:
+                self.connect()
                 self.socket.sendall(cmd_str)
+            except ConnectionError:
+                return self.ack_flags.LOST_CONNECTION
 
     def _recv(self) -> AnyStr:
         """
@@ -1476,21 +1504,30 @@ class Motor(EventActor):
         _eom = b"\r"  # end of message
 
         msg = b""
-        while True:
-            data = self.socket.recv(16)
+        try:
+            while True:
+                data = self.socket.recv(16)
 
-            if not data:
-                break
-            elif not msg and _header in data:
-                msg = data.split(_header)[1]
-            else:
-                msg += data
+                if not data:
+                    break
+                elif not msg and _header in data:
+                    msg = data.split(_header)[1]
+                else:
+                    msg += data
 
-            if _eom in msg:
-                msg = msg.split(_eom)[0]
-                break
+                if _eom in msg:
+                    msg = msg.split(_eom)[0]
+                    break
 
-        self.logger.debug(f"Received string '{msg}'.")
+            self.logger.debug(f"Received string '{msg}'.")
+        except TimeoutError as err:
+            self.logger.error(
+                f"Unable to receive motor response, likely lost connection.",
+                exc_info=err,
+            )
+            msg = self.ack_flags.LOST_CONNECTION
+            self._update_status(connected=False)
+
         return msg
 
     def retrieve_motor_status(self, direct_send=False):
@@ -1914,15 +1951,21 @@ class Motor(EventActor):
         """
         if not self.loop.is_running():
             time.sleep(delay)
-        elif threading.current_thread().ident == self._thread_id:
-            tk = self.loop.create_task(self._sleep_async(delay))
-            self.loop.run_until_complete(tk)
+            return None
 
-        future = asyncio.run_coroutine_threadsafe(
-            self._sleep_async(delay),
-            self.loop
-        )
-        future.result(5)
+        try:
+            future = asyncio.run_coroutine_threadsafe(
+                self._sleep_async(delay),
+                self.loop
+            )
+            future.result(delay)
+        except (concurrent.futures.TimeoutError, TimeoutError):
+            # Note: This is cheating if self.sleep is called by an asycnio
+            #       Task.  In this scenario the Future will be blocked
+            #       by the coroutine Task.  However, this timeout at
+            #       the same delay interval, so the result is the same
+            #       as sleeping.
+            pass
 
     def set_current(self, percent):
         r"""
