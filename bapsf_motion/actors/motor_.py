@@ -181,7 +181,8 @@ class CommandEntry(UserDict):
 
 class MotorSignals:
     r"""
-    Class that defines all the `SimpleSignal`\ 's used by `Motor`.
+    Class that defines all the `~bapsf_motion.utils.SimpleSignal`\ 's
+    used by `Motor`.
     """
     def __init__(self):
         self._status_changed = SimpleSignal()
@@ -190,17 +191,25 @@ class MotorSignals:
 
     @property
     def status_changed(self) -> SimpleSignal:
-        """`SimpleSignal` emitted when the motor `status` is changes."""
+        """
+        `~bapsf_motion.utils.SimpleSignal` emitted when the motor
+        `~Motor.status` is changes."""
         return self._status_changed
 
     @property
     def movement_started(self) -> SimpleSignal:
-        """`SimpleSignal` emitted when the motor movement is started."""
+        """
+        `~bapsf_motion.utils.SimpleSignal` emitted when the motor
+        movement is started.
+        """
         return self._movement_started
 
     @property
     def movement_finished(self) -> SimpleSignal:
-        """`SimpleSignal` emitted when the motor movement is completed."""
+        """
+        `~bapsf_motion.utils.SimpleSignal` emitted when the motor
+        movement is completed.
+        """
         return self._movement_finished
 
 
