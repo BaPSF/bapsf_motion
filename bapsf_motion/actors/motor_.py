@@ -180,13 +180,28 @@ class CommandEntry(UserDict):
 
 
 class MotorSignals:
-    r"""Class to define all the `SimpleSignal`\ 's used by `Motor`."""
+    r"""
+    Class that defines all the `SimpleSignal`\ 's used by `Motor`.
+    """
     def __init__(self):
-        self.status_changed = SimpleSignal()
-        self.movement_started = SimpleSignal()
-        self.movement_finished = SimpleSignal()
-        self.connection_lost = SimpleSignal()
-        self.connection_established = SimpleSignal()
+        self._status_changed = SimpleSignal()
+        self._movement_started = SimpleSignal()
+        self._movement_finished = SimpleSignal()
+
+    @property
+    def status_changed(self) -> SimpleSignal:
+        """`SimpleSignal` emitted when the motor `status` is changes."""
+        return self._status_changed
+
+    @property
+    def movement_started(self) -> SimpleSignal:
+        """`SimpleSignal` emitted when the motor movement is started."""
+        return self._movement_started
+
+    @property
+    def movement_finished(self) -> SimpleSignal:
+        """`SimpleSignal` emitted when the motor movement is completed."""
+        return self._movement_finished
 
 
 class Motor(EventActor):
