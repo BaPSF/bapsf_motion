@@ -339,7 +339,7 @@ class AxisConfigWidget(QWidget):
                 auto_run=True,
             )
 
-            axis.motor.status_changed.connect(self._update_online_led)
+            axis.motor.signals.status_changed.connect(self._update_online_led)
         except ConnectionError:
             axis = None
 
@@ -399,7 +399,7 @@ class AxisConfigWidget(QWidget):
         if isinstance(self.axis, Axis):
             self.axis.terminate(delay_loop_stop=True)
 
-        axis.motor.status_changed.connect(self._update_online_led)
+        axis.motor.signals.status_changed.connect(self._update_online_led)
         self.axis = axis
 
     def set_ip_handler(self, handler: callable):

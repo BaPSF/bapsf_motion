@@ -767,11 +767,6 @@ class Motor(EventActor):
         return self._status
 
     @property
-    def status_changed(self) -> SimpleSignal:
-        """`SimpleSignal` emitted when the motor `status` is changes."""
-        return self.signals.status_changed
-
-    @property
     def movement_started(self) -> SimpleSignal:
         """`SimpleSignal` emitted when the motor movement is started."""
         return self.signals.movement_started
@@ -1054,7 +1049,7 @@ class Motor(EventActor):
             return
 
         self._status = new_status
-        self.status_changed.emit()
+        self.signals.status_changed.emit()
 
     def connect(self):
         """
@@ -1699,7 +1694,7 @@ class Motor(EventActor):
         self.logger.info("Terminating motor")
 
         # disconnect all signals before terminating
-        self.status_changed.disconnect_all()
+        self.signals.status_changed.disconnect_all()
         self.movement_started.disconnect_all()
         self.movement_finished.disconnect_all()
 
