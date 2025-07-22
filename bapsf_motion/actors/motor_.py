@@ -1138,30 +1138,17 @@ class Motor(EventActor):
         ):
             self.start_heartbeat()
 
-        try:
-            cmd_str = self._process_command(command, *args)
-            recv_str = self._send_raw_command(cmd_str) if "?" not in cmd_str else cmd_str
+        cmd_str = self._process_command(command, *args)
+        recv_str = cmd_str if "?" in cmd_str else self._send_raw_command(cmd_str)
 
-            if recv_str == self.ack_flags.LOST_CONNECTION:
-                raise ConnectionError("Lost connection to motor.")
-
-            _rtn = self._process_command_return(command, *args, recv_str=recv_str)
-
-            if not self._lost_connection(_rtn):
-                self._update_status(connected=True)
-
-        except (ConnectionError, TimeoutError, OSError) as err:
-            # Note: if the Ack/Nack protocol is not properly set (see method
-            #       read_and_set_protocol()), then TimeoutErrors can occur
-            #       even if the connection is still established.
-            #
+        if self._lost_connection(recv_str):
             self.logger.error(
-                f"Last command '{command}' was not executed.",
-                exc_info=err,
+                f"Motor communication issue...Last command '{command}' returned "
+                f"message: '{recv_str}'.",
             )
+            return self.ack_flags.LOST_CONNECTION
 
-            _rtn = self.ack_flags.LOST_CONNECTION
-            self._update_status(connected=False)
+        _rtn = self._process_command_return(command, *args, recv_str=recv_str)
 
         return _rtn
 
