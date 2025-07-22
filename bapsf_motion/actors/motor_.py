@@ -1114,7 +1114,7 @@ class Motor(EventActor):
         else:
             # all is currently good, will not know if connection is lost
             # until the next command send attempt
-            return
+            return None
 
         _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
