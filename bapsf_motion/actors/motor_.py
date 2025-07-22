@@ -672,6 +672,7 @@ class Motor(EventActor):
             "max_connection_attempts": 1,
             "heartrate": _HeartRate(),  # in seconds
             "port": 7776,  # 7776 is Applied Motion's TCP port, 7775 is the UDP port
+            "local_address": None,
         }
 
     @property
@@ -926,6 +927,10 @@ class Motor(EventActor):
         return self._setup["heartrate"]
 
     @property
+    def local_address(self) -> Union[None, Tuple[str, int]]:
+        return self._setup["local_address"]
+
+    @property
     def steps_per_rev(self) -> u.steps/u.rev:
         """The number of steps the motor does per revolution."""
         return self._motor["gearing"]
@@ -942,10 +947,12 @@ class Motor(EventActor):
 
     @socket.setter
     def socket(self, value):
-        if not isinstance(value, socket.socket):
+        if not isinstance(value, socket.socket) and value is not None:
             raise TypeError(f"Expected type {socket.socket}, got type {type(value)}.")
 
         self._setup["socket"] = value
+        if value is not None:
+            self._setup["local_address"] = value.getsockname()
 
     @property
     def is_moving(self) -> bool:
