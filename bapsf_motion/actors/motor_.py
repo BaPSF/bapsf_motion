@@ -1368,6 +1368,9 @@ class Motor(EventActor):
             #        self._recv will issue a TimeoutError
 
             recv = self._recv()
+            if self._lost_connection(recv):
+                return self.ack_flags.LOST_CONNECTION
+
             recv_str = recv.decode("ASCII")
             _rtn = self._process_command_return(command, *args, recv_str=recv_str)
 
