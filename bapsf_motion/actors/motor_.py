@@ -595,6 +595,7 @@ class Motor(EventActor):
             )
         except ConnectionError as err:
             self.logger.warning("Unable to connect to motor.", exc_info=err)
+            self._update_status(connected=False)
             self.terminate(delay_loop_stop=True)
 
         if not self.terminated:
