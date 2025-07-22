@@ -1477,21 +1477,30 @@ class Motor(EventActor):
         _eom = b"\r"  # end of message
 
         msg = b""
-        while True:
-            data = self.socket.recv(16)
+        try:
+            while True:
+                data = self.socket.recv(16)
 
-            if not data:
-                break
-            elif not msg and _header in data:
-                msg = data.split(_header)[1]
-            else:
-                msg += data
+                if not data:
+                    break
+                elif not msg and _header in data:
+                    msg = data.split(_header)[1]
+                else:
+                    msg += data
 
-            if _eom in msg:
-                msg = msg.split(_eom)[0]
-                break
+                if _eom in msg:
+                    msg = msg.split(_eom)[0]
+                    break
 
-        self.logger.debug(f"Received string '{msg}'.")
+            self.logger.debug(f"Received string '{msg}'.")
+        except TimeoutError as err:
+            self.logger.error(
+                f"Unable to receive motor response, likely lost connection.",
+                exc_info=err,
+            )
+            msg = self.ack_flags.LOST_CONNECTION
+            self._update_status(connected=False)
+
         return msg
 
     def retrieve_motor_status(self, direct_send=False):
