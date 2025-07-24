@@ -521,6 +521,9 @@ class AxisControlWidget(QWidget):
         self.movementStopped.connect(self._disable_motor)
         self.movementStopped.connect(self._update_display_of_axis_status)
 
+        self._establishedConnection.connect(self._handle_connection_established)
+        self._lostConnection.connect(self._handle_connection_lost)
+
     def _define_layout(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -837,6 +840,23 @@ class AxisControlWidget(QWidget):
         self._mg = None
         self._axis_index = None
         self.axisUnlinked.emit()
+
+    @Slot()
+    def _handle_connection_lost(self):
+        if self.lost_connection_dialog is None:
+            return None
+
+        self.lost_connection_dialog.register_lost_motor(
+            self.axis.name,
+            self.axis.motor.ip,
+        )
+
+    @Slot()
+    def _handle_connection_established(self):
+        if self.lost_connection_dialog is None:
+            return None
+
+        self.lost_connection_dialog.register_resolved_motor(self.axis.name)
 
     @Slot()
     def _emit_movement_started(self):
