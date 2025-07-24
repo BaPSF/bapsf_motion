@@ -843,6 +843,12 @@ class AxisControlWidget(QWidget):
 
     @Slot()
     def _handle_connection_lost(self):
+        # Note: This slot needs to be trigger from a PySide6 signal and
+        #       not from any of the SimpleSignals attached to Motor.
+        #       Having the SimpleSignal execute this code risks the
+        #       execution of an unsafe thread operation.  The Motor
+        #       event-loop is executing in a different thread that is
+        #       unmanaged by PySide6.
         if self.lost_connection_dialog is None:
             return None
 
@@ -853,6 +859,12 @@ class AxisControlWidget(QWidget):
 
     @Slot()
     def _handle_connection_established(self):
+        # Note: This slot needs to be trigger from a PySide6 signal and
+        #       not from any of the SimpleSignals attached to Motor.
+        #       Having the SimpleSignal execute this code risks the
+        #       execution of an unsafe thread operation.  The Motor
+        #       event-loop is executing in a different thread that is
+        #       unmanaged by PySide6.
         if self.lost_connection_dialog is None:
             return None
 
