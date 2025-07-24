@@ -384,6 +384,8 @@ class AxisControlWidget(QWidget):
     movementStopped = Signal(int)
     axisStatusChanged = Signal()
     targetPositionChanged = Signal(float)
+    _lostConnection = Signal()
+    _establishedConnection = Signal()
 
     def __init__(
         self,
