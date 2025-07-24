@@ -206,6 +206,14 @@ class EventActor(BaseActor, ABC):
         return future.result(5)
 
     async def _thread_id_async(self):
+    @staticmethod
+    async def _get_loop_thread():
+        """
+        Asyncio coroutine for retrieving the `threading.Thread` object
+        the event loop is running in.
+        """
+        return threading.current_thread()
+
         """
         Asyncio coroutine for retrieving the id of the thread the event
         loop is running in.
