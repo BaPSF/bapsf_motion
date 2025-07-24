@@ -6,6 +6,7 @@ __all__ = ["BaseActor", "EventActor"]
 __actors__ = ["BaseActor", "EventActor"]
 
 import asyncio
+import concurrent.futures
 import logging
 import threading
 import time
@@ -190,20 +191,37 @@ class EventActor(BaseActor, ABC):
 
         `None` if the :attr:`loop` does not exit or is not running.
         """
+        if isinstance(self._thread, threading.Thread):
+            return self._thread.ident
+
         if self.loop is None or not self.loop.is_running():
             # no loop has been created or loop is not running
             return None
-        elif self.thread is not None:
-            return self.thread.ident
-        elif self.parent is not None and self.parent.thread is not None:
+
+        if (
+            hasattr(self.parent, "thread")
+            and isinstance(self.parent.thread, threading.Thread)
+        ):
             return self.parent.thread.ident
 
-        # get thread id from inside the event loop
-        future = asyncio.run_coroutine_threadsafe(
-            self._thread_id_async(),
-            self.loop
-        )
-        return future.result(5)
+        # we do not know if self._thread_id call came from insided the
+        # event loop or outside...attempt getting the thread id via an
+        # asyncio future...this will time out if self._thread_id was
+        # called from inside the event loop
+        try:
+            future = asyncio.run_coroutine_threadsafe(
+                self._thread_id_async(),
+                self.loop
+            )
+            thread_id = future.result(1)
+            return thread_id
+        except (concurrent.futures.TimeoutError, TimeoutError):
+            pass
+
+        # the future (^) timed-out...this likely happened since the
+        # _thread_id() call came from inside another coroutine...lets
+        # just get the id directly
+        return threading.current_thread().ident
 
     @staticmethod
     async def _get_loop_thread():
