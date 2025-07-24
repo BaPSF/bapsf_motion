@@ -813,6 +813,12 @@ class AxisControlWidget(QWidget):
         self._axis_index = ax_index
 
         self.axis_name_label.setText(self.axis.name)
+        self.axis.motor.signals.connection_established.connect(
+            self._emit_connection_established
+        )
+        self.axis.motor.signals.connection_lost.connect(
+            self._emit_connection_lost
+        )
         self.axis.motor.signals.status_changed.connect(self.update_display_of_axis_status)
         self.axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
         self.axis.motor.signals.movement_started.connect(self._emit_movement_started)
@@ -827,6 +833,12 @@ class AxisControlWidget(QWidget):
     def unlink_axis(self):
         if self.axis is not None:
             # self.axis.terminate(delay_loop_stop=True)
+            self.axis.motor.signals.connection_established.disconnect(
+                self._emit_connection_established
+            )
+            self.axis.motor.signals.connection_lost.disconnect(
+                self._emit_connection_lost
+            )
             self.axis.motor.signals.status_changed.disconnect(
                 self.update_display_of_axis_status
             )
@@ -840,6 +852,14 @@ class AxisControlWidget(QWidget):
         self._mg = None
         self._axis_index = None
         self.axisUnlinked.emit()
+
+    @Slot()
+    def _emit_connection_established(self):
+        self._establishedConnection.emit()
+
+    @Slot()
+    def _emit_connection_lost(self):
+        self._lostConnection.emit()
 
     @Slot()
     def _handle_connection_lost(self):
