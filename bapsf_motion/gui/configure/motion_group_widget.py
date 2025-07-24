@@ -495,6 +495,10 @@ class AxisControlWidget(QWidget):
         if hasattr(parent, "mspace_warning_dialog"):
             self.mspace_warning_dialog = parent.mspace_warning_dialog
 
+        self.lost_connection_dialog = None  # type: Union[LostConnectionMessageBox, None]
+        if hasattr(parent, "lost_connection_dialog"):
+            self.lost_connection_dialog = parent.lost_connection_dialog
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -883,6 +887,10 @@ class DriveBaseController(QWidget):
         self.mspace_warning_dialog = None
         if hasattr(parent, "mspace_warning_dialog"):
             self.mspace_warning_dialog = parent.mspace_warning_dialog
+
+        self.lost_connection_dialog = None
+        if hasattr(parent, "lost_connection_dialog"):
+            self.lost_connection_dialog = parent.lost_connection_dialog
 
         self._mg = None
         self._mspace_drive_polarity = None
@@ -1664,6 +1672,8 @@ class DriveControlWidget(QWidget):
         # Define TEXT WIDGETS
         # Define ADVANCED WIDGETS
         self.mspace_warning_dialog = MSpaceMessageBox(parent=self)
+        self.lost_connection_dialog = LostConnectionMessageBox(parent=self)
+
         self.desktop_controller_widget = DriveDesktopController(parent=self)
         self.game_controller_widget = None  # type: Union[DriveBaseController, None]
         self.stacked_controller_widget = QStackedWidget(parent=self)
