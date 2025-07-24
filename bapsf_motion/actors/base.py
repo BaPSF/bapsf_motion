@@ -278,8 +278,19 @@ class EventActor(BaseActor, ABC):
             (DEFAULT: `True`)
         """
         self._terminated = False
-        if self.loop is None or self.loop.is_running() or not auto_run:
-            return
+        if self.loop is None:
+            return None
+
+        if self.loop.is_running():
+            future = asyncio.run_coroutine_threadsafe(
+                self._get_loop_thread(),
+                self.loop,
+            )
+            self._thread = future.result(5)
+            return None
+
+        if not auto_run:
+            return None
 
         self._thread = threading.Thread(target=self._loop.run_forever)
         self._thread.start()
