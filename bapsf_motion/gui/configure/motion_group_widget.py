@@ -822,7 +822,9 @@ class AxisControlWidget(QWidget):
     def unlink_axis(self):
         if self.axis is not None:
             # self.axis.terminate(delay_loop_stop=True)
-            self.axis.motor.signals.status_changed.disconnect(self.update_display_of_axis_status)
+            self.axis.motor.signals.status_changed.disconnect(
+                self.update_display_of_axis_status
+            )
             self.axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
             self.axis.motor.signals.movement_started.disconnect(self._emit_movement_started)
             self.axis.motor.signals.movement_finished.disconnect(self._emit_movement_finished)
