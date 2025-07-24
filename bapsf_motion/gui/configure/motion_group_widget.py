@@ -181,7 +181,6 @@ class LostConnectionMessageBox(QMessageBox):
         self._display_dialog = value
 
     def _update_display_dialog(self) -> None:
-        gui_logger.info(f"updating lost connectin dialog message")
         if len(self._lost_motors) == 0:
             self.setText(self._base_message)
 
@@ -196,13 +195,11 @@ class LostConnectionMessageBox(QMessageBox):
         self.setText(msg)
 
         if not self.isVisible():
-            gui_logger.info(f"Lost Connection dialog self executing")
             self.exec()
 
         return None
 
     def register_lost_motor(self, name: str, ip: str) -> None:
-        gui_logger.info(f"Motor {name} : {ip} lost connection")
         if name in self._lost_motors:
             return
 
