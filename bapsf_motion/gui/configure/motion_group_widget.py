@@ -814,7 +814,9 @@ class AxisControlWidget(QWidget):
         self.axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
         self.axis.motor.signals.movement_started.connect(self._emit_movement_started)
         self.axis.motor.signals.movement_finished.connect(self._emit_movement_finished)
-        self.axis.motor.signals.movement_finished.connect(self.update_display_of_axis_status)
+        self.axis.motor.signals.movement_finished.connect(
+            self.update_display_of_axis_status
+        )
         self.update_display_of_axis_status()
 
         self.axisLinked.emit()
