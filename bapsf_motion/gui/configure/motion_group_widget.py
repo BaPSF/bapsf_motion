@@ -758,6 +758,10 @@ class AxisControlWidget(QWidget):
         if not self.isEnabled():
             return
 
+        if not self.axis.connected:
+            self.setEnabled(False)
+            return
+
         pos = self.position
         self.update_position_display(pos)
         if self.target_position_label.text() == "":
