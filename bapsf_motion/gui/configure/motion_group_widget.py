@@ -384,8 +384,8 @@ class AxisControlWidget(QWidget):
     movementStopped = Signal(int)
     axisStatusChanged = Signal()
     targetPositionChanged = Signal(float)
-    _lostConnection = Signal()
-    _establishedConnection = Signal()
+    lostConnection = Signal()
+    establishedConnection = Signal()
 
     def __init__(
         self,
@@ -521,8 +521,8 @@ class AxisControlWidget(QWidget):
         self.movementStopped.connect(self._disable_motor)
         self.movementStopped.connect(self._update_display_of_axis_status)
 
-        self._establishedConnection.connect(self._handle_connection_established)
-        self._lostConnection.connect(self._handle_connection_lost)
+        self.establishedConnection.connect(self._handle_connection_established)
+        self.lostConnection.connect(self._handle_connection_lost)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -855,11 +855,11 @@ class AxisControlWidget(QWidget):
 
     @Slot()
     def _emit_connection_established(self):
-        self._establishedConnection.emit()
+        self.establishedConnection.emit()
 
     @Slot()
     def _emit_connection_lost(self):
-        self._lostConnection.emit()
+        self.lostConnection.emit()
 
     @Slot()
     def _handle_connection_lost(self):
