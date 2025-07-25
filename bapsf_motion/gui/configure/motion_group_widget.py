@@ -843,8 +843,12 @@ class AxisControlWidget(QWidget):
                 self.update_display_of_axis_status
             )
             self.axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
-            self.axis.motor.signals.movement_started.disconnect(self._emit_movement_started)
-            self.axis.motor.signals.movement_finished.disconnect(self._emit_movement_finished)
+            self.axis.motor.signals.movement_started.disconnect(
+                self._emit_movement_started
+            )
+            self.axis.motor.signals.movement_finished.disconnect(
+                self._emit_movement_finished
+            )
             self.axis.motor.signals.movement_finished.disconnect(
                 self.update_display_of_axis_status
             )
@@ -916,8 +920,12 @@ class AxisControlWidget(QWidget):
         if isinstance(self.axis, Axis):
             self.axis.motor.signals.status_changed.disconnect(self.update_display_of_axis_status)
             self.axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
-            self.axis.motor.signals.movement_started.disconnect(self._emit_movement_started)
-            self.axis.motor.signals.movement_finished.disconnect(self._emit_movement_finished)
+            self.axis.motor.signals.movement_started.disconnect(
+                self._emit_movement_started
+            )
+            self.axis.motor.signals.movement_finished.disconnect(
+                self._emit_movement_finished
+            )
             self.axis.motor.signals.movement_finished.disconnect(
                 self.update_display_of_axis_status
             )
