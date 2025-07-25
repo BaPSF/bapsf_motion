@@ -1089,6 +1089,8 @@ class DriveBaseController(QWidget):
             acw.show()
 
         self.setEnabled(not self._mg.terminated)
+        if not all(self.mg.drive.connected):
+            self.setEnabled(False)
         self._determine_mspace_drive_polarity()
 
     def unlink_motion_group(self):
