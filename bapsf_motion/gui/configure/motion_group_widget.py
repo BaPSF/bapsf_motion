@@ -1080,6 +1080,8 @@ class DriveBaseController(QWidget):
         for ii, ax in enumerate(self.mg.drive.axes):
             acw = self._axis_control_widgets[ii]
             acw.link_axis(self.mg, ii)
+            acw.establishedConnection.connect(self._drive_connection_established)
+            acw.lostConnection.connect(self._drive_connection_lost)
             acw.movementStarted.connect(self._drive_movement_started)
             acw.movementStopped.connect(self._drive_movement_finished)
             acw.axisStatusChanged.connect(self.update_all_axis_displays)
@@ -1097,6 +1099,8 @@ class DriveBaseController(QWidget):
 
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", category=RuntimeWarning)
+                acw.establishedConnection.disconnect(self._drive_connection_established)
+                acw.lostConnection.disconnect(self._drive_connection_lost)
                 acw.movementStarted.disconnect(self._drive_movement_started)
                 acw.movementStopped.disconnect(self._drive_movement_finished)
                 acw.axisStatusChanged.disconnect(self.update_all_axis_displays)
@@ -1134,6 +1138,20 @@ class DriveBaseController(QWidget):
                 continue
 
             acw.enable_motion_buttons()
+
+    @Slot()
+    def _drive_connection_lost(self):
+        self.mg.drive.stop()
+        self.setEnabled(False)
+
+    @Slot()
+    def _drive_connection_established(self):
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
+            return
+
+        ax_connected = [ax.motor.status["connected"] for ax in self.mg.drive.axes]
+        if all(ax_connected):
+            self.setEnabled(True)
 
     @Slot(int)
     def _drive_movement_started(self, axis_index):
