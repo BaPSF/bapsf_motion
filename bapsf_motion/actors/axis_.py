@@ -170,6 +170,14 @@ class Axis(EventActor):
     config.__doc__ = EventActor.config.__doc__
 
     @property
+    def connected(self) -> bool:
+        """
+        Return `True` if connection is established with the physical
+        motor.
+        """
+        return self.motor.status["connected"]
+
+    @property
     def motor(self) -> Motor:
         """Instance of the |Motor| object that belongs to |Axis|."""
         return self._motor
