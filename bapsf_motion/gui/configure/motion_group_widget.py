@@ -880,6 +880,7 @@ class AxisControlWidget(QWidget):
             self.axis.name,
             self.axis.motor.ip,
         )
+        self.setEnabled(False)
 
     @Slot()
     def _handle_connection_established(self):
@@ -893,6 +894,7 @@ class AxisControlWidget(QWidget):
             return None
 
         self.lost_connection_dialog.register_resolved_motor(self.axis.name)
+        self.setEnabled(True)
 
     @Slot()
     def _emit_movement_started(self):
