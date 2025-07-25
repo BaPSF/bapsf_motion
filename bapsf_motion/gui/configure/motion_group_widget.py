@@ -1657,6 +1657,11 @@ class DriveGameController(DriveBaseController):
     def zero_drive(self):
         self.mg.set_zero()
 
+    @Slot()
+    def _drive_connection_lost(self):
+        super()._drive_connection_lost()
+        self.disconnect_controller()
+
     @Slot(bool)
     def _update_connect_led(self, value):
         self.connected_led.setChecked(value)
