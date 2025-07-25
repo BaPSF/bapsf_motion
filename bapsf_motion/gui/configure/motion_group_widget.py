@@ -920,7 +920,15 @@ class AxisControlWidget(QWidget):
         self.logger.info("Closing AxisControlWidget")
 
         if isinstance(self.axis, Axis):
-            self.axis.motor.signals.status_changed.disconnect(self.update_display_of_axis_status)
+            self.axis.motor.signals.connection_established.disconnect(
+                self._emit_connection_established
+            )
+            self.axis.motor.signals.connection_lost.disconnect(
+                self._emit_connection_lost
+            )
+            self.axis.motor.signals.status_changed.disconnect(
+                self.update_display_of_axis_status
+            )
             self.axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
             self.axis.motor.signals.movement_started.disconnect(
                 self._emit_movement_started
