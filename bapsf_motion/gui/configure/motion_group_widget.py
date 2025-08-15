@@ -2982,7 +2982,7 @@ class MGWidget(QWidget):
     @staticmethod
     def split_motion_group_name(mg_name):
         match = re.compile(
-            r"(<)(?P<drive_name>[\w\s-]+)(>)\s+(?P<ml_name>[\w\s-]+)"
+            r"(<)(?P<drive_name>[\w\s-]+)(>)\s+(?P<ml_name>[\w\s.,-]+)"
         ).fullmatch(mg_name)
         if match is not None:
             drive_name = match.group("drive_name").strip()
