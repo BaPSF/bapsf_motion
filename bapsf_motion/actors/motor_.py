@@ -144,30 +144,35 @@ class CommandEntry(UserDict):
         recv_processor: Optional[Callable[[str], Any]] = do_nothing,
         two_way: bool = False,
         units: Union[str, u.Unit, None] = None,
-        method_command: Optional[bool] = False,
+        method_command: bool = False,
+        buffered: bool = True,
     ):
         self._command = command
 
         _dict = {
-            "two_way": False,
             "method_command": method_command,
+            "buffered": buffered,
         }
         if not method_command:
-            _dict = {
-                "send": send,
-                "send_processor": send_processor,
-                "recv": recv,
-                "recv_processor": recv_processor,
-                "two_way": two_way,
-                "units": units,
-                "method_command": method_command,
-            }
+            _dict.update(
+                {
+                    "send": send,
+                    "send_processor": send_processor,
+                    "recv": recv,
+                    "recv_processor": recv_processor,
+                    "two_way": two_way,
+                    "units": units,
+                    "method_command": method_command,
+                },
+            )
         else:
-            _dict = {
-                "two_way": False,
-                "units": units,
-                "method_command": method_command,
-            }
+            _dict.update(
+                {
+                    "two_way": False,
+                    "units": units,
+                    "method_command": method_command,
+                },
+            )
         super().__init__(**_dict)
 
     @property
@@ -304,16 +309,19 @@ class Motor(EventActor):
             "alarm",
             send="AL",
             recv=re.compile(r"AL=(?P<return>[0-9]{4})"),
+            buffered=False,
         ),
         "alarm_reset": CommandEntry(
             "alarm_reset",
-            send="AR"
+            send="AR",
+            buffered=False,
         ),
         "buffer_size": CommandEntry(
             "buffer_size",
             send="BS",
             recv=re.compile(r"BS=(?P<return>[0-9]\.?[0-9]?)"),
             recv_processor=int,
+            buffered=False,
         ),
         "commence_jogging": CommandEntry("commence_jogging", send="CJ"),
         "continuous_jog": CommandEntry(
@@ -378,6 +386,7 @@ class Motor(EventActor):
             recv=re.compile(r"IP=(?P<return>-?[0-9]+)"),
             recv_processor=int,
             units=u.steps,
+            buffered=False,
         ),
         "idle_current": CommandEntry(
             "change_idle_current",
@@ -417,6 +426,7 @@ class Motor(EventActor):
         "kill": CommandEntry(
             "stop_and_kill",  # immediately stop moving and erase queue
             send="SK",
+            buffered=False,
         ),
         "move_off_limit": CommandEntry(
             "move_off_limit",
@@ -441,6 +451,7 @@ class Motor(EventActor):
             "request_status",
             send="RS",
             recv=re.compile(r"RS=(?P<return>[ADEFHJMPRSTW]+)"),
+            buffered=False,
         ),
         "reset_currents": CommandEntry(
             "reset_currents",
@@ -495,6 +506,7 @@ class Motor(EventActor):
             "stop",
             send="SK",
             send_processor=lambda soft: "D" if bool(soft) else "",
+            buffered=False,
         ),
         "target_distance": CommandEntry(
             "target_distance",
