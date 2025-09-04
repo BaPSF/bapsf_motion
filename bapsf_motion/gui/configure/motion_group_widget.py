@@ -503,6 +503,9 @@ class AxisControlWidget(QWidget):
         self._connect_signals()
 
     def _connect_signals(self):
+        # Note: Connecting/disconnecting of SimpleSignals happens in
+        #       the link_axis and unlink_axis methods respectively
+        #
         self._update_display_timer.timeout.connect(
             self._update_display_of_axis_status
         )
@@ -817,6 +820,8 @@ class AxisControlWidget(QWidget):
         self._axis_index = ax_index
 
         self.axis_name_label.setText(self.axis.name)
+
+        # connect motor SimpleSignals
         self.axis.motor.signals.connection_established.connect(
             self._emit_connection_established
         )
@@ -830,13 +835,13 @@ class AxisControlWidget(QWidget):
         self.axis.motor.signals.movement_finished.connect(
             self.update_display_of_axis_status
         )
-        self.update_display_of_axis_status()
 
+        self.update_display_of_axis_status()
         self.axisLinked.emit()
 
     def unlink_axis(self):
         if self.axis is not None:
-            # self.axis.terminate(delay_loop_stop=True)
+            # disconnect all motor SimpleSignals
             self.axis.motor.signals.connection_established.disconnect(
                 self._emit_connection_established
             )
