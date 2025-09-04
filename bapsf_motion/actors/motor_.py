@@ -1234,7 +1234,14 @@ class Motor(EventActor):
             meth = getattr(self, command)
             return meth(*args)
 
-        elif not self.loop.is_running():
+        if self.is_moving and self._commands[command]["buffered"]:
+            self.logger.warning(
+                f"Buffered commands ({command}) are disallowed while the "
+                f"motor is moving."
+            )
+            return self.ack_flags.NACK
+
+        if not self.loop.is_running():
             # event loop not running, just send commands directly
             return self._send_command(command, *args)
 
