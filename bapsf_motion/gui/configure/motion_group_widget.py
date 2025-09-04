@@ -1154,8 +1154,7 @@ class DriveBaseController(QWidget):
         if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
             return
 
-        ax_connected = [ax.motor.status["connected"] for ax in self.mg.drive.axes]
-        if all(ax_connected):
+        if all(self.mg.drive.connected):
             self.setEnabled(True)
 
     @Slot(int)
