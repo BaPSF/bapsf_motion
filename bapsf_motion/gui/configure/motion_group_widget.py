@@ -901,7 +901,10 @@ class AxisControlWidget(QWidget):
             return None
 
         self.lost_connection_dialog.register_resolved_motor(self.axis.name)
+
         self.setEnabled(True)
+        self.update_display_of_axis_status()
+        self.axisStatusChanged.emit()
 
     @Slot()
     def _emit_movement_started(self):
