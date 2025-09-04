@@ -756,13 +756,11 @@ class AxisControlWidget(QWidget):
     @Slot()
     def _update_display_of_axis_status(self):
         if self._mg.terminated:
-            return
-
-        if not self.isEnabled():
-            return
-
-        if not self.axis.connected:
             self.setEnabled(False)
+            return
+
+        self.setEnabled(self.axis.connected)
+        if not self.isEnabled():
             return
 
         pos = self.position
