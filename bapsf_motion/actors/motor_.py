@@ -1763,7 +1763,7 @@ class Motor(EventActor):
         self.signals.movement_started.disconnect_all()
         self.signals.movement_finished.disconnect_all()
 
-        if not self.terminated and self._status["connected"]:
+        if not self.terminated and self.status["connected"]:
             self.stop()
             self.disable()
 
