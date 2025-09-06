@@ -639,7 +639,8 @@ class DriveConfigOverlay(_ConfigOverlay):
 
     @Slot()
     def _update_dr_name_widget(self):
-        self.dr_name_widget.setText(self.drive_config["name"])
+        name = self.drive_config.get("name", "")
+        self.dr_name_widget.setText(name)
 
     def set_drive_handler(self, handler: callable):
         ...
