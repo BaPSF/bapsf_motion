@@ -520,8 +520,19 @@ class DriveConfigOverlay(_ConfigOverlay):
         layout.addWidget(HLinePlain(parent=self))
         layout.addLayout(self._define_second_row_layout())
         layout.addSpacing(24)
-        layout.addWidget(self._spawn_axis_widget("X"))
-        layout.addWidget(self._spawn_axis_widget("Y"))
+
+        drive_config = self._drive_config
+        for ii, name in enumerate(("X", "Y")):
+            layout.addWidget(self._spawn_axis_widget(name))
+
+            # initialize axis widget
+            if "axes" in drive_config:
+                try:
+                    ax_config = drive_config["axes"][ii]
+                    self.axis_widgets[ii].axis_config = ax_config
+                except KeyError:
+                    continue
+
         layout.addStretch(1)
 
         return layout
