@@ -769,7 +769,8 @@ class DriveConfigOverlay(_ConfigOverlay):
         config = _deepcopy_dict(self.drive_config)
 
         self.configChanged.disconnect()
-        self.drive.terminate(delay_loop_stop=True)
+        if not self.drive.terminated:
+            self.drive.terminate(delay_loop_stop=True)
         self._set_drive(None)
 
         for axw in self.axis_widgets:
