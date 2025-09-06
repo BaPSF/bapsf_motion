@@ -592,7 +592,9 @@ class DriveConfigOverlay(_ConfigOverlay):
             name = "A New Drive" if name == "" else name
             self._drive_config = {"name": name}
 
-        self._drive_config["axes"] = {}
+        if "axes" not in self._drive_config:
+            self._drive_config["axes"] = {}
+
         for ii, axw in enumerate(self.axis_widgets):
             self._drive_config["axes"][ii] = axw.axis_config
 
