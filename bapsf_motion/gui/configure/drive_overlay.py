@@ -364,7 +364,8 @@ class AxisConfigWidget(QWidget):
                 auto_run=True,
             )
 
-            axis.motor.signals.status_changed.connect(self._update_online_led)
+            axis.motor.signals.connection_established.connect(self.configChanged.emit)
+            axis.motor.signals.connection_lost.connect(self.configChanged.emit)
         except ConnectionError:
             axis = None
 
