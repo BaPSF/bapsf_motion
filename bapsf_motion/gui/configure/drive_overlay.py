@@ -351,7 +351,10 @@ class AxisConfigWidget(QWidget):
     def _spawn_axis(self) -> Union[Axis, None]:
         self.logger.info("Spawning Axis.")
         if isinstance(self.axis, Axis):
+            self.blockSignals(True)
             self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+            self.blockSignals(False)
 
         try:
             axis = Axis(
