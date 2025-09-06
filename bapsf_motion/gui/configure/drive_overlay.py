@@ -631,13 +631,8 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.validate_led.setChecked(validate)
         self.done_btn.setEnabled(validate)
 
-        if isinstance(self.drive, Drive) and not validate:
-            config = {"name": self.drive.config.pop("name")}
-
-            self.drive.terminate(delay_loop_stop=True)
+        if not validate:
             self._set_drive(None)
-
-            self.drive_config = config
 
     @Slot()
     def _update_dr_name_widget(self):
