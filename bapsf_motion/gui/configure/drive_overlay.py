@@ -264,6 +264,13 @@ class AxisConfigWidget(QWidget):
             # nothing has changed
             return
 
+        if isinstance(self.axis, Axis):
+            # configuration has changed and is different from current axis actor
+            self.blockSignals(True)
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+            self.blockSignals(False)
+
         self._axis_config = _axis_config
 
         self.blockSignals(True)
