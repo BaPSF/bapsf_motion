@@ -325,6 +325,11 @@ class AxisConfigWidget(QWidget):
             config = self.axis_config
             config["ip"] = new_ip
 
+        old_ip = self.axis_config["ip"]
+        if old_ip == new_ip:
+            # nothing has changed
+            return
+
             self.axis.terminate(delay_loop_stop=True)
 
             self._axis_config = config
