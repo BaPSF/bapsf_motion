@@ -358,9 +358,8 @@ class AxisConfigWidget(QWidget):
     @Slot()
     def _update_online_led(self):
         online = False
-
         if isinstance(self.axis, Axis):
-            online = self.axis.motor.status["connected"]
+            online = self.axis.connected
 
         self.online_led.setChecked(online)
 
