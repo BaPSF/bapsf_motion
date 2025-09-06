@@ -304,13 +304,9 @@ class AxisConfigWidget(QWidget):
             self.configChanged.emit()
             return
 
-        if self.axis is not None:
-            self.axis.units_per_rev = new_cpr
-        else:
-            self.axis_config["units_per_rev"] = new_cpr
-
-        self.configChanged.emit()
-        self._check_axis_completeness()
+        config = self.axis_config
+        config["units_per_rev"] = new_cpr
+        self.axis_config = config
 
     @Slot()
     def _change_ip_address(self):
@@ -321,24 +317,18 @@ class AxisConfigWidget(QWidget):
             self.configChanged.emit()
             return
 
-        if self.axis is not None:
-            config = self.axis_config
-            config["ip"] = new_ip
-
         old_ip = self.axis_config["ip"]
         if old_ip == new_ip:
             # nothing has changed
             return
 
+        config = self.axis_config
+        config["ip"] = new_ip
+        if isinstance(self.axis, Axis):
             self.axis.terminate(delay_loop_stop=True)
-
-            self._axis_config = config
             self.axis = None
-        else:
-            self.axis_config["ip"] = new_ip
 
-        self.configChanged.emit()
-        self._check_axis_completeness()
+        self.axis_config = config
 
     @Slot()
     def _change_limit_mode(self):
