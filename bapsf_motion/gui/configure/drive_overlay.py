@@ -556,6 +556,8 @@ class DriveConfigOverlay(_ConfigOverlay):
         _label.setFont(font)
         name_label = _label
 
+        self._update_dr_name_widget()
+
         layout = QHBoxLayout()
         layout.addSpacing(18)
         layout.addWidget(name_label)
