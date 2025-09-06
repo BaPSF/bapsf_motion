@@ -706,7 +706,6 @@ class DriveConfigOverlay(_ConfigOverlay):
         _widget = AxisConfigWidget(name, parent=self)
         _widget.set_ip_handler(self._validate_ip)
         _widget.configChanged.connect(self._change_validation_state)
-        _widget.configChanged.connect(self._terminate_drive)
 
         self.axis_widgets.append(_widget)
 
@@ -758,18 +757,6 @@ class DriveConfigOverlay(_ConfigOverlay):
         self._set_drive(drive)
 
         return drive
-
-    @Slot()
-    def _terminate_drive(self):
-        if not isinstance(self.drive, Drive):
-            return
-
-        config = {"name": self.drive.config.pop("name")}
-
-        self.drive.terminate(delay_loop_stop=True)
-        self._set_drive(None)
-
-        self.drive_config = config
 
     def return_and_close(self):
         config = _deepcopy_dict(self.drive_config)
