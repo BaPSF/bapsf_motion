@@ -121,7 +121,10 @@ class Axis(EventActor):
         if self.terminated:
             # we are restarting
             self._terminated = False
-            self._spawn_motor(ip=self.config["ip"])
+            self._spawn_motor(
+                ip=self.config["ip"],
+                motor_settings=self.config["motor_settings"],
+            )
 
         super().run(auto_run=auto_run)
 
