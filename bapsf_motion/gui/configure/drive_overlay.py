@@ -743,14 +743,22 @@ class DriveConfigOverlay(_ConfigOverlay):
                 auto_run=False,
             )
 
+            # we do NOT want the drive actor to be running, since the
+            # AxisConfigWidgets will have running Axis actors
+            #
+            drive.terminate(delay_loop_stop=True)
+
+            # update Axis actors
             for ii, ax in enumerate(drive.axes):
                 self.axis_widgets[ii].axis_config = ax.config
 
-        except (ConnectionError, TimeoutError):
+        except (ConnectionError, TimeoutError, KeyError):
             self.logger.warning("Not able to instantiate Drive.")
             drive = None
 
-            for axw in self.axis_widgets:
+        # restart Axis actors
+        for axw in self.axis_widgets:
+            if isinstance(axw.axis, Axis) and axw.axis.terminated:
                 axw.axis.run()
 
         self._set_drive(drive)
