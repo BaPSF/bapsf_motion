@@ -9,6 +9,7 @@ import asyncio
 import logging
 import warnings
 
+from functools import partial
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
@@ -673,16 +674,19 @@ class DriveConfigOverlay(_ConfigOverlay):
             self.logger.warning(
                 "Drive is not valid since not all axes are configured."
             )
+            self._change_validation_state(False)
             return
         elif not all([axw.online_led.isChecked() for axw in self.axis_widgets]):
             self.logger.warning(
                 "Drive is not valid since not all axes are online."
             )
+            self._change_validation_state(False)
             return
         elif self.dr_name_widget.text() == "":
             self.logger.warning(
                 "Drive is not valid, it needs a name."
             )
+            self._change_validation_state(False)
             return
 
         # TODO: NEED AN HANDLER THAT ENSURES NO OTHER MOTION GROUP USES
@@ -705,7 +709,9 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         _widget = AxisConfigWidget(name, parent=self)
         _widget.set_ip_handler(self._validate_ip)
-        _widget.configChanged.connect(self._change_validation_state)
+        _widget.configChanged.connect(
+            partial(self._change_validation_state, validate=False),
+        )
 
         self.axis_widgets.append(_widget)
 
