@@ -671,7 +671,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             )
             self._change_validation_state(False)
             return
-        elif not all([axw.online_led.isChecked() for axw in self.axis_widgets]):
+        elif not all([axw.axis.connected for axw in self.axis_widgets]):
             self.logger.warning(
                 "Drive is not valid since not all axes are online."
             )
