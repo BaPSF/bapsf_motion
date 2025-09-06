@@ -38,11 +38,11 @@ from bapsf_motion.utils import ipv4_pattern, _deepcopy_dict, loop_safe_stop
 
 class AxisConfigWidget(QWidget):
     configChanged = Signal()
-    axis_loop = asyncio.new_event_loop()
 
     def __init__(self, name, parent=None):
         super().__init__(parent=parent)
 
+        self.axis_loop = asyncio.new_event_loop()
         self._logger = logging.getLogger(f"{gui_logger.name}.ACW")
         self._ip_handlers = []
 
