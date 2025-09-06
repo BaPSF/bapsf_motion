@@ -482,10 +482,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         # Define ADVANCED WIDGETS
 
-        self.setLayout(self._define_layout())
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-        self._connect_signals()
-
+        # initialize drive configuration
         _drive_config = None
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
             self.mg.drive.terminate(delay_loop_stop=True)
@@ -500,7 +497,12 @@ class DriveConfigOverlay(_ConfigOverlay):
         elif "drive" in parent._initial_mg_config:
             _drive_config = _deepcopy_dict(parent._initial_mg_config["drive"])
 
-        self.drive_config = _drive_config
+        self._drive_config = _drive_config
+
+        # initialize widgets
+        self.setLayout(self._define_layout())
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._connect_signals()
 
     def _connect_signals(self):
         super()._connect_signals()
