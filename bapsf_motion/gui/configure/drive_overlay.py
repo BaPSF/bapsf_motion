@@ -34,7 +34,12 @@ from bapsf_motion.gui.widgets import (
     LED,
     StyleButton,
 )
-from bapsf_motion.utils import ipv4_pattern, _deepcopy_dict, loop_safe_stop
+from bapsf_motion.utils import (
+    _deepcopy_dict,
+    dict_equal,
+    ipv4_pattern,
+    loop_safe_stop,
+)
 
 
 class AxisConfigWidget(QWidget):
@@ -249,8 +254,15 @@ class AxisConfigWidget(QWidget):
 
     @axis_config.setter
     def axis_config(self, config):
-        # TODO: this needs to be more robust
-        self._axis_config = {**self.axis_config, **config}
+        _axis_config = {**self.axis_config, **config}
+
+        if (
+            isinstance(self.axis, Axis)
+            and dict_equal(_axis_config, self.axis.config)
+            and not self.axis.terminated
+        ):
+            # nothing has changed
+            return
 
         self.configChanged.emit()
         self._check_axis_completeness()
