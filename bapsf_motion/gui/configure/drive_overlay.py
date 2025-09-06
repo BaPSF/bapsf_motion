@@ -264,8 +264,12 @@ class AxisConfigWidget(QWidget):
             # nothing has changed
             return
 
-        self.configChanged.emit()
+        self._axis_config = _axis_config
+
+        self.blockSignals(True)
         self._check_axis_completeness()
+        self.blockSignals(False)
+        self.configChanged.emit()
 
     def _check_axis_completeness(self):
         if isinstance(self.axis, Axis):
