@@ -412,21 +412,6 @@ class AxisConfigWidget(QWidget):
 
         return ip
 
-    def link_external_axis(self, axis):
-        if not isinstance(axis, Axis):
-            self.logger.warning(
-                "NOT linking external axis, supplied axis is not an Axis object."
-            )
-            return
-
-        self.logger.info(f"Linking external axis {axis.name}.")
-
-        if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
-
-        axis.motor.signals.status_changed.connect(self._update_online_led)
-        self.axis = axis
-
     def set_ip_handler(self, handler: callable):
         self._ip_handlers.append(handler)
 
@@ -776,7 +761,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             )
 
             for ii, ax in enumerate(drive.axes):
-                self.axis_widgets[ii].link_external_axis(ax)
+                self.axis_widgets[ii].axis_config = ax.config
 
         except (ConnectionError, TimeoutError):
             self.logger.warning("Not able to instantiate Drive.")
