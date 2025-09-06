@@ -598,36 +598,6 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         return self._drive_config
 
-    @drive_config.setter
-    def drive_config(self, config):
-        # TODO: this needs to be more robust...actually validate the config
-        if config is None or not config:
-            self._drive_config = None
-            self.configChanged.emit()
-            return
-        # elif "name" not in config:
-        #     self.logger.warning("Drive configuration does not supply a name.")
-        #     return
-        # elif "axes" not in config:
-        #     self.logger.warning("Drive configuration does not define axes.")
-        #     return
-        # elif len(config["axes"]) != 2:
-        #     self.logger.warning("Drive can only have 2 axes!!")
-        # elif all(["ip" in ax_config for ax_config in config.values()]):
-        #     ...
-
-        try:
-            self._spawn_drive(config)
-        except (TypeError, ValueError, KeyError) as err:
-            self.logger.warning(
-                f"Given drive configuration is not valid, so doing nothing.",
-                exc_info=err
-            )
-            self._drive_config = (
-                None if "name" not in config else {"name": config["name"]}
-            )
-            self.configChanged.emit()
-
     @property
     def axis_widgets(self) -> List[AxisConfigWidget]:
         if self._axis_widgets is None:
