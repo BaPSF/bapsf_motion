@@ -257,7 +257,7 @@ class AxisConfigWidget(QWidget):
 
     def _check_axis_completeness(self):
         if isinstance(self.axis, Axis):
-            return False
+            return self.axis.connected
 
         _completeness = {"name", "ip", "units", "units_per_rev"}
         if _completeness - set(self.axis_config.keys()):
@@ -266,7 +266,10 @@ class AxisConfigWidget(QWidget):
             return False
 
         self._spawn_axis()
-        return True
+        if isinstance(self.axis, Axis):
+            return self.axis.connected
+
+        return False
 
     @Slot()
     def _change_cm_per_rev(self):
