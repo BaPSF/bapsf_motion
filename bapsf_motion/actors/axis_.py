@@ -175,10 +175,10 @@ class Axis(EventActor):
     @property
     def connected(self) -> bool:
         """
-        Return `True` if connection is established with the physical
+        `True` if the TCP connection is established with the physical
         motor.
         """
-        return self.motor.status["connected"]
+        return self.motor.connected
 
     @property
     def motor(self) -> Motor:
