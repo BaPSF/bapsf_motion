@@ -683,6 +683,14 @@ class Motor(EventActor):
         super().run(auto_run=auto_run)
 
     @property
+    def connected(self):
+        """
+        `True` if the TCP connection is established with the physical
+        motor.
+        """
+        return self.status["connected"]
+
+    @property
     def _setup_defaults(self) -> Dict[str, Any]:
         """Default values for :attr:`setup`."""
         return {
