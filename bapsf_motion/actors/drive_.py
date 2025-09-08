@@ -239,8 +239,10 @@ class Drive(EventActor):
     @property
     def connected(self) -> Tuple[bool, ...]:
         """
-        Boolean list indicating which axes have established connections
-        with the physical motors.
+        Boolean list indicating which axes have established TCP
+        connections with the physical motors.
+
+        One-to-one mapping with property :attr:`axes`.
         """
         return tuple(ax.connected for ax in self.axes)
 
