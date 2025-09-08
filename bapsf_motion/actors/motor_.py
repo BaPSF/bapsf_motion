@@ -190,16 +190,35 @@ class MotorSignals:
     used by `Motor`.
     """
     def __init__(self):
-        self._status_changed = SimpleSignal()
-        self._movement_started = SimpleSignal()
+        self._connection_established = SimpleSignal()
+        self._connection_lost = SimpleSignal()
         self._movement_finished = SimpleSignal()
+        self._movement_started = SimpleSignal()
+        self._status_changed = SimpleSignal()
 
     @property
-    def status_changed(self) -> SimpleSignal:
+    def connection_established(self) -> SimpleSignal:
+        """
+        `~bapsf_motion.utils.SimpleSignal` emitted when the `Motor`
+        class establishes a TCP connection with the physical motor.
+        """
+        return self._connection_established
+
+    @property
+    def connection_lost(self) -> SimpleSignal:
+        """
+        `~bapsf_motion.utils.SimpleSignal` emitted when the `Motor`
+        class loses the TCP connection with the physical motor.
+        """
+        return self._connection_lost
+
+    @property
+    def movement_finished(self) -> SimpleSignal:
         """
         `~bapsf_motion.utils.SimpleSignal` emitted when the motor
-        `~Motor.status` is changes."""
-        return self._status_changed
+        movement is completed.
+        """
+        return self._movement_finished
 
     @property
     def movement_started(self) -> SimpleSignal:
@@ -210,12 +229,11 @@ class MotorSignals:
         return self._movement_started
 
     @property
-    def movement_finished(self) -> SimpleSignal:
+    def status_changed(self) -> SimpleSignal:
         """
         `~bapsf_motion.utils.SimpleSignal` emitted when the motor
-        movement is completed.
-        """
-        return self._movement_finished
+        `~Motor.status` is changes."""
+        return self._status_changed
 
 
 class Motor(EventActor):
