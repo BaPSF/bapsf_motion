@@ -239,8 +239,7 @@ class Drive(EventActor):
     @property
     def connected(self) -> bool:
         """
-        `True` if the TCP connection is established with the physical
-        motor for ALL drive axes.
+        `True` if the TCP connection is established for ALL drive axes.
         """
         return all(ax.connected for ax in self.axes)
 
