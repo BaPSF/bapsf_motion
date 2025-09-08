@@ -880,6 +880,14 @@ class MotionGroup(EventActor):
     config.__doc__ = EventActor.config.__doc__
 
     @property
+    def connected(self) -> bool:
+        """
+        `True` if the TCP connection is established for ALL drive axes
+        (i.e. the entire motion group).
+        """
+        return self.drive.connected
+
+    @property
     def drive(self) -> Drive:
         """Instance of |Drive| associated with the motion group."""
         return self._drive
