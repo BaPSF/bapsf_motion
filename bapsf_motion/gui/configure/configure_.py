@@ -58,6 +58,137 @@ from bapsf_motion.utils import toml, _deepcopy_dict
 _HERE = Path(__file__).parent
 
 
+class RunTOMLWidget(QWidget):
+    tomlImported = Signal()
+    tomlExported = Signal()
+
+    def __init__(self, parent: Union[QWidget, None]):
+        super().__init__(parent=parent)
+
+        self._logger = gui_logger
+        self._OPENED_FILE = None
+
+        label = QLabel("Run Configuration", parent=self)
+        label.setAlignment(
+            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
+        )
+        font = label.font()
+        font.setPointSize(16)
+        label.setFont(font)
+        self.title_label = label
+
+        _txt = QPlainTextEdit(parent=self)
+        _txt.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        _txt.setReadOnly(True)
+        font = _txt.font()
+        font.setPointSize(10)
+        font.setFamily("Courier New")
+        _txt.setFont(font)
+        self.toml_text_widget = _txt
+
+        _btn = StyleButton("IMPORT", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        self.import_btn = _btn
+
+        _btn = StyleButton("EXPORT", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        self.export_btn = _btn
+        self.export_btn.setEnabled(False)
+
+        _btn = StyleButton("COPY", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        self.copy_btn = _btn
+
+        self.setLayout(self._define_layout())
+
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.import_btn.clicked.connect(self.import_toml)
+        self.export_btn.clicked.connect(self.export_toml)
+        self.copy_btn.clicked.connect(self.copy_toml)
+
+    def _define_layout(self):
+        layout = QGridLayout()
+        layout.addWidget(self.title_label, 0, 0, 1, 3)
+        layout.addWidget(self.toml_text_widget, 1, 0, 1, 3)
+        layout.addWidget(self.import_btn, 2, 0)
+        layout.addWidget(self.export_btn, 2, 1)
+        layout.addWidget(self.copy_btn, 2, 2)
+        return layout
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @Slot()
+    def copy_toml(self):
+        # get cursor in text box
+        cursor = self.toml_text_widget.textCursor()
+        pos = cursor.position()
+
+        # copy text
+        self.toml_text_widget.selectAll()
+        self.toml_text_widget.copy()
+
+        # deselect text
+        cursor.clearSelection()
+        cursor.setPosition(pos)
+        self.toml_text_widget.setTextCursor(cursor)
+
+    @Slot()
+    def export_toml(self):
+        ...
+
+    @Slot()
+    def import_toml(self):
+        path = (
+            QDir.currentPath() if self._OPENED_FILE is None
+            else f"{self._OPENED_FILE.parent}"
+        )
+
+        file_name, _filter = QFileDialog.getOpenFileName(
+            self,
+            "Open file",
+            path,
+            "TOML file (*.toml)",
+        )
+        file_name = Path(file_name)
+
+        if not file_name.is_file():
+            # dialog was cancelled
+            return
+
+        self.logger.info(f"Opening and reading file: {file_name} ...")
+
+        with open(file_name, "rb") as f:
+            run_config = toml.load(f)
+
+        # self.replace_rm(run_config)
+        self._OPENED_FILE = file_name
+        self.set_toml_text(toml.as_toml_string(run_config))
+        self.logger.info(f"... Success!")
+        self.tomlImported.emit()
+
+    def get_toml_text(self):
+        return self.toml_text_widget.toPlainText()
+
+    def get_toml_as_dict(self):
+        _txt = self.get_toml_text()
+        return toml.loads(_txt)
+
+    def set_toml_text(self, text: str):
+        self.toml_text_widget.setPlainText(text)
+
+
 class RunWidget(QWidget):
     def __init__(self, parent: "ConfigureGUI", *, enable_run_name: bool = True):
         super().__init__(parent=parent)
@@ -72,17 +203,17 @@ class RunWidget(QWidget):
         self.done_btn = DoneButton(parent=self)
         self.quit_btn = DiscardButton("Discard && Quit", parent=self)
 
-        _btn = StyleButton("IMPORT", parent=self)
-        _btn.setFixedHeight(48)
-        _btn.setPointSize(16)
-        _btn.setEnabled(False)
-        self.import_btn = _btn
-
-        _btn = StyleButton("EXPORT", parent=self)
-        _btn.setFixedHeight(48)
-        _btn.setPointSize(16)
-        _btn.setEnabled(False)
-        self.export_btn = _btn
+        # _btn = StyleButton("IMPORT", parent=self)
+        # _btn.setFixedHeight(48)
+        # _btn.setPointSize(16)
+        # _btn.setEnabled(False)
+        # self.import_btn = _btn
+        #
+        # _btn = StyleButton("EXPORT", parent=self)
+        # _btn.setFixedHeight(48)
+        # _btn.setPointSize(16)
+        # _btn.setEnabled(False)
+        # self.export_btn = _btn
 
         _btn = StyleButton("ADD", parent=self)
         _btn.setFixedHeight(38)
@@ -103,7 +234,14 @@ class RunWidget(QWidget):
 
         # Define TEXT WIDGETS
 
-        self.config_widget = QPlainTextEdit(parent=self)
+        # TOML config display widget
+        self.toml_widget = RunTOMLWidget(parent=self)
+        self.toml_widget.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        self.toml_widget.setFixedWidth(500)
+
         self.mg_list_widget = QListWidget(parent=self)
         _font = self.mg_list_widget.font()
         _font.setPointSize(14)
@@ -136,20 +274,13 @@ class RunWidget(QWidget):
         # Create layout for banner (top header)
         banner_layout = self._define_banner_layout()
 
-        # Create layout for toml window
-        toml_widget = QWidget(parent=self)
-        toml_widget.setLayout(self._define_toml_layout())
-        toml_widget.setMinimumWidth(400)
-        toml_widget.setMinimumWidth(500)
-        toml_widget.sizeHint().setWidth(450)
-
         # Create layout for controls
         control_widget = QWidget(parent=self)
         control_widget.setLayout(self._define_control_layout())
 
         # Construct layout below top banner
         layout = QHBoxLayout()
-        layout.addWidget(toml_widget)
+        layout.addWidget(self.toml_widget)
         layout.addWidget(VLinePlain(parent=self))
         layout.addWidget(control_widget)
 
@@ -159,31 +290,6 @@ class RunWidget(QWidget):
         main_layout.addLayout(layout)
 
         return main_layout
-
-    def _define_toml_layout(self):
-        layout = QGridLayout()
-        label = QLabel("Run Configuration", parent=self)
-        label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
-        )
-        font = label.font()
-        font.setPointSize(16)
-        label.setFont(font)
-
-        self.config_widget.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-        )
-        self.config_widget.setReadOnly(True)
-        self.config_widget.font().setPointSize(14)
-        self.config_widget.font().setFamily("Courier New")
-
-        layout.addWidget(label, 0, 0, 1, 2)
-        layout.addWidget(self.config_widget, 1, 0, 1, 2)
-        layout.addWidget(self.import_btn, 2, 0)
-        layout.addWidget(self.export_btn, 2, 1)
-
-        return layout
 
     def _define_banner_layout(self):
         layout = QHBoxLayout()
@@ -322,8 +428,8 @@ class ConfigureGUI(QMainWindow):
     def _connect_signals(self):
         # Note: _mg_widget signals are connected in _spawn_mg_widget()
         #
-        self._run_widget.import_btn.clicked.connect(self.toml_import)
-        # self._run_widget.export_btn.clicked.connect(self.toml_export)
+        self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
+
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.close)
 
@@ -360,7 +466,8 @@ class ConfigureGUI(QMainWindow):
         self._log_widget.sizeHint().setWidth(450)
         self._log_widget.setSizePolicy(
             QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Ignored)
+            QSizePolicy.Policy.Ignored,
+        )
 
         layout = QHBoxLayout()
         layout.addWidget(self._stacked_widget)
@@ -434,38 +541,13 @@ class ConfigureGUI(QMainWindow):
         self.close()
 
     @Slot()
-    def toml_export(self):
-        ...
-
-    @Slot()
     def toml_import(self):
-        path = QDir.currentPath() if self._OPENED_FILE is None \
-            else f"{self._OPENED_FILE.parent}"
-
-        file_name, _filter = QFileDialog.getOpenFileName(
-            self,
-            "Open file",
-            path,
-            "TOML file (*.toml)",
-        )
-        file_name = Path(file_name)
-
-        if not file_name.is_file():
-            # dialog was canceled
-            return
-
-        self.logger.info(f"Opening and reading file: {file_name} ...")
-
-        with open(file_name, "rb") as f:
-            run_config = toml.load(f)
-
+        run_config = self._run_widget.toml_widget.get_toml_as_dict()
         self.replace_rm(run_config)
-        self._OPENED_FILE = file_name
-        self.logger.info(f"... Success!")
 
     def update_display_config_text(self):
         self.logger.info(f"Updating the run config toml: {self.rm.config.as_toml_string}")
-        self._run_widget.config_widget.setPlainText(self.rm.config.as_toml_string)
+        self._run_widget.toml_widget.set_toml_text(self.rm.config.as_toml_string)
 
     def update_display_rm_name(self):
         rm_name = self.rm.config["name"]
