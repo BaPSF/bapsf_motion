@@ -1095,7 +1095,7 @@ class DriveBaseController(QWidget):
             acw.show()
 
         self.setEnabled(not self._mg.terminated)
-        if not all(self.mg.drive.connected):
+        if not self.mg.drive.connected:
             self.setEnabled(False)
         self._determine_mspace_drive_polarity()
 
@@ -1157,7 +1157,7 @@ class DriveBaseController(QWidget):
         if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
             return
 
-        if all(self.mg.drive.connected):
+        if self.mg.drive.connected:
             self.setEnabled(True)
 
     @Slot(int)
