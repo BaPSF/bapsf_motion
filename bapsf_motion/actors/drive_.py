@@ -237,12 +237,12 @@ class Drive(EventActor):
     config.__doc__ = EventActor.config.__doc__
 
     @property
-    def connected(self) -> List[bool]:
+    def connected(self) -> Tuple[bool, ...]:
         """
         Boolean list indicating which axes have established connections
         with the physical motors.
         """
-        return [ax.connected for ax in self.axes]
+        return tuple(ax.connected for ax in self.axes)
 
     @property
     def is_moving(self) -> bool:
