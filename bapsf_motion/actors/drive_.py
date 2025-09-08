@@ -237,14 +237,12 @@ class Drive(EventActor):
     config.__doc__ = EventActor.config.__doc__
 
     @property
-    def connected(self) -> Tuple[bool, ...]:
+    def connected(self) -> bool:
         """
-        Boolean list indicating which axes have established TCP
-        connections with the physical motors.
-
-        One-to-one mapping with property :attr:`axes`.
+        `True` if the TCP connection is established with the physical
+        motor for ALL drive axes.
         """
-        return tuple(ax.connected for ax in self.axes)
+        return all(ax.connected for ax in self.axes)
 
     @property
     def is_moving(self) -> bool:
