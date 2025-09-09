@@ -66,7 +66,7 @@ class RunTOMLWidget(QWidget):
         super().__init__(parent=parent)
 
         self._logger = gui_logger
-        self._OPENED_FILE = None
+        self._TOML_FILE = None
 
         label = QLabel("Run Configuration", parent=self)
         label.setAlignment(
@@ -145,8 +145,8 @@ class RunTOMLWidget(QWidget):
     @Slot()
     def export_toml(self):
         path = (
-            "" if self._OPENED_FILE is None
-            else f"{self._OPENED_FILE.parent}"
+            "" if self._TOML_FILE is None
+            else f"{self._TOML_FILE.parent}"
         )
 
         file_name, _filter = QFileDialog.getSaveFileName(
@@ -166,13 +166,13 @@ class RunTOMLWidget(QWidget):
             config = self.get_toml_as_dict()
             toml.dump(config, f)
 
-        self._OPENED_FILE = file_name
+        self._TOML_FILE = file_name
 
     @Slot()
     def import_toml(self):
         path = (
-            QDir.currentPath() if self._OPENED_FILE is None
-            else f"{self._OPENED_FILE.parent}"
+            QDir.currentPath() if self._TOML_FILE is None
+            else f"{self._TOML_FILE.parent}"
         )
 
         file_name, _filter = QFileDialog.getOpenFileName(
@@ -193,7 +193,7 @@ class RunTOMLWidget(QWidget):
             run_config = toml.load(f)
 
         # self.replace_rm(run_config)
-        self._OPENED_FILE = file_name
+        self._TOML_FILE = file_name
         self.set_toml_text(toml.as_toml_string(run_config))
         self.logger.info(f"... Success!")
         self.tomlImported.emit()
