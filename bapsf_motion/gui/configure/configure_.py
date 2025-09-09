@@ -98,9 +98,7 @@ class RunTOMLWidget(QWidget):
         _btn = StyleButton("EXPORT", parent=self)
         _btn.setFixedHeight(48)
         _btn.setPointSize(16)
-        _btn.setEnabled(False)
         self.export_btn = _btn
-        self.export_btn.setEnabled(False)
 
         _btn = StyleButton("COPY", parent=self)
         _btn.setFixedHeight(48)
@@ -146,7 +144,27 @@ class RunTOMLWidget(QWidget):
 
     @Slot()
     def export_toml(self):
-        ...
+        path = (
+            "" if self._OPENED_FILE is None
+            else f"{self._OPENED_FILE.parent}"
+        )
+
+        file_name, _filter = QFileDialog.getSaveFileName(
+            parent=self,
+            caption="Save file",
+            dir=path,
+            filter="TOML file (*.toml)",
+        )
+        if file_name == "":
+            # dialog was cancelled
+            return
+
+        file_name = Path(file_name)
+        self.logger.info(f"Saving configuration to TOML file: {file_name}")
+
+        with open(file_name, "wb") as f:
+            config = self.get_toml_as_dict()
+            toml.dump(config, f)
 
     @Slot()
     def import_toml(self):
