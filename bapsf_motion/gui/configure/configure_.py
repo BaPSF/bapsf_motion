@@ -378,7 +378,6 @@ class RunWidget(QWidget):
 
 
 class ConfigureGUI(QMainWindow):
-    _OPENED_FILE = None  # type: Union[Path, None]
     configChanged = Signal()
 
     def __init__(
