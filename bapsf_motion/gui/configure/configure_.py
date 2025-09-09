@@ -174,10 +174,10 @@ class RunTOMLWidget(QWidget):
         )
 
         file_name, _filter = QFileDialog.getOpenFileName(
-            self,
-            "Open file",
-            path,
-            "TOML file (*.toml)",
+            parent=self,
+            caption="Open file",
+            dir=path,
+            filter="TOML file (*.toml)",
         )
         file_name = Path(file_name)
 
