@@ -167,6 +167,7 @@ class RunTOMLWidget(QWidget):
             toml.dump(config, f)
 
         self._TOML_FILE = file_name
+        self.tomlExported.emit()
 
     @Slot()
     def import_toml(self):
