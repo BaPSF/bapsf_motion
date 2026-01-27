@@ -128,10 +128,8 @@ class Axis(EventActor):
 
         super().run(auto_run=auto_run)
 
-        if self.motor is None:
-            return
-
-        self.motor.run(auto_run=auto_run)
+        if isinstance(self.motor, Motor):
+            self.motor.run(auto_run=auto_run)
 
     def terminate(self, delay_loop_stop=False):
         self.motor.terminate(delay_loop_stop=True)
