@@ -1755,7 +1755,6 @@ class DriveControlWidget(QWidget):
 
         self._mg = None
 
-        self.setEnabled(True)
         self.setFixedHeight(450)
 
         # Define BUTTONS
@@ -1804,6 +1803,7 @@ class DriveControlWidget(QWidget):
         _combo.setFixedWidth(175)
         self.controller_combo_box = _combo
 
+        self.setEnabled(True)
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -2005,6 +2005,14 @@ class DriveControlWidget(QWidget):
             return
 
         self.desktop_controller_widget.set_target_position(target_position)
+
+    def setDisabled(self, disable: bool):
+        self.lost_connection_dialog.setDisabled(disable)
+        super().setDisabled(disable)
+
+    def setEnabled(self, enable: bool):
+        self.lost_connection_dialog.setEnabled(enable)
+        super().setEnabled(enable)
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
