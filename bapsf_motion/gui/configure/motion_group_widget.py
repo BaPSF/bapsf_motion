@@ -217,6 +217,9 @@ class LostConnectionMessageBox(QMessageBox):
         if not self.display_dialog:
             return True
 
+        if not self.isEnabled():
+            return True
+
         super().exec()
 
         return True
