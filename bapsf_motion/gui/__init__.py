@@ -15,6 +15,7 @@ try:
         get_color_scheme,
         cast_color_to_rgba_string,
     )
+    from bapsf_motion.gui.icons import icon_name_dict
     from bapsf_motion.gui.lapd_xy_transform_calculator import (
         LaPDXYTransformCalculator,
         LaPDXYTransformCalculatorApp

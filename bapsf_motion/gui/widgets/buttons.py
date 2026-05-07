@@ -26,6 +26,7 @@ from typing import Optional, Union
 import qtawesome as qta
 
 from bapsf_motion.gui.helpers import cast_color_to_rgba_string
+from bapsf_motion.gui.icons import icon_name_dict
 
 
 class StyleButton(QPushButton):
@@ -341,7 +342,7 @@ class GearButton(StyleButton):
             icon_color = color
 
         self.update_style_sheet(styles={"color": color}, action="base")
-        self._icon = qta.icon("fa.gear", color=icon_color)
+        self._icon = qta.icon(icon_name_dict["gear"], color=icon_color)
         self.setIcon(self._icon)
 
         self._size = 32
@@ -394,9 +395,10 @@ class GearValidButton(ValidButton):
         self._valid_color = QColor(52, 161, 219, 240)
         self._invalid_color = QColor(250, 66, 45, 200)
 
-        self._valid_icon = qta.icon("fa.gear", color=self._valid_color)
-        self._invalid_icon = qta.icon("fa.gear", color=self._invalid_color)
-        self._disabled_icon = qta.icon("fa.gear")
+        icon_name = icon_name_dict["gear"]
+        self._valid_icon = qta.icon(icon_name, color=self._valid_color)
+        self._invalid_icon = qta.icon(icon_name, color=self._invalid_color)
+        self._disabled_icon = qta.icon(icon_name)
 
         super().__init__(self._invalid_icon, "", parent=parent)
 

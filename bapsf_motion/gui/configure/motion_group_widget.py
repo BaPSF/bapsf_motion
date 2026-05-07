@@ -58,6 +58,7 @@ from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
+from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
     DiscardButton,
     DoneButton,
@@ -421,11 +422,11 @@ class AxisControlWidget(QWidget):
         self.setFixedWidth(120)
 
         # Define BUTTONS
-        _btn = IconButton("fa.arrow-up", parent=self)
+        _btn = IconButton(icon_name_dict["arrow-up"], parent=self)
         _btn.setIconSize(48)
         self.jog_forward_btn = _btn
 
-        _btn = IconButton("fa.arrow-down", parent=self)
+        _btn = IconButton(icon_name_dict["arrow-down"], parent=self)
         _btn.setIconSize(48)
         self.jog_backward_btn = _btn
 
@@ -2175,7 +2176,7 @@ class MGWidget(QWidget):
         _btn.setEnabled(False)
         self.mb_btn = _btn
 
-        _icon = QTAIconLabel("fa5s.exchange-alt", parent=self)
+        _icon = QTAIconLabel(icon_name_dict["exchange-alt"], parent=self)
         _icon.setFixedSize(32)
         _icon.setIconSize(24)
         self.transform_label = _icon
@@ -2472,7 +2473,7 @@ class MGWidget(QWidget):
 
         tr_legend_layout = QHBoxLayout()
         tr_legend_layout.setContentsMargins(2, 0, 0, 0)
-        _icon = QTAIconLabel("fa5s.exchange-alt", parent=self)
+        _icon = QTAIconLabel(icon_name_dict["exchange-alt"], parent=self)
         _icon.setFixedSize(20)
         _icon.setIconSize(20)
         tr_legend_layout.addWidget(_icon)
@@ -3364,7 +3365,7 @@ class MGWidget(QWidget):
 
         if ml_name == "":
             self.ml_name_widget.addAction(
-                qta.icon("fa5.window-close", color="red"),
+                qta.icon(icon_name_dict["window-close"], color="red"),
                 QLineEdit.ActionPosition.LeadingPosition,
             )
             self.ml_name_widget.setToolTip("Must enter a non-null name.")
@@ -3372,7 +3373,7 @@ class MGWidget(QWidget):
 
         if mg_name in self._deployed_restrictions["mg_names"]:
             self.ml_name_widget.addAction(
-                qta.icon("fa5.window-close", color="red"),
+                qta.icon(icon_name_dict["window-close"], color="red"),
                 QLineEdit.ActionPosition.LeadingPosition,
             )
             deployed_mg_names = [
