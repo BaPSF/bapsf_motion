@@ -636,8 +636,9 @@ class Motor(EventActor):
         # changes
         self._signals = MotorSignals()
 
+        # initialized attributes
+        self._n_connections_attempts = 0  # running total
         self.ip = ip
-
         self._pause_heartbeat = False
 
         try:
@@ -1145,8 +1146,11 @@ class Motor(EventActor):
         _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
             try:
-                msg = f"Connecting to {self.ip}:{self.port} ..."
-                self.logger.info(msg)
+                self._n_connections_attempts += 1
+                self.logger.info(
+                    f"Connecting to {self.ip}:{self.port} "
+                    f"({self._n_connections_attempts})..."
+                )
 
                 socket.setdefaulttimeout(1)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
