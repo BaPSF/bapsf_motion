@@ -632,11 +632,13 @@ class Motor(EventActor):
         if isinstance(current, float) and 0.0 < current <= 1.0:
             self._motor["DEFAULTS"]["current"] = current
 
-        # simple signal to tell handlers that _status changed
+        # SimplgeSignal's to tell handlers about specific motor status
+        # changes
         self._signals = MotorSignals()
 
+        # initialized attributes
+        self._n_connections_attempts = 0  # running total
         self.ip = ip
-
         self._pause_heartbeat = False
 
         try:
@@ -686,6 +688,7 @@ class Motor(EventActor):
         try:
             self.connect()
         except ConnectionError:
+            self.logger.warning("Unable initialize connection to motor.")
             return None
 
         self._configure_motor()
@@ -698,15 +701,16 @@ class Motor(EventActor):
         return None
 
     def run(self, auto_run=True):
+        self.logger.info(f"Running motor - async loop hass is {self.loop.__hash__()}")
 
-        # if actor was terminated, actor is restarting
-        self._terminated = False
-
+        heartbeat_task = self.heartbeat_task
         if (
-            self.heartbeat_task is None
-            or self.heartbeat_task.done()
-            or self.heartbeat_task.cancelled()
+            not isinstance(heartbeat_task, asyncio.Task)
+            or heartbeat_task.done()
+            or heartbeat_task.cancelled()
         ):
+            # the actor is either starting or restarting
+            self._terminated = False
             self._configure_before_run()
             self._initialize_tasks()
 
@@ -1024,11 +1028,12 @@ class Motor(EventActor):
         Current position of the motor, in motor units
         `~bapsf_motion.utils.steps`.
         """
+        heartbeat_task = self.heartbeat_task
         if (
             self.loop.is_running()
-            and self.heartbeat_task is not None
-            and not self.heartbeat_task.done()
-            and not self.heartbeat_task.cancelled()
+            and isinstance(heartbeat_task, asyncio.Task)
+            and not heartbeat_task.done()
+            and not heartbeat_task.cancelled()
         ):
             # read from status if the heartbeat is operational
             return self.status["position"]
@@ -1053,16 +1058,16 @@ class Motor(EventActor):
     def heartbeat_task(self, val: asyncio.Task):
         if not isinstance(val, asyncio.Task):
             return
-        elif self.heartbeat_task is None:
+
+        heartbeat_task = self.heartbeat_task
+        if heartbeat_task is None:
             pass
-        elif self.heartbeat_task.done() or self.heartbeat_task.cancelled():
+        elif heartbeat_task.done() or heartbeat_task.cancelled():
             # remove task from task list
-            # self.tasks.remove(self.heartbeat_task)
-            self._heartbeat_task = []
+            self._heartbeat_task = None
         else:
             # val is a new task and heartbeat is still running...stop old heartbeat
-            self.loop.call_soon_threadsafe(self.heartbeat_task.cancel)
-            # self.tasks.remove(self._heartbeat_task)
+            self.loop.call_soon_threadsafe(heartbeat_task.cancel)
 
         self._heartbeat_task = [val]
         self.tasks.append(val)
@@ -1075,7 +1080,7 @@ class Motor(EventActor):
         except ValueError:
             pass
 
-        if self.heartbeat_task is None:
+        if not bool(self.heartbeat_task):
             return
 
         try:
@@ -1085,10 +1090,11 @@ class Motor(EventActor):
 
     def start_heartbeat(self):
         """Start or restart the heartbeat `asyncio.Task`."""
+        heartbeat_task = self.heartbeat_task
         if (
-            self.heartbeat_task is None
-            or self.heartbeat_task.done()
-            or self.heartbeat_task.cancelled()
+            not isinstance(heartbeat_task, asyncio.Task)
+            or heartbeat_task.done()
+            or heartbeat_task.cancelled()
         ):
             self.heartbeat_task = self.loop.create_task(self._heartbeat())
 
@@ -1121,11 +1127,15 @@ class Motor(EventActor):
         reconnection attempts before an exception is raised is defined
         by ``self._setup["max_connection_attempts"]``.
         """
+        _lost_connection = self._lost_connection()
         if not isinstance(self.socket, socket.socket):
             # socket has not been created yet, self.socket is likely None
             pass
 
-        elif self._lost_connection():
+        elif self.socket.fileno() == -1:
+            # socket is closed
+            self.socket = None
+        elif _lost_connection:
             # connection to motor was lost, ensure the socket is closed before
             # trying to re-establish connection
             self.socket.shutdown(socket.SHUT_RDWR)
@@ -1139,16 +1149,19 @@ class Motor(EventActor):
         _allowed_attempts = self._setup["max_connection_attempts"]
         for _count in range(_allowed_attempts):
             try:
-                msg = f"Connecting to {self.ip}:{self.port} ..."
-                self.logger.info(msg)
+                self._n_connections_attempts += 1
+                self.logger.info(
+                    f"Connecting to {self.ip}:{self.port} "
+                    f"({self._n_connections_attempts})..."
+                )
 
                 socket.setdefaulttimeout(1)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(1)  # 1 second timeout
+                s.settimeout(0.1)  # 1 second timeout
                 s.connect((self.ip, self.port))
+                s.settimeout(1)
 
-                msg = "...SUCCESS!!!"
-                self.logger.info(msg)
+                self.logger.info("...SUCCESS!!!")
                 self.socket = s
                 self._update_status(connected=True)
 
@@ -1189,10 +1202,11 @@ class Motor(EventActor):
         A low level method for sending commands to the motor, and
         receiving the response.
         """
+        heartbeat_task = self.heartbeat_task
         if self.loop.is_running() and (
-            self.heartbeat_task is None
-            or self.heartbeat_task.done()
-            or self.heartbeat_task.cancelled()
+            not isinstance(heartbeat_task, asyncio.Task)
+            or heartbeat_task.done()
+            or heartbeat_task.cancelled()
         ):
             self.start_heartbeat()
 
@@ -1780,6 +1794,7 @@ class Motor(EventActor):
 
         try:
             self.socket.close()
+            self._update_status(connected=False)
         except AttributeError:
             pass
 

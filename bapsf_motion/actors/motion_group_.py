@@ -778,10 +778,8 @@ class MotionGroup(EventActor):
     def run(self, auto_run=True):
         super().run(auto_run=auto_run)
 
-        if self.drive is None:
-            return
-
-        self.drive.run(auto_run=auto_run)
+        if isinstance(self.drive, Drive):
+            self.drive.run(auto_run=auto_run)
 
     def _spawn_drive(
         self, config: Dict[str, Any]

@@ -128,16 +128,15 @@ class Axis(EventActor):
 
         super().run(auto_run=auto_run)
 
-        if self.motor is None:
-            return
-
-        self.motor.run(auto_run=auto_run)
+        if isinstance(self.motor, Motor):
+            self.motor.run(auto_run=auto_run)
 
     def terminate(self, delay_loop_stop=False):
         self.motor.terminate(delay_loop_stop=True)
         super().terminate(delay_loop_stop=delay_loop_stop)
 
     def _spawn_motor(self, ip, motor_settings: Optional[dict] = None):
+        self.logger.debug("Spawning Motor")
         if isinstance(self.motor, Motor) and not self.terminated:
             self.motor.terminate(delay_loop_stop=True)
 

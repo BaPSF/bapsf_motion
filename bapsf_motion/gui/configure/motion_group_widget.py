@@ -217,6 +217,9 @@ class LostConnectionMessageBox(QMessageBox):
         if not self.display_dialog:
             return True
 
+        if not self.isEnabled():
+            return True
+
         super().exec()
 
         return True
@@ -1069,14 +1072,15 @@ class DriveBaseController(QWidget):
                 f" {type(mg)}."
             )
 
-        if mg.drive is None:
+        if not isinstance(mg.drive, Drive):
             # drive has not been set yet
             self.unlink_motion_group()
             return
-        elif (
-                self.mg is not None
-                and self.mg.drive is not None
-                and mg.drive is self.mg.drive
+
+        if (
+            isinstance(self.mg, MotionGroup)
+            and isinstance(self.mg.drive, Drive)
+            and mg.drive is self.mg.drive
         ):
             pass
         else:
@@ -1094,9 +1098,7 @@ class DriveBaseController(QWidget):
             acw.axisStatusChanged.connect(self.driveStatusChanged.emit)
             acw.show()
 
-        self.setEnabled(not self._mg.terminated)
-        if not self.mg.drive.connected:
-            self.setEnabled(False)
+        self.setEnabled(not (self._mg.terminated or not self._mg.connected))
         self._determine_mspace_drive_polarity()
 
     def unlink_motion_group(self):
@@ -1748,11 +1750,10 @@ class DriveControlWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._logger = gui_logger
+        self._logger = logging.getLogger(f"{gui_logger.name}.DCW")
 
         self._mg = None
 
-        self.setEnabled(True)
         self.setFixedHeight(450)
 
         # Define BUTTONS
@@ -1801,6 +1802,7 @@ class DriveControlWidget(QWidget):
         _combo.setFixedWidth(175)
         self.controller_combo_box = _combo
 
+        self.setEnabled(True)
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -1921,7 +1923,13 @@ class DriveControlWidget(QWidget):
     def _zero_drive(self):
         self.mg.set_zero()
 
+    def isEnabled(self) -> bool:
+        enabled = super().isEnabled()
+        return enabled and self.desktop_controller_widget.isEnabled()
+
     def link_motion_group(self, mg):
+        self.logger.debug("Linking motion group")
+
         if not isinstance(mg, MotionGroup):
             self.logger.warning(
                 f"Expected type {MotionGroup} for motion group, but got type"
@@ -1938,9 +1946,13 @@ class DriveControlWidget(QWidget):
             self.unlink_motion_group()
             self._mg = mg
 
-        self.setEnabled(not self._mg.terminated)
-        if not self.isEnabled():
+        if self._mg.terminated:
+            # MotionGroup is terminated so disabled controls and return
+            self.setEnabled(False)
             return
+
+        # Motion Group is operational, make controls operationsl
+        self.setEnabled(True)
 
         if isinstance(mg.mb, MotionBuilder):
             self.mspace_warning_dialog.display_dialog = False
@@ -2002,6 +2014,14 @@ class DriveControlWidget(QWidget):
             return
 
         self.desktop_controller_widget.set_target_position(target_position)
+
+    def setDisabled(self, disable: bool):
+        self.lost_connection_dialog.setDisabled(disable)
+        super().setDisabled(disable)
+
+    def setEnabled(self, enable: bool):
+        self.lost_connection_dialog.setEnabled(enable)
+        super().setEnabled(enable)
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
@@ -3266,6 +3286,11 @@ class MGWidget(QWidget):
             #       so we are not explicitly setting the dropdown index here
 
         self._set_mg(mg)
+
+        if isinstance(mg, MotionGroup) and not mg.connected:
+            self.logger.info(
+                f"MotionGroup instantiated but could not connect to all motors."
+            )
 
         return mg
 
