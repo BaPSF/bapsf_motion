@@ -1928,6 +1928,8 @@ class DriveControlWidget(QWidget):
         return enabled and self.desktop_controller_widget.isEnabled()
 
     def link_motion_group(self, mg):
+        self.logger.debug("Linking motion group")
+
         if not isinstance(mg, MotionGroup):
             self.logger.warning(
                 f"Expected type {MotionGroup} for motion group, but got type"
@@ -3284,6 +3286,11 @@ class MGWidget(QWidget):
             #       so we are not explicitly setting the dropdown index here
 
         self._set_mg(mg)
+
+        if isinstance(mg, MotionGroup) and not mg.connected:
+            self.logger.info(
+                f"MotionGroup instantiated but could not connect to all motors."
+            )
 
         return mg
 
