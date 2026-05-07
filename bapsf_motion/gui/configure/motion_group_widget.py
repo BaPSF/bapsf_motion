@@ -1750,7 +1750,7 @@ class DriveControlWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._logger = gui_logger
+        self._logger = logging.getLogger(f"{gui_logger.name}.DCW")
 
         self._mg = None
 
