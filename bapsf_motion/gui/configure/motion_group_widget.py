@@ -1923,6 +1923,10 @@ class DriveControlWidget(QWidget):
     def _zero_drive(self):
         self.mg.set_zero()
 
+    def isEnabled(self) -> bool:
+        enabled = super().isEnabled()
+        return enabled and self.desktop_controller_widget.isEnabled()
+
     def link_motion_group(self, mg):
         if not isinstance(mg, MotionGroup):
             self.logger.warning(
