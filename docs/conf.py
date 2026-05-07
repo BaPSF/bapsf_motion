@@ -19,8 +19,8 @@
 import os
 import sys
 
-from datetime import datetime
 from pkg_resources import parse_version
+from datetime import datetime, timezone
 from sphinx.application import Sphinx
 
 sys.path.insert(0, os.path.abspath("."))
@@ -179,7 +179,7 @@ root_doc = "index"
 # General information about the project.
 project = "bapsf_motion"
 author = "BaPSF Community"
-copyright = f"2022–{datetime.utcnow().year}, {author}"
+copyright = f"2022–{datetime.now(timezone.utc).year}, {author}"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
