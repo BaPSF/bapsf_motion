@@ -1158,8 +1158,7 @@ class Motor(EventActor):
                 s.connect((self.ip, self.port))
                 s.settimeout(1)
 
-                msg = "...SUCCESS!!!"
-                self.logger.info(msg)
+                self.logger.info("...SUCCESS!!!")
                 self.socket = s
                 self._update_status(connected=True)
 
