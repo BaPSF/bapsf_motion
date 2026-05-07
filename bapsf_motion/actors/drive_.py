@@ -279,7 +279,7 @@ class Drive(EventActor):
         return pos * self.axes[0].units
 
     def terminate(self, delay_loop_stop=False):
-        for ax in self._axes:
+        for ax in self.axes:
             ax.terminate(delay_loop_stop=True)
 
         super().terminate(delay_loop_stop=delay_loop_stop)
