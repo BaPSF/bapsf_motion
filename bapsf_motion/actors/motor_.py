@@ -687,6 +687,7 @@ class Motor(EventActor):
         try:
             self.connect()
         except ConnectionError:
+            self.logger.warning("Unable initialize connection to motor.")
             return None
 
         self._configure_motor()
@@ -699,6 +700,7 @@ class Motor(EventActor):
         return None
 
     def run(self, auto_run=True):
+        self.logger.info(f"Running motor - async loop hass is {self.loop.__hash__()}")
 
         # if actor was terminated, actor is restarting
         self._terminated = False
