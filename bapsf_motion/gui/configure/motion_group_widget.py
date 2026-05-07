@@ -1944,9 +1944,13 @@ class DriveControlWidget(QWidget):
             self.unlink_motion_group()
             self._mg = mg
 
-        self.setEnabled(not self._mg.terminated)
-        if not self.isEnabled():
+        if self._mg.terminated:
+            # MotionGroup is terminated so disabled controls and return
+            self.setEnabled(False)
             return
+
+        # Motion Group is operational, make controls operationsl
+        self.setEnabled(True)
 
         if isinstance(mg.mb, MotionBuilder):
             self.mspace_warning_dialog.display_dialog = False
