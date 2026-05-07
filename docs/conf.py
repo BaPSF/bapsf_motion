@@ -19,8 +19,8 @@
 import os
 import sys
 
-from pkg_resources import parse_version
 from datetime import datetime, timezone
+from packaging.version import Version
 from sphinx.application import Sphinx
 
 sys.path.insert(0, os.path.abspath("."))
@@ -190,10 +190,12 @@ copyright = f"2022–{datetime.now(timezone.utc).year}, {author}"
 #        However, release needs to be a semantic style version number, so set
 #        the 'unknown' case to ''.
 release = "" if release == "unknown" else release
-pv = parse_version(release)
-release = pv.public
+revision = ""
+if release != "":
+    pv = Version(release)
+    release = pv.public
+    revision = "" if pv.local is None else pv.local[1:]
 version = ".".join(release.split(".")[:2])  # short X.Y version
-revision = pv.local[1:] if pv.local is not None else ""
 
 # This is added to the end of RST files — a good place to put substitutions to
 # be used globally.
