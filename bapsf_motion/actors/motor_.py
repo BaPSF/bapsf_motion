@@ -703,15 +703,14 @@ class Motor(EventActor):
     def run(self, auto_run=True):
         self.logger.info(f"Running motor - async loop hass is {self.loop.__hash__()}")
 
-        # if actor was terminated, actor is restarting
-        self._terminated = False
-
         heartbeat_task = self.heartbeat_task
         if (
             not isinstance(heartbeat_task, asyncio.Task)
             or heartbeat_task.done()
             or heartbeat_task.cancelled()
         ):
+            # the actor is either starting or restarting
+            self._terminated = False
             self._configure_before_run()
             self._initialize_tasks()
 
@@ -1128,11 +1127,15 @@ class Motor(EventActor):
         reconnection attempts before an exception is raised is defined
         by ``self._setup["max_connection_attempts"]``.
         """
+        _lost_connection = self._lost_connection()
         if not isinstance(self.socket, socket.socket):
             # socket has not been created yet, self.socket is likely None
             pass
 
-        elif self._lost_connection():
+        elif self.socket.fileno() == -1:
+            # socket is closed
+            self.socket = None
+        elif _lost_connection:
             # connection to motor was lost, ensure the socket is closed before
             # trying to re-establish connection
             self.socket.shutdown(socket.SHUT_RDWR)
