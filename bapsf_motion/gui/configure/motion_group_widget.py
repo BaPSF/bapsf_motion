@@ -1072,14 +1072,15 @@ class DriveBaseController(QWidget):
                 f" {type(mg)}."
             )
 
-        if mg.drive is None:
+        if not isinstance(mg.drive, Drive):
             # drive has not been set yet
             self.unlink_motion_group()
             return
-        elif (
-                self.mg is not None
-                and self.mg.drive is not None
-                and mg.drive is self.mg.drive
+
+        if (
+            isinstance(self.mg, MotionGroup)
+            and isinstance(self.mg.drive, Drive)
+            and mg.drive is self.mg.drive
         ):
             pass
         else:
@@ -1097,9 +1098,7 @@ class DriveBaseController(QWidget):
             acw.axisStatusChanged.connect(self.driveStatusChanged.emit)
             acw.show()
 
-        self.setEnabled(not self._mg.terminated)
-        if not self.mg.drive.connected:
-            self.setEnabled(False)
+        self.setEnabled(not (self._mg.terminated or not self._mg.connected))
         self._determine_mspace_drive_polarity()
 
     def unlink_motion_group(self):
