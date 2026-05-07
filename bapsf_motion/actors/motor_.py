@@ -1154,8 +1154,9 @@ class Motor(EventActor):
 
                 socket.setdefaulttimeout(1)
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                s.settimeout(1)  # 1 second timeout
+                s.settimeout(0.1)  # 1 second timeout
                 s.connect((self.ip, self.port))
+                s.settimeout(1)
 
                 msg = "...SUCCESS!!!"
                 self.logger.info(msg)
