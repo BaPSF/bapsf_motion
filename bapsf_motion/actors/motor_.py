@@ -1791,6 +1791,7 @@ class Motor(EventActor):
 
         try:
             self.socket.close()
+            self._update_status(connected=False)
         except AttributeError:
             pass
 
