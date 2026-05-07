@@ -632,7 +632,8 @@ class Motor(EventActor):
         if isinstance(current, float) and 0.0 < current <= 1.0:
             self._motor["DEFAULTS"]["current"] = current
 
-        # simple signal to tell handlers that _status changed
+        # SimplgeSignal's to tell handlers about specific motor status
+        # changes
         self._signals = MotorSignals()
 
         self.ip = ip
