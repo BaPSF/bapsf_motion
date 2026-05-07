@@ -703,10 +703,11 @@ class Motor(EventActor):
         # if actor was terminated, actor is restarting
         self._terminated = False
 
+        heartbeat_task = self.heartbeat_task
         if (
-            self.heartbeat_task is None
-            or self.heartbeat_task.done()
-            or self.heartbeat_task.cancelled()
+            not isinstance(heartbeat_task, asyncio.Task)
+            or heartbeat_task.done()
+            or heartbeat_task.cancelled()
         ):
             self._configure_before_run()
             self._initialize_tasks()
@@ -1025,11 +1026,12 @@ class Motor(EventActor):
         Current position of the motor, in motor units
         `~bapsf_motion.utils.steps`.
         """
+        heartbeat_task = self.heartbeat_task
         if (
             self.loop.is_running()
-            and self.heartbeat_task is not None
-            and not self.heartbeat_task.done()
-            and not self.heartbeat_task.cancelled()
+            and isinstance(heartbeat_task, asyncio.Task)
+            and not heartbeat_task.done()
+            and not heartbeat_task.cancelled()
         ):
             # read from status if the heartbeat is operational
             return self.status["position"]
@@ -1054,16 +1056,16 @@ class Motor(EventActor):
     def heartbeat_task(self, val: asyncio.Task):
         if not isinstance(val, asyncio.Task):
             return
-        elif self.heartbeat_task is None:
+
+        heartbeat_task = self.heartbeat_task
+        if heartbeat_task is None:
             pass
-        elif self.heartbeat_task.done() or self.heartbeat_task.cancelled():
+        elif heartbeat_task.done() or heartbeat_task.cancelled():
             # remove task from task list
-            # self.tasks.remove(self.heartbeat_task)
-            self._heartbeat_task = []
+            self._heartbeat_task = None
         else:
             # val is a new task and heartbeat is still running...stop old heartbeat
-            self.loop.call_soon_threadsafe(self.heartbeat_task.cancel)
-            # self.tasks.remove(self._heartbeat_task)
+            self.loop.call_soon_threadsafe(heartbeat_task.cancel)
 
         self._heartbeat_task = [val]
         self.tasks.append(val)
@@ -1076,7 +1078,7 @@ class Motor(EventActor):
         except ValueError:
             pass
 
-        if self.heartbeat_task is None:
+        if not bool(self.heartbeat_task):
             return
 
         try:
@@ -1086,10 +1088,11 @@ class Motor(EventActor):
 
     def start_heartbeat(self):
         """Start or restart the heartbeat `asyncio.Task`."""
+        heartbeat_task = self.heartbeat_task
         if (
-            self.heartbeat_task is None
-            or self.heartbeat_task.done()
-            or self.heartbeat_task.cancelled()
+            not isinstance(heartbeat_task, asyncio.Task)
+            or heartbeat_task.done()
+            or heartbeat_task.cancelled()
         ):
             self.heartbeat_task = self.loop.create_task(self._heartbeat())
 
@@ -1190,10 +1193,11 @@ class Motor(EventActor):
         A low level method for sending commands to the motor, and
         receiving the response.
         """
+        heartbeat_task = self.heartbeat_task
         if self.loop.is_running() and (
-            self.heartbeat_task is None
-            or self.heartbeat_task.done()
-            or self.heartbeat_task.cancelled()
+            not isinstance(heartbeat_task, asyncio.Task)
+            or heartbeat_task.done()
+            or heartbeat_task.cancelled()
         ):
             self.start_heartbeat()
 
