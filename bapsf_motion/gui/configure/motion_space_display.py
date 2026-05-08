@@ -651,7 +651,8 @@ class MotionSpaceDisplay(QFrame):
             else:
                 handler.set_offsets(position)
         elif position is None:
-            pass
+            # The plot was never made and there is no position to update
+            return
         else:
             ax = self.mpl_canvas.figure.gca()
 
@@ -692,6 +693,7 @@ class MotionSpaceDisplay(QFrame):
             else:
                 handler.set_offsets(position)
         elif position is None:
+            # The plot was never made and there is no position to update
             return
         else:
             ax = self.mpl_canvas.figure.gca()
