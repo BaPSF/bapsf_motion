@@ -637,7 +637,7 @@ class MotionSpaceDisplay(QFrame):
             position = position.squeeze()
             position = position.tolist()
 
-        if not bool(position):
+        if not isinstance(position, list) or len(position) == 0:
             position = None
 
         # add target position dot
@@ -679,7 +679,7 @@ class MotionSpaceDisplay(QFrame):
             position = position.squeeze()
             position = position.tolist()
 
-        if not bool(position):
+        if not isinstance(position, list) or len(position) == 0:
             position = None
 
         # add position dot
