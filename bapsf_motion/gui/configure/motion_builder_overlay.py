@@ -1484,7 +1484,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             new_coords = {}
             for coord in self.mb.mask.coords.values():
                 new_coords[coord.name] = np.linspace(
-                    np.min(coord), np.max(coord), num=size
+                    coord.min().values, coord.max().values, num=size
                 )
             _ds = xr.Dataset(
                 {
