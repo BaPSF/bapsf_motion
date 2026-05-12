@@ -37,6 +37,7 @@ from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import read_parameter_hints
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
+from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
     DiscardButton,
     DoneButton,
@@ -723,7 +724,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(
                 Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
             )
-            _icon = qta.icon("fa.question-circle-o")
+            _icon = qta.icon(icon_name_dict["question-circle"])
             size = math.floor(0.95 * _row_height)
             _txt.setPixmap(_icon.pixmap(QSize(size, size)))
             _txt.setToolTip("\n".join(val["desc"]))
@@ -773,11 +774,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ly_btn = self._generate_btn_widget("EDIT")
         self.edit_ly_btn.setEnabled(False)
 
-        self.layer_move_up_btn = IconButton("fa.arrow-up", parent=self)
+        self.layer_move_up_btn = IconButton(icon_name_dict["arrow-up"], parent=self)
         self.layer_move_up_btn.setIconSize(20)
         self.layer_move_up_btn.setFixedWidth(24)
         self.layer_move_up_btn.setFixedHeight(48)
-        self.layer_move_down_btn = IconButton("fa.arrow-down", parent=self)
+        self.layer_move_down_btn = IconButton(icon_name_dict["arrow-down"], parent=self)
         self.layer_move_down_btn.setIconSize(18)
         self.layer_move_down_btn.setFixedWidth(24)
         self.layer_move_down_btn.setFixedHeight(48)
@@ -1483,7 +1484,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             new_coords = {}
             for coord in self.mb.mask.coords.values():
                 new_coords[coord.name] = np.linspace(
-                    np.min(coord), np.max(coord), num=size
+                    coord.min().values, coord.max().values, num=size
                 )
             _ds = xr.Dataset(
                 {

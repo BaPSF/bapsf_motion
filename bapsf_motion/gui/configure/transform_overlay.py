@@ -29,6 +29,7 @@ from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import read_parameter_hints
+from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import HLinePlain, QLineEditSpecialized
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry, transform_factory
@@ -265,7 +266,7 @@ class TransformConfigOverlay(_ConfigOverlay):
             _txt.setAlignment(
                 Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
             )
-            _icon = qta.icon("fa.question-circle-o")
+            _icon = qta.icon(icon_name_dict["question-circle"])
             size = math.floor(0.95 * _row_height)
             _txt.setPixmap(_icon.pixmap(QSize(size, size)))
             _txt.setToolTip("\n".join(val["desc"]))

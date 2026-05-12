@@ -4,6 +4,7 @@
 
 astropy
 importlib_metadata; python_version < '3.8'
+numpy
 numpydoc
 tomli; python_version < '3.11'
 tomli_w

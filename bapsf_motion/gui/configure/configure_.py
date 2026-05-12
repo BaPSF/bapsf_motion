@@ -44,6 +44,7 @@ import qtawesome as qta
 from bapsf_motion.actors import RunManager, RunManagerConfig, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
+from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.lapd_xy_transform_calculator import LaPDXYTransformCalculator
 from bapsf_motion.gui.widgets import (
     DiscardButton,
@@ -573,8 +574,8 @@ class ConfigureGUI(QMainWindow):
             label = self._generate_mg_list_name(key, mg.config["name"])
             self.logger.info(f"Adding to MG List - {label}")
             _icon = (
-                qta.icon("fa5.window-close", color="red") if mg.terminated
-                else qta.icon("fa5.check-circle", color="green")
+                qta.icon(icon_name_dict["window-close"], color="red") if mg.terminated
+                else qta.icon(icon_name_dict["check-circle"], color="green")
             )  # type: QIcon
             _item = QListWidgetItem(
                 _icon,

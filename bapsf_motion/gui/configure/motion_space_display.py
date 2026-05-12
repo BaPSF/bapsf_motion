@@ -637,7 +637,7 @@ class MotionSpaceDisplay(QFrame):
             position = position.squeeze()
             position = position.tolist()
 
-        if not bool(position):
+        if not isinstance(position, list) or len(position) == 0:
             position = None
 
         # add target position dot
@@ -651,7 +651,8 @@ class MotionSpaceDisplay(QFrame):
             else:
                 handler.set_offsets(position)
         elif position is None:
-            pass
+            # The plot was never made and there is no position to update
+            return
         else:
             ax = self.mpl_canvas.figure.gca()
 
@@ -678,7 +679,7 @@ class MotionSpaceDisplay(QFrame):
             position = position.squeeze()
             position = position.tolist()
 
-        if not bool(position):
+        if not isinstance(position, list) or len(position) == 0:
             position = None
 
         # add position dot
@@ -692,6 +693,7 @@ class MotionSpaceDisplay(QFrame):
             else:
                 handler.set_offsets(position)
         elif position is None:
+            # The plot was never made and there is no position to update
             return
         else:
             ax = self.mpl_canvas.figure.gca()
