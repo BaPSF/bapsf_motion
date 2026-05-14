@@ -785,7 +785,7 @@ class LaPD6KTransform(LaPDXYTransform):
             / self.six_k_arm_length
         )
 
-        T0 = np.zeros((npoints, 3, 3)).squeeze()  # noqa
+        T0 = np.zeros((npoints, 3, 3)).squeeze()
         T0[..., 0, 0] = 1 / np.cos(theta)
         T0[..., 0, 2] = pivot_to_center * ((1 / np.cos(theta)) - 1)
         T0[..., 1, 2] = (
@@ -795,8 +795,8 @@ class LaPD6KTransform(LaPDXYTransform):
         )
         T0[..., 2, 2] = 1.0
 
-        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])  # noqa
-        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])  # noqa
+        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
+        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
 
         return np.matmul(
             T_dpolarity,
@@ -1052,7 +1052,7 @@ class LaPDXYZTransform(base.BaseTransform):
         b_theta = np.arccos(points[..., 2] / b_rho)
 
         # build the matrix
-        T0 = np.zeros((npoints, 4, 4)).squeeze()  # noqa
+        T0 = np.zeros((npoints, 4, 4)).squeeze()
         T0[..., 0, 3] = b_rho - pivot_to_center
         T0[..., 1, 3] = L_table_pivot * np.tan(alpha) + H_offset * (1 - 1 / np.cos(alpha))
         T0[..., 2, 3] = D_zlead * np.tan(0.5 * np.pi - b_theta)
@@ -1133,7 +1133,7 @@ class LaPDXYZTransform(base.BaseTransform):
         b_theta = 0.5 * np.pi - np.arctan(points[..., 2] / D_zlead)
 
         # build the matrix
-        T0 = np.zeros((npoints, 4, 4)).squeeze()  # noqa
+        T0 = np.zeros((npoints, 4, 4)).squeeze()
         T0[..., 0, 0] = np.sin(b_theta) * np.cos(b_phi)
         T0[..., 0, 3] = pivot_to_center * (np.sin(b_theta) * np.cos(b_phi) - 1)
         T0[..., 1, 0] = np.sin(b_theta) * np.sin(b_phi)
@@ -1142,8 +1142,8 @@ class LaPDXYZTransform(base.BaseTransform):
         T0[..., 2, 3] = pivot_to_center * np.cos(b_theta)
         T0[..., 3, 3] = 1.0
 
-        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])  # noqa
-        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])  # noqa
+        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
+        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
 
         return np.matmul(
             T_mpolarity,
