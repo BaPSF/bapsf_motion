@@ -1,15 +1,23 @@
 """Module that defines the LaPD related transform classes."""
-__all__ = ["LaPDXYTransform", "LaPD6KTransform"]
-__transformer__ = ["LaPDXYTransform", "LaPD6KTransform"]
+
+from __future__ import annotations
+
+__all__ = ["LaPDXYTransform", "LaPD6KTransform", "LaPDXYZTransform"]
+__transformer__ = ["LaPDXYTransform", "LaPD6KTransform", "LaPD6KTransform"]
 
 import numpy as np
 
-from typing import Any, Dict, Tuple, Union
+from typing import Any, Dict, Tuple, TYPE_CHECKING, Union
 from warnings import warn
 
 from bapsf_motion.transform import base
 from bapsf_motion.transform.helpers import register_transform
-from bapsf_motion.transform.lapd_droop import LaPDXYDroopCorrect, DroopCorrectABC
+from bapsf_motion.transform.lapd_droop import DroopCorrectABC, LaPDXYDroopCorrect
+
+if TYPE_CHECKING:
+    # This is done for typing purposes only.
+    # An actual import would cause cyclical imports.
+    from bapsf_motion.actors import Drive
 
 
 @register_transform
@@ -883,3 +891,284 @@ class LaPD6KTransform(LaPDXYTransform):
         # angle swept from the probe shaft to the probe drive pinion with
         # respect to the ball valve pivot
         return self._beta
+
+
+@register_transform
+class LaPDXYZTransform(base.BaseTransform):
+    _transform_type = "lapd_xyz"
+    _dimensionality = 3
+
+    def __init__(
+        self,
+        drive: Drive,
+        *,
+        pivot_to_center: float,
+        pivot_to_xzcross: float,
+        # pivot_to_feedthru: float,
+        table_pivot_to_probe_axis: float,
+        table_pivot_to_zlead_vertical: float,
+        table_pivot_to_zlead_horizontal: float,
+        drive_polarity: Tuple[int, int] = (1, 1, 1),
+        mspace_polarity: Tuple[int, int] = (-1, 1, 1),
+        # droop_correct: bool = False,
+        # droop_scale: Union[int, float] = 1.0,
+    ):
+        self._droop_correct_callable = None
+        self._deployed_side = None
+        super().__init__(
+            drive,
+            pivot_to_center=pivot_to_center,
+            pivot_to_xzcross=pivot_to_xzcross,
+            # pivot_to_feedthru=pivot_to_feedthru,
+            table_pivot_to_probe_axis=table_pivot_to_probe_axis,
+            table_pivot_to_zlead_vertical=table_pivot_to_zlead_vertical,
+            table_pivot_to_zlead_horizontal=table_pivot_to_zlead_horizontal,
+            drive_polarity=drive_polarity,
+            mspace_polarity=mspace_polarity,
+            # droop_correct=droop_correct,
+            # droop_scale=droop_scale,
+        )
+
+    # def __call__(self, points, to_coords="drive") -> np.ndarray:
+    #     if self.droop_correct is None:
+    #         return super().__call__(points=points, to_coords=to_coords)
+
+    def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
+
+        for key in {
+            "pivot_to_center",
+            "pivot_to_xzcross",
+            # "pivot_to_feedthru",
+            "table_pivot_to_probe_axis",
+            "table_pivot_to_zlead_vertical",
+            "table_pivot_to_zlead_horizontal",
+            # "droop_scale",
+        }:
+            val = inputs[key]
+            if not isinstance(val, (float, np.floating, int, np.integer)):
+                raise TypeError(
+                    f"Keyword '{key}' expected type float or int, "
+                    f"got type {type(val)}."
+                )
+            elif key == "pivot_to_center":
+                self._deployed_side = "East" if val >= 0.0 else "West"
+                # do not take the absolute value here, so the config
+                # dict properly maintains the negative value
+                # val = np.abs(val)
+            elif val < 0.0:
+                # TODO: HOW (AND SHOULD WE) ALLOW A NEGATIVE OFFSET FOR
+                #       "probe_axis_offset"
+                val = np.abs(val)
+                warn(
+                    f"Keyword '{val}' is NOT supposed to be negative, "
+                    f"assuming the absolute value {val}."
+                )
+            inputs[key] = val
+
+        for key in ("drive_polarity", "mspace_polarity"):
+            polarity = inputs[key]
+            if not isinstance(polarity, np.ndarray):
+                polarity = np.array(polarity)
+
+            if polarity.shape != (3,):
+                raise ValueError(
+                    f"Keyword '{key}' is supposed to be a 3-element "
+                    "array specifying the polarity of the axes, got "
+                    f"an array of shape {polarity.shape}."
+                )
+            elif not np.all(np.abs(polarity) == 1):
+                raise ValueError(
+                    f"Keyword '{key}' is supposed to be a 3-element "
+                    "array of 1 or -1 specifying the polarity of the "
+                    "axes, array has values not equal to 1 or -1."
+                )
+            inputs[key] = polarity
+
+        # if not isinstance(inputs["droop_correct"], bool):
+        #     raise TypeError(
+        #         f"Keyword 'droop_correct' expected type bool, "
+        #         f"got type {type(inputs['droop_correct'])}."
+        #     )
+        # elif inputs["droop_correct"]:
+        #     _drive = self._drive if self._drive is not None else self.axes
+        #     self._droop_correct_callable = LaPDXYDroopCorrect(
+        #         drive=_drive,
+        #         pivot_to_feedthru=inputs["pivot_to_feedthru"],
+        #         droop_scale=inputs["droop_scale"]
+        #     )
+
+        return inputs
+
+    def _matrix_to_drive(self, points: np.ndarray) -> np.ndarray:
+        return self._matrix_to_motion_space(points)
+
+    def _matrix_to_motion_space(self, points: np.ndarray) -> np.ndarray:
+        # given points are in (e0, e1, e2) with shape (N, 3)
+        # - N is the number of point to conver
+        # - 3 is the (e0, e1, e2) coordintes
+        #
+        # we will utilized two other coordinate systems
+        # - ball-valve pivot: (b0, b1, b2) or [for spherical] (br, btheat, bphi)
+        # - mspace (aka LaPD): (x, y, z)
+        #
+        # Coordinate orientations used for the derivation
+        #    e1              b1              Y
+        #    ^               ^               ^
+        #    |         ...   |         ...   |
+        #    o---> e0        o---> b0        o---> X
+        #  e2              b2               Z
+        #
+
+        # polarity needs to be adjusted first, since the parameters for
+        # the following transformation matrices depend on the adjusted
+        # coordinate space
+        points = self.drive_polarity * points  # type: np.ndarray
+        npoints = points.shape[0]
+
+        pivot_to_center = np.abs(self.pivot_to_center)
+        lx = np.abs(self.pivot_to_xzcross)
+        lt = np.abs(self.table_pivot_to_zlead_horizontal)
+        # vt = np.abs(self.table_pivot_to_zlead_vertical)
+        vs = np.abs(self.table_pivot_to_probe_axis)
+        ls = lx - lt
+
+        # Calculate how much the probe shaft moves (s1) with e1
+        # - this is the location of the probe shaft directly above the
+        #   pivot on the L-bracket table
+        #
+        #  0 = s1^2 [ls^2 - vs^2]
+        #      + s1 [2 (vs - e1) ls^2]
+        #      + ls^2 e1 (e1 - 2 vs)
+        #
+        a = ls**2 - vs**2
+        b = 2.0 * (vs - points[..., 1]) * ls**2
+        c = ls**2 * points[..., 1] * (points[..., 1] - 2.0 * vs)
+        s1 = (-b + np.sqrt(b**2 - 4 * a * c)) / (2 * a)
+
+        # Let alpha be the angle made between the probe shaft and the
+        # horizontal
+        #
+        #  b_phi = -alpha
+        #  tan( alpha ) = s1 / ls
+        #
+        alpha = np.arctan(s1 / ls)
+
+        # Let lz be the distance from the ball-valve pivot to the z-drive
+        # lead screws as projected along the probe shaft
+        #
+        #  lz = ls / cos(alpha) - vs tan(alpha) + lt
+        #
+        lz = ls / np.cos(alpha) - vs * np.tan(alpha) + lt
+
+        # The ball-valve polar angle btheta is given by
+        #
+        #  b_theta = pi / 2 - beta
+        #  tan(beta) = e2 / lz
+        #
+        b_phi = -alpha
+        b_theta = 0.5 * np.pi - np.arctan(points[..., 2] / lz)
+
+        # build the matrix
+        T0 = np.zeros((npoints, 4, 4)).squeeze()  # noqa
+        T0[..., 0, 0] = np.sin(b_theta) * np.cos(b_phi)
+        T0[..., 0, 3] = pivot_to_center * (np.sin(b_theta) * np.cos(b_phi) - 1)
+        T0[..., 1, 0] = np.sin(b_theta) * np.sin(b_phi)
+        T0[..., 1, 3] = pivot_to_center * np.sin(b_theta) * np.sin(b_phi)
+        T0[..., 2, 0] = np.cos(b_theta)
+        T0[..., 2, 3] = pivot_to_center * np.cos(b_theta)
+        T0[..., 3, 3] = 1.0
+
+        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])  # noqa
+        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])  # noqa
+
+        return np.matmul(
+            T_mpolarity,
+            np.matmul(T0, T_dpolarity),
+        )
+
+    @property
+    def pivot_to_center(self) -> float:
+        """
+        Distance from the center of the :term:`LaPD` to the center
+        "pivot" point of the ball valve.
+        """
+        return self.inputs["pivot_to_center"]
+
+    @property
+    def pivot_to_xzcross(self) -> float:
+        """
+        Horizontal distance from the center "pivot" point of the ball
+        valve to the crossing point of the x-drive and z-drive lead
+        screws, when the x-drive is level with the ground.
+        """
+        return self.inputs["pivot_to_xzcross"]
+
+    @property
+    def table_pivot_to_probe_axis(self) -> float:
+        """
+        Vertical distance from the pivot on the L-bracket table to
+        the probe shaft, when the x-drive is level with the ground.
+        """
+        return self.inputs["table_pivot_to_probe_axis"]
+
+    @property
+    def table_pivot_to_zlead_vertical(self) -> float:
+        """
+        Vertical distance from the pivot on the L-bracket table to
+        the z-drive lead screw, when the x-drive is level with the
+        ground.
+        """
+        return self.inputs["table_pivot_to_zlead_vertical"]
+
+    @property
+    def table_pivot_to_zlead_horizontal(self) -> float:
+        """
+        Horizontal distance from the pivot on the L-bracket table to
+        the z-drive lead screw, when the x-drive is level with the
+        ground.
+        """
+        return self.inputs["table_pivot_to_zlead_horizontal"]
+
+    @property
+    def drive_polarity(self) -> np.ndarray:
+        """
+        A three element array of +/- 1 values indicating the polarity of
+        the probe drive motion to how the math was done for the
+        underlying matrix transformations.
+        """
+        # TODO: FIX WORDING OF EXAMPLE AND INTEGRATE BACK INTO THE DOCSTRING
+        """
+
+        For example, a value of ``[1, 1, 1]`` would indicate that
+        positivemovement (in probe drive coordinates) of the drive would
+        be into inwards on the x-drive, upwards on the y-drive, and to
+        the right on the z-drive (when standing behind the drive).
+        However, this is inconsistent if the vertical axis has the motor
+        mounted to the top of the axis.  In this case the
+        ``drive_polarity`` would be ``[1, -1, 1]``.
+        """
+        return self.inputs["drive_polarity"]
+
+    @property
+    def mspace_polarity(self) -> np.ndarray:
+        """
+        A three element array of +/- 1 values indicating the polarity of
+        the motion space motion to how the math was done for the
+        underlying matrix transformations.
+        """
+        # TODO: FIX WORDING OF EXAMPLE AND INTEGRATE BACK INTO THE DOCSTRING
+        """
+
+        For example, a value of ``(-1, 1, 1)`` for a probe mounted on an
+        East port would indicate that inward probe drive movement would
+        correspond to a LaPD -X movement and downward probe drive
+        movement would correspond to LaPD +Y.  If the probe was mounted
+        on a West port then the polarity would need to be ``(1, 1)``
+        since inward probe drive movement corresponds to +X LaPD
+        coordinate movement.
+        """
+        return self.inputs["mspace_polarity"]
+
+    @property
+    def deployed_side(self):
+        return self._deployed_side
