@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 __all__ = ["LaPDXYTransform", "LaPD6KTransform", "LaPDXYZTransform"]
-__transformer__ = ["LaPDXYTransform", "LaPD6KTransform", "LaPD6KTransform"]
+__transformer__ = ["LaPDXYTransform", "LaPD6KTransform", "LaPDXYZTransform"]
 
 import numpy as np
 
