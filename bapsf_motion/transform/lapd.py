@@ -1000,7 +1000,76 @@ class LaPDXYZTransform(base.BaseTransform):
         return inputs
 
     def _matrix_to_drive(self, points: np.ndarray) -> np.ndarray:
-        return self._matrix_to_motion_space(points)
+        # given points are in (x, y, z) with shape (N, 3)
+        # - N is the number of point to conver
+        # - 3 is the (x, y, z) coordintes
+        #
+        # we will utilized two other coordinate systems
+        # - ball-valve pivot: (b0, b1, b2) or [for spherical] (br, btheat, bphi)
+        # - mspace (aka LaPD): (x, y, z)
+        # - drive space: (e0, e1, e2)
+        #
+        # Coordinate orientations used for the derivation
+        #    e1              b1              Y
+        #    ^               ^               ^
+        #    |         ...   |         ...   |
+        #    o---> e0        o---> b0        o---> X
+        #  e2              b2               Z
+        #
+
+        # polarity needs to be adjusted first, since the parameters for
+        # the following transformation matrices depend on the adjusted
+        # coordinate space
+        points = self.mspace_polarity * points  # type: np.ndarray
+        npoints = points.shape[0]
+
+        pivot_to_center = np.abs(self.pivot_to_center)
+        lx = np.abs(self.pivot_to_xzcross)
+        lt = np.abs(self.table_pivot_to_zlead_horizontal)
+        # vt = np.abs(self.table_pivot_to_zlead_vertical)
+        vs = np.abs(self.table_pivot_to_probe_axis)
+        ls = lx - lt
+
+        # Let alpha be the angle made between the probe shaft and the
+        # horizontal
+        #
+        #  b_phi = -alpha = arctan(by / bx) = arctan(y / (pivot_to_center + x)
+        #
+        alpha = -np.arctan(points[..., 1] / (pivot_to_center + points[..., 0]))
+
+        # Let lz be the distance from the ball-valve pivot to the z-drive
+        # lead screws as projected along the probe shaft
+        #
+        #  lz = ls / cos(alpha) - vs tan(alpha) + lt
+        #
+        lz = ls / np.cos(alpha) - vs * np.tan(alpha) + lt
+
+        # The ball-valve polar angle b_theta is expressed as
+        #
+        #  b_theta = pi / 2 - beta = arccos(bz / br) = arccoz(z / br)
+        #  br**2 = (pivot_to_center +  x)**2 + y**2 +z**2
+        #  tan(beta) = e2 / lz
+        #
+        b_r = np.sqrt(
+            (pivot_to_center + points[..., 0])**2 + points[..., 1]**2 + points[..., 2]**2
+        )
+        b_theta = np.arccos(points[..., 2] / b_r)
+
+        # build the matrix
+        T0 = np.zeros((npoints, 4, 4)).squeeze()  # noqa
+        T0[..., 0, 3] = b_r - pivot_to_center
+        T0[..., 1, 3] = ls * np.tan(alpha) + vs * (1 - 1 / np.cos(alpha))
+        T0[..., 2, 3] = lz * np.tan(0.5 * np.pi - b_theta)
+        T0[..., 3, 3] = 1.0
+
+        T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
+        T_mpolarity = np.diag(self.mspace_polarity.tolist() + [1.0])
+
+        return np.matmul(
+            T_dpolarity,
+            np.matmul(T0, T_mpolarity),
+        )
+
 
     def _matrix_to_motion_space(self, points: np.ndarray) -> np.ndarray:
         # given points are in (e0, e1, e2) with shape (N, 3)
