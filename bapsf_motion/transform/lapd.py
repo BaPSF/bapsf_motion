@@ -907,8 +907,8 @@ class LaPDXYZTransform(base.BaseTransform):
         # pivot_to_feedthru: float,
         probe_axis_offset: float,
         table_pivot_to_zlead_screw: float,
-        drive_polarity: Tuple[int, int] = (1, 1, 1),
-        mspace_polarity: Tuple[int, int] = (-1, 1, 1),
+        drive_polarity: Tuple[int, int, int] = (1, 1, 1),
+        mspace_polarity: Tuple[int, int, int] = (-1, 1, 1),
         # droop_correct: bool = False,
         # droop_scale: Union[int, float] = 1.0,
     ):
