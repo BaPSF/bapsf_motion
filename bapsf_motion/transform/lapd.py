@@ -895,6 +895,211 @@ class LaPD6KTransform(LaPDXYTransform):
 
 @register_transform
 class LaPDXYZTransform(base.BaseTransform):
+    """
+    Class that defines a coordinate transform for a :term:`LaPD`
+    "XYZ" :term:`probe drive`.
+
+    **transform type:** ``'lapd_xyz'``
+
+    Parameters
+    ----------
+    drive: |Drive|
+        The instance of |Drive| the coordinate transformer will be
+        working with.
+
+    pivot_to_center: `float`, optional
+        (DEFAULT: ``58.771`` cm)  Distance from the center of the
+        :term:`LaPD` to the center "pivot" point of the ball-valve.  A
+        positive value indicates the probe drive is set up on the East
+        side of the LaPD and a negative value indicates the West side.
+
+    pivot_to_xzcross: `float`, optional
+        (DEFAULT: ``58.771`` cm)  Horizontal distance from the center
+        "pivot" point of the ball-valve to the crossing point of the
+        e0-drive ("x-drive") and the e2-drive ("z-drive") when the probe
+        drive is in its neutral postion.  Neutral position is when the
+        e0-drive is parallel to the ground and perpendicular to the
+        LaPD.
+
+    probe_axis_offset: `float`, optional
+        (DEFAULT: ``24.7`` cm) Vertical distance from the center of the
+        L-Bracket Table pivot to the centerline of the probe shaft, when
+        the :term:`probe drive` is in its neutral position.  Neutral
+        position is when the e0-drive is parallel to the ground and
+        perpendicular to the LaPD.
+
+    table_pivot_to_zlead_screw: `float`, optional
+        (DEFAULT: ``20.0`` cm)  Horizontal distrance from the center of
+        the L-Bracket Table pivot to the centerline of the e2-drive
+        ("z-drive") lead scrws, when the :term:`probe drive` is in its
+        neutral position.  Neutral position is when the e0-drive is
+        parallel to the ground and perpendicular to the LaPD.
+
+    drive_polarity: Tuple[int, int, int], optional
+        A three element tuple of +/- 1 values indicating the polarity of
+        the actual probe drive coordinate system to the probe drive
+        coordinate system defined for the underlying matrix
+        transformations.  For additional details refer to the Notes
+        section of the docstring.
+
+    mspace_polarity: Tuple[int, int, int], optional
+        A three element tuple of +/- 1 values indicating the polarity of
+        the actual motion space coordinate system to the motion space
+        coordinate system defined for the underlying matrix
+        transformations.  For additional details refer to the Notes
+        section of the docstring.
+
+    Notes
+    -----
+
+    - Coordinate systems:
+
+      The matrix transformation utilizes three different coordinate
+      systems:  the drive space ``(e0, e1, e2)``, the ball-valve
+      coordiantes ``(b0, b1, b2)``, and the motion space coordinate
+      system ``(x, y, z)``.  These systems may have different polarity
+      with respect to the actual systems used.  To composate for these
+      polarities use the ``drive_polarity`` and ``mspace_polarity``
+      arguments.
+
+      The derivation coordinate systems look like:
+
+      .. code-block:: bash
+
+            Drive Space          Ball-Valve           Motion Space
+
+              e1                   b1                  Y
+              ^                    ^                   ^
+              |           ...      |           ...     |
+              o---> e0             o---> b0            o---> X
+            e2                   b2                   Z
+
+      As can be seen, the derivation coordinate system have different
+      polarities with respect the the LaPD XYZ drive and the LaPD
+      motion space.  For an East side deployed XYZ dive the
+      ``drive_polarity`` and ``mspace_polarity`` arguments would be
+      ``(1, -1, 1)`` and ``(-1, 1, -1)``, respectively.
+
+    - Neutral Probe Drive Setup:
+
+      A neutral probe drive setup / position is when the e0-drive is
+      parallel to the ground and perpendicular to the LaPD.
+
+    Examples
+    --------
+
+    Let's set up a :term:`transformer` for a probe drive mounted on
+    an East port of the LaPD.  In this case the motor for the vertical
+    axis is mounted at the base of the probe drive vertical axis.
+    (Values are NOT accurate to actual LaPD values.)
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          tr = LaPDXYZTransform(
+              drive,
+              pivot_to_center = 58.771,
+              pivot_to_xzcross = 135.0,
+              probe_axis_offset = 24.7,
+              table_pivot_to_zlead_screw = 20.0,
+              mspace_polarity = (-1, 1, -1),
+          )
+
+       .. code-tab:: py Factory Function
+
+          tr = transform_factory(
+              drive,
+              tr_type = "lapd_xyz",
+              **{
+                  "pivot_to_center": 58.771,
+                  "pivot_to_xzcross": 135.0,
+                  "probe_axis_offset": 24.7,
+                  "table_pivot_to_zlead_screw": 20.0,
+                  "mspace_polarity": (-1, 1, -1),
+              },
+          )
+
+       .. code-tab:: toml TOML
+
+          [...transform]
+          type = "lapd_xyz"
+          pivot_to_center = 58.771
+          pivot_to_xzcross = 135.0
+          probe_axis_offset = 24.7
+          table_pivot_to_zlead_screw = 20.0
+          mspace_polarity = [-1, 1, -1]
+
+       .. code-tab:: py Dict Entry
+
+          config["transform"] = {
+              "type": "lapd_xyz",
+              "pivot_to_center": 58.771,
+              "pivot_to_xzcross": 135.0,
+              "probe_axis_offset": 24.7,
+              "table_pivot_to_zlead_screw": 20.0,
+              "mspace_polarity": (-1, 1, -1),
+          }
+
+    Now, let's do the same thing for a probe drive mounted on a West
+    port and has the vertical axis motor mounted at the top.
+
+    .. tabs::
+       .. code-tab:: py Class Instantiation
+
+          tr = LaPDXYZTransform(
+              drive,
+              pivot_to_center = -62.94,
+              pivot_to_xzcross = 135.0,
+              probe_axis_offset = 24.7,
+              table_pivot_to_zlead_screw = 20.0,
+              drive_polarity = (1, -1, 1),
+              mspace_polarity = (1, 1, 1),
+          )
+
+       .. code-tab:: py Factory Function
+
+          tr = transform_factory(
+              drive,
+              tr_type = "lapd_xyz",
+              **{
+                  "pivot_to_center": -62.94,
+                  "pivot_to_xzcross": 135.0,
+                  "probe_axis_offset": 24.7,
+                  "table_pivot_to_zlead_screw": 20.0,
+                  "drive_polarity": (1, -1, 1),
+                  "mspace_polarity": (1, 1, 1),
+              },
+          )
+
+       .. code-tab:: toml TOML
+
+          [...transform]
+          type = "lapd_xyz"
+          pivot_to_center = -62.94
+          pivot_to_xzcross = 135.0
+          probe_axis_offset = 24.7
+          table_pivot_to_zlead_screw = 20.0
+          drive_polarity = [1, -1, 1]
+          mspace_polarity = [1, 1, 1]
+
+       .. code-tab:: py Dict Entry
+
+          config["transform"] = {
+              "type": "lapd_xyz",
+              "pivot_to_center": -62.94,
+              "pivot_to_xzcross": 135.0,
+              "probe_axis_offset": 24.7,
+              "table_pivot_to_zlead_screw": 20.0,
+              "drive_polarity": (1, -1, 1),
+              "mspace_polarity": (1, 1, 1),
+          }
+
+    .. note::
+        For further details reference the jupyter notebook for
+        :ref:`LaPD6KYTransform </notebooks/transform/LaPDXYZTransform.ipynb>`.
+
+    """
+
     _transform_type = "lapd_xyz"
     _dimensionality = 3
 
@@ -1164,66 +1369,62 @@ class LaPDXYZTransform(base.BaseTransform):
     @property
     def pivot_to_xzcross(self) -> float:
         """
-        Horizontal distance from the center "pivot" point of the ball
-        valve to the crossing point of the e0-drive and e2-drive lead
-        screws, when the e0-drive is level with the ground.
+        Horizontal distance from the center
+        "pivot" point of the ball-valve to the crossing point of the
+        e0-drive ("x-drive") and the e2-drive ("z-drive") when the probe
+        drive is in its neutral postion.
+
+        Neutral position is when the e0-drive is parallel to the ground
+        and perpendicular to the LaPD.
         """
         return self.inputs["pivot_to_xzcross"]
 
     @property
     def probe_axis_offset(self) -> float:
         """
-        Vertical distance from the pivot on the L-bracket table to
-        the probe shaft, when the e0-drive is level with the ground.
+        Vertical distance from the center of the L-Bracket Table pivot
+        to the centerline of the probe shaft, when the
+        :term:`probe drive` is in its neutral position.
+
+        Neutral position is when the e0-drive is parallel to the ground
+        and perpendicular to the LaPD.
         """
         return self.inputs["probe_axis_offset"]
 
     @property
     def table_pivot_to_zlead_screw(self) -> float:
         """
-        Horizontal distance from the pivot on the L-bracket table to
-        the e2-drive "z-drive" lead screw, when the e0-drive is level
-        with the ground.
+        Horizontal distrance from the center of the L-Bracket Table
+        pivot to the centerline of the e2-drive ("z-drive") lead scrws,
+        when the :term:`probe drive` is in its neutral position.
+
+        Neutral position is when the e0-drive is parallel to the ground
+        and perpendicular to the LaPD.
         """
         return self.inputs["table_pivot_to_zlead_screw"]
 
     @property
     def drive_polarity(self) -> np.ndarray:
         """
-        A three element array of +/- 1 values indicating the polarity of
-        the probe drive motion to how the math was done for the
-        underlying matrix transformations.
-        """
-        # TODO: FIX WORDING OF EXAMPLE AND INTEGRATE BACK INTO THE DOCSTRING
-        """
+        A three element tuple of +/- 1 values indicating the polarity of
+        the actual probe drive coordinate system to the probe drive
+        coordinate system defined for the underlying matrix
+        transformations.
 
-        For example, a value of ``[1, 1, 1]`` would indicate that
-        positivemovement (in probe drive coordinates) of the drive would
-        be into inwards on the e0-drive, upwards on the y-drive, and to
-        the right on the e2-drive (when standing behind the drive).
-        However, this is inconsistent if the vertical axis has the motor
-        mounted to the top of the axis.  In this case the
-        ``drive_polarity`` would be ``[1, -1, 1]``.
+        For additional details refer to the Notes section of the docstring.
         """
         return self.inputs["drive_polarity"]
 
     @property
     def mspace_polarity(self) -> np.ndarray:
         """
-        A three element array of +/- 1 values indicating the polarity of
-        the motion space motion to how the math was done for the
-        underlying matrix transformations.
-        """
-        # TODO: FIX WORDING OF EXAMPLE AND INTEGRATE BACK INTO THE DOCSTRING
-        """
+        A three element tuple of +/- 1 values indicating the polarity of
+        the actual motion space coordinate system to the motion space
+        coordinate system defined for the underlying matrix
+        transformations.
 
-        For example, a value of ``(-1, 1, 1)`` for a probe mounted on an
-        East port would indicate that inward probe drive movement would
-        correspond to a LaPD -X movement and downward probe drive
-        movement would correspond to LaPD +Y.  If the probe was mounted
-        on a West port then the polarity would need to be ``(1, 1)``
-        since inward probe drive movement corresponds to +X LaPD
-        coordinate movement.
+        For additional details refer to the Notes section of the
+        docstring.
         """
         return self.inputs["mspace_polarity"]
 
