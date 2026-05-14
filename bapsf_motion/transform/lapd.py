@@ -1068,12 +1068,13 @@ class LaPDXYZTransform(base.BaseTransform):
 
     def _matrix_to_motion_space(self, points: np.ndarray) -> np.ndarray:
         # given points are in (e0, e1, e2) with shape (N, 3)
-        # - N is the number of point to conver
+        # - N is the number of point to convert
         # - 3 is the (e0, e1, e2) coordintes
         #
-        # we will utilized two other coordinate systems
-        # - ball-valve pivot: (b0, b1, b2) or [for spherical] (b_rho, b_theta, b_phi)
-        # - mspace (aka LaPD): (x, y, z)
+        # we will utilized three coordinate systems for the conversion
+        # - ball-valve pivot: (b0, b1, b2) or [for spherical] (b_rho, btheat, b_phi)
+        # - motion space (aka LaPD): (x, y, z)
+        # - drive space: (e0, e1, e2)
         #
         # Coordinate orientations used for the derivation
         #    e1              b1              Y
