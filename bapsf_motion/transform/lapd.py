@@ -1026,15 +1026,16 @@ class LaPDXYZTransform(base.BaseTransform):
         H_offset = np.abs(self.probe_axis_offset)
         L_table_pivot = L_cross - L_p2z
 
-        # Let alpha be the angle made between the probe shaft and the
-        # horizontal
+        # Let alpha be the angle made between the probe shaft and the horizontal
         #
-        #  b_phi = -alpha = arctan(by / bx) = arctan(y / (pivot_to_center + x)
+        #  b_phi = -alpha
+        #  tan(b_phi) = by / bx = y / (pivot_to_center + x)
+        #
         #
         alpha = -np.arctan(points[..., 1] / (pivot_to_center + points[..., 0]))
 
         # Let D_zlead be the distance from the ball-valve pivot to the e2-drive
-        # lead screws as projected along the probe shaft
+        # lead screw as projected along the probe shaft
         #
         #  D_zlead = L_table_pivot / cos(alpha) - H_offset tan(alpha) + L_p2z
         #
@@ -1042,8 +1043,10 @@ class LaPDXYZTransform(base.BaseTransform):
 
         # The ball-valve polar angle b_theta is expressed as
         #
-        #  b_theta = pi / 2 - beta = arccos(bz / b_rho) = arccoz(z / b_rho)
         #  b_rho**2 = (pivot_to_center +  x)**2 + y**2 +z**2
+        #  b_theta = pi / 2 - beta
+        #
+        #  cos(b_theta) = bz / b_rho = z / b_rho
         #  tan(beta) = e2 / D_zlead
         #
         b_rho = np.sqrt(
@@ -1118,7 +1121,7 @@ class LaPDXYZTransform(base.BaseTransform):
         alpha = np.arctan(s1 / L_table_pivot)
 
         # Let D_zlead be the distance from the ball-valve pivot to the e2-drive
-        # lead screws as projected along the probe shaft
+        # lead screw as projected along the probe shaft
         #
         #  D_zlead = L_table_pivot / cos(alpha) - H_offset tan(alpha) + L_p2z
         #
