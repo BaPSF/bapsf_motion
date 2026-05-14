@@ -4,12 +4,11 @@ Module that defines the LaPD related probe droop correction classes.
 __all__ = ["DroopCorrectABC", "LaPDXYDroopCorrect"]
 
 import astropy.units as u
+import numpy as np
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 from warnings import warn
-
-import numpy as np
 
 from bapsf_motion.actors.drive_ import Drive
 
