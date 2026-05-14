@@ -36,16 +36,16 @@ class LaPDXYTransform(base.BaseTransform):
 
     pivot_to_center: `float`
         Distance from the center of the :term:`LaPD` to the center
-        "pivot" point of the ball valve.  A positive value indicates
+        "pivot" point of the ball-valve.  A positive value indicates
         the probe drive is set up on the East side of the LaPD and a
         negative value indicates the West side.
 
     pivot_to_drive: `float`
         Distance from the center line of the :term:`probe drive`
-        vertical axis to the center "pivot" point of the ball valve.
+        vertical axis to the center "pivot" point of the ball-valve.
 
     pivot_to_feedthru: `float`
-        Distance from the center "pivot" point of the ball valve to the
+        Distance from the center "pivot" point of the ball-valve to the
         nearest face of the probe drive feed-through.
 
     probe_axis_offset: `float`
@@ -251,7 +251,7 @@ class LaPDXYTransform(base.BaseTransform):
             #   scenario before doing matrix multiplication
             points = self._condition_points(points)
 
-            # 1. convert to ball valve coords
+            # 1. convert to ball-valve coords
             points[..., 0] = np.absolute(_sign * pivot_to_center - points[..., 0])
 
             # 2. droop correct to non-droop coords
@@ -268,7 +268,7 @@ class LaPDXYTransform(base.BaseTransform):
 
             # - tr_points is in LaPD motion space coordinates
             # - need to convert motion space coordinates to droop scenario
-            # 1. convert to ball valve coords
+            # 1. convert to ball-valve coords
             tr_points[..., 0] = np.absolute(_sign * pivot_to_center - tr_points[..., 0])
 
             # 2. droop correct to droop coords
@@ -424,7 +424,7 @@ class LaPDXYTransform(base.BaseTransform):
     def pivot_to_center(self) -> float:
         """
         Distance from the center of the :term:`LaPD` to the center
-        "pivot" point of the ball valve.
+        "pivot" point of the ball-valve.
         """
         return self.inputs["pivot_to_center"]
 
@@ -432,7 +432,7 @@ class LaPDXYTransform(base.BaseTransform):
     def pivot_to_drive(self) -> float:
         """
         Distance from the center line of the :term:`probe drive`
-        vertical axis to the center "pivot" point of the ball valve.
+        vertical axis to the center "pivot" point of the ball-valve.
         """
         return self.inputs["pivot_to_drive"]
 
@@ -513,17 +513,17 @@ class LaPD6KTransform(LaPDXYTransform):
 
     pivot_to_center: `float`
         Distance from the center of the :term:`LaPD` to the center
-        "pivot" point of the ball valve.  A positive value indicates
+        "pivot" point of the ball-valve.  A positive value indicates
         the probe drive is set up on the East side of the LaPD and a
         negative value indicates the West side. (DEFAULT: ``58.771`` cm)
 
     pivot_to_drive: `float`
         Distance from the center line of the :term:`probe drive`
-        vertical axis to the center "pivot" point of the ball valve.
+        vertical axis to the center "pivot" point of the ball-valve.
         (DEFAULT: ``116.84`` cm)
 
     pivot_to_feedthru: `float`
-        Distance from the center "pivot" point of the ball valve to the
+        Distance from the center "pivot" point of the ball-valve to the
         nearest face of the probe drive feed-through.
         (DEFAULT: ``53.76926`` cm)
 
@@ -741,7 +741,7 @@ class LaPD6KTransform(LaPDXYTransform):
             )
         _inputs[key] = val
 
-        # calculate distance between ball valve center (pivot) to the
+        # calculate distance between ball-valve center (pivot) to the
         # pivot (pinion) point on the probe drive arm
         self._pivot_to_drive_pinion = np.sqrt(
             _inputs["pivot_to_drive"] ** 2 + _inputs["probe_axis_offset"] ** 2
@@ -750,7 +750,7 @@ class LaPD6KTransform(LaPDXYTransform):
         # calculate beta - the angular drop from the probe shaft to the
         #   probe drive pinion
         #
-        #           ________ pivot_to_drive ________x (ball valve pivot)
+        #           ________ pivot_to_drive ________x (ball-valve pivot)
         #          |                      _________/
         #  probe_axis_offset   __________/
         #          |__________/     ^-- pivot_to_drive_pinion
@@ -771,7 +771,7 @@ class LaPD6KTransform(LaPDXYTransform):
         pivot_to_center = np.abs(self.pivot_to_center)
 
         # calculate theta ... the angle made by the probe shaft on the
-        #  drive side of the ball valve
+        #  drive side of the ball-valve
         tan_theta = points[..., 1] / (points[..., 0] + pivot_to_center)
         theta = -np.arctan(tan_theta)
 
@@ -814,14 +814,14 @@ class LaPD6KTransform(LaPDXYTransform):
 
         pivot_to_center = np.abs(self.pivot_to_center)
 
-        # calculate the distance between the ball valve pivot point (pivot) to the
+        # calculate the distance between the ball-valve pivot point (pivot) to the
         # pivot point on the probe drive vertical axis (vpinion)
         pivot_to_vpinion = np.sqrt(
             self.pivot_to_drive**2
             + (self.six_k_arm_length - self.probe_axis_offset + points[..., 1]) ** 2
         ).squeeze()
 
-        # calculate the angle (gamma) the line intersecting the ball valve
+        # calculate the angle (gamma) the line intersecting the ball-valve
         # pivot (pivot) and probe drive vertical pinion (vpinion) makes
         # with the horizontal plane
         gamma = np.arctan(
@@ -830,7 +830,7 @@ class LaPD6KTransform(LaPDXYTransform):
         ).squeeze()
 
         # imagine two circles:
-        #   1. circle one located at the ball valve pivot (pivot) with a
+        #   1. circle one located at the ball-valve pivot (pivot) with a
         #      radius pivot_to_drive_pinion
         #   2. circle two located at the vpinion with a readius six_k_arm_length
         #
@@ -889,7 +889,7 @@ class LaPD6KTransform(LaPDXYTransform):
     @property
     def beta(self) -> float:
         # angle swept from the probe shaft to the probe drive pinion with
-        # respect to the ball valve pivot
+        # respect to the ball-valve pivot
         return self._beta
 
 
@@ -1157,7 +1157,7 @@ class LaPDXYZTransform(base.BaseTransform):
     def pivot_to_center(self) -> float:
         """
         Distance from the center of the :term:`LaPD` to the center
-        "pivot" point of the ball valve.
+        "pivot" point of the ball-valve.
         """
         return self.inputs["pivot_to_center"]
 
