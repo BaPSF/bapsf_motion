@@ -685,7 +685,7 @@ class LaPD6KTransform(LaPDXYTransform):
 
     .. note::
         For further details reference the jupyter notebook for
-        :ref:`LaPD6KYTransform </notebooks/transform/LaPD6KTransform.ipynb>`.
+        :ref:`LaPD6KTransform </notebooks/transform/LaPD6KTransform.ipynb>`.
 
     """
 
@@ -1096,7 +1096,7 @@ class LaPDXYZTransform(base.BaseTransform):
 
     .. note::
         For further details reference the jupyter notebook for
-        :ref:`LaPD6KYTransform </notebooks/transform/LaPDXYZTransform.ipynb>`.
+        :ref:`LaPDXYZTransform </notebooks/transform/LaPDXYZTransform.ipynb>`.
 
     """
 
