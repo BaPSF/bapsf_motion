@@ -2,6 +2,7 @@
 # ought to mirror 'docs' under options.extras_require in setup.cfg
 -r gui.txt
 docutils >= 0.18.1
+ipykernel
 ipython
 jinja2 >= 3.1.2
 nbsphinx >= 0.9.1
