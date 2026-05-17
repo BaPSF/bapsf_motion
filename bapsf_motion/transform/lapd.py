@@ -1249,7 +1249,7 @@ class LaPDXYZTransform(base.BaseTransform):
         # The ball-valve polar angle b_theta is expressed as
         #
         #  b_rho**2 = (pivot_to_center +  x)**2 + y**2 +z**2
-        #  b_theta = pi / 2 - beta
+        #  b_theta = pi / 2 + beta
         #
         #  cos(b_theta) = bz / b_rho = z / b_rho
         #  tan(beta) = e2 / D_zlead
@@ -1263,7 +1263,7 @@ class LaPDXYZTransform(base.BaseTransform):
         T0 = np.zeros((npoints, 4, 4)).squeeze()
         T0[..., 0, 3] = b_rho - pivot_to_center
         T0[..., 1, 3] = L_table_pivot * np.tan(alpha) + H_offset * (1 - 1 / np.cos(alpha))
-        T0[..., 2, 3] = D_zlead * np.tan(0.5 * np.pi - b_theta)
+        T0[..., 2, 3] = D_zlead * np.tan(b_theta - 0.5 * np.pi)
         T0[..., 3, 3] = 1.0
 
         T_dpolarity = np.diag(self.drive_polarity.tolist() + [1.0])
@@ -1334,11 +1334,11 @@ class LaPDXYZTransform(base.BaseTransform):
 
         # The ball-valve polar angle b_theta is given by
         #
-        #  b_theta = pi / 2 - beta
+        #  b_theta = pi / 2 + beta
         #  tan(beta) = e2 / D_zlead
         #
         b_phi = -alpha
-        b_theta = 0.5 * np.pi - np.arctan(points[..., 2] / D_zlead)
+        b_theta = 0.5 * np.pi + np.arctan(points[..., 2] / D_zlead)
 
         # build the matrix
         T0 = np.zeros((npoints, 4, 4)).squeeze()
