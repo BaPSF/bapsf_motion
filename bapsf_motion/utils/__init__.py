@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Callable, List, Optional, Union
 
 from bapsf_motion.utils import exceptions, toml
-from bapsf_motion.utils.units_ import units, counts, steps, rev
+from bapsf_motion.utils.units_ import counts, rev, steps, units
 
 _HERE = Path(__file__).resolve().parent
 _EXAMPLES = (_HERE / ".." / "examples").resolve()

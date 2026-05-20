@@ -15,12 +15,10 @@ from collections import UserDict
 from tomli_w import *
 from tomli_w import __all__ as __rall__
 
-if sys.version_info < (3, 11):
-    # noqa
+if sys.version_info < (3, 11):  # noqa
     from tomli import *
     from tomli import __all__ as __wall__
-else:
-    # noqa
+else:  # noqa
     # tomllib is a builtin package for py3.11+
     from tomllib import *
     from tomllib import __all__ as __wall__
