@@ -6,10 +6,9 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
-import re
-
 import numpy as np
 import os
+import re
 import warnings
 
 # ensure joystick events are monitored when the pygame window
@@ -33,22 +32,19 @@ from PySide6.QtGui import QDoubleValidator, QFont
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
+    QLayout,
     QLineEdit,
     QMessageBox,
     QPlainTextEdit,
     QSizePolicy,
+    QStackedWidget,
     QVBoxLayout,
     QWidget,
-    QStackedWidget,
-    QLayout, QGridLayout,
 )
 from typing import Any, Dict, List, Optional, Tuple, Union
-
-# noqa
-# import of qtawesome must happen after the PySide6 imports
-import qtawesome as qta
 
 from bapsf_motion.actors import Axis, Drive, MotionGroup, MotionGroupConfig, RunManager
 from bapsf_motion.gui.configure import configure_
@@ -68,16 +64,19 @@ from bapsf_motion.gui.widgets import (
     IconButton,
     LED,
     QTAIconLabel,
-    StyleButton,
     StopButton,
+    StyleButton,
     ValidButton,
     ZeroButton,
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry
-from bapsf_motion.utils import _deepcopy_dict, loop_safe_stop, toml, dict_equal
+from bapsf_motion.utils import _deepcopy_dict, dict_equal, loop_safe_stop, toml
 from bapsf_motion.utils import units as u
+
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta  # noqa
 
 
 class MSpaceMessageBox(QMessageBox):

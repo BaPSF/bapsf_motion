@@ -9,19 +9,19 @@ import logging.config
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
-    QTextEdit,
-    QPlainTextEdit,
-    QWidget,
-    QVBoxLayout,
-    QLabel,
-    QGridLayout,
-    QSlider,
-    QMainWindow,
-    QSizePolicy,
-    QFrame,
-    QHBoxLayout,
-    QLineEdit,
     QComboBox,
+    QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPlainTextEdit,
+    QSizePolicy,
+    QSlider,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 from typing import Union
 

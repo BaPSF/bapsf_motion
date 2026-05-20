@@ -10,16 +10,15 @@ __all__ = [
 
 import logging
 
-from PySide6.QtCore import Qt, Signal, QSize, Slot
-from PySide6.QtGui import QValidator, QColor, QIcon
+from PySide6.QtCore import QSize, Qt, Signal, Slot
+from PySide6.QtGui import QColor, QIcon, QValidator
 from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
 from typing import Union
 
-# noqa
-# import of qtawesome must happen after the PySide6 imports
-import qtawesome as qta
-
 from bapsf_motion.utils import ipv4_pattern as _ipv4_pattern
+
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta  # noqa
 
 
 class QTAIconLabel(QLabel):

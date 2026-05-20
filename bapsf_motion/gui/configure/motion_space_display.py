@@ -6,10 +6,13 @@ instance.
 __all__ = ["MotionSpaceDisplay"]
 
 import logging
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 import numpy as np
 import warnings
 
-from PySide6.QtCore import Signal, QTimer, Slot
+from matplotlib.collections import PathCollection
+from PySide6.QtCore import QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
 from typing import List, Union
@@ -17,13 +20,9 @@ from typing import List, Union
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.motion_builder import MotionBuilder
 
-# noqa
 # the matplotlib backend imports must happen after import matplotlib and PySide6
-import matplotlib as mpl
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
-from matplotlib import pyplot as plt
-from matplotlib.collections import PathCollection
-from matplotlib.backend_bases import Event, MouseEvent, PickEvent, DrawEvent
+from matplotlib.backend_bases import DrawEvent, Event, MouseEvent, PickEvent  # noqa
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
 from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar  # noqa
 

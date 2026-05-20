@@ -4,23 +4,22 @@ import ast
 import re
 
 from pathlib import Path
-from PySide6.QtCore import Qt, QPoint, Signal, Slot
+from PySide6.QtCore import QPoint, Qt, Signal, Slot
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QApplication,
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
-    QFrame,
     QLineEdit,
+    QMainWindow,
     QRadioButton,
+    QVBoxLayout,
+    QWidget,
 )
-from typing import Union, Optional
+from typing import Optional, Union
 
 from bapsf_motion.gui.widgets import StyleButton
-
 
 _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / "_images").resolve()

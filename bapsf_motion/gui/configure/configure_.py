@@ -12,36 +12,27 @@ import re
 
 from functools import partial
 from pathlib import Path
-from PySide6.QtCore import (
-    Qt,
-    QDir,
-    Signal,
-    Slot,
-)
-from PySide6.QtGui import QCloseEvent, QIcon, QAction
+from PySide6.QtCore import QDir, Qt, Signal, Slot
+from PySide6.QtGui import QAction, QCloseEvent, QIcon
 from PySide6.QtWidgets import (
     QApplication,
-    QMainWindow,
+    QFileDialog,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
-    QGridLayout,
-    QWidget,
-    QSizePolicy,
-    QPlainTextEdit,
-    QListWidget,
-    QVBoxLayout,
     QLineEdit,
-    QFileDialog,
-    QStackedWidget,
+    QListWidget,
     QListWidgetItem,
+    QMainWindow,
+    QPlainTextEdit,
+    QSizePolicy,
+    QStackedWidget,
+    QVBoxLayout,
+    QWidget,
 )
 from typing import Any, Dict, Union
 
-# noqa
-# import of qtawesome must happen after the PySide6 imports
-import qtawesome as qta
-
-from bapsf_motion.actors import RunManager, RunManagerConfig, MotionGroup
+from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 from bapsf_motion.gui.icons import icon_name_dict
@@ -53,7 +44,10 @@ from bapsf_motion.gui.widgets import (
     StyleButton,
     VLinePlain,
 )
-from bapsf_motion.utils import toml, _deepcopy_dict
+from bapsf_motion.utils import _deepcopy_dict, toml
+
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta  # noqa
 
 
 _HERE = Path(__file__).parent

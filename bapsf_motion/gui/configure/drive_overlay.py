@@ -14,13 +14,14 @@ from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
     QFrame,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
     QLineEdit,
     QSizePolicy,
     QSlider,
     QVBoxLayout,
-    QWidget, QGridLayout,
+    QWidget,
 )
 from typing import Any, Dict, List, Union
 
@@ -28,18 +29,8 @@ from bapsf_motion.actors import Axis, Drive, MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.widgets import (
-    IPv4Validator,
-    HLinePlain,
-    LED,
-    StyleButton,
-)
-from bapsf_motion.utils import (
-    _deepcopy_dict,
-    dict_equal,
-    ipv4_pattern,
-    loop_safe_stop,
-)
+from bapsf_motion.gui.widgets import HLinePlain, IPv4Validator, LED, StyleButton
+from bapsf_motion.utils import _deepcopy_dict, dict_equal, ipv4_pattern, loop_safe_stop
 
 
 class AxisConfigWidget(QWidget):

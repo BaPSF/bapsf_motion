@@ -1,26 +1,26 @@
 import logging
-from PySide6.QtGui import QColor, QFont
+
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QFont
 from PySide6.QtWidgets import (
-    QMainWindow,
-    QHBoxLayout,
-    QVBoxLayout,
+    QFrame,
     QGridLayout,
-    QWidget,
+    QHBoxLayout,
     QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPlainTextEdit,
+    QPushButton,
     QSizePolicy,
     QSlider,
     QTextEdit,
-    QFrame,
-    QLineEdit,
-    QPushButton,
-    QPlainTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
-
 from typing import Any, Dict
 
 from bapsf_motion.actors import Motor
-from bapsf_motion.gui.widgets import QLogHandler, LED, StopButton, IPv4Validator
+from bapsf_motion.gui.widgets import IPv4Validator, LED, QLogHandler, StopButton
 
 
 class MotorGUI(QMainWindow):

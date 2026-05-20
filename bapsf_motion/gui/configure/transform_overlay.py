@@ -9,21 +9,17 @@ import ast
 import inspect
 import math
 
-from PySide6.QtCore import Qt, Slot, QSize
+from PySide6.QtCore import QSize, Qt, Slot
 from PySide6.QtWidgets import (
+    QComboBox,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
-    QGridLayout,
-    QWidget,
     QSizePolicy,
     QVBoxLayout,
-    QComboBox,
+    QWidget,
 )
 from typing import Any, Dict, Union
-
-# noqa
-# import of qtawesome must happen after the PySide6 imports
-import qtawesome as qta
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
@@ -32,8 +28,11 @@ from bapsf_motion.gui.configure.helpers import read_parameter_hints
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import HLinePlain, QLineEditSpecialized
 from bapsf_motion.transform import BaseTransform
-from bapsf_motion.transform.helpers import transform_registry, transform_factory
+from bapsf_motion.transform.helpers import transform_factory, transform_registry
 from bapsf_motion.utils import _deepcopy_dict
+
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta  # noqa
 
 
 class TransformConfigOverlay(_ConfigOverlay):

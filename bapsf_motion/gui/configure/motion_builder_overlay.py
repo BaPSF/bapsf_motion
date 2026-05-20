@@ -7,30 +7,26 @@ __all__ = ["MotionBuilderConfigOverlay"]
 import ast
 import inspect
 import math
-import numpy as np
 import matplotlib as mpl
+import numpy as np
 import re
 import typing
 import xarray as xr
 
-from PySide6.QtCore import Qt, Slot, QSize
+from PySide6.QtCore import QSize, Qt, Slot
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
-    QHBoxLayout,
-    QLabel,
-    QGridLayout,
-    QWidget,
-    QSizePolicy,
-    QListWidget,
-    QVBoxLayout,
     QComboBox,
     QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
 )
 from typing import Any, Dict, Optional, Union
-
-# noqa
-# import of qtawesome must happen after the PySide6 imports
-import qtawesome as qta
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
@@ -48,12 +44,15 @@ from bapsf_motion.gui.widgets import (
     VLinePlain,
 )
 from bapsf_motion.motion_builder import MotionBuilder
-from bapsf_motion.motion_builder.layers import layer_registry
 from bapsf_motion.motion_builder.exclusions import exclusion_registry, GovernExclusion
+from bapsf_motion.motion_builder.layers import layer_registry
 from bapsf_motion.utils import _deepcopy_dict
 from bapsf_motion.utils import units as u
 
-# noqa
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta  # noqa
+
+# matplotlib backends need to be setup after imports of PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
 

@@ -6,9 +6,9 @@ __all__ = ["get_qapplication", "get_color_scheme", "cast_color_to_rgba_string"]
 
 import ast
 
+from PySide6.QtCore import Qt
 from PySide6.QtGui import QColor
 from PySide6.QtWidgets import QApplication
-from PySide6.QtCore import Qt
 from typing import Union
 
 
