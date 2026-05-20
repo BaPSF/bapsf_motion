@@ -1255,7 +1255,9 @@ class LaPDXYZTransform(base.BaseTransform):
         #  tan(beta) = e2 / D_zlead
         #
         b_rho = np.sqrt(
-            (pivot_to_center + points[..., 0])**2 + points[..., 1]**2 + points[..., 2]**2
+            (pivot_to_center + points[..., 0]) ** 2
+            + points[..., 1] ** 2
+            + points[..., 2] ** 2
         )
         b_theta = np.arccos(points[..., 2] / b_rho)
 
