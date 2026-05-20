@@ -7,6 +7,7 @@ the appropriate packages based on the Python environment version and
 name wrangle the functionality to provide a consistent interface for
 `bapsf_motion`.
 """
+
 __all__ = ["as_toml_string"]
 
 import sys
@@ -33,6 +34,7 @@ def as_toml_string(config):
     strings.  This is required because `dumps` can not handle non-string
     keys.
     """
+
     def convert_key_to_string(_d):
         _config = {}
         for key, value in _d.items():

@@ -1,4 +1,5 @@
 """Exceptions and warnings specific to `bapsf_motion`."""
+
 __all__ = [
     "ConfigurationError",
     "ConfigurationWarning",
