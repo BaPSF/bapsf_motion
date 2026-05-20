@@ -15,11 +15,11 @@ from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motion_group_ import (
+    handle_user_metadata,
     MotionGroup,
     MotionGroupConfig,
-    handle_user_metadata
 )
-from bapsf_motion.utils import toml, _deepcopy_dict
+from bapsf_motion.utils import _deepcopy_dict, toml
 
 
 class RunManagerConfig(UserDict):
@@ -35,7 +35,7 @@ class RunManagerConfig(UserDict):
         self.logger = logging.getLogger("RM_config") if logger is None else logger
 
         # Make sure config is the right type, and is a dict by the
-        # end of ths code block
+        # end of the code block
         if isinstance(config, RunManagerConfig):
             # This could happen when creating a new RunManger from an
             # old / terminated RunManager
@@ -66,8 +66,9 @@ class RunManagerConfig(UserDict):
                 "Unable to interpret configuration, since there appears"
                 " to be multiple data run configurations supplied."
             )
-        elif (len(self._manager_names - set(config.keys()))
-              == len(self._manager_names) - 1):
+        elif (
+            len(self._manager_names - set(config.keys())) == len(self._manager_names) - 1
+        ):
             # data run found in config
             man_name = tuple(
                 self._manager_names - (self._manager_names - set(config.keys()))
@@ -76,8 +77,7 @@ class RunManagerConfig(UserDict):
 
             if not isinstance(config, dict):
                 raise TypeError(
-                    f"Expected 'config' to be of type dict, "
-                    f"got type {type(config)}."
+                    f"Expected 'config' to be of type dict, got type {type(config)}."
                 )
 
         # validate config
@@ -104,7 +104,7 @@ class RunManagerConfig(UserDict):
         self._data = value
 
     def _validate_config(self, config):
-        date = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M %Z')
+        date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M %Z")
         if "name" not in config:
             rname = f"run [{date}]"
             self.logger.warning(
@@ -242,8 +242,7 @@ class RunManagerConfig(UserDict):
         configuration component, then collect all the metadata and
         store it under the 'user' key.  Return the modified dictionary.
         """
-        return handle_user_metadata(
-            config=config, req_meta=req_meta, logger=self.logger)
+        return handle_user_metadata(config=config, req_meta=req_meta, logger=self.logger)
 
     def link_motion_group(self, mg, key):
         if not isinstance(mg, MotionGroup):
@@ -294,11 +293,7 @@ class RunManager(EventActor):
         self._config = None
 
         logger = logging.getLogger("RM")
-        super().__init__(
-            logger=logger,
-            auto_run=False,
-            parent=parent
-        )
+        super().__init__(logger=logger, auto_run=False, parent=parent)
         self.name = "RM"
 
         try:
@@ -319,12 +314,12 @@ class RunManager(EventActor):
 
         for key, mgc in self._config["motion_group"].items():
             self._raw_add_motion_group(mgc, key)
-        
+
         self.run(auto_run=auto_run)
-    
+
     def _configure_before_run(self):
-        return 
-    
+        return
+
     def _initialize_tasks(self):
         return
 
@@ -337,19 +332,20 @@ class RunManager(EventActor):
         for mg in self.mgs.values():
             if not mg.terminated:
                 mg.run()
-    
+
     @property
     def mgs(self) -> Dict[Union[str, int], MotionGroup]:
         if self._mgs is None:
             self._mgs = {}
-        
+
         return self._mgs
 
     @property
     def config(self) -> RunManagerConfig:
         return self._config
+
     config.__doc__ = EventActor.config.__doc__
-    
+
     def terminate(self, delay_loop_stop=False):
         for mg in self.mgs.values():
             mg.terminate(delay_loop_stop=True)

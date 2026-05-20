@@ -1,6 +1,7 @@
 """
 Module that defines the `CircularExclusion` class.
 """
+
 __all__ = ["CircularExclusion"]
 __mexclusions__ = ["CircularExclusion"]
 
@@ -97,6 +98,7 @@ class CircularExclusion(BaseExclusion):
               "exclude": "outside",
           }
     """
+
     # TODO: Can this class be extend to a N-D motion space.
     _exclusion_type = "circle"
     _dimensionality = 2
@@ -129,10 +131,9 @@ class CircularExclusion(BaseExclusion):
             self.mspace_coords[coord_dims[1]],
         )
 
-        condition = (
-            (coords[0] - self.center[0]) ** 2 + (coords[1] - self.center[1]) ** 2
-            > self.radius ** 2
-        )
+        condition = (coords[0] - self.center[0]) ** 2 + (
+            coords[1] - self.center[1]
+        ) ** 2 > self.radius**2
         mask = xr.where(condition, False, True)
         return mask if self.exclude_region == "outside" else np.logical_not(mask)
 

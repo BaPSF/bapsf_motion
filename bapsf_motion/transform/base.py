@@ -1,4 +1,5 @@
 """Module that defines the `BaseTransform` abstract class."""
+
 __all__ = ["BaseTransform"]
 
 import numpy as np
@@ -22,6 +23,7 @@ class BaseTransform(ABC):
     kwargs:
         Keyword arguments that are specific to the subclass.
     """
+
     _transform_type = NotImplemented  # type: str
     _dimensionality = NotImplemented  # type: int
 
@@ -33,9 +35,8 @@ class BaseTransform(ABC):
         if isinstance(drive, Drive):
             self._drive = drive
             self._axes = list(range(drive.naxes))
-        elif (
-                isinstance(drive, (list, tuple))
-                and all(isinstance(dr, (int, str)) for dr in drive)
+        elif isinstance(drive, (list, tuple)) and all(
+            isinstance(dr, (int, str)) for dr in drive
         ):
             # hidden mode for debugging purposes
             # - In this case drive is a list or tuple of int or str values
@@ -186,7 +187,7 @@ class BaseTransform(ABC):
 
     def _validate_matrix_method(self, method_name: str):
         method = getattr(self, method_name)
-        matrix = method(np.zeros((self.naxes+2, self.naxes)))
+        matrix = method(np.zeros((self.naxes + 2, self.naxes)))
 
         if not isinstance(matrix, np.ndarray):
             raise TypeError(
@@ -199,12 +200,12 @@ class BaseTransform(ABC):
                 "expected matrix,  expected a 3-D matrix and got a "
                 f"{matrix.ndim}-D matrix."
             )
-        elif matrix.shape != (self.naxes+2, self.naxes+1, self.naxes+1):
+        elif matrix.shape != (self.naxes + 2, self.naxes + 1, self.naxes + 1):
             shape_str = []
             for ii in range(3):
                 size = (
                     "N"
-                    if matrix.shape[ii] == self.naxes+2
+                    if matrix.shape[ii] == self.naxes + 2
                     else f"M{matrix.shape[ii]-self.naxes:+d}"
                 )
                 shape_str.append(size)
@@ -222,9 +223,7 @@ class BaseTransform(ABC):
     def _validate_matrix_to_motion_space(self):
         self._validate_matrix_method("_matrix_to_motion_space")
 
-    def _condition_matrix(
-        self, points: np.ndarray, matrix: np.ndarray
-    ) -> np.ndarray:
+    def _condition_matrix(self, points: np.ndarray, matrix: np.ndarray) -> np.ndarray:
         if not isinstance(points, np.ndarray):
             points = self._condition_points(points)
 
@@ -333,7 +332,8 @@ class BaseTransform(ABC):
 
         points = self._condition_points(points)
         _matrix = (
-            self._matrix_to_drive(points) if to_coords == "drive"
+            self._matrix_to_drive(points)
+            if to_coords == "drive"
             else self._matrix_to_motion_space(points)
         )
 

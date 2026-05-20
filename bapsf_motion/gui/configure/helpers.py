@@ -1,6 +1,7 @@
 """
 Module of helper functions for the Configuration GUI.
 """
+
 __all__ = ["gui_logger", "gui_logger_config_dict", "read_parameter_hints"]
 
 import logging

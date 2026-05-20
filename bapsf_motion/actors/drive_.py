@@ -2,6 +2,7 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.drive_.Drive` actor class.
 """
+
 __all__ = ["Drive"]
 __actors__ = ["Drive"]
 
@@ -12,8 +13,8 @@ import logging
 from collections import UserDict
 from typing import Any, Dict, List, Optional, Tuple
 
-from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.axis_ import Axis
+from bapsf_motion.actors.base import EventActor
 
 
 class Drive(EventActor):
@@ -23,7 +24,7 @@ class Drive(EventActor):
     the physical space, but it is fully aware of the axes that make up
     the probe drive.  The axes are ordered, but the actor has no clue
     how these axes are oriented in the physical space.  This actor
-    operates in phsical units of the axes.
+    operates in physical units of the axes.
 
     Parameters
     ----------
@@ -146,8 +147,7 @@ class Drive(EventActor):
         #       does result in False unique entries
         if len(set(all_ips)) != len(all_ips):
             raise ValueError(
-                f"All specified axes must have unique IPs, duplicate "
-                f"IPs found."
+                f"All specified axes must have unique IPs, duplicate IPs found."
             )
 
         if len(set(all_anames)) != len(all_anames):
@@ -161,7 +161,7 @@ class Drive(EventActor):
     def _validate_axis(self, settings: Dict[str, Any]) -> Dict[str, Any]:
         """Validate the |Axis| arguments defined in ``settings``."""
         # TODO: create warnings for logger, loop, and auto_run since
-        #       this class overrides in inputs of thos
+        #       this class overrides in inputs of those
         required_parameters = {"ip": str, "units": str, "units_per_rev": float}
 
         if not isinstance(settings, dict):
@@ -187,9 +187,8 @@ class Drive(EventActor):
                     f"type {type(settings[key])}."
                 )
 
-        if (
-            "motor_settings" in settings
-            and not isinstance(settings["motor_settings"], (dict, UserDict))
+        if "motor_settings" in settings and not isinstance(
+            settings["motor_settings"], (dict, UserDict)
         ):
             _motor_settings = settings.pop("motor_settings")
             if _motor_settings is not None:
@@ -234,6 +233,7 @@ class Drive(EventActor):
             _config["axes"][ii] = ax.config.copy()
 
         return _config
+
     config.__doc__ = EventActor.config.__doc__
 
     @property

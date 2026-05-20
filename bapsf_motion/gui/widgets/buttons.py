@@ -1,4 +1,5 @@
 """This module contains custom Qt buttons."""
+
 __all__ = [
     "BannerButton",
     "DiscardButton",
@@ -17,16 +18,15 @@ __all__ = [
 import math
 
 from PySide6.QtCore import QSize, Slot
-from PySide6.QtGui import QFontMetrics, QColor, QIcon, QFont
+from PySide6.QtGui import QColor, QFont, QFontMetrics, QIcon
 from PySide6.QtWidgets import QPushButton
 from typing import Optional, Union
 
-# noqa
-# import of qtawesome must happen after the PySide6 imports
-import qtawesome as qta
-
 from bapsf_motion.gui.helpers import cast_color_to_rgba_string
 from bapsf_motion.gui.icons import icon_name_dict
+
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta  # noqa
 
 
 class StyleButton(QPushButton):
@@ -163,8 +163,7 @@ class StyleButton(QPushButton):
             self._checked_style = {**_style, **styles}
         else:  # action == "disabled
             _style = (
-                self.disabled_style if not reset
-                else {**self._default_disabled_style}
+                self.disabled_style if not reset else {**self._default_disabled_style}
             )
             self._disabled_style = {**_style, **styles}
 

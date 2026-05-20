@@ -731,7 +731,7 @@ class LaPD6KTransform(LaPDXYTransform):
         val = _inputs[key]
         if not isinstance(val, (float, np.floating, int, np.integer)):
             raise TypeError(
-                f"Keyword '{key}' expected type float or int, " f"got type {type(val)}."
+                f"Keyword '{key}' expected type float or int, got type {type(val)}."
             )
         elif val < 0.0:
             val = np.abs(val)
@@ -832,7 +832,7 @@ class LaPD6KTransform(LaPDXYTransform):
         # imagine two circles:
         #   1. circle one located at the ball-valve pivot (pivot) with a
         #      radius pivot_to_drive_pinion
-        #   2. circle two located at the vpinion with a readius six_k_arm_length
+        #   2. circle two located at the vpinion with a radius six_k_arm_length
         #
         # The probe drive will be oriented at the lower intersection of these
         # two circles.
@@ -917,7 +917,7 @@ class LaPDXYZTransform(base.BaseTransform):
         (DEFAULT: ``58.771`` cm)  Horizontal distance from the center
         "pivot" point of the ball-valve to the crossing point of the
         e0-drive ("x-drive") and the e2-drive ("z-drive") when the probe
-        drive is in its neutral postion.  Neutral position is when the
+        drive is in its neutral position.  Neutral position is when the
         e0-drive is parallel to the ground and perpendicular to the
         LaPD.
 
@@ -956,7 +956,7 @@ class LaPDXYZTransform(base.BaseTransform):
 
       The matrix transformation utilizes three different coordinate
       systems:  the drive space ``(e0, e1, e2)``, the ball-valve
-      coordiantes ``(b0, b1, b2)``, and the motion space coordinate
+      coordinates ``(b0, b1, b2)``, and the motion space coordinate
       system ``(x, y, z)``.  These systems may have different polarity
       with respect to the actual systems used.  To composate for these
       polarities use the ``drive_polarity`` and ``mspace_polarity``
@@ -1204,7 +1204,7 @@ class LaPDXYZTransform(base.BaseTransform):
     def _matrix_to_drive(self, points: np.ndarray) -> np.ndarray:
         # given points are in (x, y, z) with shape (N, 3)
         # - N is the number of point to convert
-        # - 3 is the (x, y, z) coordintes
+        # - 3 is the (x, y, z) coordinates
         #
         # we will utilized three coordinate systems for the conversion
         # - ball-valve pivot: (b0, b1, b2) or [for spherical] (b_rho, btheat, b_phi)
@@ -1255,7 +1255,9 @@ class LaPDXYZTransform(base.BaseTransform):
         #  tan(beta) = e2 / D_zlead
         #
         b_rho = np.sqrt(
-            (pivot_to_center + points[..., 0])**2 + points[..., 1]**2 + points[..., 2]**2
+            (pivot_to_center + points[..., 0]) ** 2
+            + points[..., 1] ** 2
+            + points[..., 2] ** 2
         )
         b_theta = np.arccos(points[..., 2] / b_rho)
 
@@ -1277,7 +1279,7 @@ class LaPDXYZTransform(base.BaseTransform):
     def _matrix_to_motion_space(self, points: np.ndarray) -> np.ndarray:
         # given points are in (e0, e1, e2) with shape (N, 3)
         # - N is the number of point to convert
-        # - 3 is the (e0, e1, e2) coordintes
+        # - 3 is the (e0, e1, e2) coordinates
         #
         # we will utilized three coordinate systems for the conversion
         # - ball-valve pivot: (b0, b1, b2) or [for spherical] (b_rho, btheat, b_phi)
@@ -1372,7 +1374,7 @@ class LaPDXYZTransform(base.BaseTransform):
         Horizontal distance from the center
         "pivot" point of the ball-valve to the crossing point of the
         e0-drive ("x-drive") and the e2-drive ("z-drive") when the probe
-        drive is in its neutral postion.
+        drive is in its neutral position.
 
         Neutral position is when the e0-drive is parallel to the ground
         and perpendicular to the LaPD.

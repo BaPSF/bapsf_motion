@@ -63,7 +63,7 @@ Glossary
       :term:`motion space`.  These components include: (1) the full
       motion group configuration, (2) communicate with the
       :term:`probe drive`, (3) an understand of the :term:`motion space`
-      as defined by the :term:`motion builder`, and (4) how to covert
+      as defined by the :term:`motion builder`, and (4) how to convert
       between the motion spacer coordinate system and the probe drive
       coordinate system.
 

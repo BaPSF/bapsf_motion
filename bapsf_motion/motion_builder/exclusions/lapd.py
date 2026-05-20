@@ -1,6 +1,7 @@
 """
 Module that defines the `LaPDXYExclusion` class.
 """
+
 __all__ = ["LaPDXYExclusion"]
 __mexclusions__ = ["LaPDXYExclusion"]
 
@@ -54,7 +55,7 @@ class LaPDXYExclusion(GovernExclusion):
         (DEFAULT: ``80``)
 
     include_cone: bool
-        If `True`, then include the exclusion crated by the ball valve
+        If `True`, then include the exclusion created by the ball valve
         limits.  Otherwise, `False` will only include the chamber wall
         exclusion. (DEFAULT: `True`)
 
@@ -140,6 +141,7 @@ class LaPDXYExclusion(GovernExclusion):
               "cone_full_angle": 60,
           }
     """
+
     _exclusion_type = "lapd_xy"
     _dimensionality = 2
     _port_location_to_angle = {
@@ -242,13 +244,13 @@ class LaPDXYExclusion(GovernExclusion):
         # validate port_location
         if isinstance(self.port_location, str):
             if self.port_location.casefold() not in map(
-                    str.casefold, self._port_location_to_angle
+                str.casefold, self._port_location_to_angle
             ):
                 raise ValueError
 
-            self.inputs["port_location"] = (
-                self._port_location_to_angle[self.port_location.lower()]
-            )
+            self.inputs["port_location"] = self._port_location_to_angle[
+                self.port_location.lower()
+            ]
 
         if not isinstance(self.port_location, (float, int)):
             raise TypeError
@@ -392,12 +394,10 @@ class LaPDXYExclusion(GovernExclusion):
         pt1 = radius * np.array([np.cos(theta + beta), np.sin(theta + beta)])
         pt2 = radius * np.array([np.cos(theta - beta), np.sin(theta - beta)])
         slope = (
-            np.inf
-            if np.equal(pt1[0], pt2[0])
-            else (pt1[1] - pt2[1]) / (pt1[0] - pt2[0])
+            np.inf if np.equal(pt1[0], pt2[0]) else (pt1[1] - pt2[1]) / (pt1[0] - pt2[0])
         )
         intercept = pt1[0] if np.isinf(slope) else pt1[1] - slope * pt1[0]
-        if np.abs(pivot_xy[0]) / radius > .1:
+        if np.abs(pivot_xy[0]) / radius > 0.1:
             sign = f"{pivot_xy[0]:+.1f}"[0]
             sign = "-" if sign == "+" else "+"
             exclude = f"{sign}e0"

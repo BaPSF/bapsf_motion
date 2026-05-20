@@ -3,17 +3,19 @@ Module for helper functions associated with coordinate transform
 functionality between the probe :term:`motion space` and the probe
 drive coordinate system.
 """
+
+from __future__ import annotations
+
 __all__ = ["register_transform", "transform_factory", "transform_registry"]
 
 import inspect
 
 from numpydoc.docscrape import NumpyDocString, Parameter
-from typing import Dict, List, Set, Type, Union
+from typing import Dict, List, Set, Type, TYPE_CHECKING, Union
 
 from bapsf_motion.transform import base
 
-if False:
-    # noqa
+if TYPE_CHECKING:
     # for annotation, does not need real import
     from bapsf_motion.actors.drive_ import Drive
 
@@ -85,7 +87,7 @@ def transform_factory(drive: "Drive", *, tr_type: str, **settings):
         Name of the coordinate transform type.
 
     settings
-        Keyword arguments to be passed to the retrieved coordiante
+        Keyword arguments to be passed to the retrieved coordinate
         transform class.
 
     Returns
@@ -110,16 +112,14 @@ class TransformRegistry:
         try:
             return self._registry[name]
         except KeyError:
-            raise ValueError(
-                f"The requested transform {name} does not exist."
-            )
+            raise ValueError(f"The requested transform {name} does not exist.")
 
     def get_names_by_dimensionality(self, ndim: int) -> Set[str]:
         return {
-             name
-             for name, tr in self._registry.items()
-             if tr._dimensionality in (-1, ndim)
-         }
+            name
+            for name, tr in self._registry.items()
+            if tr._dimensionality in (-1, ndim)
+        }
 
     def get_input_parameters(
         self, name: str
