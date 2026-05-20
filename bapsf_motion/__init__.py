@@ -9,7 +9,7 @@ if sys.version_info < (3, 7):  # coverage: ignore
     raise ImportError("bapsf_motion does not support Python < 3.7")
 
 if sys.version_info >= (3, 8):
-    from importlib.metadata import version, PackageNotFoundError
+    from importlib.metadata import PackageNotFoundError, version
 else:
     from importlib_metadata import version, PackageNotFoundError
 
