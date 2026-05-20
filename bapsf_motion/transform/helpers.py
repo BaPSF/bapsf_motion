@@ -3,17 +3,18 @@ Module for helper functions associated with coordinate transform
 functionality between the probe :term:`motion space` and the probe
 drive coordinate system.
 """
+from __future__ import annotations
+
 __all__ = ["register_transform", "transform_factory", "transform_registry"]
 
 import inspect
 
 from numpydoc.docscrape import NumpyDocString, Parameter
-from typing import Dict, List, Set, Type, Union
+from typing import Dict, List, Set, Type, TYPE_CHECKING, Union
 
 from bapsf_motion.transform import base
 
-if False:
-    # noqa
+if TYPE_CHECKING:
     # for annotation, does not need real import
     from bapsf_motion.actors.drive_ import Drive
 

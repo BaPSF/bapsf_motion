@@ -9,7 +9,7 @@ from warnings import warn
 
 from bapsf_motion.transform import base
 from bapsf_motion.transform.helpers import register_transform
-from bapsf_motion.transform.lapd_droop import LaPDXYDroopCorrect, DroopCorrectABC
+from bapsf_motion.transform.lapd_droop import DroopCorrectABC, LaPDXYDroopCorrect
 
 
 @register_transform
