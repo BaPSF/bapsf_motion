@@ -222,7 +222,7 @@ class BaseExclusion(MBItem):
         if self.skip_ds_add:
             raise RuntimeError(
                 f"For exclusion {self.name} skip_ds_add={self.skip_ds_add} and thus "
-                f"the exclusion can not be merged into the global maks."
+                f"the exclusion can not be merged into the global mask."
             )
 
         self.mask[...] = np.logical_and(self.mask, self.exclusion)
@@ -237,7 +237,7 @@ class GovernExclusion(BaseExclusion, ABC):
         if self.skip_ds_add:
             raise RuntimeError(
                 f"For exclusion {self.name} skip_ds_add={self.skip_ds_add} and thus "
-                f"the exclusion can not be merged into the global maks."
+                f"the exclusion can not be merged into the global mask."
             )
 
         # Since GovernExclusion use the existing mask to generate its own

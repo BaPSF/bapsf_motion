@@ -161,7 +161,7 @@ class Drive(EventActor):
     def _validate_axis(self, settings: Dict[str, Any]) -> Dict[str, Any]:
         """Validate the |Axis| arguments defined in ``settings``."""
         # TODO: create warnings for logger, loop, and auto_run since
-        #       this class overrides in inputs of thos
+        #       this class overrides in inputs of those
         required_parameters = {"ip": str, "units": str, "units_per_rev": float}
 
         if not isinstance(settings, dict):

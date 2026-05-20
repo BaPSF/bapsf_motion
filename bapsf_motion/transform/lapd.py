@@ -826,7 +826,7 @@ class LaPD6KTransform(LaPDXYTransform):
         # imagine two circles:
         #   1. circle one located at the ball valve pivot (pivot) with a
         #      radius pivot_to_drive_pinion
-        #   2. circle two located at the vpinion with a readius six_k_arm_length
+        #   2. circle two located at the vpinion with a radius six_k_arm_length
         #
         # The probe drive will be oriented at the lower intersection of these
         # two circles.

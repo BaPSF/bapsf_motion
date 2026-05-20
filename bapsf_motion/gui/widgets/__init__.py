@@ -1,5 +1,5 @@
 """
-This module contains helper widgets for contructing the main GUIs in
+This module contains helper widgets for constructing the main GUIs in
 `bapsf_motion.gui`.
 """
 __all__ = [

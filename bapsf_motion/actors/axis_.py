@@ -45,7 +45,7 @@ class Axis(EventActor):
     logger: `~logging.Logger`, optional
         An instance of `~logging.Logger` that the Actor will record
         events and status updates to.  If `None`, then a logger will
-        automatically be generated. (DEFUALT: `None`)
+        automatically be generated. (DEFAULT: `None`)
 
     loop: `asyncio.AbstractEventLoop`, optional
         Instance of an `asyncio` `event loop`_. Communication with the

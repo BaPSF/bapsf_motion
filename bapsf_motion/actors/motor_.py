@@ -259,7 +259,7 @@ class Motor(EventActor):
         A value between 0 (non-inclusive) and 1 (inclusive) which
         indicates what the motor current should be set to as a fraction
         of the max allowed current ``motor["DEFAULTS"]["max_current"]``.
-        (DEFUALT: ``0.8``)
+        (DEFAULT: ``0.8``)
 
     name: `str`, optional
         Name the motor.  If `None`, then the name will be automatically
@@ -268,7 +268,7 @@ class Motor(EventActor):
     logger: `~logging.Logger`, optional
         An instance of `~logging.Logger` that the Actor will record
         events and status updates to.  If `None`, then a logger will
-        automatically be generated. (DEFUALT: `None`)
+        automatically be generated. (DEFAULT: `None`)
 
     loop: `asyncio.AbstractEventLoop`, optional
         Instance of an `asyncio` `event loop`_. Communication with the
@@ -574,7 +574,7 @@ class Motor(EventActor):
         9: "bad password",
         10: "comm port error",
         11: "bad character",
-        12: "I/O point already used by curren command mode, and cannot "
+        12: "I/O point already used by current command mode, and cannot "
             "be changed (Flex I/O drives only)",
         13: "I/O point configured for incorrect use "
             "(i.e., input vs. output) (Flex I/O drives only)",
@@ -596,7 +596,7 @@ class Motor(EventActor):
     # TODO: move off limit command
     # TODO: integrate homing
     # TODO: integrate zeroing
-    # TODO: get motor firmware version, model numer, and sub-model using "MV"
+    # TODO: get motor firmware version, model number, and sub-model using "MV"
     # TODO: upgrade commands so setting and getting commands run
     #       through the same general command (e.g. set_speed and
     #       get_speed are just aliases for the speed command)
@@ -701,7 +701,7 @@ class Motor(EventActor):
         return None
 
     def run(self, auto_run=True):
-        self.logger.info(f"Running motor - async loop hass is {self.loop.__hash__()}")
+        self.logger.info(f"Running motor - async loop has is {self.loop.__hash__()}")
 
         heartbeat_task = self.heartbeat_task
         if (
@@ -1448,7 +1448,7 @@ class Motor(EventActor):
         Low-level functionality so a command string ``cmd` can be sent
         directly to the motor.  This is intended for testing purposes
         and should NOT be used for any high-level functionality.  This
-        allows for sending commands that are ned defined in
+        allows for sending commands that are not defined in
         ``self._commands``.
 
         Parameters

@@ -1,6 +1,6 @@
 """
 Module containing all functionality for converting probe drive
-coordinates to motion space coordinates, and vise versa.
+coordinates to motion space coordinates, and vice versa.
 """
 __all__ = [
     "transform_factory",

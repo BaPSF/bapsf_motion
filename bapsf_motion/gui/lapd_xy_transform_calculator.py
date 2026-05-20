@@ -105,7 +105,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_2a = self._defaults["measure_2a"]
         self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
-        # mesures and constants need to be defined first
+        # measures and constants need to be defined first
         self.pivot_to_center = 58.771
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_drive = self.calc_pivot_to_drive()

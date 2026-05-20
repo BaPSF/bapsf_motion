@@ -530,7 +530,7 @@ class GridCNStepLayer(GridLayer):
 
     @property
     def step_size(self) -> np.ndarray:
-        """Grid point steps size along each spacial dimension."""
+        """Grid point steps size along each spatial dimension."""
         return self.inputs["step_size"]
 
     def _set_step_size(self, value: np.ndarray):
@@ -730,7 +730,7 @@ class GridCNSizeLayer(GridCNStepLayer):
 
     @property
     def size(self) -> np.ndarray:
-        """Size (or length) of the grid along each spacial dimension."""
+        """Size (or length) of the grid along each spatial dimension."""
         return self.inputs["size"]
 
     def _set_size(self, value: np.ndarray):

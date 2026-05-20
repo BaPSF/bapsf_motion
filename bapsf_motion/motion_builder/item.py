@@ -127,7 +127,7 @@ class MBItem(ABC):
     @property
     def mask_resolution(self) -> Tuple:
         """
-        Tuple containing the spacial resolution of each dimension of
+        Tuple containing the spatial resolution of each dimension of
         the motion space (i.e. grid spacing in each dimension).
         """
         res = []

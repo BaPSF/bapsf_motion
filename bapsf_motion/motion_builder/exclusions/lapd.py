@@ -54,7 +54,7 @@ class LaPDXYExclusion(GovernExclusion):
         (DEFAULT: ``80``)
 
     include_cone: bool
-        If `True`, then include the exclusion crated by the ball valve
+        If `True`, then include the exclusion created by the ball valve
         limits.  Otherwise, `False` will only include the chamber wall
         exclusion. (DEFAULT: `True`)
 
