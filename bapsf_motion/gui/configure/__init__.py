@@ -1,6 +1,7 @@
 """
 Module containing all the elements for the Configuration GUI.
 """
+
 __all__ = ["ConfigureGUI"]
 from bapsf_motion.gui.configure.configure_ import ConfigureGUI
 
@@ -19,7 +20,7 @@ if __name__ == "__main__":
         "--defaults-file",
         help="Path to the TOML defaults file that contains pre-defined configurations.",
         default=(pathlib.Path.cwd() / "bapsf_motion.toml").resolve(),
-        type=pathlib.Path
+        type=pathlib.Path,
     )
     parser.add_argument(
         "-c",

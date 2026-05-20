@@ -1,15 +1,15 @@
 """
 Module that defines the LaPD related probe droop correction classes.
 """
+
 __all__ = ["DroopCorrectABC", "LaPDXYDroopCorrect"]
 
 import astropy.units as u
+import numpy as np
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Union
 from warnings import warn
-
-import numpy as np
 
 from bapsf_motion.actors.drive_ import Drive
 
@@ -27,6 +27,7 @@ class DroopCorrectABC(ABC):
     kwargs:
         Keyword arguments that are specific to the subclass.
     """
+
     _probe_shaft_od = NotImplemented  # type: u.Quantity
     _probe_shaft_wall = NotImplemented  # type: u.Quantity
     _probe_shaft_material = NotImplementedError  # type: str
@@ -36,9 +37,8 @@ class DroopCorrectABC(ABC):
         if isinstance(drive, Drive):
             self._drive = drive  # type: Union[Drive, None]
             self._axes = list(range(drive.naxes))
-        elif (
-                isinstance(drive, (list, tuple))
-                and all(isinstance(dr, (int, str)) for dr in drive)
+        elif isinstance(drive, (list, tuple)) and all(
+            isinstance(dr, (int, str)) for dr in drive
         ):
             # hidden mode for debugging purposes
             # - In this case drive is a list or tuple of int or str values
@@ -345,6 +345,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
            ds = ( a_3 r^3 + a_2 r^2 + a_1 r + a_0 ) r cos(\theta)
 
     """
+
     _probe_shaft_od = 0.375 * u.imperial.inch
     _probe_shaft_wall = 0.035 * u.imperial.inch
     _probe_shaft_material = "Stainless Steel 304"
@@ -390,9 +391,10 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         # coeffs = [a0, a1, a2, a3]
         #
         # self._coeffs = np.array([6.209e-06, -2.211e-07, 2.084e-09, -5.491e-09])
-        self._coeffs = np.array(
-            [6.208863E-06, -2.210800E-07, 2.083731E-09, -5.490692E-09]
-        ) * self.droop_scale
+        self._coeffs = (
+            np.array([6.208863e-06, -2.210800e-07, 2.083731e-09, -5.490692e-09])
+            * self.droop_scale
+        )
 
     @property
     def pivot_to_feedthru(self):
@@ -434,10 +436,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         if all(_u == self._fit_units for _u in drive_units):
             return points
 
-        conversion_factor = [
-            ((1 * _u).to(self._fit_units)).value
-            for _u in drive_units
-        ]
+        conversion_factor = [((1 * _u).to(self._fit_units)).value for _u in drive_units]
         return points[..., :] * conversion_factor[:]
 
     def _convert_to_deployed_units(self, points: np.ndarray) -> np.ndarray:
@@ -451,10 +450,7 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         if all(_u == self._fit_units for _u in drive_units):
             return points
 
-        conversion_factor = [
-            ((1 * self._fit_units).to(_u)).value
-            for _u in drive_units
-        ]
+        conversion_factor = [((1 * self._fit_units).to(_u)).value for _u in drive_units]
         return points[..., :] * conversion_factor[:]
 
     def _validate_inputs(self, inputs: Dict[str, Any]) -> Dict[str, Any]:
@@ -499,11 +495,15 @@ class LaPDXYDroopCorrect(DroopCorrectABC):
         # droop = (a3 * r**3 + a2 * r**2 + a1 * r + a0) * r cos(theta)
         #
         delta = (
-            self.coefficients[3] * points_rt[..., 0] ** 3
-            + self.coefficients[2] * points_rt[..., 0] ** 2
-            + self.coefficients[1] * points_rt[..., 0]
-            + self.coefficients[0]
-        ) * points_rt[..., 0] * np.cos(points_rt[..., 1])
+            (
+                self.coefficients[3] * points_rt[..., 0] ** 3
+                + self.coefficients[2] * points_rt[..., 0] ** 2
+                + self.coefficients[1] * points_rt[..., 0]
+                + self.coefficients[0]
+            )
+            * points_rt[..., 0]
+            * np.cos(points_rt[..., 1])
+        )
         dx = -delta[...] * np.sin(points_rt[..., 1])
         dy = delta[...] * np.cos(points_rt[..., 1])
 

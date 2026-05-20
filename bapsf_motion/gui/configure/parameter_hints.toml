@@ -1,8 +1,8 @@
 # This TOML file contains the hints used to populate the placeholder text
-# for input fields associated with configuring layers, exlusions, and
+# for input fields associated with configuring layers, exclusions, and
 # transforms.
 #
-# Adding any hints should folow the pattern:
+# Adding any hints should follow the pattern:
 #
 # [hints.<entity>.<type>]
 # param1 = "placeholder text"
@@ -16,9 +16,9 @@
 #       has <type> == lapd_xy, and exclusion CircularLayer has
 #       <type> == circle
 #   param1, param2, ... :
-#       are the input arguments for the class being configurated,  e.g.
+#       are the input arguments for the class being configured,  e.g.
 #       CircularExlusion would have param1 == radius, param2 == center,
-#       and param3 == exlude
+#       and param3 == exclude
 #
 #       Note that not all input parameters need configured.  You only
 #       need to configure input you want to add placeholder test for.

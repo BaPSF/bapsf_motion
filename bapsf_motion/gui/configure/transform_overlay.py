@@ -3,27 +3,24 @@ Module contains the functionality associated with the
 :term:`transformer` configuration overlay portion of the configuration
 GUI.
 """
+
 __all__ = ["TransformConfigOverlay"]
 
 import ast
 import inspect
 import math
 
-from PySide6.QtCore import Qt, Slot, QSize
+from PySide6.QtCore import QSize, Qt, Slot
 from PySide6.QtWidgets import (
+    QComboBox,
+    QGridLayout,
     QHBoxLayout,
     QLabel,
-    QGridLayout,
-    QWidget,
     QSizePolicy,
     QVBoxLayout,
-    QComboBox,
+    QWidget,
 )
 from typing import Any, Dict, Union
-
-# noqa
-# import of qtawesome must happen after the PySide6 imports
-import qtawesome as qta
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
@@ -32,8 +29,11 @@ from bapsf_motion.gui.configure.helpers import read_parameter_hints
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import HLinePlain, QLineEditSpecialized
 from bapsf_motion.transform import BaseTransform
-from bapsf_motion.transform.helpers import transform_registry, transform_factory
+from bapsf_motion.transform.helpers import transform_factory, transform_registry
 from bapsf_motion.utils import _deepcopy_dict
+
+# import of qtawesome must happen after the PySide6 imports
+import qtawesome as qta  # noqa
 
 
 class TransformConfigOverlay(_ConfigOverlay):
@@ -75,9 +75,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         # Define ADVANCED WIDGETS
         _w = QComboBox(parent=self)
         _w.setFixedWidth(250)
-        _w.addItems(
-            list(self.registry.get_names_by_dimensionality(self._mg.drive.naxes))
-        )
+        _w.addItems(list(self.registry.get_names_by_dimensionality(self._mg.drive.naxes)))
         _w.setEditable(False)
         _w.setCurrentText(tr_type)
         font = _w.font()
@@ -96,9 +94,7 @@ class TransformConfigOverlay(_ConfigOverlay):
 
     def _define_layout(self):
 
-        self._params_widget = self._define_params_widget(
-            self.combo_widget.currentText()
-        )
+        self._params_widget = self._define_params_widget(self.combo_widget.currentText())
 
         type_layout = QHBoxLayout()
         type_layout.setContentsMargins(0, 0, 0, 0)
@@ -144,10 +140,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         """
         The transform object that been constructed for :attr:`mg`.
         """
-        if (
-            self._transform is None
-            and bool(self.mg.config["transform"])
-        ):
+        if self._transform is None and bool(self.mg.config["transform"]):
             return self.mg.transform
 
         return self._transform
@@ -232,7 +225,7 @@ class TransformConfigOverlay(_ConfigOverlay):
             _txt.setFont(font)
             _variable_name = _txt
 
-            annotation = val['param'].annotation
+            annotation = val["param"].annotation
             if inspect.isclass(annotation):
                 annotation = annotation.__name__
             annotation = f"{annotation}".split(".")[-1]
@@ -340,12 +333,8 @@ class TransformConfigOverlay(_ConfigOverlay):
 
             if val is not None:
                 continue
-            elif (
-                annotation is None
-                or (
-                    hasattr(annotation, "__args__")
-                    and type(None) in annotation.__args__
-                )
+            elif annotation is None or (
+                hasattr(annotation, "__args__") and type(None) in annotation.__args__
             ):
                 # val is None and is allowed to be None
                 continue
@@ -372,8 +361,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         config = self.transform.config
 
         self.logger.info(
-            f"New transform configuration of type {config['type']} is "
-            f"being returned."
+            f"New transform configuration of type {config['type']} is being returned."
         )
         self.returnConfig.emit(config)
         self.close()

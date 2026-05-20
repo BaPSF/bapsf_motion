@@ -1,4 +1,5 @@
 """Module that defines the `IdentityTransform` abstract class."""
+
 __all__ = ["IdentityTransform"]
 __transformer__ = ["IdentityTransform"]
 
@@ -53,6 +54,7 @@ class IdentityTransform(base.BaseTransform):
 
           config["transform"] = {"type": "identity"}
     """
+
     _transform_type = "identity"
     _dimensionality = -1
 

@@ -1,4 +1,5 @@
 """Utility functionality for `bapsf_motion`."""
+
 __all__ = [
     "counts",
     "steps",
@@ -9,7 +10,7 @@ __all__ = [
     "SimpleSignal",
     "toml",
     "loop_safe_stop",
-    "dict_equal"
+    "dict_equal",
 ]
 import asyncio
 import re
@@ -22,7 +23,7 @@ from pathlib import Path
 from typing import Callable, List, Optional, Union
 
 from bapsf_motion.utils import exceptions, toml
-from bapsf_motion.utils.units_ import units, counts, steps, rev
+from bapsf_motion.utils.units_ import counts, rev, steps, units
 
 _HERE = Path(__file__).resolve().parent
 _EXAMPLES = (_HERE / ".." / "examples").resolve()
@@ -35,6 +36,7 @@ class SimpleSignal:
     """
     A very simple, rudimentary class for creating signals.
     """
+
     _handlers = None
 
     @property
@@ -172,10 +174,7 @@ def loop_safe_stop(loop: asyncio.AbstractEventLoop, max_wait: Optional[float] = 
             loop.call_soon_threadsafe(task.cancel)
 
     tstart = datetime.now()
-    while any(
-            not (task.done() or task.cancelled())
-            for task in asyncio.all_tasks(loop)
-    ):
+    while any(not (task.done() or task.cancelled()) for task in asyncio.all_tasks(loop)):
         # continue waiting for all tasks to be cancelled
         if (datetime.now() - tstart).total_seconds() > max_wait:
             break

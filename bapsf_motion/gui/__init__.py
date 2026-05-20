@@ -1,4 +1,5 @@
 """Subpackage containing GUI's for `bapsf_motion`."""
+
 __all__ = [
     "ConfigureApp",
     "LaPDXYTransformCalculator",
@@ -11,14 +12,14 @@ __all__ = [
 try:
     from bapsf_motion.gui.configure.configure_ import ConfigureApp
     from bapsf_motion.gui.helpers import (
-        get_qapplication,
-        get_color_scheme,
         cast_color_to_rgba_string,
+        get_color_scheme,
+        get_qapplication,
     )
     from bapsf_motion.gui.icons import icon_name_dict
     from bapsf_motion.gui.lapd_xy_transform_calculator import (
         LaPDXYTransformCalculator,
-        LaPDXYTransformCalculatorApp
+        LaPDXYTransformCalculatorApp,
     )
 except (ModuleNotFoundError, ImportError) as err:
     msg = (

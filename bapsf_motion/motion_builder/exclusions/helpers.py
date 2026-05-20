@@ -2,17 +2,19 @@
 Module for helper functions associated with :term:`exclusion layer`
 functionality.
 """
+
+from __future__ import annotations
+
 __all__ = ["exclusion_factory", "register_exclusion", "exclusion_registry"]
 
 import inspect
 
 from numpydoc.docscrape import NumpyDocString, Parameter
-from typing import Dict, List, Set, Type, Union
+from typing import Dict, List, Set, Type, TYPE_CHECKING, Union
 
 from bapsf_motion.motion_builder.exclusions import base
 
-if False:
-    # noqa
+if TYPE_CHECKING:
     # for annotation, does not need real import
     from xarray import Dataset
 
@@ -107,19 +109,17 @@ class ExclusionRegistry:
         try:
             return self._registry[name]
         except KeyError:
-            raise ValueError(
-                f"The requested exclusion '{name}' does not exist."
-            )
+            raise ValueError(f"The requested exclusion '{name}' does not exist.")
 
     def get_names_by_dimensionality(self, ndim: int) -> Set[str]:
         return set(
-             name
-             for name, ex in self._registry.items()
-             if ex._dimensionality in (-1, ndim)
+            name
+            for name, ex in self._registry.items()
+            if ex._dimensionality in (-1, ndim)
         )
 
     def get_input_parameters(
-            self, name: str
+        self, name: str
     ) -> Dict[str, Dict[str, Union[inspect.Parameter, List[str]]]]:
         ex = self.get_exclusion(name)
         sig = inspect.signature(ex).parameters.copy()

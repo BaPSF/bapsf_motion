@@ -4,23 +4,22 @@ import ast
 import re
 
 from pathlib import Path
-from PySide6.QtCore import Qt, QPoint, Signal, Slot
+from PySide6.QtCore import QPoint, Qt, Signal, Slot
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QApplication,
-    QMainWindow,
-    QWidget,
-    QVBoxLayout,
+    QFrame,
     QHBoxLayout,
     QLabel,
-    QFrame,
     QLineEdit,
+    QMainWindow,
     QRadioButton,
+    QVBoxLayout,
+    QWidget,
 )
-from typing import Union, Optional
+from typing import Optional, Union
 
 from bapsf_motion.gui.widgets import StyleButton
-
 
 _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / "_images").resolve()
@@ -105,7 +104,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_2a = self._defaults["measure_2a"]
         self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
-        # mesures and constants need to be defined first
+        # measures and constants need to be defined first
         self.pivot_to_center = 58.771
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_drive = self.calc_pivot_to_drive()
@@ -317,11 +316,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         return measure_2b - self.velmex_rail_width - self.fiducial_width
 
     def calc_pivot_to_feedthru(self):
-        return (
-            self.ball_valve_cap_thickness
-            + self.measure_1
-            - self.probe_kf40_thickness
-        )
+        return self.ball_valve_cap_thickness + self.measure_1 - self.probe_kf40_thickness
 
     def calc_pivot_to_drive(self):
         return (
