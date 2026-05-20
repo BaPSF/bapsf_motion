@@ -2,6 +2,8 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.motion_group_.MotionGroup` actor class.
 """
+from __future__ import annotations
+
 __all__ = ["MotionGroup", "MotionGroupConfig", "handle_user_metadata"]
 __actors__ = ["MotionGroup"]
 
@@ -17,7 +19,6 @@ from bapsf_motion import transform
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_builder import MotionBuilder
-from bapsf_motion.transform import BaseTransform
 from bapsf_motion.utils import toml
 
 
@@ -222,6 +223,7 @@ class MotionGroupConfig(UserDict):
           }
 
     """
+
     #: required keys for the motion group configuration dictionary
     _required_metadata = {
         "motion_group": {
@@ -249,9 +251,9 @@ class MotionGroupConfig(UserDict):
     _mg_names = {"motion_group", "mgroup", "mg"}
 
     def __init__(
-            self,
-            config: Union[str, Dict[str, Any]],
-            logger: logging.Logger = None,
+        self,
+        config: Union[str, Dict[str, Any]],
+        logger: logging.Logger = None,
     ):
         self.logger = logging.getLogger("MG_config") if logger is None else logger
 
@@ -283,8 +285,7 @@ class MotionGroupConfig(UserDict):
 
             if not isinstance(config, dict):
                 raise TypeError(
-                    f"Expected 'config' to be of type dict, "
-                    f"got type {type(config)}."
+                    f"Expected 'config' to be of type dict, got type {type(config)}."
                 )
 
         if "name" not in config and len(config) != 1:
@@ -297,8 +298,7 @@ class MotionGroupConfig(UserDict):
 
             if not isinstance(config, dict):
                 raise TypeError(
-                    f"Expected 'config' to be of type dict, "
-                    f"got type {type(config)}."
+                    f"Expected 'config' to be of type dict, " f"got type {type(config)}."
                 )
 
         # validate config
@@ -409,8 +409,7 @@ class MotionGroupConfig(UserDict):
             except ValueError as err:
                 self.logger.error(f"{err.__class__.__name__}: {err}")
                 self.logger.error(
-                    "Drive axes are not configured properly, so discarding "
-                    "drive."
+                    "Drive axes are not configured properly, so discarding drive."
                 )
                 return {}
 
@@ -579,9 +578,7 @@ class MotionGroupConfig(UserDict):
         configuration component, then collect all the metadata and
         store it under the 'user' key.  Return the modified dictionary.
         """
-        return handle_user_metadata(
-            config=config, req_meta=req_meta, logger=self.logger
-        )
+        return handle_user_metadata(config=config, req_meta=req_meta, logger=self.logger)
 
     def link_motion_builder(self, mb: MotionBuilder):
         """
@@ -700,6 +697,7 @@ class MotionGroup(EventActor):
         thread and started.  This is all done via the :meth:`run`
         method. (DEFAULT: `False`)
     """
+
     # TODO: update docstring to fully explain how to define the `config`
     #       argument
     # TODO: Add a keyword 'mode' that changes how restrictive
@@ -746,8 +744,7 @@ class MotionGroup(EventActor):
             self.logger.error(f"{err.__class_.__name__}: {err}")
 
             config = MotionGroupConfig(
-                config={"name": "A Motion Group"},
-                logger=self.logger
+                config={"name": "A Motion Group"}, logger=self.logger
             )
             auto_run = False
 
@@ -781,9 +778,7 @@ class MotionGroup(EventActor):
         if isinstance(self.drive, Drive):
             self.drive.run(auto_run=auto_run)
 
-    def _spawn_drive(
-        self, config: Dict[str, Any]
-    ) -> Union[Drive, None]:
+    def _spawn_drive(self, config: Dict[str, Any]) -> Union[Drive, None]:
         """
         Spawn and return the |Drive| instance for the motion group.
 
@@ -838,8 +833,8 @@ class MotionGroup(EventActor):
 
         _inputs = {}
         for key, _kwarg in zip(
-                ("space", "layer", "exclusion"),
-                ("space", "layers", "exclusions"),
+            ("space", "layer", "exclusion"),
+            ("space", "layers", "exclusions"),
         ):
             try:
                 _inputs[_kwarg] = list(mb_config.pop(key).values())
@@ -853,7 +848,7 @@ class MotionGroup(EventActor):
         return self._mb
 
     def _spawn_transform(
-            self, config: Dict[str, Any]
+        self, config: Dict[str, Any]
     ) -> Union[transform.BaseTransform, None]:
         """Return an instance of the :term:`transformer`."""
         if config is None or not config:
@@ -875,6 +870,7 @@ class MotionGroup(EventActor):
     @property
     def config(self) -> "MotionGroupConfig":
         return self._config
+
     config.__doc__ = EventActor.config.__doc__
 
     @property
@@ -905,9 +901,7 @@ class MotionGroup(EventActor):
         if index is None:
             self._ml_index = None
         elif not isinstance(index, (int, np.integer)):
-            raise ValueError(
-                f"Expected type int for 'index', got {type(index)}"
-            )
+            raise ValueError(f"Expected type int for 'index', got {type(index)}")
         elif not np.isin(index, self.mb.motion_list.index):
             raise ValueError(
                 f"Given index {index} is out of range, "
@@ -1074,10 +1068,9 @@ class MotionGroup(EventActor):
         ):
             self.replace_motion_builder({})
 
-        if (
-            isinstance(self.transform, BaseTransform)
-            and self.transform.dimensionality not in (-1, self.drive.naxes)
-        ):
+        if isinstance(
+            self.transform, transform.BaseTransform
+        ) and self.transform.dimensionality not in (-1, self.drive.naxes):
             self.replace_transform({})
 
     def replace_motion_builder(self, mb: Union[MotionBuilder, Dict[str, Any]]):
@@ -1107,7 +1100,7 @@ class MotionGroup(EventActor):
         self._spawn_motion_builder(config)
         self.config.link_motion_builder(self.mb)
 
-    def replace_transform(self, tr: Union["transform.BaseTransform", Dict[str, Any]]):
+    def replace_transform(self, tr: Union[transform.BaseTransform, Dict[str, Any]]):
         if self.drive is None:
             self.logger.warning(
                 "The motion group's drive is not defined.  The drive must be "

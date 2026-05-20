@@ -2,6 +2,7 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.drive_.Drive` actor class.
 """
+
 __all__ = ["Drive"]
 __actors__ = ["Drive"]
 
@@ -146,8 +147,7 @@ class Drive(EventActor):
         #       does result in False unique entries
         if len(set(all_ips)) != len(all_ips):
             raise ValueError(
-                f"All specified axes must have unique IPs, duplicate "
-                f"IPs found."
+                f"All specified axes must have unique IPs, duplicate IPs found."
             )
 
         if len(set(all_anames)) != len(all_anames):
@@ -187,9 +187,8 @@ class Drive(EventActor):
                     f"type {type(settings[key])}."
                 )
 
-        if (
-            "motor_settings" in settings
-            and not isinstance(settings["motor_settings"], (dict, UserDict))
+        if "motor_settings" in settings and not isinstance(
+            settings["motor_settings"], (dict, UserDict)
         ):
             _motor_settings = settings.pop("motor_settings")
             if _motor_settings is not None:
@@ -234,6 +233,7 @@ class Drive(EventActor):
             _config["axes"][ii] = ax.config.copy()
 
         return _config
+
     config.__doc__ = EventActor.config.__doc__
 
     @property

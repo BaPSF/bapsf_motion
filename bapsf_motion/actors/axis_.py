@@ -2,6 +2,7 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.axis_.Axis` actor class.
 """
+
 __all__ = ["Axis"]
 __actors__ = ["Axis"]
 
@@ -74,6 +75,7 @@ class Axis(EventActor):
     ... )
 
     """
+
     # TODO: better handle naming of the Axis and child Motor
 
     def __init__(
@@ -169,6 +171,7 @@ class Axis(EventActor):
             "units_per_rev": self.units_per_rev.value.item(),
             "motor_settings": motor_settings,
         }
+
     config.__doc__ = EventActor.config.__doc__
 
     @property

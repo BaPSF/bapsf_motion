@@ -35,7 +35,10 @@ class BaseActor(ABC):
     """
 
     def __init__(
-        self, *, name: str = None, logger: logging.Logger = None,
+        self,
+        *,
+        name: str = None,
+        logger: logging.Logger = None,
     ):
         # setup logger to track events
         log_name = "Actor" if logger is None else logger.name
@@ -197,9 +200,8 @@ class EventActor(BaseActor, ABC):
             # no loop has been created or loop is not running
             return None
 
-        if (
-            hasattr(self.parent, "thread")
-            and isinstance(self.parent.thread, threading.Thread)
+        if hasattr(self.parent, "thread") and isinstance(
+            self.parent.thread, threading.Thread
         ):
             return self.parent.thread.ident
 
@@ -208,10 +210,7 @@ class EventActor(BaseActor, ABC):
         # asyncio future...this will time out if self._thread_id was
         # called from inside the event loop
         try:
-            future = asyncio.run_coroutine_threadsafe(
-                self._thread_id_async(),
-                self.loop
-            )
+            future = asyncio.run_coroutine_threadsafe(self._thread_id_async(), self.loop)
             thread_id = future.result(1)
             return thread_id
         except (concurrent.futures.TimeoutError, TimeoutError):
@@ -256,9 +255,7 @@ class EventActor(BaseActor, ABC):
         # _configure_before_run() but before the event loop is started.
         ...
 
-    def setup_event_loop(
-        self, loop: Optional[asyncio.AbstractEventLoop] = None
-    ):
+    def setup_event_loop(self, loop: Optional[asyncio.AbstractEventLoop] = None):
         """
         Set up the `asyncio` `event loop`_.  If the given loop is not an
         instance of `~asyncio.AbstractEventLoop`, then a new loop will
