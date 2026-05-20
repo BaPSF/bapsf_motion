@@ -1,4 +1,5 @@
 """Subpackage containing GUI's for `bapsf_motion`."""
+
 __all__ = [
     "ConfigureApp",
     "LaPDXYTransformCalculator",

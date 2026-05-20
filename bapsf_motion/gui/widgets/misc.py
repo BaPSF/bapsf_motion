@@ -1,4 +1,5 @@
 """This module contains miscellaneous custom Qt widgets."""
+
 __all__ = [
     "BatteryStatusIcon",
     "IPv4Validator",
@@ -98,11 +99,9 @@ class BatteryStatusIcon(QLabel):
         self.setPixmap(
             self._icon_map["unknown"].pixmap(self._pixmap_size, self._pixmap_size)
         )
-        self.setMaximumWidth(self._pixmap_size+8)
-        self.setMaximumHeight(self._pixmap_size+8)
-        self.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-        )
+        self.setMaximumWidth(self._pixmap_size + 8)
+        self.setMaximumHeight(self._pixmap_size + 8)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
 
     def set_battery_status(self, battery_status):
         try:

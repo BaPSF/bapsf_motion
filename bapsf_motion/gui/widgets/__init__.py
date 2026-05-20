@@ -2,6 +2,7 @@
 This module contains helper widgets for constructing the main GUIs in
 `bapsf_motion.gui`.
 """
+
 __all__ = [
     "BannerButton",
     "BatteryStatusIcon",

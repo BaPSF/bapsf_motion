@@ -3,6 +3,7 @@ Module contains the functionality associated with the
 :term:`transformer` configuration overlay portion of the configuration
 GUI.
 """
+
 __all__ = ["TransformConfigOverlay"]
 
 import ast
@@ -74,9 +75,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         # Define ADVANCED WIDGETS
         _w = QComboBox(parent=self)
         _w.setFixedWidth(250)
-        _w.addItems(
-            list(self.registry.get_names_by_dimensionality(self._mg.drive.naxes))
-        )
+        _w.addItems(list(self.registry.get_names_by_dimensionality(self._mg.drive.naxes)))
         _w.setEditable(False)
         _w.setCurrentText(tr_type)
         font = _w.font()
@@ -95,9 +94,7 @@ class TransformConfigOverlay(_ConfigOverlay):
 
     def _define_layout(self):
 
-        self._params_widget = self._define_params_widget(
-            self.combo_widget.currentText()
-        )
+        self._params_widget = self._define_params_widget(self.combo_widget.currentText())
 
         type_layout = QHBoxLayout()
         type_layout.setContentsMargins(0, 0, 0, 0)
@@ -143,10 +140,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         """
         The transform object that been constructed for :attr:`mg`.
         """
-        if (
-            self._transform is None
-            and bool(self.mg.config["transform"])
-        ):
+        if self._transform is None and bool(self.mg.config["transform"]):
             return self.mg.transform
 
         return self._transform
@@ -231,7 +225,7 @@ class TransformConfigOverlay(_ConfigOverlay):
             _txt.setFont(font)
             _variable_name = _txt
 
-            annotation = val['param'].annotation
+            annotation = val["param"].annotation
             if inspect.isclass(annotation):
                 annotation = annotation.__name__
             annotation = f"{annotation}".split(".")[-1]
@@ -339,12 +333,8 @@ class TransformConfigOverlay(_ConfigOverlay):
 
             if val is not None:
                 continue
-            elif (
-                annotation is None
-                or (
-                    hasattr(annotation, "__args__")
-                    and type(None) in annotation.__args__
-                )
+            elif annotation is None or (
+                hasattr(annotation, "__args__") and type(None) in annotation.__args__
             ):
                 # val is None and is allowed to be None
                 continue
@@ -371,8 +361,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         config = self.transform.config
 
         self.logger.info(
-            f"New transform configuration of type {config['type']} is "
-            f"being returned."
+            f"New transform configuration of type {config['type']} is being returned."
         )
         self.returnConfig.emit(config)
         self.close()

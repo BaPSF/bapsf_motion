@@ -2,6 +2,7 @@
 Module contains all the main functionality for the |MotionGroup|
 configuration portion of the configuration GUI.
 """
+
 __all__ = ["MGWidget"]
 
 import asyncio
@@ -85,6 +86,7 @@ class MSpaceMessageBox(QMessageBox):
     to be defined.  Thus, there are no restrictions on probe drive
     movement, and it is up to the user to prevent any collisions.
     """
+
     def __init__(self, parent: QWidget):
         super().__init__(parent)
 
@@ -367,8 +369,7 @@ class PyGameJoystickRunner(QRunnable):
         if isinstance(value, bool):
             self._run_loop = value
 
-    def set_immediate_handler(self, func, event_type):
-        ...
+    def set_immediate_handler(self, func, event_type): ...
 
     def quit(self) -> None:
         if pygame.get_init():
@@ -414,8 +415,7 @@ class AxisControlWidget(QWidget):
             )
             axis_display_mode = "interactive"
         self._interactive_display_mode = (
-            True if axis_display_mode == "interactive"
-            else False
+            True if axis_display_mode == "interactive" else False
         )
 
         self.setFixedWidth(120)
@@ -432,14 +432,14 @@ class AxisControlWidget(QWidget):
         _btn = ValidButton("FWD LIMIT", parent=self)
         _btn.update_style_sheet(
             {"background-color": "rgb(255, 95, 95)"},
-            action="checked"
+            action="checked",
         )
         self.limit_fwd_btn = _btn
 
         _btn = ValidButton("BWD LIMIT", parent=self)
         _btn.update_style_sheet(
             {"background-color": "rgb(255, 95, 95)"},
-            action="checked"
+            action="checked",
         )
         self.limit_bwd_btn = _btn
 
@@ -509,9 +509,7 @@ class AxisControlWidget(QWidget):
         # Note: Connecting/disconnecting of SimpleSignals happens in
         #       the link_axis and unlink_axis methods respectively
         #
-        self._update_display_timer.timeout.connect(
-            self._update_display_of_axis_status
-        )
+        self._update_display_timer.timeout.connect(self._update_display_of_axis_status)
 
         self.limit_fwd_btn.clicked.connect(self._move_off_limit)
         self.limit_bwd_btn.clicked.connect(self._move_off_limit)
@@ -826,9 +824,7 @@ class AxisControlWidget(QWidget):
         self.axis.motor.signals.connection_established.connect(
             self._emit_connection_established
         )
-        self.axis.motor.signals.connection_lost.connect(
-            self._emit_connection_lost
-        )
+        self.axis.motor.signals.connection_lost.connect(self._emit_connection_lost)
         self.axis.motor.signals.status_changed.connect(self.update_display_of_axis_status)
         self.axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
         self.axis.motor.signals.movement_started.connect(self._emit_movement_started)
@@ -846,9 +842,7 @@ class AxisControlWidget(QWidget):
             self.axis.motor.signals.connection_established.disconnect(
                 self._emit_connection_established
             )
-            self.axis.motor.signals.connection_lost.disconnect(
-                self._emit_connection_lost
-            )
+            self.axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
             self.axis.motor.signals.status_changed.disconnect(
                 self.update_display_of_axis_status
             )
@@ -936,9 +930,7 @@ class AxisControlWidget(QWidget):
             self.axis.motor.signals.connection_established.disconnect(
                 self._emit_connection_established
             )
-            self.axis.motor.signals.connection_lost.disconnect(
-                self._emit_connection_lost
-            )
+            self.axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
             self.axis.motor.signals.status_changed.disconnect(
                 self.update_display_of_axis_status
             )
@@ -991,8 +983,7 @@ class DriveBaseController(QWidget):
         self._connect_signals()
 
     @abstractmethod
-    def _initialize_widgets(self):
-        ...
+    def _initialize_widgets(self): ...
 
     def _initialize_axis_control_widgets(self):
         for ii in range(4):
@@ -1012,8 +1003,7 @@ class DriveBaseController(QWidget):
             acw.targetPositionChanged.connect(self._target_position_changed)
 
     @abstractmethod
-    def _define_layout(self) -> QLayout:
-        ...
+    def _define_layout(self) -> QLayout: ...
 
     @property
     def logger(self):
@@ -1246,7 +1236,7 @@ class DriveDesktopController(DriveBaseController):
                         stop: 0.1 rgb(52, 161, 219),
                         stop: 0.4 rgb(163, 163, 163),
                         stop: 1 rgb(163, 163, 163)
-                    )""".replace("\n", "")
+                    )""".replace("\n", ""),
                 ),
             },
             action="base",
@@ -1265,7 +1255,7 @@ class DriveDesktopController(DriveBaseController):
                         stop: 0.6 rgb(163, 163, 163),
                         stop: 0.9 rgb(250, 66, 45)
                         stop: 1 rgb(250, 66, 45)
-                    )""".replace("\n", "")
+                    )""".replace("\n", ""),
                 ),
             },
             action="checked",
@@ -1604,8 +1594,7 @@ class DriveGameController(DriveBaseController):
         self.controller_combo_widget.clear()
 
         controller_names = [
-            controller.get_name()
-            for controller in self.available_controllers
+            controller.get_name() for controller in self.available_controllers
         ]
         controller_names.append("")
         self.controller_combo_widget.addItems(controller_names)
@@ -1624,15 +1613,11 @@ class DriveGameController(DriveBaseController):
         self._pygame_joystick_runner.signals.joystickConnected.connect(
             self._update_connect_led
         )
-        self._pygame_joystick_runner.signals.axisMoved.connect(
-            self._handle_axis_move
-        )
+        self._pygame_joystick_runner.signals.axisMoved.connect(self._handle_axis_move)
         self._pygame_joystick_runner.signals.buttonPressed.connect(
             self._handle_button_press
         )
-        self._pygame_joystick_runner.signals.hatPressed.connect(
-            self._handle_hat_press
-        )
+        self._pygame_joystick_runner.signals.hatPressed.connect(self._handle_hat_press)
 
         self._thread_pool.start(self._pygame_joystick_runner)
 
@@ -1703,9 +1688,7 @@ class DriveGameController(DriveBaseController):
             sign = self.mspace_drive_polarity[axis_id] * sign
             direction = "forward" if sign > 0 else "backward"
 
-            self.mg.drive.send_command(
-                "continuous_jog", direction, axis=axis_id
-            )
+            self.mg.drive.send_command("continuous_jog", direction, axis=axis_id)
 
     @Slot(int)
     def _handle_button_press(self, button):
@@ -1891,9 +1874,8 @@ class DriveControlWidget(QWidget):
         controller = self.controller_combo_box.currentText()
         _w = self.stacked_controller_widget.currentWidget()
 
-        if (
-            (controller == "Desktop" and isinstance(_w, DriveDesktopController))
-            or (controller == "Game Controller" and isinstance(_w, DriveGameController))
+        if (controller == "Desktop" and isinstance(_w, DriveDesktopController)) or (
+            controller == "Game Controller" and isinstance(_w, DriveGameController)
         ):
             # no switch is needed
             pass
@@ -2190,8 +2172,7 @@ class MGWidget(QWidget):
         )
         _w.setIconSize(QSize(20, 20))
         _w.setToolTip(
-            "Flagged items indicate the base transforms, which are not "
-            "pre-configured."
+            "Flagged items indicate the base transforms, which are not pre-configured."
         )
         _w.setToolTipDuration(30000)
         self._transform_dropdown = _w
@@ -2218,10 +2199,7 @@ class MGWidget(QWidget):
 
         # if MGWidget launched without a drive then use a default
         # drive (if defined)
-        if (
-            "drive" not in self.mg_config
-            and self.drive_defaults[0][0] != "Custom Drive"
-        ):
+        if "drive" not in self.mg_config and self.drive_defaults[0][0] != "Custom Drive":
             self._mg_config["drive"] = _deepcopy_dict(self.drive_defaults[0][1])
 
         # if MGWidget launched without a transform then use a default
@@ -2283,9 +2261,7 @@ class MGWidget(QWidget):
         self.drive_dropdown.currentIndexChanged.connect(
             self._drive_dropdown_new_selection
         )
-        self.mb_dropdown.currentIndexChanged.connect(
-            self._mb_dropdown_new_selection
-        )
+        self.mb_dropdown.currentIndexChanged.connect(self._mb_dropdown_new_selection)
         self.transform_dropdown.currentIndexChanged.connect(
             self._transform_dropdown_new_selection
         )
@@ -2294,22 +2270,16 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.movementStarted.connect(self.disable_config_controls)
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
-        self.drive_control_widget.movementStopped.connect(
-            self._update_position_in_plot
-        )
+        self.drive_control_widget.movementStopped.connect(self._update_position_in_plot)
         self.drive_control_widget.targetPositionChanged.connect(
             self.mpl_canvas.update_target_position_plot
         )
-        self.drive_control_widget.driveStatusChanged.connect(
-            self.update_position_in_plot
-        )
+        self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.close)
 
-        self._update_plot_timer.timeout.connect(
-            self._update_position_in_plot
-        )
+        self._update_plot_timer.timeout.connect(self._update_position_in_plot)
 
     @Slot()
     def update_position_in_plot(self):
@@ -2377,9 +2347,7 @@ class MGWidget(QWidget):
 
     def _define_toml_layout(self):
         label = QLabel("Motion Group Configuration", parent=self)
-        label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
-        )
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
         font = label.font()
         font.setPointSize(16)
         label.setFont(font)
@@ -2455,9 +2423,7 @@ class MGWidget(QWidget):
         _icon.setIconSize(20)
         drive_legend_layout.addWidget(_icon)
         drive_legend_layout.addSpacing(6)
-        drive_legend_layout.addWidget(
-            QLabel("Drive configuration.", parent=self)
-        )
+        drive_legend_layout.addWidget(QLabel("Drive configuration.", parent=self))
 
         mb_legend_layout = QHBoxLayout()
         mb_legend_layout.setContentsMargins(2, 0, 0, 0)
@@ -2477,9 +2443,7 @@ class MGWidget(QWidget):
         _icon.setIconSize(20)
         tr_legend_layout.addWidget(_icon)
         tr_legend_layout.addSpacing(6)
-        tr_legend_layout.addWidget(
-            QLabel("Transformer configuration.", parent=self)
-        )
+        tr_legend_layout.addWidget(QLabel("Transformer configuration.", parent=self))
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -2530,9 +2494,7 @@ class MGWidget(QWidget):
             # exclude drives that are already deployed
             exclude = False
             ips = [ax["ip"] for ax in _defaults["axes"].values()]
-            if (
-                len(set(ips) - set(self._deployed_restrictions["ips"])) != len(ips)
-            ):
+            if len(set(ips) - set(self._deployed_restrictions["ips"])) != len(ips):
                 exclude = True
 
             # add to defaults
@@ -2548,9 +2510,7 @@ class MGWidget(QWidget):
 
                 # exclude drives that are already deployed
                 ips = [ax["ip"] for ax in entry["axes"].values()]
-                if (
-                    len(set(ips) - set(self._deployed_restrictions["ips"])) != len(ips)
-                ):
+                if len(set(ips) - set(self._deployed_restrictions["ips"])) != len(ips):
                     continue
 
                 # add to defaults
@@ -2622,7 +2582,8 @@ class MGWidget(QWidget):
             _dict = {"type": tr_name}
             for key, val in inputs.items():
                 _dict[key] = (
-                    "" if val["param"].default is val["param"].empty
+                    ""
+                    if val["param"].default is val["param"].empty
                     else val["param"].default
                 )
             _defaults_dict[tr_name] = _dict
@@ -2638,7 +2599,8 @@ class MGWidget(QWidget):
                 if "type" in _defaults or _defaults["type"] in _defaults_dict:
                     _type = _defaults["type"]
                     _defaults_dict[_name] = {
-                        **_defaults_dict[_type], **_deepcopy_dict(_defaults)
+                        **_defaults_dict[_type],
+                        **_deepcopy_dict(_defaults),
                     }
             else:
                 for key, val in _defaults.items():
@@ -2652,7 +2614,8 @@ class MGWidget(QWidget):
                     _name = val.pop("name")
                     _type = val["type"]
                     _defaults_dict[_name] = {
-                        **_defaults_dict[_type], **_deepcopy_dict(val)
+                        **_defaults_dict[_type],
+                        **_deepcopy_dict(val),
                     }
 
         if default_key not in _defaults_dict:
@@ -2721,8 +2684,7 @@ class MGWidget(QWidget):
         self.logger.info("Populating Motion Builder dropdown")
 
         mb_name_stored = (
-            None if self.mb_dropdown.count() == 0
-            else self.mb_dropdown.currentText()
+            None if self.mb_dropdown.count() == 0 else self.mb_dropdown.currentText()
         )
 
         # Block signals when repopulating the dropdown
@@ -2769,14 +2731,10 @@ class MGWidget(QWidget):
         self.mb_dropdown.blockSignals(False)
 
         # set default transform
-        if (
-            "motion_builder" in self.mg_config
-            and bool(self.mg_config["motion_builder"])
-        ):
+        if "motion_builder" in self.mg_config and bool(self.mg_config["motion_builder"]):
             _config = _deepcopy_dict(self.mg_config["motion_builder"])
-        elif (
-            not isinstance(self.mg, MotionGroup)
-            or not isinstance(self.mg.mb, MotionBuilder)
+        elif not isinstance(self.mg, MotionGroup) or not isinstance(
+            self.mg.mb, MotionBuilder
         ):
             self._mb_combo_last_index = 0
             self.mb_dropdown.setCurrentIndex(0)
@@ -2836,10 +2794,7 @@ class MGWidget(QWidget):
                 # transform already in dropdown
                 continue
 
-            if (
-                "type" not in tr_config
-                or tr_config["type"] not in allowed_transforms
-            ):
+            if "type" not in tr_config or tr_config["type"] not in allowed_transforms:
                 continue
 
             self.transform_dropdown.addItem(tr_name)
@@ -2847,11 +2802,10 @@ class MGWidget(QWidget):
             # add icon for base/template transforms
             if tr_name == tr_config["type"]:
                 count = self.transform_dropdown.count()
-                self.transform_dropdown.setItemIcon(count-1, _template_icon)
+                self.transform_dropdown.setItemIcon(count - 1, _template_icon)
 
-        if (
-            isinstance(self.mg, MotionGroup)
-            and isinstance(self.mg.transform, BaseTransform)
+        if isinstance(self.mg, MotionGroup) and isinstance(
+            self.mg.transform, BaseTransform
         ):
             _type = self.mg.transform.transform_type
             _config = _deepcopy_dict(self.mg.transform.config)
@@ -2897,9 +2851,7 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_drive_configuration(self):
-        self._overlay_setup(
-            DriveConfigOverlay(self.mg, parent=self)
-        )
+        self._overlay_setup(DriveConfigOverlay(self.mg, parent=self))
 
         # overlay signals
         self._overlay_widget.returnConfig.connect(self._change_drive)
@@ -2910,9 +2862,7 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_transform_configuration(self):
-        self._overlay_setup(
-            TransformConfigOverlay(self.mg, parent=self)
-        )
+        self._overlay_setup(TransformConfigOverlay(self.mg, parent=self))
 
         # overlay signals
         self._overlay_widget.returnConfig.connect(self._change_transform)
@@ -2922,9 +2872,7 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_motion_builder_configuration(self):
-        self._overlay_setup(
-            MotionBuilderConfigOverlay(self.mg, parent=self)
-        )
+        self._overlay_setup(MotionBuilderConfigOverlay(self.mg, parent=self))
 
         # overlay signals
         self._overlay_widget.returnConfig.connect(self._change_motion_builder)
@@ -3121,7 +3069,8 @@ class MGWidget(QWidget):
                 self.mb_dropdown.blockSignals(True)
 
                 self.mb_defaults[self._custom_mb_index] = (
-                    "Custom Motion Builder", mb_config
+                    "Custom Motion Builder",
+                    mb_config,
                 )
 
                 self._mb_combo_last_index = self._custom_mb_index
@@ -3148,9 +3097,8 @@ class MGWidget(QWidget):
         self._refresh_drive_control()
 
     def _update_mpl_canvas_mb(self):
-        if (
-            not isinstance(self.mg, MotionGroup)
-            or not isinstance(self.mg.mb, MotionBuilder)
+        if not isinstance(self.mg, MotionGroup) or not isinstance(
+            self.mg.mb, MotionBuilder
         ):
             self.mpl_canvas.unlink_motion_builder()
             return
@@ -3223,8 +3171,8 @@ class MGWidget(QWidget):
 
         _inputs = {}
         for key, _kwarg in zip(
-                ("space", "layer", "exclusion"),
-                ("space", "layers", "exclusions"),
+            ("space", "layer", "exclusion"),
+            ("space", "layers", "exclusions"),
         ):
             try:
                 _inputs[_kwarg] = list(mb_config.pop(key).values())
@@ -3269,15 +3217,15 @@ class MGWidget(QWidget):
             else mg.drive.config["name"]
         )
         drive_entry = (
-            {} if drive_name == "Custom Drive"
-            else _deepcopy_dict(mg.drive.config)
+            {} if drive_name == "Custom Drive" else _deepcopy_dict(mg.drive.config)
         )
         dd_index = self.drive_dropdown.findText(drive_name)
         if dd_index == -1:
             # reset/define custom drive entry
             for _default in self.drive_defaults:
                 self._drive_defaults[self._custom_drive_index] = (
-                    "Custom Drive", drive_entry
+                    "Custom Drive",
+                    drive_entry,
                 )
             self.drive_dropdown.blockSignals(True)
             self._populate_drive_dropdown()
@@ -3477,9 +3425,8 @@ class MGWidget(QWidget):
             # could not find the default config
             self._update_transform_dropdown()
             return
-        elif (
-            tr_name == tr_default_config["type"]
-            and any(val == "" for val in tr_default_config.values())
+        elif tr_name == tr_default_config["type"] and any(
+            val == "" for val in tr_default_config.values()
         ):
             # This is a not fully defined transform type
             self._change_transform({})
@@ -3515,9 +3462,7 @@ class MGWidget(QWidget):
         config = self.mg_config
         index = -1 if self._mg_index is None else self._mg_index
 
-        self.logger.info(
-            f"New MotionGroup configuration is being returned, {config}."
-        )
+        self.logger.info(f"New MotionGroup configuration is being returned, {config}.")
 
         # Terminate MG before returning config, so we do not risk having
         # conflicting MGs communicating with the motors

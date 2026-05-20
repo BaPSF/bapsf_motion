@@ -2,7 +2,11 @@
 Module contains base classes for various
 `~PySide6.QtWidgets.QWidget`\'s used in the Configuration GUI.
 """
-__all__ = ["_ConfigOverlay", "_OverlayWidget",]
+
+__all__ = [
+    "_ConfigOverlay",
+    "_OverlayWidget",
+]
 
 import logging
 
@@ -119,8 +123,7 @@ class _ConfigOverlay(_OverlayWidget):
 
     @abstractmethod
     @Slot()
-    def return_and_close(self):
-        ...
+    def return_and_close(self): ...
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")

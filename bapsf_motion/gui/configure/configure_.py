@@ -4,6 +4,7 @@ Module contains both the `~PySide6.QtWidgets.QMainWindow` in
 `ConfigureGUI` and the `~PySide6.QtWidgets.QApplication` in
 `ConfigureApp`.
 """
+
 __all__ = ["ConfigureGUI", "ConfigureApp"]
 
 import logging
@@ -49,7 +50,6 @@ from bapsf_motion.utils import _deepcopy_dict, toml
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
 
-
 _HERE = Path(__file__).parent
 
 
@@ -64,9 +64,7 @@ class RunTOMLWidget(QWidget):
         self._TOML_FILE = None
 
         label = QLabel("Run Configuration", parent=self)
-        label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom
-        )
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
         font = label.font()
         font.setPointSize(16)
         label.setFont(font)
@@ -139,10 +137,7 @@ class RunTOMLWidget(QWidget):
 
     @Slot()
     def export_toml(self):
-        path = (
-            "" if self._TOML_FILE is None
-            else f"{self._TOML_FILE.parent}"
-        )
+        path = "" if self._TOML_FILE is None else f"{self._TOML_FILE.parent}"
 
         file_name, _filter = QFileDialog.getSaveFileName(
             parent=self,
@@ -167,8 +162,7 @@ class RunTOMLWidget(QWidget):
     @Slot()
     def import_toml(self):
         path = (
-            QDir.currentPath() if self._TOML_FILE is None
-            else f"{self._TOML_FILE.parent}"
+            QDir.currentPath() if self._TOML_FILE is None else f"{self._TOML_FILE.parent}"
         )
 
         file_name, _filter = QFileDialog.getOpenFileName(
@@ -259,9 +253,7 @@ class RunWidget(QWidget):
         self.run_name_widget.setVisible(self._enable_run_name)
 
         _txt = QLabel("Run Name:  ", parent=self)
-        _txt.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
-        )
+        _txt.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         _txt.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _txt.font()
         font.setPointSize(16)
@@ -388,11 +380,15 @@ class ConfigureGUI(QMainWindow):
 
         self._define_main_window()
 
-        enable_run_name = False if (
-            self.defaults is not None
-            and "run_name" in self.defaults
-            and self.defaults["run_name"] != ""
-        ) else True
+        enable_run_name = (
+            False
+            if (
+                self.defaults is not None
+                and "run_name" in self.defaults
+                and self.defaults["run_name"] != ""
+            )
+            else True
+        )
 
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
@@ -421,7 +417,8 @@ class ConfigureGUI(QMainWindow):
 
         if config is None:
             run_name = (
-                "A New Run" if self.defaults is None
+                "A New Run"
+                if self.defaults is None
                 else self.defaults.get("run_name", "A New Run")
             )
             config = {"name": run_name}
@@ -438,9 +435,7 @@ class ConfigureGUI(QMainWindow):
 
         self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
-        self._run_widget.modify_mg_btn.clicked.connect(
-            self._motion_group_modify_existing
-        )
+        self._run_widget.modify_mg_btn.clicked.connect(self._motion_group_modify_existing)
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
@@ -568,7 +563,8 @@ class ConfigureGUI(QMainWindow):
             label = self._generate_mg_list_name(key, mg.config["name"])
             self.logger.info(f"Adding to MG List - {label}")
             _icon = (
-                qta.icon(icon_name_dict["window-close"], color="red") if mg.terminated
+                qta.icon(icon_name_dict["window-close"], color="red")
+                if mg.terminated
                 else qta.icon(icon_name_dict["check-circle"], color="green")
             )  # type: QIcon
             _item = QListWidgetItem(
@@ -647,15 +643,13 @@ class ConfigureGUI(QMainWindow):
                 f"Expected 'defaults' to be of type dict, got type {type(defaults)}."
             )
 
-        if (
-            "bapsf_motion" not in defaults.keys()
-            or not isinstance(defaults["bapsf_motion"], dict)
+        if "bapsf_motion" not in defaults.keys() or not isinstance(
+            defaults["bapsf_motion"], dict
         ):
             # dictionary does not contain a setup for bapsf_motion
             defaults = None
-        elif (
-            "defaults" not in defaults["bapsf_motion"].keys()
-            or not isinstance(defaults["bapsf_motion"]["defaults"], dict)
+        elif "defaults" not in defaults["bapsf_motion"].keys() or not isinstance(
+            defaults["bapsf_motion"]["defaults"], dict
         ):
             # dictionary does not contain a defaults setup for bapsf_motion
             defaults = None
@@ -759,14 +753,10 @@ class ConfigureGUI(QMainWindow):
 
     @staticmethod
     def _get_mg_name_from_list_name(list_name):
-        match = re.compile(
-            r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)"
-        ).fullmatch(list_name)
-        return (
-            None
-            if match is None
-            else (int(match.group("index")), match.group("name"))
+        match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
+            list_name
         )
+        return None if match is None else (int(match.group("index")), match.group("name"))
 
     def _launch_lapd_xy_calculator(self):
         if "lapd_xy_calculator" in self._launched_windows:

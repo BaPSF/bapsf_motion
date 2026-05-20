@@ -3,6 +3,7 @@ Module contains the `~PySide6.QtWidgets.QWidget` used for displaying /
 plotting the :term:`motion space` associated with a |MotionBuilder|
 instance.
 """
+
 __all__ = ["MotionSpaceDisplay"]
 
 import logging
@@ -24,7 +25,9 @@ from bapsf_motion.motion_builder import MotionBuilder
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
 from matplotlib.backend_bases import DrawEvent, Event, MouseEvent, PickEvent  # noqa
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
-from matplotlib.backends.backend_qtagg import NavigationToolbar2QT as NavigationToolbar  # noqa
+from matplotlib.backends.backend_qtagg import (
+    NavigationToolbar2QT as NavigationToolbar,
+)  # noqa
 
 
 class MotionSpaceDisplay(QFrame):
@@ -36,12 +39,14 @@ class MotionSpaceDisplay(QFrame):
     animateMotionListCleared = Signal()
 
     _default_legend_names = [
-        "motion_list", "probe", "position", "target", "insertion_point"
+        "motion_list",
+        "probe",
+        "position",
+        "target",
+        "insertion_point",
     ]
 
-    def __init__(
-        self, mb: MotionBuilder = None, parent=None
-    ):
+    def __init__(self, mb: MotionBuilder = None, parent=None):
         super().__init__(parent=parent)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
@@ -57,16 +62,14 @@ class MotionSpaceDisplay(QFrame):
 
         self._motionlist_plot_names = None  # type: Union[None, List[str]]
 
-        self.setStyleSheet(
-            """
+        self.setStyleSheet("""
             MotionSpaceDisplay {
                 border: 2px solid rgb(125, 125, 125);
                 border-radius: 5px; 
                 padding: 0px;
                 margin: 0px;
             }
-            """
-        )
+            """)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self.mpl_canvas = FigureCanvas()
@@ -91,7 +94,9 @@ class MotionSpaceDisplay(QFrame):
         self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
             "pick_event", self.on_pick  # noqa
         )
-        self._cid_on_draw = self.mpl_canvas.mpl_connect("draw_event", self.on_draw)  # noqa
+        self._cid_on_draw = self.mpl_canvas.mpl_connect(
+            "draw_event", self.on_draw
+        )  # noqa
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -269,8 +274,8 @@ class MotionSpaceDisplay(QFrame):
                 # this is the trace
                 ax, handler = stuff  # type: plt.Axes, plt.Line2D
 
-                xdata = self.mb.motion_list[0:to_index + 1, 0]
-                ydata = self.mb.motion_list[0:to_index + 1, 1]
+                xdata = self.mb.motion_list[0 : to_index + 1, 0]
+                ydata = self.mb.motion_list[0 : to_index + 1, 1]
 
                 handler.set_xdata(xdata)
                 handler.set_ydata(ydata)
@@ -278,8 +283,8 @@ class MotionSpaceDisplay(QFrame):
                 # trace has not been made yet
                 ax = self.mpl_canvas.figure.gca()
 
-                xdata = self.mb.motion_list[0:to_index + 1, 0]
-                ydata = self.mb.motion_list[0:to_index + 1, 1]
+                xdata = self.mb.motion_list[0 : to_index + 1, 0]
+                ydata = self.mb.motion_list[0 : to_index + 1, 1]
 
                 ax.plot(
                     xdata,
@@ -293,12 +298,12 @@ class MotionSpaceDisplay(QFrame):
                 # this is the start and end points
                 ax = self.mpl_canvas.figure.gca()
 
-                points = self.mb.motion_list[0:to_index + 1, ...]
+                points = self.mb.motion_list[0 : to_index + 1, ...]
 
                 ax.scatter(
                     x=points[..., 0],
                     y=points[..., 1],
-                    s=6 ** 2,
+                    s=6**2,
                     linewidth=1,
                     facecolors="none",
                     edgecolors="black",
@@ -307,7 +312,7 @@ class MotionSpaceDisplay(QFrame):
                 )
 
         self.mpl_canvas.draw()
-        if to_index == self.mb.motion_list.shape[0]-1:
+        if to_index == self.mb.motion_list.shape[0] - 1:
             self._animate_payload["finished"] = True
             self.animateMotionListFinished.emit()
             return
@@ -442,7 +447,7 @@ class MotionSpaceDisplay(QFrame):
             ax.scatter(
                 x=insertion_point[0],
                 y=insertion_point[1],
-                s=3 ** 2,
+                s=3**2,
                 linewidth=2,
                 facecolors="none",
                 edgecolors="red",
@@ -572,7 +577,7 @@ class MotionSpaceDisplay(QFrame):
                 ax.scatter(
                     x=pts[..., 0],
                     y=pts[..., 1],
-                    s=4 ** 2,
+                    s=4**2,
                     facecolors=facecolors[color_index],
                     edgecolors=edgecolor,
                     label=_label,
@@ -589,13 +594,15 @@ class MotionSpaceDisplay(QFrame):
         _label = "motion_list"
         motion_list = self.mb.motion_list
         facecolors = (
-            "none" if (
+            "none"
+            if (
                 motion_list is None
                 or (
                     len(self.mb.layers) > 1
                     and self.mb.layer_to_motionlist_scheme == "sequential"
                 )
-            ) else "deepskyblue"
+            )
+            else "deepskyblue"
         )
         stuff = self._get_plot_axis_by_name(_label)
         if stuff is not None:
@@ -614,7 +621,7 @@ class MotionSpaceDisplay(QFrame):
             ax.scatter(
                 x=motion_list[..., 0],
                 y=motion_list[..., 1],
-                s=4 ** 2,
+                s=4**2,
                 linewidth=1,
                 facecolors=facecolors,
                 edgecolors="black",
@@ -658,7 +665,7 @@ class MotionSpaceDisplay(QFrame):
             ax.scatter(
                 x=position[0],
                 y=position[1],
-                s=7 ** 2,
+                s=7**2,
                 linewidth=2,
                 facecolors="none",
                 edgecolors="blue",
@@ -700,7 +707,7 @@ class MotionSpaceDisplay(QFrame):
             ax.scatter(
                 x=position[0],
                 y=position[1],
-                s=7 ** 2,
+                s=7**2,
                 linewidth=2,
                 facecolors="none",
                 edgecolors="black",
@@ -712,13 +719,13 @@ class MotionSpaceDisplay(QFrame):
         _label = "probe"
         stuff = self._get_plot_axis_by_name(_label)
         insertion_point = (
-            None if not isinstance(self.mb, MotionBuilder)
+            None
+            if not isinstance(self.mb, MotionBuilder)
             else self.mb.get_insertion_point()
         )
         if (
-            (insertion_point is None or position is None or not self.display_probe)
-            and stuff is not None
-        ):
+            insertion_point is None or position is None or not self.display_probe
+        ) and stuff is not None:
             # not enough to update plot, so remove EXISTING plot
             ax, handler = stuff
             handler.remove()

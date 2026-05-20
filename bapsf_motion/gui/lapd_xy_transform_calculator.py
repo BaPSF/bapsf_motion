@@ -316,11 +316,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         return measure_2b - self.velmex_rail_width - self.fiducial_width
 
     def calc_pivot_to_feedthru(self):
-        return (
-            self.ball_valve_cap_thickness
-            + self.measure_1
-            - self.probe_kf40_thickness
-        )
+        return self.ball_valve_cap_thickness + self.measure_1 - self.probe_kf40_thickness
 
     def calc_pivot_to_drive(self):
         return (

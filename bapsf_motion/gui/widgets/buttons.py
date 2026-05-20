@@ -1,4 +1,5 @@
 """This module contains custom Qt buttons."""
+
 __all__ = [
     "BannerButton",
     "DiscardButton",
@@ -162,8 +163,7 @@ class StyleButton(QPushButton):
             self._checked_style = {**_style, **styles}
         else:  # action == "disabled
             _style = (
-                self.disabled_style if not reset
-                else {**self._default_disabled_style}
+                self.disabled_style if not reset else {**self._default_disabled_style}
             )
             self._disabled_style = {**_style, **styles}
 

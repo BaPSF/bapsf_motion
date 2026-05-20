@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, List, Union
+from typing import Any, Callable, Dict, List, Union
 
 from bapsf_motion.actors import Axis, Drive, MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
@@ -115,9 +115,7 @@ class AxisConfigWidget(QWidget):
 
     def _define_layout(self):
         _label = QLabel("IP:  ", parent=self)
-        _label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
-        )
+        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
         font.setPointSize(16)
@@ -125,9 +123,7 @@ class AxisConfigWidget(QWidget):
         ip_label = _label
 
         _label = QLabel("cm / rev", parent=self)
-        _label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
-        )
+        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
         font.setPointSize(16)
@@ -135,9 +131,7 @@ class AxisConfigWidget(QWidget):
         cm_per_rev_label = _label
 
         _label = QLabel("online", parent=self)
-        _label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
-        )
+        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
         font.setPointSize(12)
@@ -166,9 +160,7 @@ class AxisConfigWidget(QWidget):
         layout = QGridLayout()
 
         _label = QLabel("Limit\nMode", parent=self)
-        _label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight
-        )
+        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
         font.setPointSize(16)
@@ -210,8 +202,10 @@ class AxisConfigWidget(QWidget):
 
         layout.addWidget(
             _label,
-            0, 0,
-            3, 1,
+            0,
+            0,
+            3,
+            1,
             alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
         )
         layout.addWidget(self.limit_mode_slider, 1, 2, 1, 7)
@@ -390,9 +384,7 @@ class AxisConfigWidget(QWidget):
             # ip did not change
             return ip
         elif ipv4_pattern.fullmatch(ip) is None:
-            self.logger.error(
-                f"Supplied IP address ({ip}) is not a valid IPv4."
-            )
+            self.logger.error(f"Supplied IP address ({ip}) is not a valid IPv4.")
             return
 
         for handler in self._ip_handlers:
@@ -482,9 +474,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             pass
         elif parent.drive_dropdown.currentText != "Custom Drive":
             index = parent.drive_dropdown.currentIndex()
-            _drive_config = _deepcopy_dict(
-                parent.drive_defaults[index][1]
-            )
+            _drive_config = _deepcopy_dict(parent.drive_defaults[index][1])
         elif "drive" in parent._initial_mg_config:
             _drive_config = _deepcopy_dict(parent._initial_mg_config["drive"])
 
@@ -538,9 +528,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
     def _define_second_row_layout(self):
         _label = QLabel("Drive Name:  ", parent=self)
-        _label.setAlignment(
-            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
-        )
+        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
         font.setPointSize(16)
@@ -630,8 +618,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         name = self.drive_config.get("name", "")
         self.dr_name_widget.setText(name)
 
-    def set_drive_handler(self, handler: callable):
-        ...
+    def set_drive_handler(self, handler: Callable): ...
 
     def _validate_ip(self, ip):
         existing_ips = self.axis_ips
@@ -655,21 +642,15 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.logger.info("Validating drive.")
 
         if not all([isinstance(axw.axis, Axis) for axw in self.axis_widgets]):
-            self.logger.warning(
-                "Drive is not valid since not all axes are configured."
-            )
+            self.logger.warning("Drive is not valid since not all axes are configured.")
             self._change_validation_state(False)
             return
         elif not all([axw.axis.connected for axw in self.axis_widgets]):
-            self.logger.warning(
-                "Drive is not valid since not all axes are online."
-            )
+            self.logger.warning("Drive is not valid since not all axes are online.")
             self._change_validation_state(False)
             return
         elif self.dr_name_widget.text() == "":
-            self.logger.warning(
-                "Drive is not valid, it needs a name."
-            )
+            self.logger.warning("Drive is not valid, it needs a name.")
             self._change_validation_state(False)
             return
 
@@ -701,15 +682,13 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         _frame.layout().addWidget(_widget)
         _frame.setObjectName("acw_frame")
-        _frame.setStyleSheet(
-            """
+        _frame.setStyleSheet("""
             QFrame#acw_frame {
                 border: 2px solid rgb(60, 60, 60);
                 border-radius: 5px;
                 padding: 6px;
             }
-            """
-        )
+            """)
 
         return _frame
 

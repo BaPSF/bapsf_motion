@@ -2,6 +2,7 @@
 Module contains the functionality associated with the |MotionBuilder|
 configuration overlay portion of the configuration GUI.
 """
+
 __all__ = ["MotionBuilderConfigOverlay"]
 
 import ast
@@ -91,7 +92,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._param_inputs = {}  # type: Dict[str, Any]
         self._params_widget = QWidget(parent=self)
         self._params_field_widget = QWidget(parent=self._params_widget)
-        self._params_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
+        self._params_input_widgets = (
+            {}
+        )  # type: Dict[str, Dict[str, QLineEditSpecialized]]
         self.params_label = None
         self.params_add_btn = None
         self.params_discard_btn = None
@@ -125,16 +128,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.animate_ml_widget = QFrame(parent=self)
         self.animate_ml_widget.setObjectName("animate_ml_controls")
-        self.animate_ml_widget.setStyleSheet(
-            """
+        self.animate_ml_widget.setStyleSheet("""
             QFrame#animate_ml_controls {
                 border: 2px solid rgb(125, 125, 125);
                 border-radius: 5px; 
                 padding: 0px;
                 margin: 0px;
             }
-            """
-        )
+            """)
         self.animate_ml_widget.setFixedWidth(72)
         self.animate_ml_widget.setSizePolicy(
             QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding
@@ -382,7 +383,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layout.setColumnMinimumWidth(4, 18)
         layout.setRowMinimumHeight(1, 12)
         layout.addWidget(
-            _txt, 0, 0, 1, 8,
+            _txt,
+            0,
+            0,
+            1,
+            8,
             alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop,
         )
 
@@ -424,7 +429,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
             _txt = QLineEditSpecialized(
                 f"{(args['range'][1] - args['range'][0]) / args['num']:.2f}",
-                parent=self
+                parent=self,
             )
             _txt.setFont(font)
             _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -557,7 +562,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         ml_combine_layout.addWidget(self.layer_ml_combine_toggle)
         ml_combine_layout.addWidget(_merge_txt)
         ml_combine_layout.addStretch()
-        ml_combine_layout.addSpacing(24+10+12)
+        ml_combine_layout.addSpacing(24 + 10 + 12)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -627,9 +632,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def _define_params_field_widget(self, ex_or_ly, _type):
         _registry = (
-            self.exclusion_registry
-            if ex_or_ly == "exclusion"
-            else self.layer_registry
+            self.exclusion_registry if ex_or_ly == "exclusion" else self.layer_registry
         )
         _hints = (
             self.parameter_hints_exclusion
@@ -689,7 +692,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setFont(font)
             _variable_name = _txt
 
-            annotation = val['param'].annotation
+            annotation = val["param"].annotation
             if inspect.isclass(annotation):
                 annotation = annotation.__name__
             annotation = f"{annotation}".split(".")[-1]
@@ -802,7 +805,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                         stop: 0.1 {_color_str},
                         stop: 0.12 rgb(163, 163, 163),
                         stop: 1 rgb(163, 163, 163)
-                    )""".replace("\n", "")
+                    )""".replace("\n", ""),
                 ),
             },
             action="base",
@@ -821,7 +824,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                         stop: 0.88 rgb(163, 163, 163),
                         stop: 0.9 {_color_str},
                         stop: 1 {_color_str}
-                    )""".replace("\n", "")
+                    )""".replace("\n", ""),
                 ),
             },
             action="checked",
@@ -901,9 +904,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             exclusions = self.mb.exclusions.copy()
             for ex in exclusions:
                 if ex.exclusion_type in _available:
-                    ex_names.append(
-                        self._generate_list_name(ex.name, ex.exclusion_type)
-                    )
+                    ex_names.append(self._generate_list_name(ex.name, ex.exclusion_type))
                     continue
 
                 self.mb.remove_exclusion(ex.name)
@@ -913,9 +914,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _initialize_layer_list_box(self):
         ly_types = set(ly.layer_type for ly in self.mb.layers)
 
-        _available = self.layer_registry.get_names_by_dimensionality(
-            self.dimensionality
-        )
+        _available = self.layer_registry.get_names_by_dimensionality(self.dimensionality)
         ly_names = []
         if not _available:
             self.logger.warning(
@@ -934,9 +933,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             layers = self.mb.layers.copy()
             for ly in layers:
                 if ly.layer_type in _available:
-                    ly_names.append(
-                        self._generate_list_name(ly.name, ly.layer_type)
-                    )
+                    ly_names.append(self._generate_list_name(ly.name, ly.layer_type))
                     continue
 
                 self.mb.remove_layer(ly.name)
@@ -988,9 +985,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.dimensionality
         )
         _icons = [None] * len(_available)
-        _exclude_governors = (
-            bool(self.mb.exclusions)
-            and isinstance(self.mb.exclusions[0], GovernExclusion)
+        _exclude_governors = bool(self.mb.exclusions) and isinstance(
+            self.mb.exclusions[0], GovernExclusion
         )
         _govern_icon = qta.icon("mdi.crown")
         for ii, name in enumerate(tuple(_available)):
@@ -1093,9 +1089,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.params_label.setText("New Layer")
 
-        _available = self.layer_registry.get_names_by_dimensionality(
-            self.dimensionality
-        )
+        _available = self.layer_registry.get_names_by_dimensionality(self.dimensionality)
         self._refresh_params_combo_box(_available)
         self.params_combo_box.setObjectName("layer")
 
@@ -1181,9 +1175,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self._hide_and_clear_params_widget()
 
         self.params_label.setText(ly.name)
-        _available = self.layer_registry.get_names_by_dimensionality(
-            self.dimensionality
-        )
+        _available = self.layer_registry.get_names_by_dimensionality(self.dimensionality)
         self._refresh_params_combo_box(_available, current=ly.layer_type)
         self.params_combo_box.setObjectName("layer")
 
@@ -1249,7 +1241,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.params_combo_box.setToolTipDuration(30000)
         else:
             self.params_combo_box.setToolTip("")
-            self.params_combo_box.setToolTipDuration(0)        # set combo box tool tip
+            self.params_combo_box.setToolTipDuration(0)  # set combo box tool tip
         if _type == "exclusion":
             self.params_combo_box.setToolTip(
                 "Items with a crown are Govern exclusions.  You can only "
@@ -1312,12 +1304,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         for np_repr in ("inf", "nan"):
             single_quote_string = f"'{np_repr}'"
             double_quote_string = f'"{np_repr}"'
-            if (
-                np_repr in _input_string
-                and not (
-                    single_quote_string in _input_string
-                    or double_quote_string in _input_string
-                )
+            if np_repr in _input_string and not (
+                single_quote_string in _input_string
+                or double_quote_string in _input_string
             ):
                 _input_string = _input_string.replace(np_repr, single_quote_string)
                 input_widget.setText(_input_string)
@@ -1330,10 +1319,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
             if inspect.isclass(anno) and issubclass(anno, str):
                 _input = _input_string
-            elif (
-                typing.get_origin(anno) is Union
-                and str in typing.get_args(anno)
-            ):
+            elif typing.get_origin(anno) is Union and str in typing.get_args(anno):
                 _input = _input_string
             elif _input_string == "":
                 _input = None
@@ -1380,10 +1366,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             return None
 
         if axis_input_type == "delta":
-            old_val = (
-                    (axis_config["range"][1] - axis_config["range"][0])
-                    / axis_config["num"]
-            )
+            old_val = (axis_config["range"][1] - axis_config["range"][0]) / axis_config[
+                "num"
+            ]
         else:
             old_val = (
                 axis_config["range"][0]
@@ -1406,38 +1391,32 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         elif axis_input_type == "min" and new_val >= axis_config["range"][1]:
             new_val_good = False
         elif axis_input_type == "min" and (
-                old_delta / (axis_config["range"][1] - new_val) >= 0.1
+            old_delta / (axis_config["range"][1] - new_val) >= 0.1
         ):
             new_val_good = False
         elif axis_input_type == "min":
             axis_config["range"][0] = new_val
             axis_config["num"] = int(
-                np.ceil(
-                    (axis_config["range"][1] - new_val) / old_delta
-                )
+                np.ceil((axis_config["range"][1] - new_val) / old_delta)
             )
         elif axis_input_type == "max" and new_val <= axis_config["range"][0]:
             new_val_good = False
         elif axis_input_type == "max" and (
-                old_delta / (new_val - axis_config["range"][0]) >= 0.1
+            old_delta / (new_val - axis_config["range"][0]) >= 0.1
         ):
             new_val_good = False
         elif axis_input_type == "max":
             axis_config["range"][1] = new_val
             axis_config["num"] = int(
-                np.ceil(
-                    (new_val - axis_config["range"][0]) / old_delta
-                )
+                np.ceil((new_val - axis_config["range"][0]) / old_delta)
             )
         elif axis_input_type == "delta" and (
-                new_val / (axis_config["range"][1] - axis_config["range"][0]) >= 0.1
+            new_val / (axis_config["range"][1] - axis_config["range"][0]) >= 0.1
         ):
             new_val_good = False
         elif axis_input_type == "delta":
             num = int(
-                np.ceil(
-                    (axis_config["range"][1] - axis_config["range"][0]) / new_val
-                )
+                np.ceil((axis_config["range"][1] - axis_config["range"][0]) / new_val)
             )
             axis_config["num"] = num
 
@@ -1462,12 +1441,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
             if val is not None:
                 continue
-            elif (
-                annotation is None
-                or (
-                    hasattr(annotation, "__args__")
-                    and type(None) in annotation.__args__
-                )
+            elif annotation is None or (
+                hasattr(annotation, "__args__") and type(None) in annotation.__args__
             ):
                 # val is None and is allowed to be None
                 continue
@@ -1637,7 +1612,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
             if axis.units.physical_type == u.get_physical_type("length"):
                 _range = [-55.0, 55.0]
-                num = int(np.ceil((_range[1] - _range[0]) / .25))
+                num = int(np.ceil((_range[1] - _range[0]) / 0.25))
 
                 _convert = (1 * u.cm).to(axis.units)  # type: u.Quantity
                 _convert = _convert.value
@@ -1699,8 +1674,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def return_and_close(self):
         config = self.mb.config
 
-        self.logger.info(
-            f"New MotionBuilder configuration is being returned, {config}."
-        )
+        self.logger.info(f"New MotionBuilder configuration is being returned, {config}.")
         self.returnConfig.emit(config)
         self.close()
