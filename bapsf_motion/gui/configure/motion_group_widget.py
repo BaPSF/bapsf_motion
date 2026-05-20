@@ -2053,7 +2053,7 @@ class MGWidget(QWidget):
         super().__init__(parent=parent)
 
         # Note: have to keep reference to parent, since (for some unknown
-        #       reason) we are loosing reference to it...self.parent()
+        #       reason) we are losing reference to it...self.parent()
         #       eventually becomes a QStackedWidget ??
         self._parent = parent
 

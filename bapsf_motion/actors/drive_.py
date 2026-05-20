@@ -23,7 +23,7 @@ class Drive(EventActor):
     the physical space, but it is fully aware of the axes that make up
     the probe drive.  The axes are ordered, but the actor has no clue
     how these axes are oriented in the physical space.  This actor
-    operates in phsical units of the axes.
+    operates in physical units of the axes.
 
     Parameters
     ----------

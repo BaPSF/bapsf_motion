@@ -204,7 +204,7 @@ class EventActor(BaseActor, ABC):
         ):
             return self.parent.thread.ident
 
-        # we do not know if self._thread_id call came from insided the
+        # we do not know if self._thread_id call came from inside the
         # event loop or outside...attempt getting the thread id via an
         # asyncio future...this will time out if self._thread_id was
         # called from inside the event loop

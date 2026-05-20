@@ -21,7 +21,7 @@ class Axis(EventActor):
     This actor is ignorant of how it is situated in a probe drive, but
     is fully aware of the entire physical axis that defines it and the
     motor that moves the axis.  This actor operates in physical units
-    and will handle all the necessary unit converstion to communicate
+    and will handle all the necessary unit conversion to communicate
     with the |Motor| actor.
 
     Parameters

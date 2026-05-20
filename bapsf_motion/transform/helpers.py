@@ -85,7 +85,7 @@ def transform_factory(drive: "Drive", *, tr_type: str, **settings):
         Name of the coordinate transform type.
 
     settings
-        Keyword arguments to be passed to the retrieved coordiante
+        Keyword arguments to be passed to the retrieved coordinate
         transform class.
 
     Returns

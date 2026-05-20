@@ -137,7 +137,7 @@ class MotionGroupConfig(UserDict):
           exclusions.0.cone_full_angle = 60
           #
           # layers define the points where a probe should move to
-          # - the example given defines a grid of points wih 11
+          # - the example given defines a grid of points with 11
           #   locations along the 1st axis from 0 to 30, and 21
           #   locations along the 2nd axis from -30 to 30
           # - layer entries should be numbered starting with 0 since
@@ -256,7 +256,7 @@ class MotionGroupConfig(UserDict):
         self.logger = logging.getLogger("MG_config") if logger is None else logger
 
         # Make sure config is the right type, and is a dict by the
-        # end of ths code block
+        # end of the code block
         if isinstance(config, MotionGroupConfig):
             # This would happen if Manager is passing in a configuration
             pass
@@ -708,7 +708,7 @@ class MotionGroup(EventActor):
     #          a data run
     #       2. 'build' would be relaxed since it is intended as a
     #          configuration build mode
-    #       3. 'test' would probably be inbetween the the above two
+    #       3. 'test' would probably be in between the the above two
     #          mode since it's intended for debugging purposes
     def __init__(
         self,
@@ -965,7 +965,7 @@ class MotionGroup(EventActor):
                 self.logger.error(
                     f"The requested position {pos} for motion group "
                     f"'{self.name}' is in an excluded region of the "
-                    f"motion space.  NOT MOVEMENT PREFORMED!!"
+                    f"motion space.  NO MOVEMENT PERFORMED!!"
                 )
                 return
 

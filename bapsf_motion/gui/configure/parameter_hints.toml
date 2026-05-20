@@ -16,7 +16,7 @@
 #       has <type> == lapd_xy, and exclusion CircularLayer has
 #       <type> == circle
 #   param1, param2, ... :
-#       are the input arguments for the class being configurated,  e.g.
+#       are the input arguments for the class being configured,  e.g.
 #       CircularExlusion would have param1 == radius, param2 == center,
 #       and param3 == exclude
 #

@@ -35,7 +35,7 @@ class RunManagerConfig(UserDict):
         self.logger = logging.getLogger("RM_config") if logger is None else logger
 
         # Make sure config is the right type, and is a dict by the
-        # end of ths code block
+        # end of the code block
         if isinstance(config, RunManagerConfig):
             # This could happen when creating a new RunManger from an
             # old / terminated RunManager

@@ -600,7 +600,7 @@ class Motor(EventActor):
     # TODO: upgrade commands so setting and getting commands run
     #       through the same general command (e.g. set_speed and
     #       get_speed are just aliases for the speed command)
-    # TODO: Do I need to store feed target, spead, accel, and decel?
+    # TODO: Do I need to store feed target, speed, accel, and decel?
     #       Same for the jog equivalent.
     # TODO: reconcile the implementation of properties name and logger
     #       between the Motor class and the BaseActor class...BaseActor
