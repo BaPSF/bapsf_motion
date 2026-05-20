@@ -2,8 +2,8 @@
 __all__ = ["BaseLayer"]
 
 import ast
-import re
 import numpy as np
+import re
 import xarray as xr
 
 from abc import abstractmethod

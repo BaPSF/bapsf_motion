@@ -15,16 +15,13 @@ try:
 except (ModuleNotFoundError, ImportError):
     ErrorOptions = str
 
-from bapsf_motion.motion_builder.item import MBItem
 from bapsf_motion.motion_builder.exclusions import (
-    exclusion_factory,
     BaseExclusion,
+    exclusion_factory,
     GovernExclusion,
 )
-from bapsf_motion.motion_builder.layers import (
-    layer_factory,
-    BaseLayer,
-)
+from bapsf_motion.motion_builder.item import MBItem
+from bapsf_motion.motion_builder.layers import BaseLayer, layer_factory
 from bapsf_motion.utils.exceptions import ConfigurationWarning
 
 # TODO:  create a sit point, this is a point where the probe will sit when

@@ -2,17 +2,18 @@
 Module for helper functions associated with :term:`exclusion layer`
 functionality.
 """
+from __future__ import annotations
+
 __all__ = ["exclusion_factory", "register_exclusion", "exclusion_registry"]
 
 import inspect
 
 from numpydoc.docscrape import NumpyDocString, Parameter
-from typing import Dict, List, Set, Type, Union
+from typing import Dict, List, Set, Type, TYPE_CHECKING, Union
 
 from bapsf_motion.motion_builder.exclusions import base
 
-if False:
-    # noqa
+if TYPE_CHECKING:
     # for annotation, does not need real import
     from xarray import Dataset
 

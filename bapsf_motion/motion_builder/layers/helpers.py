@@ -2,18 +2,19 @@
 Module for helper functions associated with :term:`motion layer`
 functionality.
 """
+from __future__ import annotations
+
 __all__ = ["layer_factory", "register_layer", "layer_registry"]
 
 import inspect
 import xarray as xr
 
 from numpydoc.docscrape import NumpyDocString, Parameter
-from typing import Dict, List, Set, Type, Union
+from typing import Dict, List, Set, Type, TYPE_CHECKING, Union
 
 from bapsf_motion.motion_builder.layers import base
 
-if False:
-    # noqa
+if TYPE_CHECKING:
     # for annotation, does not need real import
     from xarray import Dataset
 
