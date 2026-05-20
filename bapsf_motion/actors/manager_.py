@@ -15,11 +15,11 @@ from typing import Any, Dict, Optional, Union
 
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.motion_group_ import (
+    handle_user_metadata,
     MotionGroup,
     MotionGroupConfig,
-    handle_user_metadata
 )
-from bapsf_motion.utils import toml, _deepcopy_dict
+from bapsf_motion.utils import _deepcopy_dict, toml
 
 
 class RunManagerConfig(UserDict):

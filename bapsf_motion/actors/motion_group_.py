@@ -13,11 +13,11 @@ import numpy as np
 from collections import UserDict
 from typing import Any, Dict, Optional, Union
 
+from bapsf_motion import transform
 from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.drive_ import Drive
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
-from bapsf_motion import transform
 from bapsf_motion.utils import toml
 
 

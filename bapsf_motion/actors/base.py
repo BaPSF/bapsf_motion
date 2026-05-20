@@ -17,7 +17,6 @@ from typing import Any, Dict, List, Optional, Union
 
 from bapsf_motion.utils import loop_safe_stop
 
-
 # TODO: create an EventActor for an actor that utilizes asyncio event loops
 #       - EventActor should inherit from BaseActor and ABC
 

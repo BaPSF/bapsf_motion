@@ -20,7 +20,7 @@ from enum import Enum
 from typing import Any, AnyStr, Callable, Dict, NamedTuple, Optional, Tuple, Union
 
 from bapsf_motion.actors.base import EventActor
-from bapsf_motion.utils import ipv4_pattern, SimpleSignal, dict_equal
+from bapsf_motion.utils import dict_equal, ipv4_pattern, SimpleSignal
 from bapsf_motion.utils import units as u
 
 

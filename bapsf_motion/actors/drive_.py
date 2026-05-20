@@ -12,8 +12,8 @@ import logging
 from collections import UserDict
 from typing import Any, Dict, List, Optional, Tuple
 
-from bapsf_motion.actors.base import EventActor
 from bapsf_motion.actors.axis_ import Axis
+from bapsf_motion.actors.base import EventActor
 
 
 class Drive(EventActor):
