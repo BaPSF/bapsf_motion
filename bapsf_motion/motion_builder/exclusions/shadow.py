@@ -2,6 +2,7 @@
 Module that defines governor exclusions that cast shadows of existing
 exclusions across the motion space.
 """
+
 __all__ = ["Shadow2DExclusion"]
 
 import numpy as np
@@ -78,7 +79,8 @@ class Shadow2DExclusion(GovernExclusion):
           }
 
     """
-    _exclusion_type = 'shadow_2d'
+
+    _exclusion_type = "shadow_2d"
     _dimensionality = 2
 
     def __init__(
@@ -166,11 +168,8 @@ class Shadow2DExclusion(GovernExclusion):
 
         # source_point is in motion space and sits in an excluded region
         x_key, y_key = self.mspace_dims
-        if (
-            not bool(self.insertion_edge_indices)
-            and not self.mask.sel(
-                **{x_key: self.source_point[0], y_key: self.source_point[1]}
-            )
+        if not bool(self.insertion_edge_indices) and not self.mask.sel(
+            **{x_key: self.source_point[0], y_key: self.source_point[1]}
         ):
             _mask = self.mask.copy()
             _mask[...] = False
@@ -283,7 +282,7 @@ class Shadow2DExclusion(GovernExclusion):
         if perp_indices.size > 0:
             delta[perp_indices, 0] = 1  # dx
             delta[perp_indices, 1] = np.inf * (
-                    delta[perp_indices, 1] / np.abs(delta[perp_indices, 1])
+                delta[perp_indices, 1] / np.abs(delta[perp_indices, 1])
             )  # dy
         ray_angles = np.arctan(delta[..., 1] / delta[..., 0])
         sort_i = np.argsort(ray_angles)
@@ -292,7 +291,7 @@ class Shadow2DExclusion(GovernExclusion):
         return corner_rays
 
     def _build_corner_ray_mask(
-            self, corner_rays: np.ndarray, edge_pool: np.ndarray
+        self, corner_rays: np.ndarray, edge_pool: np.ndarray
     ) -> np.ndarray:
         """
         Build a boolean array to mask ``corner_rays`` and filer out
@@ -312,9 +311,9 @@ class Shadow2DExclusion(GovernExclusion):
         #     closer edge to the insertion point
         #
         point_deltas = edge_pool[..., 0, :] - self.source_point
-        denominator = np.cross(
-            corner_rays, edge_vectors[:, np.newaxis, ...]
-        ).swapaxes(0, 1)
+        denominator = np.cross(corner_rays, edge_vectors[:, np.newaxis, ...]).swapaxes(
+            0, 1
+        )
         mu_array = np.cross(point_deltas, edge_vectors) / denominator
         nu_array = (
             np.cross(point_deltas[:, np.newaxis, ...], corner_rays).swapaxes(0, 1)
@@ -491,8 +490,7 @@ class Shadow2DExclusion(GovernExclusion):
 
         # generate fanned rays
         delta_angle = (
-            0.01 * np.min(self.mask_resolution)
-            / np.linalg.norm(corner_rays, axis=1)
+            0.01 * np.min(self.mask_resolution) / np.linalg.norm(corner_rays, axis=1)
         )
 
         fan_plus = np.array(
@@ -541,12 +539,12 @@ class Shadow2DExclusion(GovernExclusion):
             np.isclose(
                 fan_rays[..., 0],
                 double_corner_rays[..., 0],
-                atol=.5 * self.mask_resolution[0],
+                atol=0.5 * self.mask_resolution[0],
             ),
             np.isclose(
                 fan_rays[..., 1],
                 double_corner_rays[..., 1],
-                atol=.5 * self.mask_resolution[1],
+                atol=0.5 * self.mask_resolution[1],
             ),
         )
         fan_rays = fan_rays[np.logical_not(mask)]
@@ -575,9 +573,8 @@ class Shadow2DExclusion(GovernExclusion):
         x_range = [x_coord[0] - 0.5 * res[0], x_coord[-1] + 0.5 * res[0]]
         y_range = [y_coord[0] - 0.5 * res[1], y_coord[-1] + 0.5 * res[1]]
 
-        if (
-            (x_range[0] <= self.source_point[0] <= x_range[1])
-            and (y_range[0] <= self.source_point[1] <= y_range[1])
+        if (x_range[0] <= self.source_point[0] <= x_range[1]) and (
+            y_range[0] <= self.source_point[1] <= y_range[1]
         ):
             # insertion point is within the motion space
             return None
@@ -652,7 +649,7 @@ class Shadow2DExclusion(GovernExclusion):
         )
         denominator = np.cross(
             triangles[:, 2, :] - triangles[:, 0, :],
-            triangles[:, 1, :] - triangles[:, 0, :]
+            triangles[:, 1, :] - triangles[:, 0, :],
         )
 
         zero_mask = denominator == 0

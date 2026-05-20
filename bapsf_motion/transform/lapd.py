@@ -731,7 +731,7 @@ class LaPD6KTransform(LaPDXYTransform):
         val = _inputs[key]
         if not isinstance(val, (float, np.floating, int, np.integer)):
             raise TypeError(
-                f"Keyword '{key}' expected type float or int, " f"got type {type(val)}."
+                f"Keyword '{key}' expected type float or int, got type {type(val)}."
             )
         elif val < 0.0:
             val = np.abs(val)
@@ -832,7 +832,7 @@ class LaPD6KTransform(LaPDXYTransform):
         # imagine two circles:
         #   1. circle one located at the ball-valve pivot (pivot) with a
         #      radius pivot_to_drive_pinion
-        #   2. circle two located at the vpinion with a readius six_k_arm_length
+        #   2. circle two located at the vpinion with a radius six_k_arm_length
         #
         # The probe drive will be oriented at the lower intersection of these
         # two circles.

@@ -2,6 +2,7 @@
 This module contains custom Qt widgets for displaying logs generated
 by Python's `logging` package.
 """
+
 __all__ = ["QLogHandler", "QLogger"]
 
 import logging
@@ -9,19 +10,19 @@ import logging.config
 
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtWidgets import (
-    QTextEdit,
-    QPlainTextEdit,
-    QWidget,
-    QVBoxLayout,
-    QLabel,
-    QGridLayout,
-    QSlider,
-    QMainWindow,
-    QSizePolicy,
-    QFrame,
-    QHBoxLayout,
-    QLineEdit,
     QComboBox,
+    QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QPlainTextEdit,
+    QSizePolicy,
+    QSlider,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
 )
 from typing import Union
 
@@ -70,9 +71,9 @@ class QLogger(QWidget):
     }
 
     def __init__(
-            self,
-            logger: logging.Logger,
-            parent=None,
+        self,
+        logger: logging.Logger,
+        parent=None,
     ):
         super().__init__(parent=parent)
 
@@ -268,8 +269,12 @@ class DemoQLogger(QMainWindow):
         label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         sublayout.addWidget(label)
 
-        self._msg_widget.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        self._msg_widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._msg_widget.setAlignment(
+            Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft
+        )
+        self._msg_widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+        )
         sublayout.addWidget(self._msg_widget)
 
         self._level_widget.addItems(list(QLogger._verbosity.keys()))

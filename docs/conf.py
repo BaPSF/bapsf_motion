@@ -33,9 +33,7 @@ autosummary_generate = True
 automodapi_custom_groups = {
     "actors": {
         "title": "Actors",
-        "description": (
-            "Explain what an actor is."
-        ),
+        "description": "Explain what an actor is.",
         "dunder": "__actors__",
     },
     "mexclusions": {

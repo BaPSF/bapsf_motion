@@ -2,6 +2,7 @@
 Module containing functionality for creating and reading
 :term:`motion lists`.
 """
+
 __all__ = ["MotionBuilder", "MBItem"]
 
 from bapsf_motion.motion_builder import exclusions, layers

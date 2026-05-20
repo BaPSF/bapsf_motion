@@ -2,20 +2,24 @@
 Module contains base classes for various
 `~PySide6.QtWidgets.QWidget`\'s used in the Configuration GUI.
 """
-__all__ = ["_ConfigOverlay", "_OverlayWidget",]
+
+__all__ = [
+    "_ConfigOverlay",
+    "_OverlayWidget",
+]
 
 import logging
 
 from abc import abstractmethod
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QColor, QPainter, QPen
-from PySide6.QtWidgets import QWidget, QSizePolicy
+from PySide6.QtWidgets import QSizePolicy, QWidget
 from typing import Union
 
 from bapsf_motion.actors import MotionGroup
+from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.widgets import DiscardButton, DoneButton
-from bapsf_motion.gui.configure import motion_group_widget as mgw
 
 
 class _OverlayWidget(QWidget):
@@ -119,8 +123,7 @@ class _ConfigOverlay(_OverlayWidget):
 
     @abstractmethod
     @Slot()
-    def return_and_close(self):
-        ...
+    def return_and_close(self): ...
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")

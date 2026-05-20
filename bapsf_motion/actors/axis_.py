@@ -2,6 +2,7 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.axis_.Axis` actor class.
 """
+
 __all__ = ["Axis"]
 __actors__ = ["Axis"]
 
@@ -21,7 +22,7 @@ class Axis(EventActor):
     This actor is ignorant of how it is situated in a probe drive, but
     is fully aware of the entire physical axis that defines it and the
     motor that moves the axis.  This actor operates in physical units
-    and will handle all the necessary unit converstion to communicate
+    and will handle all the necessary unit conversion to communicate
     with the |Motor| actor.
 
     Parameters
@@ -45,7 +46,7 @@ class Axis(EventActor):
     logger: `~logging.Logger`, optional
         An instance of `~logging.Logger` that the Actor will record
         events and status updates to.  If `None`, then a logger will
-        automatically be generated. (DEFUALT: `None`)
+        automatically be generated. (DEFAULT: `None`)
 
     loop: `asyncio.AbstractEventLoop`, optional
         Instance of an `asyncio` `event loop`_. Communication with the
@@ -74,6 +75,7 @@ class Axis(EventActor):
     ... )
 
     """
+
     # TODO: better handle naming of the Axis and child Motor
 
     def __init__(
@@ -169,6 +171,7 @@ class Axis(EventActor):
             "units_per_rev": self.units_per_rev.value.item(),
             "motor_settings": motor_settings,
         }
+
     config.__doc__ = EventActor.config.__doc__
 
     @property

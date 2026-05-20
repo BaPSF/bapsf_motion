@@ -2,6 +2,7 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.motor_.Motor` actor class.
 """
+
 __all__ = ["do_nothing", "CommandEntry", "Motor", "MotorSignals"]
 __actors__ = ["Motor"]
 
@@ -20,7 +21,7 @@ from enum import Enum
 from typing import Any, AnyStr, Callable, Dict, NamedTuple, Optional, Tuple, Union
 
 from bapsf_motion.actors.base import EventActor
-from bapsf_motion.utils import ipv4_pattern, SimpleSignal, dict_equal
+from bapsf_motion.utils import dict_equal, ipv4_pattern, SimpleSignal
 from bapsf_motion.utils import units as u
 
 
@@ -190,6 +191,7 @@ class MotorSignals:
     Class that defines all the `~bapsf_motion.utils.SimpleSignal`\ 's
     used by `Motor`.
     """
+
     def __init__(self):
         self._connection_established = SimpleSignal()
         self._connection_lost = SimpleSignal()
@@ -259,7 +261,7 @@ class Motor(EventActor):
         A value between 0 (non-inclusive) and 1 (inclusive) which
         indicates what the motor current should be set to as a fraction
         of the max allowed current ``motor["DEFAULTS"]["max_current"]``.
-        (DEFUALT: ``0.8``)
+        (DEFAULT: ``0.8``)
 
     name: `str`, optional
         Name the motor.  If `None`, then the name will be automatically
@@ -268,7 +270,7 @@ class Motor(EventActor):
     logger: `~logging.Logger`, optional
         An instance of `~logging.Logger` that the Actor will record
         events and status updates to.  If `None`, then a logger will
-        automatically be generated. (DEFUALT: `None`)
+        automatically be generated. (DEFAULT: `None`)
 
     loop: `asyncio.AbstractEventLoop`, optional
         Instance of an `asyncio` `event loop`_. Communication with the
@@ -313,6 +315,7 @@ class Motor(EventActor):
     >>> # now stop the actor, which stops the event loop
     >>> m1.terminate()
     """
+
     #: available commands that can be sent to the motor
     _commands = {
         "acceleration": CommandEntry(
@@ -375,7 +378,7 @@ class Motor(EventActor):
         ),
         "disable": CommandEntry("disable", send="MD"),
         "enable": CommandEntry("enable", send="ME"),
-        "encoder_position":  CommandEntry(
+        "encoder_position": CommandEntry(
             "encoder_position",
             send="EP",
             send_processor=lambda value: f"{int(value)}",
@@ -574,13 +577,19 @@ class Motor(EventActor):
         9: "bad password",
         10: "comm port error",
         11: "bad character",
-        12: "I/O point already used by curren command mode, and cannot "
-            "be changed (Flex I/O drives only)",
-        13: "I/O point configured for incorrect use "
-            "(i.e., input vs. output) (Flex I/O drives only)",
-        14: "I/O point cannot be used for requested function - see HW "
+        12: (
+            "I/O point already used by current command mode, and cannot be "
+            "changed (Flex I/O drives only)"
+        ),
+        13: (
+            "I/O point configured for incorrect use (i.e., input vs. output)"
+            " (Flex I/O drives only)"
+        ),
+        14: (
+            "I/O point cannot be used for requested function - see HW "
             "manual for possible I/O function assignments. "
-            "(Flex I/O drives only)",
+            "(Flex I/O drives only)"
+        ),
     }
 
     ack_flags = AckFlags
@@ -596,11 +605,11 @@ class Motor(EventActor):
     # TODO: move off limit command
     # TODO: integrate homing
     # TODO: integrate zeroing
-    # TODO: get motor firmware version, model numer, and sub-model using "MV"
+    # TODO: get motor firmware version, model number, and sub-model using "MV"
     # TODO: upgrade commands so setting and getting commands run
     #       through the same general command (e.g. set_speed and
     #       get_speed are just aliases for the speed command)
-    # TODO: Do I need to store feed target, spead, accel, and decel?
+    # TODO: Do I need to store feed target, speed, accel, and decel?
     #       Same for the jog equivalent.
     # TODO: reconcile the implementation of properties name and logger
     #       between the Motor class and the BaseActor class...BaseActor
@@ -701,7 +710,7 @@ class Motor(EventActor):
         return None
 
     def run(self, auto_run=True):
-        self.logger.info(f"Running motor - async loop hass is {self.loop.__hash__()}")
+        self.logger.info(f"Running motor - async loop has is {self.loop.__hash__()}")
 
         heartbeat_task = self.heartbeat_task
         if (
@@ -773,7 +782,7 @@ class Motor(EventActor):
                 "idle_current": 0.3,  # 30% of current
                 "current": 0.8,  # 80% of max_current (4.0 amps)
                 "max_idle_current": 0.9,  # 90% of current
-                "max_current": 5.0  # 5 amps
+                "max_current": 5.0,  # 5 amps
             },
             "speed": None,
             "accel": None,
@@ -956,8 +965,7 @@ class Motor(EventActor):
         #       ip argument
         if self._motor["ip"] is not None:
             self.logger.warning(
-                "The motor's IP address can only be defined at object "
-                "instantiation."
+                "The motor's IP address can only be defined at object " "instantiation."
             )
             return
 
@@ -974,6 +982,7 @@ class Motor(EventActor):
             "limit_mode": self.motor["define_limits"],
             "current": self.motor["DEFAULTS"]["current"],
         }
+
     config.__doc__ = EventActor.config.__doc__
 
     @property
@@ -991,7 +1000,7 @@ class Motor(EventActor):
         return self._setup["local_address"]
 
     @property
-    def steps_per_rev(self) -> u.steps/u.rev:
+    def steps_per_rev(self) -> u.steps / u.rev:
         """The number of steps the motor does per revolution."""
         return self._motor["gearing"]
 
@@ -1108,9 +1117,8 @@ class Motor(EventActor):
         if dict_equal(old_status, new_status):
             return
 
-        if (
-            "connected" in new_status
-            and (new_status["connected"] is not self.status["connected"])
+        if "connected" in new_status and (
+            new_status["connected"] is not self.status["connected"]
         ):
             # connection status changed
             if new_status["connected"]:
@@ -1178,7 +1186,7 @@ class Motor(EventActor):
                 #     are all subclasses of OSError
                 #
                 msg = f"...attempt {_count+1} of {_allowed_attempts} failed"
-                if _count+1 < _allowed_attempts:
+                if _count + 1 < _allowed_attempts:
                     self.logger.warning(msg)
                 else:
                     self.logger.error(msg)
@@ -1189,9 +1197,7 @@ class Motor(EventActor):
                     #       from TimeoutError, InterruptedError, ConnectionRefusedError,
                     #       and socket.timeout
                     self._update_status(connected=False)
-                    raise ConnectionError(
-                        "Connection to motor could not be established."
-                    )
+                    raise ConnectionError("Connection to motor could not be established.")
 
         if self.loop is not None:
             self._configure_motor()
@@ -1268,9 +1274,8 @@ class Motor(EventActor):
             return self._send_command(command, *args)
 
         elif (
-            (thread_id is not None and threading.current_thread().ident == thread_id)
-            or (threading.current_thread().ident == self._thread_id)
-        ):
+            thread_id is not None and threading.current_thread().ident == thread_id
+        ) or (threading.current_thread().ident == self._thread_id):
             # we are in the same thread as the running event loop, only
             # the event loop should be in this thread so commands should
             # have been sent from coroutines.  Thus, just send the
@@ -1280,8 +1285,7 @@ class Motor(EventActor):
         # the event loop is running and the command is being sent from
         # outside the event loop thread
         future = asyncio.run_coroutine_threadsafe(
-            self._send_command_async(command, *args),
-            self.loop
+            self._send_command_async(command, *args), self.loop
         )
         return future.result(3 * self.heartrate.BASE)
 
@@ -1381,9 +1385,9 @@ class Motor(EventActor):
             return self.ack_flags.ACK_QUEUED
         elif "?" in rtn_str:
             # Motor negatively acknowledge command, error in command
-            err_code = re.compile(
-                r"\d?\?(?P<code>\d{1,2})"
-            ).fullmatch(rtn_str).group("code")
+            err_code = (
+                re.compile(r"\d?\?(?P<code>\d{1,2})").fullmatch(rtn_str).group("code")
+            )
             err_code = int(err_code)
             err_msg = f"{err_code} - {self._nack_codes[err_code]}"
             self.logger.error(
@@ -1448,7 +1452,7 @@ class Motor(EventActor):
         Low-level functionality so a command string ``cmd` can be sent
         directly to the motor.  This is intended for testing purposes
         and should NOT be used for any high-level functionality.  This
-        allows for sending commands that are ned defined in
+        allows for sending commands that are not defined in
         ``self._commands``.
 
         Parameters
@@ -1506,17 +1510,12 @@ class Motor(EventActor):
                     "It appears the server (motor) has closed the connection."
                 )
             elif err.errno == errno.ESHUTDOWN:
-                self.logger.error(
-                    "It appears the socket has been closed."
-                )
+                self.logger.error("It appears the socket has been closed.")
             elif err.errno == errno.EBADF:
-                self.logger.error(
-                    "The socket likely has not been created."
-                )
+                self.logger.error("The socket likely has not been created.")
 
             self.logger.info(
-                "Attempting to re-establish connection and send the command "
-                "again."
+                "Attempting to re-establish connection and send the command " "again."
             )
 
             self._update_status(connected=False)
@@ -1657,7 +1656,7 @@ class Motor(EventActor):
         self._update_status(**_status)
 
     def retrieve_motor_alarm(
-            self, defer_status_update=False, direct_send=False
+        self, defer_status_update: bool = False, direct_send: bool = False
     ) -> Union[Dict[str, Any], "AckFlags"]:
         """
         Retrieve [if any] motor alarm codes.
@@ -1691,7 +1690,7 @@ class Motor(EventActor):
         codes = []
         for i, digit in enumerate(rtn):
             integer = int(digit)
-            codes.append(integer * 10**(3-i))
+            codes.append(integer * 10 ** (3 - i))
 
         alarm_message = []
         for code in codes:
@@ -1915,9 +1914,8 @@ class Motor(EventActor):
         """
 
         alarm_status = self.retrieve_motor_alarm()
-        if (
-            not alarm_status["alarm"]
-            or (not alarm_status["limits"]["CCW"] and not alarm_status["limits"]["CW"])
+        if not alarm_status["alarm"] or (
+            not alarm_status["limits"]["CCW"] and not alarm_status["limits"]["CW"]
         ):
             # not on limits
             return
@@ -1930,9 +1928,7 @@ class Motor(EventActor):
         while on_limits:
 
             if counts > 10:
-                self.logger.error(
-                    "Moving off limits - Was not able to move of limit."
-                )
+                self.logger.error("Moving off limits - Was not able to move of limit.")
                 break
 
             pos = self.send_command("get_position")  # type: Union[u.Quantity, AckFlags]
@@ -1996,10 +1992,7 @@ class Motor(EventActor):
             return None
 
         try:
-            future = asyncio.run_coroutine_threadsafe(
-                self._sleep_async(delay),
-                self.loop
-            )
+            future = asyncio.run_coroutine_threadsafe(self._sleep_async(delay), self.loop)
             future.result(delay)
         except (concurrent.futures.TimeoutError, TimeoutError):
             # Note: This is cheating if self.sleep is called by an asycnio
@@ -2036,8 +2029,7 @@ class Motor(EventActor):
             return
         elif not (0 <= percent <= 1):
             self.logger.error(
-                f"Setting motor current, expected a value of 0 - 1 "
-                f"but got {percent}."
+                f"Setting motor current, expected a value of 0 - 1 " f"but got {percent}."
             )
             return
 
