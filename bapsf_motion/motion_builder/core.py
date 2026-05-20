@@ -1,6 +1,7 @@
 """
 Module containing the definition of |MotionBuilder|.
 """
+
 __all__ = ["MotionBuilder"]
 
 import numpy as np
@@ -52,6 +53,7 @@ class MotionBuilder(MBItem):
         together (i.e. removing duplicate points and sorting points) to
         form one "global" motion list. (DEFAULT ``'sequential'``)
     """
+
     # TODO: ^ fully write out the above docstring
 
     #: Dictionary of :term:`motion builder item` base names.
@@ -67,11 +69,11 @@ class MotionBuilder(MBItem):
     #       after the motion list is completely defined
 
     def __init__(
-            self,
-            space: Union[str, List[Dict[str, Any]]],
-            layers: Optional[List[Dict[str, Any]]] = None,
-            exclusions: Optional[List[Dict[str, Any]]] = None,
-            layer_to_motionlist_scheme: str = "sequential",
+        self,
+        space: Union[str, List[Dict[str, Any]]],
+        layers: Optional[List[Dict[str, Any]]] = None,
+        exclusions: Optional[List[Dict[str, Any]]] = None,
+        layer_to_motionlist_scheme: str = "sequential",
     ):
         self._space = self._validate_space(space)
 
@@ -82,7 +84,7 @@ class MotionBuilder(MBItem):
         super().__init__(
             self._build_initial_ds(),
             base_name="motion_builder",
-            name_pattern=re.compile(r"motion_builder")
+            name_pattern=re.compile(r"motion_builder"),
         )
 
         self._layers = []  # type: List[BaseLayer]
@@ -319,9 +321,8 @@ class MotionBuilder(MBItem):
 
         if not isinstance(exclusion, GovernExclusion):
             self._exclusions.append(exclusion)
-        elif (
-            len(self.exclusions) == 0
-            or not isinstance(self.exclusions[0], GovernExclusion)
+        elif len(self.exclusions) == 0 or not isinstance(
+            self.exclusions[0], GovernExclusion
         ):
             self._exclusions.insert(0, exclusion)
         else:
@@ -329,7 +330,7 @@ class MotionBuilder(MBItem):
                 f"The motion builder already has a govern exclusion layer "
                 f"({self.exclusions[0]}).  Not adding exclusion layer "
                 f"{exclusion}.)",
-                ConfigurationWarning
+                ConfigurationWarning,
             )
 
         self.clear_motion_list()
@@ -389,9 +390,8 @@ class MotionBuilder(MBItem):
             _coord = self.mspace_coords[dim_name]
             _point = point[ii]
 
-            if (
-                _point < (np.min(_coord) - 0.5 * _res)
-                or _point > (np.max(_coord) + 0.5 * _res)
+            if _point < (np.min(_coord) - 0.5 * _res) or _point > (
+                np.max(_coord) + 0.5 * _res
             ):
                 # point is outside the motion space
                 return True
@@ -506,8 +506,7 @@ class MotionBuilder(MBItem):
             self.drop_vars("motion_list")
 
         self._ds["motion_list"] = xr.DataArray(
-            data=points[mask, ...],
-            dims=("index", "space")
+            data=points[mask, ...], dims=("index", "space")
         )
 
     def generate_excluded_mask(self, points) -> np.ndarray:

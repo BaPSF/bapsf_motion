@@ -2,6 +2,7 @@
 Module for helper functions associated with :term:`motion layer`
 functionality.
 """
+
 from __future__ import annotations
 
 __all__ = ["layer_factory", "register_layer", "layer_registry"]
@@ -110,19 +111,17 @@ class LayerRegistry:
         try:
             return self._registry[name]
         except KeyError:
-            raise ValueError(
-                f"The requested exclusion '{name}' does not exist."
-            )
+            raise ValueError(f"The requested exclusion '{name}' does not exist.")
 
     def get_names_by_dimensionality(self, ndim: int) -> Set[str]:
         return set(
-             name
-             for name, ly in self._registry.items()
-             if ly._dimensionality in (-1, ndim)
+            name
+            for name, ly in self._registry.items()
+            if ly._dimensionality in (-1, ndim)
         )
 
     def get_input_parameters(
-            self, name: str
+        self, name: str
     ) -> Dict[str, Dict[str, Union[inspect.Parameter, List[str]]]]:
         ly = self.get_layer(name)
         sig = inspect.signature(ly).parameters.copy()

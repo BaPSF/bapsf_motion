@@ -2,6 +2,7 @@
 Module that contains all the functionality focused around
 :term:`motion layers`
 """
+
 __all__ = [
     "layer_factory",
     "layer_registry",

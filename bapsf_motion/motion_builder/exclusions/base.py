@@ -1,4 +1,5 @@
 """Module that defines the `BaseExclusion` abstract class."""
+
 __all__ = ["BaseExclusion", "GovernExclusion"]
 
 import ast
@@ -41,9 +42,7 @@ class BaseExclusion(MBItem):
     _exclusion_type = NotImplemented  # type: str
     _dimensionality = NotImplemented  # type: int
 
-    def __init__(
-            self, ds: xr.Dataset, *, skip_ds_add: bool = False, **kwargs
-    ):
+    def __init__(self, ds: xr.Dataset, *, skip_ds_add: bool = False, **kwargs):
         self._config_keys = {"type"}.union(set(kwargs.keys()))
         self._inputs = kwargs
         self.skip_ds_add = skip_ds_add
@@ -162,9 +161,7 @@ class BaseExclusion(MBItem):
         for name in names:
             _match = self.name_pattern.fullmatch(name)
             if _match is not None:
-                ids.append(
-                    ast.literal_eval(_match.group("number"))
-                )
+                ids.append(ast.literal_eval(_match.group("number")))
 
         ids = list(set(ids))
         _id = 0 if not ids else ids[-1] + 1

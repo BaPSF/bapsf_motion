@@ -2,6 +2,7 @@
 Module containing the definition of
 :class:`~bapsf_motion.motion_builder.item.MBItem`.
 """
+
 __all__ = ["MBItem"]
 
 import numpy as np
@@ -132,9 +133,7 @@ class MBItem(ABC):
         """
         res = []
         for dim in self.mspace_dims:
-            res.append(
-                np.average(np.diff(self.mspace_coords[dim]))
-            )
+            res.append(np.average(np.diff(self.mspace_coords[dim])))
         return tuple(res)
 
     @staticmethod
@@ -172,4 +171,5 @@ class MBItem(ABC):
     def drop_vars(self, names: str, *, errors: ErrorOptions = "raise"):
         new_ds = self._ds.drop_vars(names, errors=errors)
         self._ds = new_ds
+
     drop_vars.__doc__ = xr.Dataset.drop_vars.__doc__

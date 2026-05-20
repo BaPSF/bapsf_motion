@@ -1,6 +1,7 @@
 """
 Module that defines the `DividerExclusion` class.
 """
+
 __all__ = ["DividerExclusion"]
 __mexclusions__ = ["DividerExclusion"]
 
@@ -95,6 +96,7 @@ class DividerExclusion(BaseExclusion):
               "exclude": "-e0",
           }
     """
+
     # TODO: Can `exclude` be updated to only take "+" and "-"?
     _exclusion_type = "divider"
     _dimensionality = 2
@@ -143,9 +145,9 @@ class DividerExclusion(BaseExclusion):
             raise TypeError
         elif len(self.mb) != 2:
             raise TypeError
-        elif (
-            isinstance(self.mb[0], str) and "inf" in self.mb[0]
-        ) or np.isinf(self.mb[0]):
+        elif (isinstance(self.mb[0], str) and "inf" in self.mb[0]) or np.isinf(
+            self.mb[0]
+        ):
             if not isinstance(self.mb[1], _scalar_types):
                 raise ValueError
 

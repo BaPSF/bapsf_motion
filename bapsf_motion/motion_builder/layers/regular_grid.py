@@ -1,6 +1,7 @@
 """
 Module that defines the `GridLayer` class.
 """
+
 __all__ = ["GridLayer", "GridCNStepLayer", "GridCNSizeLayer"]
 __mlayers__ = ["GridLayer", "GridCNStepLayer", "GridCNSizeLayer"]
 
@@ -99,16 +100,17 @@ class GridLayer(BaseLayer):
               "npoints": [21, 21],
           }
     """
+
     _layer_type = "grid"
     _dimensionality = -1
 
     def __init__(
-            self,
-            ds: xr.Dataset,
-            limits: List[List[float]],
-            npoints: List[int] = None,
-            skip_ds_add: bool = False,
-            **kwargs,
+        self,
+        ds: xr.Dataset,
+        limits: List[List[float]],
+        npoints: List[int] = None,
+        skip_ds_add: bool = False,
+        **kwargs,
     ):
         if npoints is None and "steps" in kwargs.keys():
             warnings.warn(
@@ -138,9 +140,7 @@ class GridLayer(BaseLayer):
                 # assume fixed along this axis
                 num = 1
 
-            axs.append(
-                np.linspace(lims[0], lims[1], num=num)
-            )
+            axs.append(np.linspace(lims[0], lims[1], num=num))
             npoints.append(num)
 
         pts = np.meshgrid(*axs, indexing="ij")
@@ -184,11 +184,9 @@ class GridLayer(BaseLayer):
             limits = np.array(limits, dtype=np.float64)
 
         # validate
-        if (
-            not (
-                np.issubdtype(limits.dtype, np.floating)
-                or np.issubdtype(limits.dtype, np.integer)
-            )
+        if not (
+            np.issubdtype(limits.dtype, np.floating)
+            or np.issubdtype(limits.dtype, np.integer)
         ):
             raise ValueError(
                 f"Keyword 'limits' has dtype {limits.dtype}, but "
@@ -200,9 +198,7 @@ class GridLayer(BaseLayer):
                 "or list of 2-element lists."
             )
         elif limits.ndim == 2 and limits.shape[1] != 2:
-            raise ValueError(
-                "Needs to be a 2-element list"
-            )
+            raise ValueError("Needs to be a 2-element list")
         elif limits.ndim == 2 and limits.shape[0] not in (1, mspace_ndims):
             raise ValueError(
                 "The number of specified limits needs to be one "
@@ -254,9 +250,7 @@ class GridLayer(BaseLayer):
                 f" got size {npoints.size}."
             )
         elif np.any(npoints <= 0):
-            raise ValueError(
-                "All elements of 'npoints' must be a positive integer."
-            )
+            raise ValueError("All elements of 'npoints' must be a positive integer.")
         elif npoints.size == 1:
             npoints = np.repeat(npoints, self.mspace_ndims)
 
@@ -396,6 +390,7 @@ class GridCNStepLayer(GridLayer):
               "step_size": [.1, .1],
           }
     """
+
     _layer_type = "grid_CNStep"
     _dimensionality = -1
 
@@ -458,11 +453,9 @@ class GridCNStepLayer(GridLayer):
             center = np.array(center, dtype=np.float64).squeeze()
 
         # validate
-        if (
-            not (
-                np.issubdtype(center.dtype, np.floating)
-                or np.issubdtype(center.dtype, np.integer)
-            )
+        if not (
+            np.issubdtype(center.dtype, np.floating)
+            or np.issubdtype(center.dtype, np.integer)
         ):
             raise ValueError(
                 f"Keyword 'center' has dtype {center.dtype}, but "
@@ -491,11 +484,9 @@ class GridCNStepLayer(GridLayer):
             step_size = np.array(step_size, dtype=np.float64).squeeze()
 
         # validate
-        if (
-            not (
-                np.issubdtype(step_size.dtype, np.floating)
-                or np.issubdtype(step_size.dtype, np.integer)
-            )
+        if not (
+            np.issubdtype(step_size.dtype, np.floating)
+            or np.issubdtype(step_size.dtype, np.integer)
         ):
             raise ValueError(
                 f"Keyword 'step_size' has dtype {step_size.dtype}, but "
@@ -628,6 +619,7 @@ class GridCNSizeLayer(GridCNStepLayer):
               "size": [15, 20],
           }
     """
+
     _layer_type = "grid_CNSize"
     _dimensionality = -1
 
@@ -699,11 +691,9 @@ class GridCNSizeLayer(GridCNStepLayer):
             size = np.array(size, dtype=np.float64).squeeze()
 
         # validate
-        if (
-            not (
-                np.issubdtype(size.dtype, np.floating)
-                or np.issubdtype(size.dtype, np.integer)
-            )
+        if not (
+            np.issubdtype(size.dtype, np.floating)
+            or np.issubdtype(size.dtype, np.integer)
         ):
             raise ValueError(
                 f"Keyword 'size' has dtype {size.dtype}, but "
