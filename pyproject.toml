@@ -17,3 +17,6 @@ force_alphabetical_sort_within_sections = true
 honor_noqa = true
 lines_between_types = 1
 skip_gitignore = true
+
+[tool.black]
+line-length = 90  # needs to be the same as in tool.isort
