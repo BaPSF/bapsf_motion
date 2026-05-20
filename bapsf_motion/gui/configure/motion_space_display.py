@@ -24,9 +24,9 @@ mpl.use("qtagg")  # matplotlib's backend for Qt bindings
 from matplotlib import pyplot as plt  # noqa
 from matplotlib.backend_bases import DrawEvent, Event, MouseEvent, PickEvent  # noqa
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
-from matplotlib.backends.backend_qtagg import (
+from matplotlib.backends.backend_qtagg import (  # noqa
     NavigationToolbar2QT as NavigationToolbar,
-)  # noqa
+)
 from matplotlib.collections import PathCollection
 
 
