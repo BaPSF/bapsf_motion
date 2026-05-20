@@ -3,6 +3,7 @@ Module for helper functions associated with coordinate transform
 functionality between the probe :term:`motion space` and the probe
 drive coordinate system.
 """
+
 from __future__ import annotations
 
 __all__ = ["register_transform", "transform_factory", "transform_registry"]
@@ -111,16 +112,14 @@ class TransformRegistry:
         try:
             return self._registry[name]
         except KeyError:
-            raise ValueError(
-                f"The requested transform {name} does not exist."
-            )
+            raise ValueError(f"The requested transform {name} does not exist.")
 
     def get_names_by_dimensionality(self, ndim: int) -> Set[str]:
         return {
-             name
-             for name, tr in self._registry.items()
-             if tr._dimensionality in (-1, ndim)
-         }
+            name
+            for name, tr in self._registry.items()
+            if tr._dimensionality in (-1, ndim)
+        }
 
     def get_input_parameters(
         self, name: str

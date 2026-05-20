@@ -1,4 +1,5 @@
 """Module that defines the LaPD related transform classes."""
+
 __all__ = ["LaPDXYTransform", "LaPD6KTransform"]
 __transformer__ = ["LaPDXYTransform", "LaPD6KTransform"]
 
@@ -195,6 +196,7 @@ class LaPDXYTransform(base.BaseTransform):
               "mspace_polarity": (1, 1),
           }
     """
+
     # TODO: confirm polarity descriptions once issue #38 is resolved
     # TODO: review that default polarities are correct
     # TODO: write a full primer on how the coordinate transform was
@@ -252,7 +254,7 @@ class LaPDXYTransform(base.BaseTransform):
             points[..., 0] = _sign * (pivot_to_center - points[..., 0])
 
         tr_points = super().__call__(points=points, to_coords=to_coords)
-            
+
         if to_coords != "drive":  # to motion space
             _sign = 1 if self.deployed_side == "East" else -1
             pivot_to_center = np.abs(self.pivot_to_center)
@@ -260,9 +262,7 @@ class LaPDXYTransform(base.BaseTransform):
             # - tr_points is in LaPD motion space coordinates
             # - need to convert motion space coordinates to droop scenario
             # 1. convert to ball valve coords
-            tr_points[..., 0] = np.absolute(
-                _sign * pivot_to_center - tr_points[..., 0]
-            )
+            tr_points[..., 0] = np.absolute(_sign * pivot_to_center - tr_points[..., 0])
 
             # 2. droop correct to droop coords
             tr_points = self.droop_correct(tr_points, to_points="droop")
@@ -331,7 +331,7 @@ class LaPDXYTransform(base.BaseTransform):
             self._droop_correct_callable = LaPDXYDroopCorrect(
                 drive=_drive,
                 pivot_to_feedthru=inputs["pivot_to_feedthru"],
-                droop_scale=inputs["droop_scale"]
+                droop_scale=inputs["droop_scale"],
             )
 
         return inputs
@@ -351,12 +351,12 @@ class LaPDXYTransform(base.BaseTransform):
         theta = -np.arctan(tan_theta)
 
         T0 = np.zeros((npoints, 3, 3)).squeeze()
-        T0[..., 0, 2] = np.sqrt(
-            points[..., 1]**2 + (pivot_to_center + points[..., 0])**2
-        ) - pivot_to_center
-        T0[..., 1, 2] = (
-            self.pivot_to_drive * np.tan(theta)
-            + self.probe_axis_offset * (1 - (1 / np.cos(theta)))
+        T0[..., 0, 2] = (
+            np.sqrt(points[..., 1] ** 2 + (pivot_to_center + points[..., 0]) ** 2)
+            - pivot_to_center
+        )
+        T0[..., 1, 2] = self.pivot_to_drive * np.tan(theta) + self.probe_axis_offset * (
+            1 - (1 / np.cos(theta))
         )
         T0[..., 2, 2] = 1.0
 
@@ -386,8 +386,7 @@ class LaPDXYTransform(base.BaseTransform):
         # - alpha = beta - theta
 
         sine_alpha = self.probe_axis_offset / np.sqrt(
-            self.pivot_to_drive**2
-            + (-self.probe_axis_offset + points[..., 1])**2
+            self.pivot_to_drive**2 + (-self.probe_axis_offset + points[..., 1]) ** 2
         )
 
         tan_beta = (-self.probe_axis_offset + points[..., 1]) / -self.pivot_to_drive
@@ -682,6 +681,7 @@ class LaPD6KTransform(LaPDXYTransform):
         :ref:`LaPD6KYTransform </notebooks/transform/LaPD6KTransform.ipynb>`.
 
     """
+
     _transform_type = "lapd_6k"
     _dimensionality = 2
 
@@ -724,8 +724,7 @@ class LaPD6KTransform(LaPDXYTransform):
         val = _inputs[key]
         if not isinstance(val, (float, np.floating, int, np.integer)):
             raise TypeError(
-                f"Keyword '{key}' expected type float or int, "
-                f"got type {type(val)}."
+                f"Keyword '{key}' expected type float or int, got type {type(val)}."
             )
         elif val < 0.0:
             val = np.abs(val)
@@ -738,7 +737,7 @@ class LaPD6KTransform(LaPDXYTransform):
         # calculate distance between ball valve center (pivot) to the
         # pivot (pinion) point on the probe drive arm
         self._pivot_to_drive_pinion = np.sqrt(
-            _inputs["pivot_to_drive"]**2 + _inputs["probe_axis_offset"]**2
+            _inputs["pivot_to_drive"] ** 2 + _inputs["probe_axis_offset"] ** 2
         )
 
         # calculate beta - the angular drop from the probe shaft to the
@@ -812,7 +811,7 @@ class LaPD6KTransform(LaPDXYTransform):
         # pivot point on the probe drive vertical axis (vpinion)
         pivot_to_vpinion = np.sqrt(
             self.pivot_to_drive**2
-            + (self.six_k_arm_length - self.probe_axis_offset + points[..., 1])**2
+            + (self.six_k_arm_length - self.probe_axis_offset + points[..., 1]) ** 2
         ).squeeze()
 
         # calculate the angle (gamma) the line intersecting the ball valve
@@ -840,12 +839,15 @@ class LaPD6KTransform(LaPDXYTransform):
         # with the above mentioned "x-axis".
         #
         tan_2_phi = (
-            2 * pivot_to_vpinion * self.pivot_to_drive_pinion / (
+            2
+            * pivot_to_vpinion
+            * self.pivot_to_drive_pinion
+            / (
                 self.six_k_arm_length**2
                 - self.pivot_to_drive_pinion**2
                 - pivot_to_vpinion**2
             )
-        )**2 - 1
+        ) ** 2 - 1
         phi = np.arctan(np.sqrt(tan_2_phi))
 
         # calculate theta - the angle the probe shaft makes with the
