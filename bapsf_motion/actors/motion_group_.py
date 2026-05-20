@@ -2,6 +2,7 @@
 Module for functionality focused around the
 `~bapsf_motion.actors.motion_group_.MotionGroup` actor class.
 """
+
 from __future__ import annotations
 
 __all__ = ["MotionGroup", "MotionGroupConfig", "handle_user_metadata"]

@@ -31,7 +31,9 @@ def run(mgroup: MotionGroup, duration, pause):
             "{l_bar}{bar}| {n:.1f}/{total:.1f} sec [Position {postfix[0][position]}]"
         ),
         ncols=80,
-        postfix=[{"position": str(np.nan)}, ],
+        postfix=[
+            {"position": str(np.nan)},
+        ],
     )
     while time.time() - to < duration:
 
@@ -82,7 +84,7 @@ if __name__ == "__main__":
                 "0": {
                     "type": "grid",
                     "limits": [[-10, 10], [-10, 10]],
-                    "steps": [11, 11]
+                    "steps": [11, 11],
                 },
             },
         },
@@ -91,7 +93,7 @@ if __name__ == "__main__":
             "axes": [0, 1],
             "pivot_to_center": 57.7,
             "pivot_to_drive": 134.0,
-        }
+        },
     }
     mg = MotionGroup(config=config, auto_run=True)
 

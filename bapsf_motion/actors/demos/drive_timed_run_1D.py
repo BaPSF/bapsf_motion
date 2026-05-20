@@ -17,7 +17,9 @@ def run(drive: Drive, duration, pause, positions):
             "{l_bar}{bar}| {n:.1f}/{total:.1f} sec [Position {postfix[0][position]:.2f}]"
         ),
         ncols=80,
-        postfix=[{"position": np.nan}, ],
+        postfix=[
+            {"position": np.nan},
+        ],
     )
     while time.time() - to < duration:
         pos = positions[ipos]
@@ -67,7 +69,7 @@ if __name__ == "__main__":
         "ip": "192.168.6.104",
         "units": "cm",
         "units_per_rev": 0.1 * 2.54,
-        "name": "X"
+        "name": "X",
     }
     dr = Drive(axes=[ax_settings], name="WALL-E", auto_run=True)
 
