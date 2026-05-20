@@ -2,4 +2,5 @@
 # ought to mirror 'extras' under options.extras_require in setup.cfg
 -r gui.txt
 black
+codespell
 isort
