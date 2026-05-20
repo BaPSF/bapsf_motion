@@ -20,6 +20,10 @@ try:
         LaPDXYTransformCalculator,
         LaPDXYTransformCalculatorApp
     )
+    from bapsf_motion.gui.lapd_xyz_transform_calculator import (
+        LaPDXYZTransformCalculator,
+        LaPDXYZTransformCalculatorApp,
+    )
 except (ModuleNotFoundError, ImportError) as err:
     msg = (
         f"{err.msg} ... It is likely GUI dependencies were not installed.  "
