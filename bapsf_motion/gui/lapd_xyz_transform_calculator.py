@@ -105,17 +105,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_xzcross = self.calc_pivot_to_xzcross()
 
-        _txt = QLineEdit(f"{self.pivot_to_center:.3f} cm", parent=self)
-        _txt.setReadOnly(True)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(262, 17)
-        _txt.move(p)
-        _txt.setFixedWidth(120)
-        self.pivot_to_center_label = _txt
-
+        # Place "measure" labels
         _txt = QLineEdit(f"{self.measure_1:.2f} cm", parent=self)
         _txt.setReadOnly(False)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -140,28 +130,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _txt.setObjectName("measure_2")
         self.measure_2_label = _txt
 
-        _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
-        _txt.setReadOnly(True)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(570, 108)
-        _txt.move(p)
-        _txt.setFixedWidth(120)
-        self.pivot_to_feedthru_label = _txt
-
-        _txt = QLineEdit(f"{self.pivot_to_xzcross:.3f} cm", parent=self)
-        _txt.setReadOnly(True)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(980, 17)
-        _txt.move(p)
-        _txt.setFixedWidth(120)
-        self.pivot_to_xzcross_label = _txt
-
+        # Place "constant" labels
         _txt = QLineEdit(f"{self.ball_valve_cap_thickness:.3f} cm", parent=self)
         _txt.setReadOnly(True)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -208,12 +177,47 @@ class LaPDXYZTransformCalculator(QMainWindow):
         font.setPointSize(12)
         font.setBold(True)
         _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(1496-273, 121+24)
+        p = self.geometry().topLeft() + QPoint(1496 - 273, 121 + 24)
         _txt.move(p)
         _txt.setFixedWidth(86)
         _txt.setObjectName("velmex_rail_width")
         self.velmex_rail_width_label = _txt
 
+        # Place "Transform Parameter" labels
+        _txt = QLineEdit(f"{self.pivot_to_center:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(262, 17)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        self.pivot_to_center_label = _txt
+
+        _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(570, 108)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        self.pivot_to_feedthru_label = _txt
+
+        _txt = QLineEdit(f"{self.pivot_to_xzcross:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(980, 17)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        self.pivot_to_xzcross_label = _txt
+
+        # Place Action Buttons
         _btn = StyleButton("Reset to Defaults", parent=self)
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(36)
