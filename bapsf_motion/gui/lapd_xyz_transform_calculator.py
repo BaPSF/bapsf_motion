@@ -234,7 +234,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _btn.setFixedWidth(200)
         _btn.setFixedHeight(36)
         _btn.setPointSize(14)
-        p = self.geometry().topLeft() + QPoint(32, 472)
+        p = self.geometry().topLeft() + QPoint(270, 694)
         _btn.move(p)
         self.reset_btn = _btn
 
