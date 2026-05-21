@@ -106,7 +106,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         # mesures and constants need to be defined first
         self.pivot_to_center = 58.771
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
-        self.pivot_to_drive = self.calc_pivot_to_drive()
+        self.pivot_to_xzcross = self.calc_pivot_to_xzcross()
 
         _txt = QLineEdit(f"{self.pivot_to_center:.3f} cm", parent=self)
         _txt.setReadOnly(True)
@@ -154,7 +154,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _txt.setFixedWidth(120)
         self.pivot_to_feedthru_label = _txt
 
-        _txt = QLineEdit(f"{self.pivot_to_drive:.3f} cm", parent=self)
+        _txt = QLineEdit(f"{self.pivot_to_xzcross:.3f} cm", parent=self)
         _txt.setReadOnly(True)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
@@ -163,7 +163,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         p = self.geometry().topLeft() + QPoint(1134, 43)
         _txt.move(p)
         _txt.setFixedWidth(120)
-        self.pivot_to_drive_label = _txt
+        self.pivot_to_xzcross_label = _txt
 
         _txt = QLineEdit(f"{self.ball_valve_cap_thickness:.3f} cm", parent=self)
         _txt.setReadOnly(True)
@@ -285,7 +285,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
             - self.probe_kf40_thickness
         )
 
-    def calc_pivot_to_drive(self):
+    def calc_pivot_to_xzcross(self):
         return (
             self.ball_valve_cap_thickness
             + self.measure_1
@@ -296,7 +296,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
 
     def recalculate_parameters(self):
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
-        self.pivot_to_drive = self.calc_pivot_to_drive()
+        self.pivot_to_xzcross = self.calc_pivot_to_xzcross()
 
         self._update_all_labels()
 
@@ -313,15 +313,15 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self._update_measure_1_label()
         self._update_measure_2_label()
         self._update_pivot_to_feedthru_label()
-        self._update_pivot_to_drive_label()
+        self._update_pivot_to_xzcross_label()
 
     def _update_pivot_to_feedthru_label(self):
         _txt = f"{self.pivot_to_feedthru:.3f} cm"
         self.pivot_to_feedthru_label.setText(_txt)
 
-    def _update_pivot_to_drive_label(self):
-        _txt = f"{self.pivot_to_drive:.3f} cm"
-        self.pivot_to_drive_label.setText(_txt)
+    def _update_pivot_to_xzcross_label(self):
+        _txt = f"{self.pivot_to_xzcross:.3f} cm"
+        self.pivot_to_xzcross_label.setText(_txt)
 
     def _update_measure_1_label(self):
         _txt = f"{self.measure_1:.2f} cm"
