@@ -206,6 +206,17 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _txt.setFixedWidth(120)
         self.pivot_to_feedthru_label = _txt
 
+        _txt = QLineEdit(f"{self.probe_axis_offset:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(1590, 658)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        self.probe_axis_offset_label = _txt
+
         _txt = QLineEdit(f"{self.pivot_to_xzcross:.3f} cm", parent=self)
         _txt.setReadOnly(True)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
