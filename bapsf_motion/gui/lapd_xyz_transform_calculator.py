@@ -88,18 +88,20 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self.image_frame.setFixedWidth(self.width() - 2 * self._window_margin)
         self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
 
-        # all values in cm
+        # Initialized measure values
+        self.measure_1 = self._defaults["measure_1"]
+        self.measure_2 = self._defaults["measure_2"]
+
+        # Initialized constants
         self.ball_valve_cap_thickness = 0.81 * 2.54
         self.probe_drive_endplate_thickness = 0.75 * 2.54
         self.probe_kf40_thickness = 2.54
         self.velmex_rail_width = 3.4 * 2.54
 
-        # constants need to be defined first
-        self.measure_1 = self._defaults["measure_1"]
-        self.measure_2 = self._defaults["measure_2"]
-
-        # mesures and constants need to be defined first
+        # Initilized "Calculated" Transform Parameters
         self.pivot_to_center = 58.771
+        self.probe_axis_offset = 30.47
+        self.table_pivot_to_zlead_screw = 12.488
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_xzcross = self.calc_pivot_to_xzcross()
 
