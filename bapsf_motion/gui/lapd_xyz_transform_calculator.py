@@ -67,10 +67,6 @@ class LaPDXYZTransformCalculator(QMainWindow):
             border: 2px solid rgb(68, 114, 196);
             color: rgb(68, 114, 196);
         }
-        QLineEdit#fiducial_width {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
         """
         self.setStyleSheet(_stylesheet)
 
@@ -97,7 +93,6 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self.probe_drive_endplate_thickness = 0.75 * 2.54
         self.probe_kf40_thickness = 2.54
         self.velmex_rail_width = 3.4 * 2.54
-        self.fiducial_width = 1.775 * 2.54
 
         # constants need to be defined first
         self.measure_1 = self._defaults["measure_1"]
@@ -216,19 +211,6 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _txt.setFixedWidth(86)
         _txt.setObjectName("velmex_rail_width")
         self.velmex_rail_width_label = _txt
-
-        _txt = QLineEdit(f"{self.fiducial_width:.3f} cm", parent=self)
-        _txt.setReadOnly(True)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(12)
-        font.setBold(True)
-        _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(1774, 512)
-        _txt.move(p)
-        _txt.setFixedWidth(86)
-        _txt.setObjectName("fiducial_width")
-        self.fiducial_width_label = _txt
 
         _btn = StyleButton("Reset to Defaults", parent=self)
         _btn.setFixedWidth(200)
