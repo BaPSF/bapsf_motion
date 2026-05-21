@@ -114,7 +114,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(260, 43)
+        p = self.geometry().topLeft() + QPoint(265, 17)
         _txt.move(p)
         _txt.setFixedWidth(120)
         self.pivot_to_center_label = _txt
