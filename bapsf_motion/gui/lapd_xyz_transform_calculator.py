@@ -125,7 +125,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(763, 432)
+        p = self.geometry().topLeft() + QPoint(598, 442)
         _txt.move(p)
         _txt.setFixedWidth(120)
         _txt.setObjectName("measure_1")
