@@ -271,7 +271,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
             + self.measure_1
             + self.probe_drive_endplate_thickness
             + self.measure_2
-            + 0.5 * self.velmex_rail_width
+            + self.table_pivot_to_zlead_screw
         )
 
     def recalculate_parameters(self):
