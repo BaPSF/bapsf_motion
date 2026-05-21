@@ -238,12 +238,6 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _btn.move(p)
         self.reset_btn = _btn
 
-        _btn = QRadioButton(parent=self)
-        p = self.measure_2_label.pos() + QPoint(self.measure_2_label.width() + 6, 0)
-        _btn.move(p)
-        _btn.setChecked(True)
-        self.measure_2_btn = _btn
-
         layout = self._define_layout()
         self.centralWidget().setLayout(layout)
 
@@ -262,8 +256,6 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self.measure_2_label.editingFinished.connect(self._validate_measure_2)
 
         self.reset_btn.clicked.connect(self._reset_measure_values)
-
-        self.measure_2_btn.toggled.connect(self._measure_2_input_selected)
 
     def _define_layout(self):
         image_layout = QVBoxLayout()
@@ -299,9 +291,6 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self.pivot_to_xzcross = self.calc_pivot_to_xzcross()
 
         self._update_all_labels()
-
-    def _measure_2_input_selected(self):
-        self.measure_2_label.setEnabled(True)
 
     def _reset_measure_values(self):
         self.measure_1 = self._defaults["measure_1"]
