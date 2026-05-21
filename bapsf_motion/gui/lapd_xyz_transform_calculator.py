@@ -31,7 +31,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
 
     _defaults = {  # all values in cm
         "measure_1": 54.2,
-        "measure_2a": 58.0,
+        "measure_2": 58.0,
     }
 
     def __init__(self):
@@ -49,8 +49,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         
         QLineEdit { border: 2px solid black; border-radius: 5px }
         QLineEdit#measure_1 { border: 2px solid rgb(255, 0, 0) }
-        QLineEdit#measure_2a { border: 2px solid rgb(255, 0, 0) }
-        QLineEdit#measure_2b { border: 2px solid rgb(255, 0, 0) }
+        QLineEdit#measure_2 { border: 2px solid rgb(255, 0, 0) }
         
         QLineEdit#ball_valve_cap_thickness {
             border: 2px solid rgb(68, 114, 196);
@@ -102,8 +101,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
 
         # constants need to be defined first
         self.measure_1 = self._defaults["measure_1"]
-        self.measure_2a = self._defaults["measure_2a"]
-        self.measure_2b = self.convert_measure_2a_to_measure_2b()
+        self.measure_2 = self._defaults["measure_2"]
 
         # mesures and constants need to be defined first
         self.pivot_to_center = 58.771
@@ -133,7 +131,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _txt.setObjectName("measure_1")
         self.measure_1_label = _txt
 
-        _txt = QLineEdit(f"{self.measure_2a:.2f} cm", parent=self)
+        _txt = QLineEdit(f"{self.measure_2:.2f} cm", parent=self)
         _txt.setReadOnly(False)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
@@ -142,21 +140,8 @@ class LaPDXYZTransformCalculator(QMainWindow):
         p = self.geometry().topLeft() + QPoint(1228, 447)
         _txt.move(p)
         _txt.setFixedWidth(120)
-        _txt.setObjectName("measure_2a")
-        self.measure_2a_label = _txt
-
-        _txt = QLineEdit(f"{self.measure_2b:.2f} cm", parent=self)
-        _txt.setReadOnly(False)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(1228, 499)
-        _txt.move(p)
-        _txt.setFixedWidth(120)
-        _txt.setObjectName("measure_2b")
-        self.measure_2b_label = _txt
-        self.measure_2b_label.setEnabled(False)
+        _txt.setObjectName("measure_2")
+        self.measure_2_label = _txt
 
         _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
         _txt.setReadOnly(True)
@@ -254,15 +239,10 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self.reset_btn = _btn
 
         _btn = QRadioButton(parent=self)
-        p = self.measure_2a_label.pos() + QPoint(self.measure_2a_label.width() + 6, 0)
+        p = self.measure_2_label.pos() + QPoint(self.measure_2_label.width() + 6, 0)
         _btn.move(p)
         _btn.setChecked(True)
-        self.measure_2a_btn = _btn
-
-        _btn = QRadioButton(parent=self)
-        p = self.measure_2b_label.pos() + QPoint(self.measure_2b_label.width() + 6, 0)
-        _btn.move(p)
-        self.measure_2b_btn = _btn
+        self.measure_2_btn = _btn
 
         layout = self._define_layout()
         self.centralWidget().setLayout(layout)
@@ -279,13 +259,11 @@ class LaPDXYZTransformCalculator(QMainWindow):
 
     def _connect_signals(self):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
-        self.measure_2a_label.editingFinished.connect(self._validate_measure_2a)
-        self.measure_2b_label.editingFinished.connect(self._validate_measure_2b)
+        self.measure_2_label.editingFinished.connect(self._validate_measure_2)
 
         self.reset_btn.clicked.connect(self._reset_measure_values)
 
-        self.measure_2a_btn.toggled.connect(self._measure_2a_input_selected)
-        self.measure_2b_btn.toggled.connect(self._measure_2b_input_selected)
+        self.measure_2_btn.toggled.connect(self._measure_2_input_selected)
 
     def _define_layout(self):
         image_layout = QVBoxLayout()
@@ -300,22 +278,6 @@ class LaPDXYZTransformCalculator(QMainWindow):
         layout.addStretch()
         return layout
 
-    def convert_measure_2a_to_measure_2b(
-        self, measure_2a: Optional[float] = None
-    ) -> float:
-        if measure_2a is None:
-            measure_2a = self.measure_2a
-
-        return measure_2a + self.velmex_rail_width + self.fiducial_width
-
-    def convert_measure_2b_to_measure_2a(
-        self, measure_2b: Optional[float] = None
-    ) -> float:
-        if measure_2b is None:
-            measure_2b = self.measure_2b
-
-        return measure_2b - self.velmex_rail_width - self.fiducial_width
-
     def calc_pivot_to_feedthru(self):
         return (
             self.ball_valve_cap_thickness
@@ -328,7 +290,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
             self.ball_valve_cap_thickness
             + self.measure_1
             + self.probe_drive_endplate_thickness
-            + self.measure_2a
+            + self.measure_2
             + 0.5 * self.velmex_rail_width
         )
 
@@ -338,25 +300,18 @@ class LaPDXYZTransformCalculator(QMainWindow):
 
         self._update_all_labels()
 
-    def _measure_2a_input_selected(self):
-        self.measure_2a_label.setEnabled(True)
-        self.measure_2b_label.setEnabled(False)
-
-    def _measure_2b_input_selected(self):
-        self.measure_2a_label.setEnabled(False)
-        self.measure_2b_label.setEnabled(True)
+    def _measure_2_input_selected(self):
+        self.measure_2_label.setEnabled(True)
 
     def _reset_measure_values(self):
         self.measure_1 = self._defaults["measure_1"]
-        self.measure_2a = self._defaults["measure_2a"]
-        self.measure_2b = self.convert_measure_2a_to_measure_2b()
+        self.measure_2 = self._defaults["measure_2"]
 
         self.recalculate_parameters()
 
     def _update_all_labels(self):
         self._update_measure_1_label()
-        self._update_measure_2a_label()
-        self._update_measure_2b_label()
+        self._update_measure_2_label()
         self._update_pivot_to_feedthru_label()
         self._update_pivot_to_drive_label()
 
@@ -372,13 +327,9 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _txt = f"{self.measure_1:.2f} cm"
         self.measure_1_label.setText(_txt)
 
-    def _update_measure_2a_label(self):
-        _txt = f"{self.measure_2a:.2f} cm"
-        self.measure_2a_label.setText(_txt)
-
-    def _update_measure_2b_label(self):
-        _txt = f"{self.measure_2b:.2f} cm"
-        self.measure_2b_label.setText(_txt)
+    def _update_measure_2_label(self):
+        _txt = f"{self.measure_2:.2f} cm"
+        self.measure_2_label.setText(_txt)
 
     @staticmethod
     def _validate_measure(text: str) -> Union[float, None]:
@@ -412,8 +363,8 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self._update_all_labels()
 
     @Slot()
-    def _validate_measure_2a(self):
-        _txt = self.measure_2a_label.text()
+    def _validate_measure_2(self):
+        _txt = self.measure_2_label.text()
         value = self._validate_measure(_txt)
 
         if value is None:
@@ -422,26 +373,7 @@ class LaPDXYZTransformCalculator(QMainWindow):
             # not physically possible
             pass
         else:
-            self.measure_2a = value
-            self.measure_2b = self.convert_measure_2a_to_measure_2b()
-            self.recalculate_parameters()
-            return
-
-        self._update_all_labels()
-
-    @Slot()
-    def _validate_measure_2b(self):
-        _txt = self.measure_2b_label.text()
-        value = self._validate_measure(_txt)
-
-        if value is None:
-            pass
-        elif value <= self.velmex_rail_width + self.fiducial_width:
-            # not physically possible
-            pass
-        else:
-            self.measure_2b = value
-            self.measure_2a = self.convert_measure_2b_to_measure_2a()
+            self.measure_2 = value
             self.recalculate_parameters()
             return
 
