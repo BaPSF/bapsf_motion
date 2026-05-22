@@ -70,7 +70,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
 
         self.image_frame = QFrame(parent=self)
         self.image_frame.setObjectName("image_frame")
-        self.image_frame.setStyleSheet(_stylesheet)
         self.image_frame.setFixedWidth(self.width() - 2 * self._window_margin)
         self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
 
