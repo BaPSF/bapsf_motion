@@ -21,7 +21,7 @@ try:
         LaPDXYTransformCalculator,
         LaPDXYTransformCalculatorApp,
     )
-    from bapsf_motion.gui.lapd_xyz_transform_calculator import (
+    from bapsf_motion.gui.calculators import (
         LaPDXYZTransformCalculator,
         LaPDXYZTransformCalculatorApp,
     )
