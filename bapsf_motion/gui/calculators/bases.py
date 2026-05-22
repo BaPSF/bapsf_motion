@@ -40,9 +40,31 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         # intialize image widgets for background
         self._init_image_widgets()
 
+    @property
+    def _stylesheet_string(self):
+        _stylesheet = self.styleSheet()
+        _stylesheet += """
+            QFrame#image_frame {
+                border: 2px solid rgb(125, 125, 125);
+                border-radius: 5px; 
+                padding: 0px;
+                margin: 0px;
+                background-color: white;
+            }
+            """
+        return _stylesheet
+
     @abstractmethod
     def _connect_signals(self):
         ...
+
+    def _define_main_window(self):
+        self.setWindowTitle(self._WINDOW_TITLE)
+        width = self._image.width() + 2 * self._window_margin
+        height = self._image.height() + 2 * self._window_margin
+        self.resize(width, height)
+        self.setFixedWidth(width)
+        self.setFixedHeight(height)
 
     def _generate_image_path(self):
         if not isinstance(self._IMAGE_DIR, Path):
@@ -75,20 +97,6 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
             )
         return _image_path
 
-    @property
-    def _stylesheet_string(self):
-        _stylesheet = self.styleSheet()
-        _stylesheet += """
-        QFrame#image_frame {
-            border: 2px solid rgb(125, 125, 125);
-            border-radius: 5px; 
-            padding: 0px;
-            margin: 0px;
-            background-color: white;
-        }
-        """
-        return _stylesheet
-
     def _init_image_widgets(self):
         self.image_label = QLabel(parent=self)
         self.image_label.setPixmap(self._image)
@@ -97,14 +105,6 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         self.image_frame.setObjectName("image_frame")
         self.image_frame.setFixedWidth(self.width() - 2 * self._window_margin)
         self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
-
-    def _define_main_window(self):
-        self.setWindowTitle(self._WINDOW_TITLE)
-        width = self._image.width() + 2 * self._window_margin
-        height = self._image.height() + 2 * self._window_margin
-        self.resize(width, height)
-        self.setFixedWidth(width)
-        self.setFixedHeight(height)
 
     def closeEvent(self, event: QCloseEvent):
         self.closing.emit()
