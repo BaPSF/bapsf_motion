@@ -6,7 +6,11 @@ from typing import Type
 
 
 class BaseCalculatorWindow(QMainWindow):
-    ...
+    closing = Signal()
+
+    def closeEvent(self, event):
+        self.closing.emit()
+        super().closeEvent(event)
 
 
 class BaseCalculatorApp(QApplication):

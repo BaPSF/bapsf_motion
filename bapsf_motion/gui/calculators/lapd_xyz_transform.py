@@ -26,7 +26,6 @@ _IMAGES_PATH = (_HERE / "_images").resolve()
 
 
 class LaPDXYZTransformCalculator(BaseCalculatorWindow):
-    closing = Signal()
 
     _defaults = {  # all values in cm
         "measure_1": 54.2,
@@ -381,10 +380,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
 
         self.measure_2 = value
         self.recalculate_parameters()
-
-    def closeEvent(self, event):
-        self.closing.emit()
-        super().closeEvent(event)
 
 
 class LaPDXYZTransformCalculatorApp(BaseCalculatorApp):
