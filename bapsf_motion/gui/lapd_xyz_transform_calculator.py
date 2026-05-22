@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 )
 from typing import Union, Optional
 
+from bapsf_motion.gui.calculators.bases import BaseCalculatorWindow, BaseCalculatorApp
 from bapsf_motion.gui.widgets import StyleButton
 
 
@@ -26,7 +27,7 @@ _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / "_images").resolve()
 
 
-class LaPDXYZTransformCalculator(QMainWindow):
+class LaPDXYZTransformCalculator(BaseCalculatorWindow):
     closing = Signal()
 
     _defaults = {  # all values in cm
@@ -388,16 +389,8 @@ class LaPDXYZTransformCalculator(QMainWindow):
         super().closeEvent(event)
 
 
-class LaPDXYZTransformCalculatorApp(QApplication):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.setStyle("Fusion")
-        self.styleHints().setColorScheme(Qt.ColorScheme.Light)
-
-        self._window = LaPDXYZTransformCalculator()
-        self._window.show()
-        self._window.activateWindow()
+class LaPDXYZTransformCalculatorApp(BaseCalculatorApp):
+    _CALCULATOR_CLASS = LaPDXYZTransformCalculator
 
 
 if __name__ == "__main__":
