@@ -65,9 +65,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         """
         self.setStyleSheet(_stylesheet)
 
-        self._window_margin = 12
-        self._define_main_window()
-
         self.image_label = QLabel(parent=self)
         self.image_label.setPixmap(self._image)
 
@@ -241,14 +238,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         self.centralWidget().setLayout(layout)
 
         self._connect_signals()
-
-    def _define_main_window(self):
-        self.setWindowTitle("LaPD XY Transform Calculator")
-        width = self._image.width() + 2 * self._window_margin
-        height = self._image.height() + 2 * self._window_margin
-        self.resize(width, height)
-        self.setFixedWidth(width)
-        self.setFixedHeight(height)
 
     def _connect_signals(self):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
