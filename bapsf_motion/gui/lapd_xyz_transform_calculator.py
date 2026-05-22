@@ -309,6 +309,15 @@ class LaPDXYZTransformCalculator(QMainWindow):
         self.recalculate_parameters()
 
     def _update_all_labels(self):
+        # No update of
+        #
+        #  - pivot_to_center_label
+        #  - probe_axis_offset_label
+        #  - table_pivot_to_zlead_screw_label
+        #
+        # is needed because they do NOT change with measure_1
+        # and measure_2
+        #
         self._update_measure_1_label()
         self._update_measure_2_label()
         self._update_pivot_to_feedthru_label()
