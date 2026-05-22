@@ -32,14 +32,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
     def __init__(self):
         super().__init__()
 
-        self.image_label = QLabel(parent=self)
-        self.image_label.setPixmap(self._image)
-
-        self.image_frame = QFrame(parent=self)
-        self.image_frame.setObjectName("image_frame")
-        self.image_frame.setFixedWidth(self.width() - 2 * self._window_margin)
-        self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
-
         # Initialized measure values
         self.measure_1 = self._defaults["measure_1"]
         self.measure_2 = self._defaults["measure_2"]
