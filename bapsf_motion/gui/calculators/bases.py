@@ -1,5 +1,5 @@
 __all__ = ["BaseCalculatorApp", "BaseCalculatorWindow"]
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QCloseEvent, QPixmap
@@ -10,7 +10,11 @@ _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / ".." / "_images").resolve()
 
 
-class BaseCalculatorWindow(QMainWindow, ABC):
+class QABCMainWindow(ABCMeta, type(QMainWindow)):
+    ...
+
+
+class BaseCalculatorWindow(QMainWindow, metaclass=QABCMainWindow):
     closing = Signal()
 
     _WINDOW_TITLE = NotImplemented  # type: str
