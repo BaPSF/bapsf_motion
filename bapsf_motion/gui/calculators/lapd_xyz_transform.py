@@ -30,7 +30,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
     }
 
     def __init__(self):
-        super().__init__()
 
         # Initialized measure values
         self.measure_1 = self._defaults["measure_1"]
@@ -49,6 +48,9 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_xzcross = self.calc_pivot_to_xzcross()
 
+        super().__init__()
+
+    def _init_widgets(self):
         # Place "measure" labels
         _txt = QLineEdit(f"{self.measure_1:.2f} cm", parent=self)
         _txt.setReadOnly(False)
@@ -192,29 +194,11 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         _btn.move(p)
         self.reset_btn = _btn
 
-        layout = self._define_layout()
-        self.centralWidget().setLayout(layout)
-
-        self._connect_signals()
-
     def _connect_signals(self):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
         self.measure_2_label.editingFinished.connect(self._validate_measure_2)
 
         self.reset_btn.clicked.connect(self._reset_measure_values)
-
-    def _define_layout(self):
-        image_layout = QVBoxLayout()
-        image_layout.setContentsMargins(0, 0, 0, 0)
-        image_layout.addWidget(self.image_label)
-        self.image_frame.setLayout(image_layout)
-
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addStretch()
-        layout.addWidget(self.image_frame)
-        layout.addStretch()
-        return layout
 
     @property
     def _stylesheet_string(self):
