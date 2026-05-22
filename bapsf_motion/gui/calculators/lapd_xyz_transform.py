@@ -32,39 +32,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
     def __init__(self):
         super().__init__()
 
-        _stylesheet = self.styleSheet()
-        _stylesheet += """
-        QFrame#image_frame {
-            border: 2px solid rgb(125, 125, 125);
-            border-radius: 5px; 
-            padding: 0px;
-            margin: 0px;
-            background-color: white;
-        }
-        
-        QLineEdit { border: 2px solid black; border-radius: 5px }
-        QLineEdit#measure_1 { border: 2px solid rgb(255, 0, 0) }
-        QLineEdit#measure_2 { border: 2px solid rgb(255, 0, 0) }
-        
-        QLineEdit#ball_valve_cap_thickness {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        QLineEdit#probe_kf40_thickness {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        QLineEdit#probe_drive_endplate_thickness {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        QLineEdit#velmex_rail_width {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        """
-        self.setStyleSheet(_stylesheet)
-
         self.image_label = QLabel(parent=self)
         self.image_label.setPixmap(self._image)
 
@@ -256,6 +223,33 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         layout.addWidget(self.image_frame)
         layout.addStretch()
         return layout
+
+    @property
+    def _stylesheet_string(self):
+        _stylesheet = super()._stylesheet_string
+        _stylesheet += """
+        QLineEdit { border: 2px solid black; border-radius: 5px }
+        QLineEdit#measure_1 { border: 2px solid rgb(255, 0, 0) }
+        QLineEdit#measure_2 { border: 2px solid rgb(255, 0, 0) }
+        
+        QLineEdit#ball_valve_cap_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#probe_kf40_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#probe_drive_endplate_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#velmex_rail_width {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        """
+        return _stylesheet
 
     def calc_pivot_to_feedthru(self):
         return (

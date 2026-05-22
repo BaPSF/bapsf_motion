@@ -25,6 +25,8 @@ class BaseCalculatorWindow(QMainWindow, metaclass=QABCMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.setStyleSheet(self._stylesheet_string)
+
         self.setCentralWidget(QWidget(parent=self))
 
         self._image_path = self._generate_image_path()
@@ -68,6 +70,20 @@ class BaseCalculatorWindow(QMainWindow, metaclass=QABCMainWindow):
                 f"The image '{_image_path}' does NOT a file."
             )
         return _image_path
+
+    @property
+    def _stylesheet_string(self):
+        _stylesheet = self.styleSheet()
+        _stylesheet += """
+        QFrame#image_frame {
+            border: 2px solid rgb(125, 125, 125);
+            border-radius: 5px; 
+            padding: 0px;
+            margin: 0px;
+            background-color: white;
+        }
+        """
+        return _stylesheet
 
     def _define_main_window(self):
         self.setWindowTitle(self._WINDOW_TITLE)
