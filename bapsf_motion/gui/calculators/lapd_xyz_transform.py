@@ -3,7 +3,6 @@ __all__ = ["LaPDXYZTransformCalculator", "LaPDXYZTransformCalculatorApp"]
 import ast
 import re
 
-from pathlib import Path
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
@@ -21,11 +20,9 @@ from bapsf_motion.gui.calculators.bases import BaseCalculatorWindow, BaseCalcula
 from bapsf_motion.gui.widgets import StyleButton
 
 
-_HERE = Path(__file__).parent
-_IMAGES_PATH = (_HERE / "_images").resolve()
-
-
 class LaPDXYZTransformCalculator(BaseCalculatorWindow):
+    _WINDOW_TITLE = "LaPD XYZ Calculator"
+    _IMAGE_NAME = "LaPDXYZTransform_diagram.png"
 
     _defaults = {  # all values in cm
         "measure_1": 54.2,
@@ -67,12 +64,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         }
         """
         self.setStyleSheet(_stylesheet)
-
-        self.setCentralWidget(QWidget(parent=self))
-
-        self._image_file_path = (_IMAGES_PATH / "LaPDXYZTransform_diagram.png").resolve()
-        pixmap = QPixmap(f"{self._image_file_path}")
-        self._image = pixmap
 
         self._window_margin = 12
         self._define_main_window()
