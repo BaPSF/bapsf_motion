@@ -7,8 +7,6 @@ from pathlib import Path
 from PySide6.QtCore import Qt, QPoint, Signal, Slot
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
-    QApplication,
-    QMainWindow,
     QWidget,
     QVBoxLayout,
     QHBoxLayout,
