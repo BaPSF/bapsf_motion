@@ -40,6 +40,9 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         # intialize image widgets for background
         self._init_image_widgets()
 
+        # initialized widgets
+        self._init_widgets()
+
     @property
     def _stylesheet_string(self):
         _stylesheet = self.styleSheet()
@@ -105,6 +108,10 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         self.image_frame.setObjectName("image_frame")
         self.image_frame.setFixedWidth(self.width() - 2 * self._window_margin)
         self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
+
+    @abstractmethod
+    def _init_widgets(self):
+        ...
 
     def closeEvent(self, event: QCloseEvent):
         self.closing.emit()
