@@ -10,7 +10,7 @@ _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / ".." / "_images").resolve()
 
 
-class BaseCalculatorWindow(QMainWindow):
+class BaseCalculatorWindow(QMainWindow, ABC):
     closing = Signal()
 
     _WINDOW_TITLE = NotImplemented  # type: str
@@ -29,6 +29,10 @@ class BaseCalculatorWindow(QMainWindow):
 
         self._window_margin = self._WINDOW_MARGIN
         self._define_main_window()
+
+    @abstractmethod
+    def _connect_signals(self):
+        ...
 
     def _generate_image_path(self):
         if not isinstance(self._IMAGE_DIR, Path):
