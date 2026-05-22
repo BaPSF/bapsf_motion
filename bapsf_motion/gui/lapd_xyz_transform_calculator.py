@@ -349,34 +349,30 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _txt = self.measure_1_label.text()
         value = self._validate_measure(_txt)
 
-        if value is None:
-            pass
-        elif value <= self.probe_kf40_thickness:
-            # not physically possible
-            pass
-        else:
-            self.measure_1 = value
-            self.recalculate_parameters()
+        if (
+            value is None  # input was invalid
+            or value <= self.probe_kf40_thickness  # not physically possible
+        ):
+            self._update_all_labels()
             return
 
-        self._update_all_labels()
+        self.measure_1 = value
+        self.recalculate_parameters()
 
     @Slot()
     def _validate_measure_2(self):
         _txt = self.measure_2_label.text()
         value = self._validate_measure(_txt)
 
-        if value is None:
-            pass
-        elif value <= 0:
-            # not physically possible
-            pass
-        else:
-            self.measure_2 = value
-            self.recalculate_parameters()
+        if (
+            value is None  # input was invalid
+            or value <= 0  # not physically possible
+        ):
+            self._update_all_labels()
             return
 
-        self._update_all_labels()
+        self.measure_2 = value
+        self.recalculate_parameters()
 
     def closeEvent(self, event):
         self.closing.emit()
