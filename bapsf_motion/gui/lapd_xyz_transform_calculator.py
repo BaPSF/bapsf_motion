@@ -228,6 +228,17 @@ class LaPDXYZTransformCalculator(QMainWindow):
         _txt.setFixedWidth(120)
         self.pivot_to_xzcross_label = _txt
 
+        _txt = QLineEdit(f"{self.table_pivot_to_zlead_screw:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(1437, 82)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        self.table_pivot_to_zlead_screw_label = _txt
+
         # Place Action Buttons
         _btn = StyleButton("Reset to Defaults", parent=self)
         _btn.setFixedWidth(200)
