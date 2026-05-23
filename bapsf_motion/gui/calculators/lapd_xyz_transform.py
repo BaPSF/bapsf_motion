@@ -223,6 +223,14 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         """
         return _stylesheet
 
+    def _collect_export_parameters(self) -> dict:
+        return {
+            "pivot_to_center": self.pivot_to_center,
+            "probe_axis_offset": self.probe_axis_offset,
+            "table_pivot_to_zlead_screw": self.table_pivot_to_zlead_screw,
+            "pivot_to_xzcross": self.pivot_to_xzcross,
+        }
+
     def calc_pivot_to_feedthru(self):
         return (
             self.ball_valve_cap_thickness

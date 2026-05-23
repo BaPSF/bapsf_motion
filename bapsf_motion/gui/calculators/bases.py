@@ -92,6 +92,10 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         return _stylesheet
 
     @abstractmethod
+    def _collect_export_parameters(self) -> dict:
+        ...
+
+    @abstractmethod
     def _connect_signals(self):
         ...
 
