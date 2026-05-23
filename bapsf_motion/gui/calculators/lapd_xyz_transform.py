@@ -232,7 +232,7 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         }
 
     def calc_pivot_to_feedthru(self):
-        return (
+        return (  # fmt: skip
             self.ball_valve_cap_thickness
             + self.measure_1
             - self.probe_kf40_thickness
@@ -328,10 +328,8 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         _txt = self.measure_2_label.text()
         value = self._validate_measure(_txt)
 
-        if (
-            value is None  # input was invalid
-            or value <= 0  # not physically possible
-        ):
+        if value is None or value <= 0:
+            # input was invalid OR not physically possible
             self._update_all_labels()
             return
 
