@@ -2,7 +2,7 @@
 
 __all__ = [
     "ConfigureApp",
-    "LaPDXYTransformCalculator",
+    "LaPDXYTransformCalculatorApp",
     "LaPDXYTransformCalculatorApp",
     "get_qapplication",
     "get_color_scheme",
@@ -17,12 +17,8 @@ try:
         get_qapplication,
     )
     from bapsf_motion.gui.icons import icon_name_dict
-    from bapsf_motion.gui.lapd_xy_transform_calculator import (
-        LaPDXYTransformCalculator,
-        LaPDXYTransformCalculatorApp,
-    )
     from bapsf_motion.gui.calculators import (
-        LaPDXYZTransformCalculator,
+        LaPDXYTransformCalculatorApp,
         LaPDXYZTransformCalculatorApp,
     )
 except (ModuleNotFoundError, ImportError) as err:
