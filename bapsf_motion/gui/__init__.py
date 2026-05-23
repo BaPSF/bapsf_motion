@@ -10,6 +10,10 @@ __all__ = [
 ]
 
 try:
+    from bapsf_motion.gui.calculators import (
+        LaPDXYTransformCalculatorApp,
+        LaPDXYZTransformCalculatorApp,
+    )
     from bapsf_motion.gui.configure.configure_ import ConfigureApp
     from bapsf_motion.gui.helpers import (
         cast_color_to_rgba_string,
@@ -17,10 +21,6 @@ try:
         get_qapplication,
     )
     from bapsf_motion.gui.icons import icon_name_dict
-    from bapsf_motion.gui.calculators import (
-        LaPDXYTransformCalculatorApp,
-        LaPDXYZTransformCalculatorApp,
-    )
 except (ModuleNotFoundError, ImportError) as err:
     msg = (
         f"{err.msg} ... It is likely GUI dependencies were not installed.  "
