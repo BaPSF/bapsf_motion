@@ -251,6 +251,7 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
 
         self.recalculate_parameters()
 
+    @Slot()
     def _reset_parameters(self):
         self._reset_measure_values()
 
