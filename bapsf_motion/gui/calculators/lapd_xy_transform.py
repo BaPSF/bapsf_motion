@@ -7,7 +7,6 @@ from pathlib import Path
 from PySide6.QtCore import QPoint, Qt, Signal, Slot
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
-    QApplication,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -19,6 +18,7 @@ from PySide6.QtWidgets import (
 )
 from typing import Optional, Union
 
+from bapsf_motion.gui.calculators.bases import BaseCalculatorApp
 from bapsf_motion.gui.widgets import StyleButton
 
 _HERE = Path(__file__).parent
@@ -447,16 +447,8 @@ class LaPDXYTransformCalculator(QMainWindow):
         super().closeEvent(event)
 
 
-class LaPDXYTransformCalculatorApp(QApplication):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.setStyle("Fusion")
-        self.styleHints().setColorScheme(Qt.ColorScheme.Light)
-
-        self._window = LaPDXYTransformCalculator()
-        self._window.show()
-        self._window.activateWindow()
+class LaPDXYTransformCalculatorApp(BaseCalculatorApp):
+    _CALCULATOR_CLASS = LaPDXYTransformCalculator
 
 
 if __name__ == "__main__":
