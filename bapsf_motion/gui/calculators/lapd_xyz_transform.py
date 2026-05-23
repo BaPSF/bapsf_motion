@@ -186,13 +186,8 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         self.table_pivot_to_zlead_screw_label = _txt
 
         # Place Action Buttons
-        _btn = StyleButton("Reset to Defaults", parent=self)
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(36)
-        _btn.setPointSize(14)
         p = self.geometry().topLeft() + QPoint(270, 694)
-        _btn.move(p)
-        self.reset_btn = _btn
+        self.reset_btn.move(p)
 
     def _connect_signals(self):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)

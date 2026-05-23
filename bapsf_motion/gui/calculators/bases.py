@@ -1,7 +1,8 @@
 __all__ = ["BaseCalculatorApp", "BaseCalculatorWindow"]
+
 from abc import ABC, ABCMeta, abstractmethod
 from pathlib import Path
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QPoint
 from PySide6.QtGui import QCloseEvent, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -14,6 +15,8 @@ from PySide6.QtWidgets import (
 )
 from typing import Type
 
+from bapsf_motion.gui.widgets import StyleButton
+
 _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / ".." / "_images").resolve()
 
@@ -24,7 +27,7 @@ class QABCMainWindow(ABCMeta, type(QMainWindow)):
 
 class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
     closing = Signal()
-    exportParameters = Signal()
+    exportParameters = Signal(object)
 
     _WINDOW_TITLE = NotImplemented  # type: str
     _WINDOW_MARGIN = 12
@@ -47,6 +50,15 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
 
         # intialize image widgets for background
         self._init_image_widgets()
+
+        # define action buttons
+        _btn = StyleButton("Reset to Defaults", parent=self)
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(36)
+        _btn.setPointSize(14)
+        p = self.geometry().topLeft() + QPoint(20, 20)
+        _btn.move(p)
+        self.reset_btn = _btn
 
         # initialized widgets
         self._init_widgets()
