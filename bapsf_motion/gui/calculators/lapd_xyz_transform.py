@@ -196,8 +196,6 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
         self.measure_2_label.editingFinished.connect(self._validate_measure_2)
 
-        self.reset_btn.clicked.connect(self._reset_measure_values)
-
     @property
     def _stylesheet_string(self):
         _stylesheet = super()._stylesheet_string
@@ -252,6 +250,9 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         self.measure_2 = self._defaults["measure_2"]
 
         self.recalculate_parameters()
+
+    def _reset_parameters(self):
+        self._reset_measure_values()
 
     def _update_all_labels(self):
         # No update of

@@ -74,6 +74,7 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         layout = self._define_layout()
         self.centralWidget().setLayout(layout)
 
+        self.reset_btn.clicked.connect(self._reset_parameters)
         self._connect_signals()
 
     @property
@@ -92,6 +93,10 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
 
     @abstractmethod
     def _connect_signals(self):
+        ...
+
+    @abstractmethod
+    def _reset_parameters(self):
         ...
 
     def _define_layout(self):
