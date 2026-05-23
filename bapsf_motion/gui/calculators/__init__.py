@@ -5,7 +5,7 @@ __all__ = [
     "LaPDXYZTransformCalculatorApp",
 ]
 
-from bapsf_motion.gui.calculators.lapd_xy_transform_calculator import (
+from bapsf_motion.gui.calculators.lapd_xy_transform import (
     LaPDXYTransformCalculator,
     LaPDXYTransformCalculatorApp,
 )
