@@ -189,6 +189,9 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
         p = self.geometry().topLeft() + QPoint(270, 694)
         self.reset_btn.move(p)
 
+        p += QPoint(220, 0)
+        self.export_btn.move(p)
+
     def _connect_signals(self):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
         self.measure_2_label.editingFinished.connect(self._validate_measure_2)

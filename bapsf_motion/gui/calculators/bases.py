@@ -60,6 +60,14 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         _btn.move(p)
         self.reset_btn = _btn
 
+        _btn = StyleButton("Export Parameters", parent=self)
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(36)
+        _btn.setPointSize(14)
+        p = self.geometry().topLeft() + QPoint(240, 20)
+        _btn.move(p)
+        self.export_btn = _btn
+
         # initialized widgets
         self._init_widgets()
 
