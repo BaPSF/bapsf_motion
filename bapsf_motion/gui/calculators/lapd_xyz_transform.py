@@ -3,17 +3,8 @@ __all__ = ["LaPDXYZTransformCalculator", "LaPDXYZTransformCalculatorApp"]
 import ast
 import re
 
-from PySide6.QtCore import QPoint, Qt, Signal, Slot
-from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QRadioButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtCore import QPoint, Qt, Slot
+from PySide6.QtWidgets import QLineEdit
 from typing import Optional, Union
 
 from bapsf_motion.gui.calculators.bases import BaseCalculatorApp, BaseCalculatorWindow
