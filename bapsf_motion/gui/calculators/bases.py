@@ -182,3 +182,7 @@ class BaseCalculatorApp(QApplication):
         self._window = self._CALCULATOR_CLASS()
         self._window.show()
         self._window.activateWindow()
+
+    @property
+    def calculator(self) -> BaseCalculatorWindow:
+        return self._window
