@@ -3,30 +3,16 @@ __all__ = ["LaPDXYTransformCalculator", "LaPDXYTransformCalculatorApp"]
 import ast
 import re
 
-from pathlib import Path
-from PySide6.QtCore import QPoint, Qt, Signal, Slot
-from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import (
-    QFrame,
-    QHBoxLayout,
-    QLabel,
-    QLineEdit,
-    QMainWindow,
-    QRadioButton,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide6.QtCore import QPoint, Qt, Slot
+from PySide6.QtWidgets import QLineEdit, QRadioButton
 from typing import Optional, Union
 
-from bapsf_motion.gui.calculators.bases import BaseCalculatorApp
-from bapsf_motion.gui.widgets import StyleButton
-
-_HERE = Path(__file__).parent
-_IMAGES_PATH = (_HERE / "_images").resolve()
+from bapsf_motion.gui.calculators.bases import BaseCalculatorApp, BaseCalculatorWindow
 
 
-class LaPDXYTransformCalculator(QMainWindow):
-    closing = Signal()
+class LaPDXYTransformCalculator(BaseCalculatorWindow):
+    _WINDOW_TITLE = "LaPD XY Tansform Calculator"
+    _IMAGE_NAME = "LaPDXYTransform_diagram.png"
 
     _defaults = {  # all values in cm
         "measure_1": 54.2,
@@ -34,92 +20,29 @@ class LaPDXYTransformCalculator(QMainWindow):
     }
 
     def __init__(self):
-        super().__init__()
 
-        _stylesheet = self.styleSheet()
-        _stylesheet += """
-        QFrame#image_frame {
-            border: 2px solid rgb(125, 125, 125);
-            border-radius: 5px; 
-            padding: 0px;
-            margin: 0px;
-            background-color: white;
-        }
-        
-        QLineEdit { border: 2px solid black; border-radius: 5px }
-        QLineEdit#measure_1 { border: 2px solid rgb(255, 0, 0) }
-        QLineEdit#measure_2a { border: 2px solid rgb(255, 0, 0) }
-        QLineEdit#measure_2b { border: 2px solid rgb(255, 0, 0) }
-        
-        QLineEdit#ball_valve_cap_thickness {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        QLineEdit#probe_kf40_thickness {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        QLineEdit#probe_drive_endplate_thickness {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        QLineEdit#velmex_rail_width {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        QLineEdit#fiducial_width {
-            border: 2px solid rgb(68, 114, 196);
-            color: rgb(68, 114, 196);
-        }
-        """
-        self.setStyleSheet(_stylesheet)
-
-        self.setCentralWidget(QWidget(parent=self))
-
-        self._image_file_path = (_IMAGES_PATH / "LaPDXYTransform_diagram.png").resolve()
-        pixmap = QPixmap(f"{self._image_file_path}")
-        self._image = pixmap
-
-        self._window_margin = 12
-        self._define_main_window()
-
-        self.image_label = QLabel(parent=self)
-        self.image_label.setPixmap(self._image)
-
-        self.image_frame = QFrame(parent=self)
-        self.image_frame.setObjectName("image_frame")
-        self.image_frame.setStyleSheet(_stylesheet)
-        self.image_frame.setFixedWidth(self.width() - 2 * self._window_margin)
-        self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
-
-        # all values in cm
+        # Initialized constants (all values in cm)
         self.ball_valve_cap_thickness = 0.81 * 2.54
         self.probe_drive_endplate_thickness = 0.75 * 2.54
         self.probe_kf40_thickness = 2.54
         self.velmex_rail_width = 3.4 * 2.54
         self.fiducial_width = 1.775 * 2.54
 
-        # constants need to be defined first
+        # Initialized measure values
         self.measure_1 = self._defaults["measure_1"]
         self.measure_2a = self._defaults["measure_2a"]
         self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
-        # measures and constants need to be defined first
+        # Initilized "Calculated" Transform Parameters
         self.pivot_to_center = 58.771
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_drive = self.calc_pivot_to_drive()
 
-        _txt = QLineEdit(f"{self.pivot_to_center:.3f} cm", parent=self)
-        _txt.setReadOnly(True)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(260, 43)
-        _txt.move(p)
-        _txt.setFixedWidth(120)
-        self.pivot_to_center_label = _txt
+        super().__init__()
 
+    def _init_widgets(self):
+        #
+        # Place "measure" labels
         _txt = QLineEdit(f"{self.measure_1:.2f} cm", parent=self)
         _txt.setReadOnly(False)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -157,28 +80,7 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_2b_label = _txt
         self.measure_2b_label.setEnabled(False)
 
-        _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
-        _txt.setReadOnly(True)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(736, 98)
-        _txt.move(p)
-        _txt.setFixedWidth(120)
-        self.pivot_to_feedthru_label = _txt
-
-        _txt = QLineEdit(f"{self.pivot_to_drive:.3f} cm", parent=self)
-        _txt.setReadOnly(True)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        p = self.geometry().topLeft() + QPoint(1134, 43)
-        _txt.move(p)
-        _txt.setFixedWidth(120)
-        self.pivot_to_drive_label = _txt
-
+        # Place "constant" labels
         _txt = QLineEdit(f"{self.ball_valve_cap_thickness:.3f} cm", parent=self)
         _txt.setReadOnly(True)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -244,13 +146,46 @@ class LaPDXYTransformCalculator(QMainWindow):
         _txt.setObjectName("fiducial_width")
         self.fiducial_width_label = _txt
 
-        _btn = StyleButton("Reset to Defaults", parent=self)
-        _btn.setFixedWidth(200)
-        _btn.setFixedHeight(36)
-        _btn.setPointSize(14)
-        p = self.geometry().topLeft() + QPoint(32, 472)
-        _btn.move(p)
-        self.reset_btn = _btn
+        # Place "Transform Parameter" Labels
+        _txt = QLineEdit(f"{self.pivot_to_center:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(260, 43)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        self.pivot_to_center_label = _txt
+
+        _txt = QLineEdit(f"{self.pivot_to_feedthru:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(736, 98)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        self.pivot_to_feedthru_label = _txt
+
+        _txt = QLineEdit(f"{self.pivot_to_drive:.3f} cm", parent=self)
+        _txt.setReadOnly(True)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        p = self.geometry().topLeft() + QPoint(1134, 43)
+        _txt.move(p)
+        _txt.setFixedWidth(120)
+        self.pivot_to_drive_label = _txt
+
+        # Place Action Buttons
+        p = self.geometry().topLeft() + QPoint(262, 512)
+        self.reset_btn.move(p)
+
+        p = self.reset_btn.pos() + QPoint(self.reset_btn.width() + 12, 0)
+        self.export_btn.move(p)
 
         _btn = QRadioButton(parent=self)
         p = self.measure_2a_label.pos() + QPoint(self.measure_2a_label.width() + 6, 0)
@@ -263,41 +198,52 @@ class LaPDXYTransformCalculator(QMainWindow):
         _btn.move(p)
         self.measure_2b_btn = _btn
 
-        layout = self._define_layout()
-        self.centralWidget().setLayout(layout)
-
-        self._connect_signals()
-
-    def _define_main_window(self):
-        self.setWindowTitle("LaPD XY Transform Calculator")
-        width = self._image.width() + 2 * self._window_margin
-        height = self._image.height() + 2 * self._window_margin
-        self.resize(width, height)
-        self.setFixedWidth(width)
-        self.setFixedHeight(height)
-
     def _connect_signals(self):
         self.measure_1_label.editingFinished.connect(self._validate_measure_1)
         self.measure_2a_label.editingFinished.connect(self._validate_measure_2a)
         self.measure_2b_label.editingFinished.connect(self._validate_measure_2b)
 
-        self.reset_btn.clicked.connect(self._reset_measure_values)
-
         self.measure_2a_btn.toggled.connect(self._measure_2a_input_selected)
         self.measure_2b_btn.toggled.connect(self._measure_2b_input_selected)
 
-    def _define_layout(self):
-        image_layout = QVBoxLayout()
-        image_layout.setContentsMargins(0, 0, 0, 0)
-        image_layout.addWidget(self.image_label)
-        self.image_frame.setLayout(image_layout)
+    @property
+    def _stylesheet_string(self):
+        _stylesheet = super()._stylesheet_string
+        _stylesheet += """
+        QLineEdit { border: 2px solid black; border-radius: 5px }
+        QLineEdit#measure_1 { border: 2px solid rgb(255, 0, 0) }
+        QLineEdit#measure_2a { border: 2px solid rgb(255, 0, 0) }
+        QLineEdit#measure_2b { border: 2px solid rgb(255, 0, 0) }
 
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addStretch()
-        layout.addWidget(self.image_frame)
-        layout.addStretch()
-        return layout
+        QLineEdit#ball_valve_cap_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#probe_kf40_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#probe_drive_endplate_thickness {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#velmex_rail_width {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        QLineEdit#fiducial_width {
+            border: 2px solid rgb(68, 114, 196);
+            color: rgb(68, 114, 196);
+        }
+        """
+        return _stylesheet
+
+    def _collect_export_parameters(self) -> dict:
+        return {
+            "pivot_to_center": self.pivot_to_center,
+            "pivot_to_drive": self.pivot_to_drive,
+            "pivot_to_feedthru": self.pivot_to_feedthru,
+        }
 
     def convert_measure_2a_to_measure_2b(
         self, measure_2a: Optional[float] = None
@@ -347,6 +293,10 @@ class LaPDXYTransformCalculator(QMainWindow):
         self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
         self.recalculate_parameters()
+
+    @Slot()
+    def _reset_parameters(self):
+        self._reset_measure_values()
 
     def _update_all_labels(self):
         self._update_measure_1_label()
@@ -441,10 +391,6 @@ class LaPDXYTransformCalculator(QMainWindow):
             return
 
         self._update_all_labels()
-
-    def closeEvent(self, event):
-        self.closing.emit()
-        super().closeEvent(event)
 
 
 class LaPDXYTransformCalculatorApp(BaseCalculatorApp):
