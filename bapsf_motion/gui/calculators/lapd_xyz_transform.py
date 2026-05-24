@@ -12,7 +12,7 @@ from bapsf_motion.gui.widgets import StyleButton
 
 
 class LaPDXYZTransformCalculator(BaseCalculatorWindow):
-    _WINDOW_TITLE = "LaPD XYZ Calculator"
+    _WINDOW_TITLE = "LaPD XYZ Transform Calculator"
     _IMAGE_NAME = "LaPDXYZTransform_diagram.png"
 
     _defaults = {  # all values in cm
