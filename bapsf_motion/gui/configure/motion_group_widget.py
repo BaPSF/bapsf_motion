@@ -233,6 +233,7 @@ class PyGameJoystickRunnerSignals(QObject):
     axisMoved = Signal(int, float)
     joystickConnected = Signal(bool)
     shutdownLoop = Signal()
+    stopMovement = Signal()
 
 
 class PyGameJoystickRunner(QRunnable):
@@ -322,6 +323,8 @@ class PyGameJoystickRunner(QRunnable):
 
     @Slot()
     def run_shutdown(self):
+        self.signals.stopMovement.emit()
+
         if self.run_loop:
             self.quit()
             self.signals.shutdownLoop.emit()
@@ -1618,6 +1621,7 @@ class DriveGameController(DriveBaseController):
             self._handle_button_press
         )
         self._pygame_joystick_runner.signals.hatPressed.connect(self._handle_hat_press)
+        self._pygame_joystick_runner.signals.stopMovement.connect(self.stop_move)
 
         self._thread_pool.start(self._pygame_joystick_runner)
 
