@@ -310,6 +310,9 @@ class PyGameJoystickRunner(QRunnable):
                     jaxis = event.dict["axis"]
                     value = event.dict["value"]
 
+                    if np.abs(value) <= self.axis_dead_zone:
+                        continue
+
                     self.signals.axisMoved.emit(jaxis, value)
 
                     # self.logger.info(
