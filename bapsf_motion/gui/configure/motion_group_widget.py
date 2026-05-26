@@ -306,10 +306,10 @@ class PyGameJoystickRunner(QRunnable):
                     self.signals.hatPressed.emit(axis_id, direction)
 
                 elif event.type == pygame.JOYAXISMOTION:
-                    axis = event.dict["axis"]
+                    jaxis = event.dict["axis"]
                     value = event.dict["value"]
 
-                    self.signals.axisMoved.emit(axis, value)
+                    self.signals.axisMoved.emit(jaxis, value)
 
                     # self.logger.info(
                     #     f"PyGame event {event.type} - Data = {event.dict}."
