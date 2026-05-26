@@ -1636,6 +1636,9 @@ class DriveGameController(DriveBaseController):
 
     @Slot()
     def disconnect_controller(self):
+        if isinstance(self.mg, MotionGroup) and self.mg.is_moving:
+            self.stop_move()
+
         if self._pygame_joystick_runner is None:
             return
 
@@ -1644,7 +1647,7 @@ class DriveGameController(DriveBaseController):
         self._thread_pool.waitForDone(200)
         self._thread_pool.clear()
 
-        if self.mg.is_moving:
+        if isinstance(self.mg, MotionGroup) and self.mg.is_moving:
             self.stop_move()
 
     def stop_move(self, axis=None, soft=False):
