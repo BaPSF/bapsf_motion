@@ -313,6 +313,11 @@ class PyGameJoystickRunner(QRunnable):
                     if np.abs(value) <= self.axis_dead_zone:
                         continue
 
+                    value2 = self.joystick.get_axis(jaxis)
+                    if np.abs(value2) - np.abs(value) < 0:
+                        # joystick is moving back towards the neutral position
+                        value = 0.0
+
                     self.signals.axisMoved.emit(jaxis, value)
 
                     # self.logger.info(
