@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Type
+from typing import Type, Union
 
 from bapsf_motion.gui.widgets import StyleButton
 
@@ -32,6 +32,9 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
     _WINDOW_MARGIN = 12
     _IMAGE_DIR = _IMAGES_PATH
     _IMAGE_NAME = NotImplemented  # type: str
+
+    _CALCULATOR_FAMILY = None  # type: Union[str, None]
+    _CALCULATOR_TYPE = None  # type: Union[str, None]
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -92,7 +95,11 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         return _stylesheet
 
     @abstractmethod
-    def _collect_export_parameters(self) -> dict: ...
+    def _collect_export_parameters(self) -> dict:
+        return {
+            "calculator_family": self._CALCULATOR_FAMILY,
+            "calculator_type": self._CALCULATOR_TYPE,
+        }
 
     @abstractmethod
     def _connect_signals(self): ...
