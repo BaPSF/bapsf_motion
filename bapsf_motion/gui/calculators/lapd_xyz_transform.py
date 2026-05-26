@@ -15,6 +15,9 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
     _WINDOW_TITLE = "LaPD XYZ Transform Calculator"
     _IMAGE_NAME = "LaPDXYZTransform_diagram.png"
 
+    _CALCULATOR_FAMILY = "transform"
+    _CALCULATOR_TYPE = "lapd_xyz"
+
     _defaults = {  # all values in cm
         "measure_1": 54.2,
         "measure_2": 58.0,
@@ -216,6 +219,7 @@ class LaPDXYZTransformCalculator(BaseCalculatorWindow):
 
     def _collect_export_parameters(self) -> dict:
         return {
+            **super()._collect_export_parameters(),
             "pivot_to_center": self.pivot_to_center,
             "probe_axis_offset": self.probe_axis_offset,
             "table_pivot_to_zlead_screw": self.table_pivot_to_zlead_screw,
