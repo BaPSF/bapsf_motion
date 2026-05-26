@@ -250,10 +250,7 @@ class PyGameJoystickRunner(QRunnable):
 
         # Re-instantiate the joystick since the given joystick was probably
         # instantiated in a different thread.
-        joystick.init()
-        js_id = joystick.get_id()
-        joystick.quit()
-        self._joystick = pygame.joystick.Joystick(js_id)
+        self._joystick = joystick
 
         self.signals.shutdownLoop.connect(self.run_shutdown)
 
