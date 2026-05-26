@@ -1616,6 +1616,10 @@ class DriveGameController(DriveBaseController):
     @Slot()
     def connect_controller(self):
         self.logger.info("Connecting controller.")
+
+        if isinstance(self._pygame_joystick_runner, PyGameJoystickRunner):
+            self.disconnect_controller()
+
         self._pygame_joystick_runner = PyGameJoystickRunner(self.joystick)
 
         self._pygame_joystick_runner.signals.joystickConnected.connect(
