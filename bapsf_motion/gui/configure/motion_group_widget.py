@@ -244,7 +244,7 @@ class PyGameJoystickRunner(QRunnable):
         super().__init__()
 
         self._logger = gui_logger
-        self._axis_dead_zone = 0.1
+        self._axis_dead_zone = 0.25
         self._run_loop = False
 
         # Re-instantiate the joystick since the given joystick was probably
