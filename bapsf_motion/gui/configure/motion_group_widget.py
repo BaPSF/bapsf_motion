@@ -2871,8 +2871,7 @@ class MGWidget(QWidget):
         self._overlay_setup(DriveConfigOverlay(self.mg, parent=self))
 
         # overlay signals
-        self._overlay_widget.returnConfig.connect(self._change_drive)
-        self._overlay_widget.discard_btn.clicked.connect(self._rerun_drive)
+        self._overlay_widget.returnConfig.connect(self._handle_drive_overlay_close)
 
         self._overlay_widget.show()
         self._overlay_shown = True
@@ -2882,7 +2881,7 @@ class MGWidget(QWidget):
         self._overlay_setup(TransformConfigOverlay(self.mg, parent=self))
 
         # overlay signals
-        self._overlay_widget.returnConfig.connect(self._change_transform)
+        self._overlay_widget.returnConfig.connect(self._handle_transform_overlay_close)
 
         self._overlay_widget.show()
         self._overlay_shown = True
@@ -2892,7 +2891,9 @@ class MGWidget(QWidget):
         self._overlay_setup(MotionBuilderConfigOverlay(self.mg, parent=self))
 
         # overlay signals
-        self._overlay_widget.returnConfig.connect(self._change_motion_builder)
+        self._overlay_widget.returnConfig.connect(
+            self._handle_motion_builder_overlay_close
+        )
 
         self._overlay_widget.show()
         self._overlay_shown = True
@@ -3016,7 +3017,31 @@ class MGWidget(QWidget):
         self.mg.replace_motion_builder(_deepcopy_dict(config))
         self.configChanged.emit()
 
-    @Slot()
+    @Slot(object)
+    def _handle_drive_overlay_close(self, config: Dict[str, Any]):
+        if len(config) == 0:
+            # no config returned, just restart run manager
+            self._rerun_drive()
+            return
+
+        self._change_drive(config)
+
+    @Slot(object)
+    def _handle_motion_builder_overlay_close(self, config: Dict[str, Any]):
+        if len(config) == 0:
+            # no config returned, do nothing
+            return
+
+        self._change_motion_builder(config)
+
+    @Slot(object)
+    def _handle_transform_overlay_close(self, config: Dict[str, Any]):
+        if len(config) == 0:
+            # no config returned, do nothing
+            return
+
+        self._change_transform(config)
+
     def _rerun_drive(self):
         self.logger.info("Restarting the motion group's drive")
 
