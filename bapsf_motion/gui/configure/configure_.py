@@ -726,7 +726,7 @@ class ConfigureGUI(QMainWindow):
             parent=self,
         )
         self._mg_widget.closing.connect(self._switch_stack)
-        self._mg_widget.returnConfig.connect(self.add_mg_to_rm)
+        self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
 
         return self._mg_widget
 
@@ -745,6 +745,14 @@ class ConfigureGUI(QMainWindow):
             self._mg_widget = None
 
     @Slot(int, object)
+    def add_to_or_restart_run_manager(self, index: int, mg_config: Dict[str, Any]):
+        if len(mg_config) == 0:
+            # no config returned, just restart run manager
+            self.restart_run_manager()
+            return
+
+        self.add_mg_to_rm(index, mg_config)
+
     def add_mg_to_rm(self, index: int, mg_config: Dict[str, Any]):
         index = None if index == -1 else index
 
