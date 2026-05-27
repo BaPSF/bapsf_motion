@@ -311,7 +311,7 @@ class PyGameJoystickRunner(QRunnable):
                         continue
 
                     value2 = self.joystick.get_axis(jaxis)
-                    if np.abs(value2) - np.abs(value) < 0:
+                    if np.abs(value2) - np.abs(value) < -0.01:
                         # joystick is moving back towards the neutral position
                         value = 0.0
 
