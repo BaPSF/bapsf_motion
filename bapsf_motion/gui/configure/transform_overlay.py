@@ -363,5 +363,5 @@ class TransformConfigOverlay(_ConfigOverlay):
         self.logger.info(
             f"New transform configuration of type {config['type']} is being returned."
         )
-        self.returnConfig.emit(config)
+        self._safe_return_config_emit(config)
         self.close()
