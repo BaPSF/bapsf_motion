@@ -8,6 +8,22 @@ class WarningMessageBox(QMessageBox):
     """
     A generical modal warning dialog box to dispaly arbitrary warning
     messages.
+
+    Parameters
+    ----------
+    message : `str`
+        Message to be displayed in the dialog box.
+
+    button_layout : `str`
+        (DEFAULT: ``"acknowledge"``) A string of ``"acknowledge"`` or
+        ``"approve"`` indicates the button layout.  If
+        ``"acknowledge"``, then only an OK button is displayed for the
+        user to acknowledge the warning.  If ``"approve"``, then a YES
+        and NO button is displayed and the user must choose how to
+        proceed.
+
+    parent : Union[QWidget, None]
+        The parent / owning widget.
     """
 
     def __init__(
