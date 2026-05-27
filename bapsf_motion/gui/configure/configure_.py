@@ -432,7 +432,7 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
 
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
-        self._run_widget.quit_btn.clicked.connect(self.approve_and_close)
+        self._run_widget.quit_btn.clicked.connect(self.discard_close)
 
         self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
@@ -795,7 +795,7 @@ class ConfigureGUI(QMainWindow):
         _window.deleteLater()
 
     @Slot()
-    def approve_and_close(self):
+    def discard_close(self):
         dialog = WarningMessageBox(
             message=(
                 f"Quiting now will discard any changes.  If you want to "
