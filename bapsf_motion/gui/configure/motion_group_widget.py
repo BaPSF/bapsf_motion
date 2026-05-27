@@ -2974,7 +2974,6 @@ class MGWidget(QWidget):
 
         return self._mg_config
 
-    @Slot(object)
     def _change_drive(self, config: Dict[str, Any]):
         self.logger.info(f"Replacing the motion group's drive with config...\n{config}")
         mg_config = self.mg_config
@@ -2999,7 +2998,6 @@ class MGWidget(QWidget):
         self._refresh_drive_control()
         self.configChanged.emit()
 
-    @Slot(object)
     def _change_transform(self, config: Dict[str, Any]):
         self.logger.info(f"Replacing the motion group's transform...\n{config}")
         if not bool(config):
@@ -3011,7 +3009,6 @@ class MGWidget(QWidget):
 
         self.configChanged.emit()
 
-    @Slot(object)
     def _change_motion_builder(self, config: Dict[str, Any]):
         self.logger.info(f"Replacing the motion group's motion builder.\n{config}")
         self.mg.replace_motion_builder(_deepcopy_dict(config))
