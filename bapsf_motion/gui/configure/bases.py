@@ -19,6 +19,7 @@ from typing import Any, Dict, Union
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.helpers import gui_logger
+from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.widgets import DiscardButton, DoneButton
 
 
@@ -109,7 +110,7 @@ class _ConfigOverlay(_OverlayWidget):
         self.discard_btn = _btn
 
     def _connect_signals(self):
-        self.discard_btn.clicked.connect(self.close)
+        self.discard_btn.clicked.connect(self.discard_close)
         self.done_btn.clicked.connect(self.return_and_close)
 
     @property
@@ -120,6 +121,29 @@ class _ConfigOverlay(_OverlayWidget):
     def mg(self) -> Union[MotionGroup, None]:
         """Working motion group."""
         return self._mg
+
+    @Slot()
+    def discard_close(self):
+        if not self.done_btn.isEnabled():
+            # no changes have been made, just discard
+            self._safe_return_config_emit({})
+            self.close()
+            return
+
+        dialog = WarningMessageBox(
+            message=(
+                f"Quitting now will discard any changes.  If you want to "
+                f"keep changes, then use the 'DONE' button."
+            ),
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
+        self._safe_return_config_emit({})
+        self.close()
 
     @abstractmethod
     @Slot()
