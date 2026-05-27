@@ -444,6 +444,15 @@ class ConfigureGUI(QMainWindow):
 
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
+
+        # place window icon
+        _image_name = "BaPSF_Logo_Color_white_background_RGB_32px.ico"
+        _image_root_path = (_HERE / ".." / "_images").resolve()
+        _image_path = (_image_root_path / _image_name).resolve()
+        if _image_path.exists() and _image_path.is_file():
+            self.setWindowIcon(QIcon(f"{_image_path}"))
+
+        # size window
         self.resize(1760, 990)
         self.setMinimumHeight(990)
         self.setMinimumWidth(1760)
