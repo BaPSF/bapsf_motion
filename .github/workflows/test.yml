@@ -138,10 +138,6 @@ jobs:
         architecture: [x64]
 
         include:
-          - python: '3.7'
-            os: windows-2022
-            architecture: x64
-
           - python: '3.10'
             os: windows-2022
             architecture: x64
