@@ -432,7 +432,7 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
 
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
-        self._run_widget.quit_btn.clicked.connect(self.close)
+        self._run_widget.quit_btn.clicked.connect(self.approve_and_close)
 
         self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
@@ -793,6 +793,22 @@ class ConfigureGUI(QMainWindow):
 
         _window = self._launched_windows.pop(name)
         _window.deleteLater()
+
+    @Slot()
+    def approve_and_close(self):
+        dialog = WarningMessageBox(
+            message=(
+                f"Quiting now will discard any changes.  If you want to "
+                f"keep changes, then use the 'DONE' button."
+            ),
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
+        self.close()
 
     def closeEvent(self, event: "QCloseEvent") -> None:
         self.logger.info("Closing ConfigureGUI")
