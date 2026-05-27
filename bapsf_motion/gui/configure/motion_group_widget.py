@@ -233,6 +233,7 @@ class PyGameJoystickRunnerSignals(QObject):
     axisMoved = Signal(int, float)
     joystickConnected = Signal(bool)
     shutdownLoop = Signal()
+    stopMovement = Signal()
 
 
 class PyGameJoystickRunner(QRunnable):
@@ -244,15 +245,12 @@ class PyGameJoystickRunner(QRunnable):
         super().__init__()
 
         self._logger = gui_logger
-        self._axis_dead_zone = 0.1
+        self._axis_dead_zone = 0.25
         self._run_loop = False
 
         # Re-instantiate the joystick since the given joystick was probably
         # instantiated in a different thread.
-        joystick.init()
-        js_id = joystick.get_id()
-        joystick.quit()
-        self._joystick = pygame.joystick.Joystick(js_id)
+        self._joystick = joystick
 
         self.signals.shutdownLoop.connect(self.run_shutdown)
 
@@ -306,10 +304,18 @@ class PyGameJoystickRunner(QRunnable):
                     self.signals.hatPressed.emit(axis_id, direction)
 
                 elif event.type == pygame.JOYAXISMOTION:
-                    axis = event.dict["axis"]
+                    jaxis = event.dict["axis"]
                     value = event.dict["value"]
 
-                    self.signals.axisMoved.emit(axis, value)
+                    if np.abs(value) <= self.axis_dead_zone:
+                        continue
+
+                    value2 = self.joystick.get_axis(jaxis)
+                    if np.abs(value2) - np.abs(value) < -0.01:
+                        # joystick is moving back towards the neutral position
+                        value = 0.0
+
+                    self.signals.axisMoved.emit(jaxis, value)
 
                     # self.logger.info(
                     #     f"PyGame event {event.type} - Data = {event.dict}."
@@ -322,6 +328,8 @@ class PyGameJoystickRunner(QRunnable):
 
     @Slot()
     def run_shutdown(self):
+        self.signals.stopMovement.emit()
+
         if self.run_loop:
             self.quit()
             self.signals.shutdownLoop.emit()
@@ -1608,6 +1616,10 @@ class DriveGameController(DriveBaseController):
     @Slot()
     def connect_controller(self):
         self.logger.info("Connecting controller.")
+
+        if isinstance(self._pygame_joystick_runner, PyGameJoystickRunner):
+            self.disconnect_controller()
+
         self._pygame_joystick_runner = PyGameJoystickRunner(self.joystick)
 
         self._pygame_joystick_runner.signals.joystickConnected.connect(
@@ -1618,11 +1630,15 @@ class DriveGameController(DriveBaseController):
             self._handle_button_press
         )
         self._pygame_joystick_runner.signals.hatPressed.connect(self._handle_hat_press)
+        self._pygame_joystick_runner.signals.stopMovement.connect(self.stop_move)
 
         self._thread_pool.start(self._pygame_joystick_runner)
 
     @Slot()
     def disconnect_controller(self):
+        if isinstance(self.mg, MotionGroup) and self.mg.is_moving:
+            self.stop_move()
+
         if self._pygame_joystick_runner is None:
             return
 
@@ -1631,7 +1647,7 @@ class DriveGameController(DriveBaseController):
         self._thread_pool.waitForDone(200)
         self._thread_pool.clear()
 
-        if self.mg.is_moving:
+        if isinstance(self.mg, MotionGroup) and self.mg.is_moving:
             self.stop_move()
 
     def stop_move(self, axis=None, soft=False):
