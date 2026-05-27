@@ -14,7 +14,7 @@ from abc import abstractmethod
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QSizePolicy, QWidget
-from typing import Union
+from typing import Any, Dict, Union
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
@@ -124,6 +124,9 @@ class _ConfigOverlay(_OverlayWidget):
     @abstractmethod
     @Slot()
     def return_and_close(self): ...
+
+    def _safe_return_config_emit(self, config: Dict[str, Any]):
+        self.returnConfig.emit(config)
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
