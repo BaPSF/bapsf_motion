@@ -52,6 +52,7 @@ from bapsf_motion.gui.configure import configure_
 from bapsf_motion.gui.configure.bases import _ConfigOverlay, _OverlayWidget
 from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
+from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
@@ -2293,7 +2294,7 @@ class MGWidget(QWidget):
         self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
         self.done_btn.clicked.connect(self.return_and_close)
-        self.discard_btn.clicked.connect(self.close)
+        self.discard_btn.clicked.connect(self.discard_close)
 
         self._update_plot_timer.timeout.connect(self._update_position_in_plot)
 
@@ -3489,6 +3490,35 @@ class MGWidget(QWidget):
             self.mg.terminate(delay_loop_stop=True)
 
         self.returnConfig.emit(index, config)
+        self.close()
+
+    @Slot()
+    def discard_close(self):
+        if not self.done_btn.isEnabled():
+            # no changes have been made, just discard
+            self.close()
+
+        dialog = WarningMessageBox(
+            message=(
+                f"Quiting now will discard any changes.  If you want to "
+                f"keep changes, then use the '{self.done_btn.text()}' button."
+            ),
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
+        # Terminate MG before returning config, so we do not risk having
+        # conflicting MGs communicating with the motors
+        if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
+            # disable the Drive control widget, so we do not risk creating
+            # extra events while terminating
+            self.drive_control_widget.setEnabled(False)
+            self.mg.terminate(delay_loop_stop=True)
+
+        self.returnConfig.emit(-1, {})
         self.close()
 
     def closeEvent(self, event):
