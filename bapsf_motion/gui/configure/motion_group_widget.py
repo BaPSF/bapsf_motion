@@ -2868,6 +2868,13 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_drive_configuration(self):
+        # disable the drive_control_widget to prevent popup of the
+        # LostConnection dialog.
+        self.drive_control_widget.setEnabled(False)
+
+        if isinstance(self.mg, MotionGroup):
+            self.mg.terminate(delay_loop_stop=True)
+
         self._overlay_setup(DriveConfigOverlay(self.mg, parent=self))
 
         # overlay signals
