@@ -3500,7 +3500,7 @@ class MGWidget(QWidget):
 
         dialog = WarningMessageBox(
             message=(
-                f"Quiting now will discard any changes.  If you want to "
+                f"Quitting now will discard any changes.  If you want to "
                 f"keep changes, then use the '{self.done_btn.text()}' button."
             ),
             button_layout="approve",

@@ -6,7 +6,7 @@ from typing import Union
 
 class WarningMessageBox(QMessageBox):
     """
-    A generical modal warning dialog box to dispaly arbitrary warning
+    A generical modal warning dialog box to display arbitrary warning
     messages.
 
     Parameters

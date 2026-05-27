@@ -804,7 +804,7 @@ class ConfigureGUI(QMainWindow):
     def discard_close(self):
         dialog = WarningMessageBox(
             message=(
-                f"Quiting now will discard any changes.  If you want to "
+                f"Quitting now will discard any changes.  If you want to "
                 f"keep changes, then use the 'DONE' button."
             ),
             button_layout="approve",
