@@ -46,7 +46,7 @@ class WarningMessageBox(QMessageBox):
             )
         self._button_layout = button_layout
 
-        if button_layout == 'acknowledge':
+        if button_layout == "acknowledge":
             self.setStandardButtons(QMessageBox.StandardButton.Ok)
             self.setDefaultButton(QMessageBox.StandardButton.Ok)
         elif button_layout == "approve":
