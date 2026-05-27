@@ -35,6 +35,7 @@ from typing import Any, Dict, Union
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
+from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.lapd_xy_transform_calculator import LaPDXYTransformCalculator
@@ -606,6 +607,16 @@ class ConfigureGUI(QMainWindow):
     def _motion_group_remove_from_rm(self):
         item = self._run_widget.mg_list_widget.currentItem()
         identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+
+        dialog = WarningMessageBox(
+            message=f"You are about to remove motion group '{mg_name}'.",
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
         self.rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
