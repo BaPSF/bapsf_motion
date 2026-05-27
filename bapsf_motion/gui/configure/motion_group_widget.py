@@ -3496,7 +3496,9 @@ class MGWidget(QWidget):
     def discard_close(self):
         if not self.done_btn.isEnabled():
             # no changes have been made, just discard
+            self.returnConfig.emit(-1, {})
             self.close()
+            return
 
         dialog = WarningMessageBox(
             message=(
