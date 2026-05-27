@@ -22,7 +22,7 @@ from bapsf_motion.motion_builder import MotionBuilder
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
 from matplotlib import pyplot as plt  # noqa
-from matplotlib.backend_bases import DrawEvent, Event, MouseEvent, PickEvent  # noqa
+from matplotlib.backend_bases import DrawEvent, PickEvent  # noqa
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas  # noqa
 from matplotlib.backends.backend_qtagg import (  # noqa
     NavigationToolbar2QT as NavigationToolbar,
