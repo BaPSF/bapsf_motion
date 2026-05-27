@@ -1,6 +1,6 @@
 __all__ = ["WarningMessageBox"]
 
-from PySide6.QtWidgets import QMessageBox, QWidget
+from PySide6.QtWidgets import QDialog, QMessageBox, QWidget
 from typing import Union
 
 
@@ -10,16 +10,63 @@ class WarningMessageBox(QMessageBox):
     messages.
     """
 
-    def __init__(self, message: str, parent: Union[QWidget, None] = None):
+    def __init__(
+        self,
+        message: str,
+        button_layout: str = "acknowledge",
+        parent: Union[QWidget, None] = None,
+    ):
         super().__init__(parent)
 
         self.setWindowTitle("!! WARNING !!")
         self.setIcon(QMessageBox.Icon.Warning)
-        self.setStandardButtons(QMessageBox.StandardButton.Ok)
-        self.setDefaultButton(QMessageBox.StandardButton.Ok)
+
+        # create button layout
+        if not isinstance(button_layout, str):
+            raise TypeError(
+                "Argument 'button_layout' must be a string in "
+                "{'acknowledge', 'approve'}, but got type "
+                f"{type(button_layout)}."
+            )
+        self._button_layout = button_layout
+
+        if button_layout == 'acknowledge':
+            self.setStandardButtons(QMessageBox.StandardButton.Ok)
+            self.setDefaultButton(QMessageBox.StandardButton.Ok)
+        elif button_layout == "approve":
+            self.setStandardButtons(
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No
+            )
+            self.setDefaultButton(QMessageBox.StandardButton.No)
+        else:
+            raise ValueError(
+                "Argument 'button_layout' must be a string in "
+                "{'acknowledge', 'approve'}, but got value "
+                f"'{button_layout}'."
+            )
 
         # define font size for warning text
         font = self.font()
         font.setPointSize(14)
         self.setFont(font)
+        if button_layout == "approve":
+            message += "\n\nDo you want to proceed?"
         self.setText(message)
+
+    def _acknowledge_exec(self, /) -> int:
+        return super().exec()
+
+    def _approve_exec(self, /) -> int:
+        button = super().exec()
+        if button == QMessageBox.StandardButton.Yes:
+            # Make sure the Abort button always remains the default choice
+            self.setDefaultButton(QMessageBox.StandardButton.No)
+            return QDialog.DialogCode.Accepted
+
+        return QDialog.DialogCode.Rejected
+
+    def exec(self, /) -> int:
+        if self._button_layout == "acknowledge":
+            return self._acknowledge_exec()
+
+        return self._approve_exec()
