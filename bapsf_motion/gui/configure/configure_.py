@@ -620,8 +620,7 @@ class ConfigureGUI(QMainWindow):
         self.rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
-    @Slot()
-    def _restart_run_manager(self):
+    def restart_run_manager(self):
         if isinstance(self.rm, RunManager) and not self.rm.terminated:
             # RunManager is still running, no need to restart
             return
@@ -728,7 +727,6 @@ class ConfigureGUI(QMainWindow):
         )
         self._mg_widget.closing.connect(self._switch_stack)
         self._mg_widget.returnConfig.connect(self.add_mg_to_rm)
-        self._mg_widget.discard_btn.clicked.connect(self._restart_run_manager)
 
         return self._mg_widget
 
@@ -755,7 +753,7 @@ class ConfigureGUI(QMainWindow):
         )
 
         self.rm.add_motion_group(config=mg_config, identifier=index)
-        self._restart_run_manager()
+        self.restart_run_manager()
         self._mg_being_modified = None
 
     @staticmethod
