@@ -52,6 +52,7 @@ from bapsf_motion.gui.configure import configure_
 from bapsf_motion.gui.configure.bases import _ConfigOverlay, _OverlayWidget
 from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
+from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
@@ -233,6 +234,7 @@ class PyGameJoystickRunnerSignals(QObject):
     axisMoved = Signal(int, float)
     joystickConnected = Signal(bool)
     shutdownLoop = Signal()
+    stopMovement = Signal()
 
 
 class PyGameJoystickRunner(QRunnable):
@@ -244,15 +246,12 @@ class PyGameJoystickRunner(QRunnable):
         super().__init__()
 
         self._logger = gui_logger
-        self._axis_dead_zone = 0.1
+        self._axis_dead_zone = 0.25
         self._run_loop = False
 
         # Re-instantiate the joystick since the given joystick was probably
         # instantiated in a different thread.
-        joystick.init()
-        js_id = joystick.get_id()
-        joystick.quit()
-        self._joystick = pygame.joystick.Joystick(js_id)
+        self._joystick = joystick
 
         self.signals.shutdownLoop.connect(self.run_shutdown)
 
@@ -306,10 +305,18 @@ class PyGameJoystickRunner(QRunnable):
                     self.signals.hatPressed.emit(axis_id, direction)
 
                 elif event.type == pygame.JOYAXISMOTION:
-                    axis = event.dict["axis"]
+                    jaxis = event.dict["axis"]
                     value = event.dict["value"]
 
-                    self.signals.axisMoved.emit(axis, value)
+                    if np.abs(value) <= self.axis_dead_zone:
+                        continue
+
+                    value2 = self.joystick.get_axis(jaxis)
+                    if np.abs(value2) - np.abs(value) < -0.01:
+                        # joystick is moving back towards the neutral position
+                        value = 0.0
+
+                    self.signals.axisMoved.emit(jaxis, value)
 
                     # self.logger.info(
                     #     f"PyGame event {event.type} - Data = {event.dict}."
@@ -322,6 +329,8 @@ class PyGameJoystickRunner(QRunnable):
 
     @Slot()
     def run_shutdown(self):
+        self.signals.stopMovement.emit()
+
         if self.run_loop:
             self.quit()
             self.signals.shutdownLoop.emit()
@@ -1608,6 +1617,10 @@ class DriveGameController(DriveBaseController):
     @Slot()
     def connect_controller(self):
         self.logger.info("Connecting controller.")
+
+        if isinstance(self._pygame_joystick_runner, PyGameJoystickRunner):
+            self.disconnect_controller()
+
         self._pygame_joystick_runner = PyGameJoystickRunner(self.joystick)
 
         self._pygame_joystick_runner.signals.joystickConnected.connect(
@@ -1618,11 +1631,15 @@ class DriveGameController(DriveBaseController):
             self._handle_button_press
         )
         self._pygame_joystick_runner.signals.hatPressed.connect(self._handle_hat_press)
+        self._pygame_joystick_runner.signals.stopMovement.connect(self.stop_move)
 
         self._thread_pool.start(self._pygame_joystick_runner)
 
     @Slot()
     def disconnect_controller(self):
+        if isinstance(self.mg, MotionGroup) and self.mg.is_moving:
+            self.stop_move()
+
         if self._pygame_joystick_runner is None:
             return
 
@@ -1631,7 +1648,7 @@ class DriveGameController(DriveBaseController):
         self._thread_pool.waitForDone(200)
         self._thread_pool.clear()
 
-        if self.mg.is_moving:
+        if isinstance(self.mg, MotionGroup) and self.mg.is_moving:
             self.stop_move()
 
     def stop_move(self, axis=None, soft=False):
@@ -2277,7 +2294,7 @@ class MGWidget(QWidget):
         self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
         self.done_btn.clicked.connect(self.return_and_close)
-        self.discard_btn.clicked.connect(self.close)
+        self.discard_btn.clicked.connect(self.discard_close)
 
         self._update_plot_timer.timeout.connect(self._update_position_in_plot)
 
@@ -2851,11 +2868,17 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_drive_configuration(self):
+        # disable the drive_control_widget to prevent popup of the
+        # LostConnection dialog.
+        self.drive_control_widget.setEnabled(False)
+
+        if isinstance(self.mg, MotionGroup):
+            self.mg.terminate(delay_loop_stop=True)
+
         self._overlay_setup(DriveConfigOverlay(self.mg, parent=self))
 
         # overlay signals
-        self._overlay_widget.returnConfig.connect(self._change_drive)
-        self._overlay_widget.discard_btn.clicked.connect(self._rerun_drive)
+        self._overlay_widget.returnConfig.connect(self._handle_drive_overlay_close)
 
         self._overlay_widget.show()
         self._overlay_shown = True
@@ -2865,7 +2888,7 @@ class MGWidget(QWidget):
         self._overlay_setup(TransformConfigOverlay(self.mg, parent=self))
 
         # overlay signals
-        self._overlay_widget.returnConfig.connect(self._change_transform)
+        self._overlay_widget.returnConfig.connect(self._handle_transform_overlay_close)
 
         self._overlay_widget.show()
         self._overlay_shown = True
@@ -2875,7 +2898,9 @@ class MGWidget(QWidget):
         self._overlay_setup(MotionBuilderConfigOverlay(self.mg, parent=self))
 
         # overlay signals
-        self._overlay_widget.returnConfig.connect(self._change_motion_builder)
+        self._overlay_widget.returnConfig.connect(
+            self._handle_motion_builder_overlay_close
+        )
 
         self._overlay_widget.show()
         self._overlay_shown = True
@@ -2956,7 +2981,6 @@ class MGWidget(QWidget):
 
         return self._mg_config
 
-    @Slot(object)
     def _change_drive(self, config: Dict[str, Any]):
         self.logger.info(f"Replacing the motion group's drive with config...\n{config}")
         mg_config = self.mg_config
@@ -2981,7 +3005,6 @@ class MGWidget(QWidget):
         self._refresh_drive_control()
         self.configChanged.emit()
 
-    @Slot(object)
     def _change_transform(self, config: Dict[str, Any]):
         self.logger.info(f"Replacing the motion group's transform...\n{config}")
         if not bool(config):
@@ -2993,13 +3016,36 @@ class MGWidget(QWidget):
 
         self.configChanged.emit()
 
-    @Slot(object)
     def _change_motion_builder(self, config: Dict[str, Any]):
         self.logger.info(f"Replacing the motion group's motion builder.\n{config}")
         self.mg.replace_motion_builder(_deepcopy_dict(config))
         self.configChanged.emit()
 
-    @Slot()
+    @Slot(object)
+    def _handle_drive_overlay_close(self, config: Dict[str, Any]):
+        if len(config) == 0:
+            # no config returned, just restart run manager
+            self._rerun_drive()
+            return
+
+        self._change_drive(config)
+
+    @Slot(object)
+    def _handle_motion_builder_overlay_close(self, config: Dict[str, Any]):
+        if len(config) == 0:
+            # no config returned, do nothing
+            return
+
+        self._change_motion_builder(config)
+
+    @Slot(object)
+    def _handle_transform_overlay_close(self, config: Dict[str, Any]):
+        if len(config) == 0:
+            # no config returned, do nothing
+            return
+
+        self._change_transform(config)
+
     def _rerun_drive(self):
         self.logger.info("Restarting the motion group's drive")
 
@@ -3473,6 +3519,37 @@ class MGWidget(QWidget):
             self.mg.terminate(delay_loop_stop=True)
 
         self.returnConfig.emit(index, config)
+        self.close()
+
+    @Slot()
+    def discard_close(self):
+        if not self.done_btn.isEnabled():
+            # no changes have been made, just discard
+            self.returnConfig.emit(-1, {})
+            self.close()
+            return
+
+        dialog = WarningMessageBox(
+            message=(
+                f"Quitting now will discard any changes.  If you want to "
+                f"keep changes, then use the '{self.done_btn.text()}' button."
+            ),
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
+        # Terminate MG before returning config, so we do not risk having
+        # conflicting MGs communicating with the motors
+        if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
+            # disable the Drive control widget, so we do not risk creating
+            # extra events while terminating
+            self.drive_control_widget.setEnabled(False)
+            self.mg.terminate(delay_loop_stop=True)
+
+        self.returnConfig.emit(-1, {})
         self.close()
 
     def closeEvent(self, event):

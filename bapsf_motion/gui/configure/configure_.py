@@ -35,6 +35,7 @@ from typing import Any, Dict, Union
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
+from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.lapd_xy_transform_calculator import LaPDXYTransformCalculator
@@ -431,7 +432,7 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
 
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
-        self._run_widget.quit_btn.clicked.connect(self.close)
+        self._run_widget.quit_btn.clicked.connect(self.discard_close)
 
         self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
@@ -443,6 +444,15 @@ class ConfigureGUI(QMainWindow):
 
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
+
+        # place window icon
+        _image_name = "BaPSF_Logo_Color_white_background_RGB_32px.ico"
+        _image_root_path = (_HERE / ".." / "_images").resolve()
+        _image_path = (_image_root_path / _image_name).resolve()
+        if _image_path.exists() and _image_path.is_file():
+            self.setWindowIcon(QIcon(f"{_image_path}"))
+
+        # size window
         self.resize(1760, 990)
         self.setMinimumHeight(990)
         self.setMinimumWidth(1760)
@@ -606,11 +616,20 @@ class ConfigureGUI(QMainWindow):
     def _motion_group_remove_from_rm(self):
         item = self._run_widget.mg_list_widget.currentItem()
         identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+
+        dialog = WarningMessageBox(
+            message=f"You are about to remove motion group '{mg_name}'.",
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
         self.rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
-    @Slot()
-    def _restart_run_manager(self):
+    def restart_run_manager(self):
         if isinstance(self.rm, RunManager) and not self.rm.terminated:
             # RunManager is still running, no need to restart
             return
@@ -716,8 +735,7 @@ class ConfigureGUI(QMainWindow):
             parent=self,
         )
         self._mg_widget.closing.connect(self._switch_stack)
-        self._mg_widget.returnConfig.connect(self.add_mg_to_rm)
-        self._mg_widget.discard_btn.clicked.connect(self._restart_run_manager)
+        self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
 
         return self._mg_widget
 
@@ -736,6 +754,14 @@ class ConfigureGUI(QMainWindow):
             self._mg_widget = None
 
     @Slot(int, object)
+    def add_to_or_restart_run_manager(self, index: int, mg_config: Dict[str, Any]):
+        if len(mg_config) == 0:
+            # no config returned, just restart run manager
+            self.restart_run_manager()
+            return
+
+        self.add_mg_to_rm(index, mg_config)
+
     def add_mg_to_rm(self, index: int, mg_config: Dict[str, Any]):
         index = None if index == -1 else index
 
@@ -744,7 +770,7 @@ class ConfigureGUI(QMainWindow):
         )
 
         self.rm.add_motion_group(config=mg_config, identifier=index)
-        self._restart_run_manager()
+        self.restart_run_manager()
         self._mg_being_modified = None
 
     @staticmethod
@@ -782,6 +808,22 @@ class ConfigureGUI(QMainWindow):
 
         _window = self._launched_windows.pop(name)
         _window.deleteLater()
+
+    @Slot()
+    def discard_close(self):
+        dialog = WarningMessageBox(
+            message=(
+                f"Quitting now will discard any changes.  If you want to "
+                f"keep changes, then use the 'DONE' button."
+            ),
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
+        self.close()
 
     def closeEvent(self, event: "QCloseEvent") -> None:
         self.logger.info("Closing ConfigureGUI")
