@@ -1675,5 +1675,5 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         config = self.mb.config
 
         self.logger.info(f"New MotionBuilder configuration is being returned, {config}.")
-        self.returnConfig.emit(config)
+        self._safe_return_config_emit(config)
         self.close()

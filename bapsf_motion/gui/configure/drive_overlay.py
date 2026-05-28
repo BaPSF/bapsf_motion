@@ -735,11 +735,9 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         return drive
 
-    def return_and_close(self):
-        config = _deepcopy_dict(self.drive_config)
-
+    def _safe_return_config_emit(self, config: Dict[str, Any]):
         self.configChanged.disconnect()
-        if not self.drive.terminated:
+        if isinstance(self.drive, Drive) and not self.drive.terminated:
             self.drive.terminate(delay_loop_stop=True)
         self._set_drive(None)
 
@@ -749,11 +747,16 @@ class DriveConfigOverlay(_ConfigOverlay):
             axw.axis = None
             axw.close()
 
+        self.returnConfig.emit(config)
+
+    def return_and_close(self):
+        config = _deepcopy_dict(self.drive_config)
+
         self.logger.info(
             f"Drive has been validated and is being returned so it can be"
             f" added to the motion group.  Drive config is {config}."
         )
-        self.returnConfig.emit(config)
+        self._safe_return_config_emit(config)
         self.close()
 
     def closeEvent(self, event):
