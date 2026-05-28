@@ -34,11 +34,11 @@ from PySide6.QtWidgets import (
 from typing import Any, Dict, Union
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
+from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 from bapsf_motion.gui.icons import icon_name_dict
-from bapsf_motion.gui.lapd_xy_transform_calculator import LaPDXYTransformCalculator
 from bapsf_motion.gui.widgets import (
     DiscardButton,
     DoneButton,
