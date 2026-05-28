@@ -181,6 +181,7 @@ class TransformConfigOverlay(_ConfigOverlay):
             self._transform_inputs = {}
 
         _widget = QWidget(parent=self)
+        _widget.setObjectName("Parameters Widget")
 
         layout = QGridLayout()
         layout.setContentsMargins(0, 0, 0, 0)
