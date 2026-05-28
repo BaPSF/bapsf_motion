@@ -241,6 +241,15 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
         """
         return _stylesheet
 
+    def _collect_export_parameters(self) -> dict:
+        params = {
+            **super()._collect_export_parameters(),
+            "pivot_to_center": self.pivot_to_center,
+            "pivot_to_drive": self.pivot_to_drive,
+            "pivot_to_feedthru": self.pivot_to_feedthru,
+        }
+        return params
+
     def convert_measure_2a_to_measure_2b(
         self, measure_2a: Optional[float] = None
     ) -> float:
