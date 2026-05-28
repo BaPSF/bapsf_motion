@@ -13,6 +13,8 @@ _IMAGES_PATH = (_HERE / ".." / "_images").resolve()
 class BaseCalculatorWindow(QMainWindow):
     closing = Signal()
 
+    _WINDOW_TITLE = NotImplemented  # type: str
+    _WINDOW_MARGIN = 12
     _IMAGE_DIR = _IMAGES_PATH
     _IMAGE_NAME = NotImplemented  # type: str
 
@@ -24,6 +26,9 @@ class BaseCalculatorWindow(QMainWindow):
         self._image_path = self._generate_image_path()
         pixmap = QPixmap(f"{self._image_path}")
         self._image = pixmap
+
+        self._window_margin = self._WINDOW_MARGIN
+        self._define_main_window()
 
     def _generate_image_path(self):
         if not isinstance(self._IMAGE_DIR, Path):
@@ -55,6 +60,14 @@ class BaseCalculatorWindow(QMainWindow):
                 f"The image '{_image_path}' does NOT a file."
             )
         return _image_path
+
+    def _define_main_window(self):
+        self.setWindowTitle(self._WINDOW_TITLE)
+        width = self._image.width() + 2 * self._window_margin
+        height = self._image.height() + 2 * self._window_margin
+        self.resize(width, height)
+        self.setFixedWidth(width)
+        self.setFixedHeight(height)
 
     def closeEvent(self, event: QCloseEvent):
         self.closing.emit()
