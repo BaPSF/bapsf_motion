@@ -10,7 +10,7 @@ import ast
 import inspect
 import math
 
-from PySide6.QtCore import QSize, Qt, Slot
+from PySide6.QtCore import QSize, Qt, Slot, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QGridLayout,
@@ -37,6 +37,8 @@ import qtawesome as qta  # noqa
 
 
 class TransformConfigOverlay(_ConfigOverlay):
+    importParameters = Signal(object)
+
     registry = transform_registry
 
     def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
@@ -91,6 +93,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         super()._connect_signals()
 
         self.combo_widget.currentTextChanged.connect(self._refresh_params_widget)
+        self.importParameters.connect(self._import_params)
 
     def _define_layout(self):
 
@@ -181,6 +184,7 @@ class TransformConfigOverlay(_ConfigOverlay):
             self._transform_inputs = {}
 
         _widget = QWidget(parent=self)
+        _widget.setObjectName("Parameters Widget")
 
         layout = QGridLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -278,6 +282,33 @@ class TransformConfigOverlay(_ConfigOverlay):
 
         _widget.setLayout(layout)
         return _widget
+
+    @Slot(object)
+    def _import_params(self, params: dict):
+        _backup_params = self.transform_inputs.copy()
+
+        if not isinstance(params, dict):
+            return
+        params.pop("type", None)
+
+        param_widget = self.findChild(QWidget, "Parameters Widget")
+        if not isinstance(param_widget, QWidget):
+            return
+
+        for param_name, param_val in params.items():
+            _input = param_widget.findChild(QLineEditSpecialized, param_name)
+            if not isinstance(_input, QLineEditSpecialized):
+                continue
+
+            if param_val is None:
+                input_string = ""
+            elif isinstance(param_val, float):
+                input_string = f"{param_val:.4f}"
+            else:
+                input_string = f"{param_val}"
+
+            _input.setText(input_string)
+            self._update_transform_inputs(_input)
 
     @Slot(str)
     def _refresh_params_widget(self, tr_type):
