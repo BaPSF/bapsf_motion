@@ -11,7 +11,7 @@ from bapsf_motion.gui.calculators.bases import BaseCalculatorApp, BaseCalculator
 
 
 class LaPDXYTransformCalculator(BaseCalculatorWindow):
-    _WINDOW_TITLE = "LaPD XY Tansform Calculator"
+    _WINDOW_TITLE = "LaPD XY Transform Calculator"
     _IMAGE_NAME = "LaPDXYTransform_diagram.png"
 
     _defaults = {  # all values in cm
@@ -33,7 +33,7 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
         self.measure_2a = self._defaults["measure_2a"]
         self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
-        # Initilized "Calculated" Transform Parameters
+        # Initialized "Calculated" Transform Parameters
         self.pivot_to_center = 58.771
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_drive = self.calc_pivot_to_drive()

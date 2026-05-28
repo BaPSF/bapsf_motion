@@ -46,7 +46,7 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         self.setCentralWidget(QWidget(parent=self))
         self._define_main_window()
 
-        # intialize image widgets for background
+        # initialize image widgets for background
         self._init_image_widgets()
 
         # define action buttons
