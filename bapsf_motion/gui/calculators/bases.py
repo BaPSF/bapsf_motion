@@ -56,7 +56,7 @@ class BaseCalculatorWindow(QMainWindow):
             )
         return _image_path
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent):
         self.closing.emit()
         super().closeEvent(event)
 
