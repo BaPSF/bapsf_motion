@@ -77,6 +77,7 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         self.centralWidget().setLayout(layout)
 
         self.reset_btn.clicked.connect(self._reset_parameters)
+        self.export_btn.clicked.connect(self.emit_export_parameters)
         self._connect_signals()
 
     @property
@@ -172,6 +173,11 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
 
     @abstractmethod
     def _init_widgets(self): ...
+
+    @Slot()
+    def emit_export_parameters(self):
+        parameters = self._collect_export_parameters()
+        self.exportParameters.emit(parameters)
 
     def closeEvent(self, event: QCloseEvent):
         self.closing.emit()
