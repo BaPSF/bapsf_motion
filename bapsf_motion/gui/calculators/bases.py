@@ -3,7 +3,15 @@ from abc import ABC, ABCMeta, abstractmethod
 from pathlib import Path
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QCloseEvent, QPixmap
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QLabel
+from PySide6.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QFrame,
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+)
 from typing import Type
 
 _HERE = Path(__file__).parent
@@ -43,6 +51,11 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         # initialized widgets
         self._init_widgets()
 
+        layout = self._define_layout()
+        self.centralWidget().setLayout(layout)
+
+        self._connect_signals()
+
     @property
     def _stylesheet_string(self):
         _stylesheet = self.styleSheet()
@@ -60,6 +73,19 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
     @abstractmethod
     def _connect_signals(self):
         ...
+
+    def _define_layout(self):
+        image_layout = QVBoxLayout()
+        image_layout.setContentsMargins(0, 0, 0, 0)
+        image_layout.addWidget(self.image_label)
+        self.image_frame.setLayout(image_layout)
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch()
+        layout.addWidget(self.image_frame)
+        layout.addStretch()
+        return layout
 
     def _define_main_window(self):
         self.setWindowTitle(self._WINDOW_TITLE)
