@@ -14,6 +14,9 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
     _WINDOW_TITLE = "LaPD XY Transform Calculator"
     _IMAGE_NAME = "LaPDXYTransform_diagram.png"
 
+    _CALCULATOR_FAMILY = "transform"
+    _CALCULATOR_TYPE = "lapd_xy"
+
     _defaults = {  # all values in cm
         "measure_1": 54.2,
         "measure_2a": 58.0,
