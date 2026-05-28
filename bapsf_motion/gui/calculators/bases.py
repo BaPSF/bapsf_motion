@@ -21,8 +21,7 @@ _HERE = Path(__file__).parent
 _IMAGES_PATH = (_HERE / ".." / "_images").resolve()
 
 
-class QABCMainWindow(ABCMeta, type(QMainWindow)):
-    ...
+class QABCMainWindow(ABCMeta, type(QMainWindow)): ...
 
 
 class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
@@ -83,13 +82,11 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         return _stylesheet
 
     @abstractmethod
-    def _connect_signals(self):
-        ...
+    def _connect_signals(self): ...
 
     @abstractmethod
     @Slot()
-    def _reset_parameters(self):
-        ...
+    def _reset_parameters(self): ...
 
     def _define_layout(self):
         image_layout = QVBoxLayout()
@@ -128,9 +125,7 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
                 f"pathlib.Path instance."
             )
         if not self._IMAGE_DIR.exists():
-            raise ValueError(
-                f"The image directory '{self._IMAGE_DIR}' does NOT exist."
-            )
+            raise ValueError(f"The image directory '{self._IMAGE_DIR}' does NOT exist.")
         if not self._IMAGE_DIR.is_dir():
             raise ValueError(
                 f"The image directory '{self._IMAGE_DIR}' does NOT a directory."
@@ -142,13 +137,9 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
             )
         _image_path = (self._IMAGE_DIR / self._IMAGE_NAME).resolve()
         if not _image_path.exists():
-            raise ValueError(
-                f"The image '{_image_path}' does NOT exist."
-            )
+            raise ValueError(f"The image '{_image_path}' does NOT exist.")
         if not _image_path.is_file():
-            raise ValueError(
-                f"The image '{_image_path}' does NOT a file."
-            )
+            raise ValueError(f"The image '{_image_path}' does NOT a file.")
         return _image_path
 
     def _init_image_widgets(self):
@@ -161,8 +152,7 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
 
     @abstractmethod
-    def _init_widgets(self):
-        ...
+    def _init_widgets(self): ...
 
     def closeEvent(self, event: QCloseEvent):
         self.closing.emit()
