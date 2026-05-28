@@ -5,7 +5,7 @@ import re
 
 from PySide6.QtCore import QPoint, Qt, Slot
 from PySide6.QtWidgets import QLineEdit, QRadioButton
-from typing import Optional, Union
+from typing import Optional
 
 from bapsf_motion.gui.calculators.bases import BaseCalculatorApp, BaseCalculatorWindow
 
@@ -316,7 +316,7 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
         self.measure_2b_label.setText(_txt)
 
     @staticmethod
-    def _validate_measure(text: str) -> Union[float, None]:
+    def _validate_measure(text: str) -> float | None:
         match = re.compile(r"(?P<value>\d+(.\d*)?)(\s*cm)?").fullmatch(text)
 
         if match is None:
