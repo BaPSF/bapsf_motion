@@ -2,7 +2,7 @@ __all__ = ["BaseCalculatorApp", "BaseCalculatorWindow"]
 
 from abc import ABC, ABCMeta, abstractmethod
 from pathlib import Path
-from PySide6.QtCore import Qt, Signal, QPoint
+from PySide6.QtCore import Qt, Signal, QPoint, Slot
 from PySide6.QtGui import QCloseEvent, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
@@ -88,6 +88,7 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         ...
 
     @abstractmethod
+    @Slot()
     def _reset_parameters(self):
         ...
 
