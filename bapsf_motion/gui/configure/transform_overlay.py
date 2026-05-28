@@ -280,6 +280,33 @@ class TransformConfigOverlay(_ConfigOverlay):
         _widget.setLayout(layout)
         return _widget
 
+    @Slot(object)
+    def _import_params(self, params: dict):
+        _backup_params = self.transform_inputs.copy()
+
+        if not isinstance(params, dict):
+            return
+        params.pop("type", None)
+
+        param_widget = self.findChild(QWidget, "Parameters Widget")
+        if not isinstance(param_widget, QWidget):
+            return
+
+        for param_name, param_val in params.items():
+            _input = param_widget.findChild(QLineEditSpecialized, param_name)
+            if not isinstance(_input, QLineEditSpecialized):
+                continue
+
+            if param_val is None:
+                input_string = ""
+            elif isinstance(param_val, float):
+                input_string = f"{param_val:.4f}"
+            else:
+                input_string = f"{param_val}"
+
+            _input.setText(input_string)
+            self._update_transform_inputs(_input)
+
     @Slot(str)
     def _refresh_params_widget(self, tr_type):
         _widget = self._define_params_widget(tr_type)
