@@ -27,7 +27,6 @@ class QABCMainWindow(ABCMeta, type(QMainWindow)):
 
 class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
     closing = Signal()
-    exportParameters = Signal(object)
 
     _WINDOW_TITLE = NotImplemented  # type: str
     _WINDOW_MARGIN = 12
