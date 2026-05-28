@@ -33,6 +33,9 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
     _IMAGE_DIR = _IMAGES_PATH
     _IMAGE_NAME = NotImplemented  # type: str
 
+    _CALCULATOR_FAMILY = None  # type: str | None
+    _CALCULATOR_TYPE = None  # type: str | None
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
