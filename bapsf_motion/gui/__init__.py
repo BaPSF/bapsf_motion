@@ -3,7 +3,7 @@
 __all__ = [
     "ConfigureApp",
     "LaPDXYTransformCalculatorApp",
-    "LaPDXYTransformCalculatorApp",
+    "LaPDXYZTransformCalculatorApp",
     "get_qapplication",
     "get_color_scheme",
     "cast_color_to_rgba_string",

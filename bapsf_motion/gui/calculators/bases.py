@@ -3,7 +3,7 @@ __all__ = ["BaseCalculatorApp", "BaseCalculatorWindow"]
 from abc import ABC, ABCMeta, abstractmethod
 from pathlib import Path
 from PySide6.QtCore import QPoint, Qt, Signal, Slot
-from PySide6.QtGui import QCloseEvent, QPixmap
+from PySide6.QtGui import QCloseEvent, QIcon, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
     QFrame,
@@ -13,7 +13,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Type, Union
+from typing import Type
 
 from bapsf_motion.gui.widgets import StyleButton
 
@@ -50,7 +50,7 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         self.setCentralWidget(QWidget(parent=self))
         self._define_main_window()
 
-        # intialize image widgets for background
+        # initialize image widgets for background
         self._init_image_widgets()
 
         # define action buttons
@@ -123,6 +123,14 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
 
     def _define_main_window(self):
         self.setWindowTitle(self._WINDOW_TITLE)
+
+        # place window icon
+        _image_name = "BaPSF_Logo_Color_white_background_RGB_32px.ico"
+        _image_path = (_IMAGES_PATH / _image_name).resolve()
+        if _image_path.exists() and _image_path.is_file():
+            self.setWindowIcon(QIcon(f"{_image_path}"))
+
+        # size window
         width = self._image.width() + 2 * self._window_margin
         height = self._image.height() + 2 * self._window_margin
         self.resize(width, height)

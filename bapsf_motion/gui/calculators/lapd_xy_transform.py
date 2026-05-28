@@ -5,13 +5,13 @@ import re
 
 from PySide6.QtCore import QPoint, Qt, Slot
 from PySide6.QtWidgets import QLineEdit, QRadioButton
-from typing import Optional, Union
+from typing import Optional
 
 from bapsf_motion.gui.calculators.bases import BaseCalculatorApp, BaseCalculatorWindow
 
 
 class LaPDXYTransformCalculator(BaseCalculatorWindow):
-    _WINDOW_TITLE = "LaPD XY Tansform Calculator"
+    _WINDOW_TITLE = "LaPD XY Transform Calculator"
     _IMAGE_NAME = "LaPDXYTransform_diagram.png"
 
     _CALCULATOR_FAMILY = "transform"
@@ -36,7 +36,7 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
         self.measure_2a = self._defaults["measure_2a"]
         self.measure_2b = self.convert_measure_2a_to_measure_2b()
 
-        # Initilized "Calculated" Transform Parameters
+        # Initialized "Calculated" Transform Parameters
         self.pivot_to_center = 58.771
         self.pivot_to_feedthru = self.calc_pivot_to_feedthru()
         self.pivot_to_drive = self.calc_pivot_to_drive()
@@ -331,7 +331,7 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
         self.measure_2b_label.setText(_txt)
 
     @staticmethod
-    def _validate_measure(text: str) -> Union[float, None]:
+    def _validate_measure(text: str) -> float | None:
         match = re.compile(r"(?P<value>\d+(.\d*)?)(\s*cm)?").fullmatch(text)
 
         if match is None:
