@@ -2,16 +2,16 @@ __all__ = ["BaseCalculatorApp", "BaseCalculatorWindow"]
 
 from abc import ABC, ABCMeta, abstractmethod
 from pathlib import Path
-from PySide6.QtCore import Qt, Signal, QPoint, Slot
-from PySide6.QtGui import QCloseEvent, QPixmap, QIcon
+from PySide6.QtCore import QPoint, Qt, Signal, Slot
+from PySide6.QtGui import QCloseEvent, QIcon, QPixmap
 from PySide6.QtWidgets import (
     QApplication,
-    QMainWindow,
-    QWidget,
     QFrame,
-    QLabel,
-    QVBoxLayout,
     QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QVBoxLayout,
+    QWidget,
 )
 from typing import Type
 
