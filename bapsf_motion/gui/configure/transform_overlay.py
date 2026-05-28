@@ -10,7 +10,7 @@ import ast
 import inspect
 import math
 
-from PySide6.QtCore import QSize, Qt, Slot
+from PySide6.QtCore import QSize, Qt, Slot, Signal
 from PySide6.QtWidgets import (
     QComboBox,
     QGridLayout,
@@ -37,6 +37,8 @@ import qtawesome as qta  # noqa
 
 
 class TransformConfigOverlay(_ConfigOverlay):
+    importParameters = Signal(object)
+
     registry = transform_registry
 
     def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
@@ -91,6 +93,7 @@ class TransformConfigOverlay(_ConfigOverlay):
         super()._connect_signals()
 
         self.combo_widget.currentTextChanged.connect(self._refresh_params_widget)
+        self.importParameters.connect(self._import_params)
 
     def _define_layout(self):
 
