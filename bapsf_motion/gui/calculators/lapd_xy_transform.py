@@ -187,6 +187,9 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
         p = self.geometry().topLeft() + QPoint(262, 512)
         self.reset_btn.move(p)
 
+        p = self.reset_btn.pos() + QPoint(self.reset_btn.width() + 12, 0)
+        self.export_btn.move(p)
+
         _btn = QRadioButton(parent=self)
         p = self.measure_2a_label.pos() + QPoint(self.measure_2a_label.width() + 6, 0)
         _btn.move(p)
