@@ -3,7 +3,7 @@ from abc import ABC, ABCMeta, abstractmethod
 from pathlib import Path
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QCloseEvent, QPixmap
-from PySide6.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide6.QtWidgets import QApplication, QMainWindow, QWidget, QFrame, QLabel
 from typing import Type
 
 _HERE = Path(__file__).parent
@@ -16,6 +16,7 @@ class QABCMainWindow(ABCMeta, type(QMainWindow)):
 
 class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
     closing = Signal()
+    exportParameters = Signal()
 
     _WINDOW_TITLE = NotImplemented  # type: str
     _WINDOW_MARGIN = 12
@@ -27,14 +28,17 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
 
         self.setStyleSheet(self._stylesheet_string)
 
-        self.setCentralWidget(QWidget(parent=self))
-
-        self._image_path = self._generate_image_path()
-        pixmap = QPixmap(f"{self._image_path}")
-        self._image = pixmap
-
+        # set instance attributes
         self._window_margin = self._WINDOW_MARGIN
+        self._image_path = self._generate_image_path()
+        self._image = QPixmap(f"{self._image_path}")
+
+        # setup window
+        self.setCentralWidget(QWidget(parent=self))
         self._define_main_window()
+
+        # intialize image widgets for background
+        self._init_image_widgets()
 
     @abstractmethod
     def _connect_signals(self):
@@ -84,6 +88,15 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         }
         """
         return _stylesheet
+
+    def _init_image_widgets(self):
+        self.image_label = QLabel(parent=self)
+        self.image_label.setPixmap(self._image)
+
+        self.image_frame = QFrame(parent=self)
+        self.image_frame.setObjectName("image_frame")
+        self.image_frame.setFixedWidth(self.width() - 2 * self._window_margin)
+        self.image_frame.setFixedHeight(self.height() - 2 * self._window_margin)
 
     def _define_main_window(self):
         self.setWindowTitle(self._WINDOW_TITLE)
