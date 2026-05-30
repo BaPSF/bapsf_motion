@@ -255,6 +255,7 @@ class Axis(EventActor):
         the axis physical units and the motor units.
         """
         steps_per_rev = self.motor.steps_per_rev.value
+        counts_per_rev = self.motor.counts_per_rev.value
         units_per_rev = self.units_per_rev.value
 
         equivs = [
@@ -275,6 +276,12 @@ class Axis(EventActor):
                 self.units,
                 lambda x: x * units_per_rev / steps_per_rev,
                 lambda x: int(x * steps_per_rev / units_per_rev),
+            ),
+            (
+                u.counts,
+                self.units,
+                lambda x: x * units_per_rev / counts_per_rev,
+                lambda x: int(x * counts_per_rev / units_per_rev),
             ),
         ]
         for equiv in equivs.copy():
