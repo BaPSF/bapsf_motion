@@ -382,7 +382,7 @@ class Motor(EventActor):
             "encoder_position",
             send="EP",
             send_processor=lambda value: f"{int(value)}",
-            recv=re.compile(r"EP=(?P<return>[0-9]+)"),
+            recv=re.compile(r"EP=(?P<return>-?[0-9]+)"),
             recv_processor=int,
             two_way=True,
             units=u.counts,
