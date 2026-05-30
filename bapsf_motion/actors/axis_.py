@@ -209,11 +209,6 @@ class Axis(EventActor):
         return pos.to(self.units, equivalencies=self.equivalencies)
 
     @property
-    def steps_per_rev(self):
-        """Number of motor steps for a full revolution."""
-        return self.motor.steps_per_rev
-
-    @property
     def units(self) -> u.Unit:
         """
         The unit of measure for the `Axis` physical parameters like
@@ -259,7 +254,7 @@ class Axis(EventActor):
         List of unit equivalencies to convert back-and-forth between
         the axis physical units and the motor units.
         """
-        steps_per_rev = self.steps_per_rev.value
+        steps_per_rev = self.motor.steps_per_rev.value
         units_per_rev = self.units_per_rev.value
 
         equivs = [
