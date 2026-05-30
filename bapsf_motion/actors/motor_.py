@@ -378,6 +378,11 @@ class Motor(EventActor):
         ),
         "disable": CommandEntry("disable", send="MD"),
         "enable": CommandEntry("enable", send="ME"),
+        "encoder_correct_position": CommandEntry(
+            "encoder_correct_position",
+            send="",
+            method_command=True,
+        ),
         "encoder_position": CommandEntry(
             "encoder_position",
             send="EP",
@@ -2192,7 +2197,7 @@ class Motor(EventActor):
         conversion = (self.counts_per_rev / self.steps_per_rev).value
         epos = int(pos * conversion)
         self.send_command("encoder_position", epos)
-        
+
         # set absolute position
         self.send_command("set_position_SP", pos)
 
@@ -2206,3 +2211,20 @@ class Motor(EventActor):
     def zero(self):
         """Define current motor position as zero."""
         self.set_position(0)
+
+    def encoder_correct_position(self):
+        """
+        Set the motor absolute position 'SP' to be consistent with the
+        current encoder reading.
+        """
+        epos = self.encoder
+        conversion = (self.counts_per_rev / self.steps_per_rev).value
+        pos = int(epos / conversion)
+
+        self.logger.info(
+            f"Correcting absolute position from '{self.position}' to "
+            f"'{pos}' using the encoder as reference.  Difference in "
+            f"setting is '{self.position - pos}'."
+        )
+
+        self.set_position(pos)
