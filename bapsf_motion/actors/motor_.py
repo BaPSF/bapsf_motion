@@ -1038,6 +1038,27 @@ class Motor(EventActor):
         return is_moving
 
     @property
+    def encoder(self) -> u.steps:
+        """
+        Current encoder positional reading for the motor, in encoder units
+        `~bapsf_motion.utils.counts`.
+        """
+        heartbeat_task = self.heartbeat_task
+        if (
+                self.loop.is_running()
+                and isinstance(heartbeat_task, asyncio.Task)
+                and not heartbeat_task.done()
+                and not heartbeat_task.cancelled()
+        ):
+            # read from status if the heartbeat is operational
+            return self.status["encoder"]
+
+        pos = self.send_command("encoder_position")
+        if not isinstance(pos, self.ack_flags):
+            self._update_status(encoder=pos)
+            return pos
+
+    @property
     def position(self) -> u.steps:
         """
         Current position of the motor, in motor units
