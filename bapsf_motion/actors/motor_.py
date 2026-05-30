@@ -815,6 +815,7 @@ class Motor(EventActor):
         return {
             "connected": False,
             "position": None,
+            "encoder": None,
             "alarm": None,
             "enabled": None,
             "fault": None,
@@ -1636,9 +1637,17 @@ class Motor(EventActor):
             elif letter in ("T", "W"):
                 _status["waiting"] = True
 
+        # get motor position
         pos = send_command("get_position")
         if not isinstance(pos, self.ack_flags):
             _status["position"] = pos
+        elif pos == self.ack_flags.LOST_CONNECTION:
+            return
+
+        # get motor encoder reading (position)
+        pos = send_command("encoder_position")
+        if not isinstance(pos, self.ack_flags):
+            _status["encoder"] = pos
         elif pos == self.ack_flags.LOST_CONNECTION:
             return
 
