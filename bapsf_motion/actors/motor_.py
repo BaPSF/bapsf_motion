@@ -1000,6 +1000,11 @@ class Motor(EventActor):
         return self._setup["local_address"]
 
     @property
+    def counts_per_rev(self) -> u.counts / u.rev:
+        """The number of encoder counts per motor revolution."""
+        return self._motor["encoder_resolution"]
+
+    @property
     def steps_per_rev(self) -> u.steps / u.rev:
         """The number of steps the motor does per revolution."""
         return self._motor["gearing"]
