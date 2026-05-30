@@ -920,6 +920,19 @@ class MotionGroup(EventActor):
         return self._transform
 
     @property
+    def encoder(self) -> u.Quantity:
+        """
+        Current encoder position of the probe drive, in motion space
+        coordinates and units.
+        """
+        dr_pos = self.drive.encoder
+        pos = self.transform(
+            dr_pos.value.tolist(),
+            to_coords="motion_space",
+        ).squeeze()
+        return pos * dr_pos.unit
+
+    @property
     def position(self) -> u.Quantity:
         """
         Current position of the probe drive, in motion space

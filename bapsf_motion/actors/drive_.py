@@ -268,10 +268,17 @@ class Drive(EventActor):
         return tuple(ax.name for ax in self.axes)
 
     @property
+    def encoder(self) -> u.Quantity:
+        """The :attr:`naxes`-D encoder position of the probe drive."""
+        pos = []
+        for ax in self.axes:
+            pos.append(ax.encoder.value)
+
+        return pos * self.axes[0].units
+
+    @property
     def position(self) -> u.Quantity:
         """The :attr:`naxes`-D position of the probe drive."""
-        # TODO: thiS needs to return drive units instead of axis units
-        # TODO: handle case where someone could have config different units for each axis
         pos = []
         for ax in self.axes:
             pos.append(ax.position.value)
