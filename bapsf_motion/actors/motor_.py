@@ -2147,7 +2147,7 @@ class Motor(EventActor):
     def set_position(self, pos):
         """
         Set current motor's absolute and encoder position.  ``pos`` is
-        the desired abolute position, and the encoder position will
+        the desired absolute position, and the encoder position will
         be calculated from ``pos``.
 
         Parameters
@@ -2193,7 +2193,7 @@ class Motor(EventActor):
         self.set_current(1)
         self.set_idle_current(self._motor["DEFAULTS"]["max_idle_current"])
 
-        # set encoder postion
+        # set encoder position
         conversion = (self.counts_per_rev / self.steps_per_rev).value
         epos = int(pos * conversion)
         self.send_command("encoder_position", epos)
