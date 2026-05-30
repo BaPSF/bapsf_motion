@@ -200,6 +200,15 @@ class Axis(EventActor):
         return self.motor.is_moving
 
     @property
+    def encoder(self):
+        """
+        Current axis encoder position in units defined by the
+        :attr:`units` attribute.
+        """
+        pos = self.motor.encoder
+        return pos.to(self.units, equivalencies=self.equivalencies)
+
+    @property
     def position(self):
         """
         Current axis position in units defined by the :attr:`units`
