@@ -1050,10 +1050,10 @@ class Motor(EventActor):
         """
         heartbeat_task = self.heartbeat_task
         if (
-                self.loop.is_running()
-                and isinstance(heartbeat_task, asyncio.Task)
-                and not heartbeat_task.done()
-                and not heartbeat_task.cancelled()
+            self.loop.is_running()
+            and isinstance(heartbeat_task, asyncio.Task)
+            and not heartbeat_task.done()
+            and not heartbeat_task.cancelled()
         ):
             # read from status if the heartbeat is operational
             return self.status["encoder"]
