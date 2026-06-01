@@ -703,6 +703,13 @@ class AxisControlWidget(QWidget):
         return self.mg.drive.axes[self.axis_index]
 
     @property
+    def encoder(self) -> u.Quantity:
+        encoder = self.mg.encoder
+        val = encoder.value[self.axis_index]
+        unit = encoder.unit
+        return val * unit
+
+    @property
     def position(self) -> u.Quantity:
         position = self.mg.position
         val = position.value[self.axis_index]
