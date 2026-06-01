@@ -431,11 +431,11 @@ class AxisControlWidget(QWidget):
 
         # Define BUTTONS
         _btn = IconButton(icon_name_dict["arrow-up"], parent=self)
-        _btn.setIconSize(48)
+        _btn.setIconSize(42)
         self.jog_forward_btn = _btn
 
         _btn = IconButton(icon_name_dict["arrow-down"], parent=self)
-        _btn.setIconSize(48)
+        _btn.setIconSize(42)
         self.jog_backward_btn = _btn
 
         _btn = ValidButton("FWD LIMIT", parent=self)
