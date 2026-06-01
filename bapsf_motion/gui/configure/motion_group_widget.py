@@ -553,11 +553,7 @@ class AxisControlWidget(QWidget):
         if layout is None:
             layout = QVBoxLayout()
 
-        layout.addWidget(
-            self.axis_name_label,
-            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
-        )
-        layout.addLayout(self._define_enable_btn_layout())
+        layout.addLayout(self._define_title_and_enable_btn_layout())
         layout.addWidget(
             self.position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
@@ -608,12 +604,7 @@ class AxisControlWidget(QWidget):
         _font.setPointSize(12)
         _fine_step_label.setFont(_font)
 
-        layout.addWidget(
-            self.axis_name_label,
-            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
-        )
-        layout.addSpacing(4)
-        layout.addLayout(self._define_enable_btn_layout())
+        layout.addLayout(self._define_title_and_enable_btn_layout())
         layout.addSpacing(4)
         layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addSpacing(8)
@@ -633,12 +624,16 @@ class AxisControlWidget(QWidget):
 
         return layout
 
-    def _define_enable_btn_layout(self):
-        enabled_layout = QHBoxLayout()
-        enabled_layout.setContentsMargins(0, 0, 0, 0)
-        enabled_layout.addSpacing(16)
-        enabled_layout.addWidget(self.enable_btn)
-        enabled_layout.addSpacing(16)
+    def _define_title_and_enable_btn_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch(1)
+        layout.addWidget(self.axis_name_label)
+        layout.addSpacing(2)
+        layout.addWidget(self.enable_btn)
+        layout.addStretch(1)
+
+        return layout
 
         return enabled_layout
 
