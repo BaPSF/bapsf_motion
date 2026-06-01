@@ -407,6 +407,14 @@ class Motor(EventActor):
             recv_processor=int,
             units=u.steps / u.rev,
         ),
+        "get_encoder": CommandEntry(
+            "immediate_encoder_position",
+            send="IE",
+            recv=re.compile(r"IE=(?P<return>-?[0-9]+)"),
+            recv_processor=int,
+            units=u.counts,
+            buffered=False,
+        ),
         "get_position": CommandEntry(
             "immediate_position",
             send="IP",
