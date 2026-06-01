@@ -839,6 +839,14 @@ class AxisControlWidget(QWidget):
         encoder = self.encoder
         self.update_encoder_display(encoder)
 
+        if np.isclose(pos.value, encoder.value, rtol=0.0, atol=0.02):
+            # encoder and absolute readingss are conssistent
+            self.position_label.setStyleSheet("color: black;")
+            self.encoder_label.setStyleSheet("color: black;")
+        else:
+            self.position_label.setStyleSheet("color: red;")
+            self.encoder_label.setStyleSheet("color: red;")
+
         _motor_status = self.axis.motor.status
 
         limits = _motor_status["limits"]
