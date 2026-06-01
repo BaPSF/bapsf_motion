@@ -742,6 +742,16 @@ class AxisControlWidget(QWidget):
         pos = self.position.value - self._get_jog_delta()
         self._move_to(pos)
 
+    def update_encoder_display(self, position: Union[u.Quantity, float]):
+        if not isinstance(position, (u.Quantity, float)):
+            return
+        elif isinstance(position, u.Quantity):
+            _txt = f"{position.value:.2f} {position.unit}"
+        else:
+            _txt = f"{position:.2f}"
+
+        self.encoder_label.setText(_txt)
+
     def update_position_display(self, position: Union[u.Quantity, float]):
         if not isinstance(position, (u.Quantity, float)):
             return
@@ -825,6 +835,9 @@ class AxisControlWidget(QWidget):
         self.update_position_display(pos)
         if self.target_position_label.text() == "":
             self.update_target_position_display(pos)
+
+        encoder = self.encoder
+        self.update_encoder_display(encoder)
 
         _motor_status = self.axis.motor.status
 
