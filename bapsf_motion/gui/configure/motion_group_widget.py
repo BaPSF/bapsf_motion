@@ -1413,17 +1413,17 @@ class DriveDesktopController(DriveBaseController):
 
         sub_layout2 = QVBoxLayout()
         sub_layout2.setSpacing(8)
-        sub_layout2.addSpacing(58)
+        sub_layout2.addSpacing(54)
         sub_layout2.addWidget(
             _pos_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
-        sub_layout2.addSpacing(6)
+        sub_layout2.addSpacing(42)
         sub_layout2.addWidget(
             _target_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
-        sub_layout2.addSpacing(108)
+        sub_layout2.addSpacing(86)
         sub_layout2.addWidget(
             _jog_delta_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
