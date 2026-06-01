@@ -465,7 +465,8 @@ class AxisControlWidget(QWidget):
         font.setPointSize(8)
         font.setBold(True)
         _btn.setFont(font)
-        _btn.setFixedHeight(20)
+        _btn.setFixedHeight(24)
+        _btn.setFixedWidth(70)
         self.enable_btn = _btn
 
         # Define TEXT WIDGETS
