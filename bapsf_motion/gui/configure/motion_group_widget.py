@@ -481,6 +481,7 @@ class AxisControlWidget(QWidget):
         _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _txt.setReadOnly(True)
+        _txt.setToolTip("Motor Position")
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
