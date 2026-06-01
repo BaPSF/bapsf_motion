@@ -1066,7 +1066,7 @@ class Motor(EventActor):
             # read from status if the heartbeat is operational
             return self.status["encoder"]
 
-        pos = self.send_command("encoder_position")
+        pos = self.send_command("get_encoder")
         if not isinstance(pos, self.ack_flags):
             self._update_status(encoder=pos)
             return pos
@@ -1679,7 +1679,7 @@ class Motor(EventActor):
             return
 
         # get motor encoder reading (position)
-        pos = send_command("encoder_position")
+        pos = send_command("get_encoder")
         if not isinstance(pos, self.ack_flags):
             _status["encoder"] = pos
         elif pos == self.ack_flags.LOST_CONNECTION:
