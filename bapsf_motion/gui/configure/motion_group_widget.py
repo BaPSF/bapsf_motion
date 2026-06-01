@@ -487,6 +487,34 @@ class AxisControlWidget(QWidget):
 
         _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setReadOnly(True)
+        _txt.setToolTip(
+            "Encoder read postion.\n\n If differenct than motor postion, "
+            "then the motor is likely slipping / stalling."
+        )
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        self.encoder_label = _txt
+
+        _txt = QLabel("E", parent=self)
+        _txt.setObjectName("encoder_icon")
+        _txt.setStyleSheet("""
+            QLabel#encoder_icon {
+            color: grey;
+            padding: 2px;
+            }
+            """
+        )
+        font = _txt.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        _txt.setFont(font)
+        _txt.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        self.encoder_label_icon = _txt
+
+        _txt = QLineEdit("", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
@@ -558,6 +586,8 @@ class AxisControlWidget(QWidget):
             self.position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
+        layout.addLayout(self._define_encoder_label_layout())
+        layout.addWidget(HLinePlain(parent=self))
         layout.addWidget(
             self.target_position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
@@ -612,6 +642,7 @@ class AxisControlWidget(QWidget):
             self.position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
+        layout.addLayout(self._define_encoder_label_layout())
         layout.addSpacing(8)
         layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
         layout.addSpacing(24)
@@ -635,7 +666,20 @@ class AxisControlWidget(QWidget):
 
         return layout
 
-        return enabled_layout
+    def _define_encoder_label_layout(self):
+        layout = QGridLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        layout.addWidget(
+            self.encoder_label, 0, 0, 5, 8,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addWidget(
+            self.encoder_label_icon, 4, 7, 1, 1,
+            alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight,
+        )
+
+        return layout
 
     @property
     def logger(self) -> logging.Logger:
