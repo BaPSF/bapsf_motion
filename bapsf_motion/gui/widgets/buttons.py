@@ -25,7 +25,9 @@ from bapsf_qt.buttons import (
     GearValidButton,
     IconButton,
     StyleButton,
+    StopButton,
     ValidButton,
+    ZeroButton,
 )
 from PySide6.QtCore import QSize, Slot
 from PySide6.QtGui import QColor, QFont, QFontMetrics, QIcon
@@ -128,38 +130,6 @@ class LED(QPushButton):
                 stop:1 rgb(0,0,0)); 
         }}
         """
-
-
-class StopButton(StyleButton):
-    def __init__(self, *args, **kwargs):
-        super().__init__("STOP", *args, **kwargs)
-
-        self.update_style_sheet(
-            styles={
-                "background-color": "rgb(232, 80, 74)",
-                "border-radius": "6px",
-                "border": "3px solid rgb(90, 90, 90)",
-                "color": "rgba(30, 30, 30, 240)",
-            },
-            action="base",
-        )
-        self.update_style_sheet(
-            styles={
-                "border": "3px solid rgb(255, 0, 0)",
-                "background-color": "rgb(255, 70, 70)",
-            },
-            action="hover",
-        )
-
-
-class ZeroButton(StyleButton):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.update_style_sheet(
-            styles={"background-color": "rgb(52, 161, 219)"},
-            action="pressed",
-        )
 
 
 class EnableIndicator(StyleButton):
