@@ -491,7 +491,7 @@ class AxisControlWidget(QWidget):
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _txt.setReadOnly(True)
         _txt.setToolTip(
-            "Encoder read postion.\n\n If differenct than motor postion, "
+            "Encoder read position.\n\n If different than motor position, "
             "then the motor is likely slipping / stalling."
         )
         font = _txt.font()
