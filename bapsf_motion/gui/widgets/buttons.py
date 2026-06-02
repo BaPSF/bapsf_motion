@@ -30,12 +30,8 @@ from bapsf_qt.buttons import (
     ZeroButton,
 )
 from PySide6.QtCore import QSize, Slot
-from PySide6.QtGui import QColor, QFont, QFontMetrics, QIcon
+from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QPushButton
-from typing import Optional, Union
-
-from bapsf_motion.gui.helpers import cast_color_to_rgba_string
-from bapsf_motion.gui.icons import icon_name_dict
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
