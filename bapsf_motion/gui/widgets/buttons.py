@@ -1,7 +1,7 @@
 """This module contains custom Qt buttons."""
 
 __all__ = [
-    "BannerButton",
+    "AutoScaleButton",
     "DiscardButton",
     "DoneButton",
     "EnableIndicator",
@@ -17,7 +17,7 @@ __all__ = [
 
 import math
 
-from bapsf_qt.buttons import AutoScaleButton as BannerButton
+from bapsf_qt.buttons import AutoScaleButton
 from bapsf_qt.buttons import StyleButton
 from PySide6.QtCore import QSize, Slot
 from PySide6.QtGui import QColor, QFont, QFontMetrics, QIcon
@@ -77,6 +77,9 @@ class IconButton(StyleButton):
             return
 
         super().setIconSize(size)
+
+
+BannerButton = AutoScaleButton
 
 
 class DiscardButton(BannerButton):
