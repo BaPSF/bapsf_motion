@@ -506,8 +506,7 @@ class AxisControlWidget(QWidget):
             color: grey;
             padding: 2px;
             }
-            """
-        )
+            """)
         font = _txt.font()
         font.setPointSize(8)
         font.setBold(True)
@@ -673,11 +672,19 @@ class AxisControlWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
 
         layout.addWidget(
-            self.encoder_label, 0, 0, 5, 8,
+            self.encoder_label,
+            0,
+            0,
+            5,
+            8,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
         layout.addWidget(
-            self.encoder_label_icon, 4, 7, 1, 1,
+            self.encoder_label_icon,
+            4,
+            7,
+            1,
+            1,
             alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight,
         )
 
