@@ -11,76 +11,16 @@ __all__ = [
 
 import logging
 
-from PySide6.QtCore import QSize, Qt, Signal, Slot
-from PySide6.QtGui import QColor, QIcon, QValidator
-from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
-from typing import Union
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QValidator
+from PySide6.QtWidgets import QLabel, QLineEdit
 
 from bapsf_motion.utils import ipv4_pattern as _ipv4_pattern
 
 # import of qtawesome and bapsf_qt must happen after the PySide6 imports
-from bapsf_qt.widgets import QLineEditPayload as QLineEditSpecialized  # noqa
-from bapsf_qt.widgets import HLinePlain, VLinePlain  # noqa
 import qtawesome as qta  # noqa
-
-
-class QTAIconLabel(QLabel):
-    def __init__(self, icon_name, parent=None):
-        super().__init__(parent=parent)
-
-        self._icon_name = None
-        self._icon = None
-        self.setIcon(icon_name)
-
-        self.setFixedSize(32)
-        self.setIconSize(28)
-        self.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
-
-    @property
-    def icon_name(self) -> str:
-        return self._icon_name
-
-    @property
-    def icon(self) -> QIcon:
-        return self._icon
-
-    def _get_icon(self):
-        return qta.icon(self._icon_name)
-
-    def setIcon(self, icon_name: str):  # noqa
-        try:
-            _icon = qta.icon(icon_name)
-        except Exception:  # noqa
-            return
-
-        self._icon_name = icon_name
-        self._icon = _icon
-
-    def setIconSize(self, size: int):  # noqa
-        if not isinstance(size, int):
-            return
-        elif size < 1:
-            return
-
-        self.setPixmap(self.icon.pixmap(size, size))
-
-    def setFixedSize(self, size: Union[QSize, int]):
-        if isinstance(size, QSize):
-            pass
-        elif not isinstance(size, int):
-            return
-        elif size < 1:
-            return
-        else:
-            size = QSize(size, size)
-
-        super().setFixedSize(size)
-
-    def setFixedWidth(self, w):
-        self.setFixedSize(w)
-
-    def setFixedHeight(self, h):
-        self.setFixedSize(h)
+from bapsf_qt.widgets import QLineEditPayload as QLineEditSpecialized  # noqa
+from bapsf_qt.widgets import HLinePlain, VLinePlain, QTAIconLabel  # noqa
 
 
 class BatteryStatusIcon(QLabel):
