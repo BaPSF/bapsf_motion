@@ -431,11 +431,11 @@ class AxisControlWidget(QWidget):
 
         # Define BUTTONS
         _btn = IconButton(icon_name_dict["arrow-up"], parent=self)
-        _btn.setIconSize(48)
+        _btn.setIconSize(42)
         self.jog_forward_btn = _btn
 
         _btn = IconButton(icon_name_dict["arrow-down"], parent=self)
-        _btn.setIconSize(48)
+        _btn.setIconSize(42)
         self.jog_backward_btn = _btn
 
         _btn = ValidButton("FWD LIMIT", parent=self)
@@ -465,7 +465,8 @@ class AxisControlWidget(QWidget):
         font.setPointSize(8)
         font.setBold(True)
         _btn.setFont(font)
-        _btn.setFixedHeight(20)
+        _btn.setFixedHeight(24)
+        _btn.setFixedWidth(70)
         self.enable_btn = _btn
 
         # Define TEXT WIDGETS
@@ -480,10 +481,38 @@ class AxisControlWidget(QWidget):
         _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _txt.setReadOnly(True)
+        _txt.setToolTip("Motor Position")
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
         self.position_label = _txt
+
+        _txt = QLineEdit("", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setReadOnly(True)
+        _txt.setToolTip(
+            "Encoder read position.\n\n If different than motor position, "
+            "then the motor is likely slipping / stalling."
+        )
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        self.encoder_label = _txt
+
+        _txt = QLabel("E", parent=self)
+        _txt.setObjectName("encoder_icon")
+        _txt.setStyleSheet("""
+            QLabel#encoder_icon {
+            color: grey;
+            padding: 2px;
+            }
+            """)
+        font = _txt.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        _txt.setFont(font)
+        _txt.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        self.encoder_label_icon = _txt
 
         _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -553,15 +582,13 @@ class AxisControlWidget(QWidget):
         if layout is None:
             layout = QVBoxLayout()
 
-        layout.addWidget(
-            self.axis_name_label,
-            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
-        )
-        layout.addLayout(self._define_enable_btn_layout())
+        layout.addLayout(self._define_title_and_enable_btn_layout())
         layout.addWidget(
             self.position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
+        layout.addLayout(self._define_encoder_label_layout())
+        layout.addWidget(HLinePlain(parent=self))
         layout.addWidget(
             self.target_position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
@@ -608,12 +635,7 @@ class AxisControlWidget(QWidget):
         _font.setPointSize(12)
         _fine_step_label.setFont(_font)
 
-        layout.addWidget(
-            self.axis_name_label,
-            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
-        )
-        layout.addSpacing(4)
-        layout.addLayout(self._define_enable_btn_layout())
+        layout.addLayout(self._define_title_and_enable_btn_layout())
         layout.addSpacing(4)
         layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addSpacing(8)
@@ -621,6 +643,7 @@ class AxisControlWidget(QWidget):
             self.position_label,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
+        layout.addLayout(self._define_encoder_label_layout())
         layout.addSpacing(8)
         layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
         layout.addSpacing(24)
@@ -633,14 +656,39 @@ class AxisControlWidget(QWidget):
 
         return layout
 
-    def _define_enable_btn_layout(self):
-        enabled_layout = QHBoxLayout()
-        enabled_layout.setContentsMargins(0, 0, 0, 0)
-        enabled_layout.addSpacing(16)
-        enabled_layout.addWidget(self.enable_btn)
-        enabled_layout.addSpacing(16)
+    def _define_title_and_enable_btn_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch(1)
+        layout.addWidget(self.axis_name_label)
+        layout.addSpacing(2)
+        layout.addWidget(self.enable_btn)
+        layout.addStretch(1)
 
-        return enabled_layout
+        return layout
+
+    def _define_encoder_label_layout(self):
+        layout = QGridLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        layout.addWidget(
+            self.encoder_label,
+            0,
+            0,
+            5,
+            8,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addWidget(
+            self.encoder_label_icon,
+            4,
+            7,
+            1,
+            1,
+            alignment=Qt.AlignmentFlag.AlignBottom | Qt.AlignmentFlag.AlignRight,
+        )
+
+        return layout
 
     @property
     def logger(self) -> logging.Logger:
@@ -660,6 +708,13 @@ class AxisControlWidget(QWidget):
             return None
 
         return self.mg.drive.axes[self.axis_index]
+
+    @property
+    def encoder(self) -> u.Quantity:
+        encoder = self.mg.encoder
+        val = encoder.value[self.axis_index]
+        unit = encoder.unit
+        return val * unit
 
     @property
     def position(self) -> u.Quantity:
@@ -693,6 +748,16 @@ class AxisControlWidget(QWidget):
     def jog_backward(self):
         pos = self.position.value - self._get_jog_delta()
         self._move_to(pos)
+
+    def update_encoder_display(self, position: Union[u.Quantity, float]):
+        if not isinstance(position, (u.Quantity, float)):
+            return
+        elif isinstance(position, u.Quantity):
+            _txt = f"{position.value:.2f} {position.unit}"
+        else:
+            _txt = f"{position:.2f}"
+
+        self.encoder_label.setText(_txt)
 
     def update_position_display(self, position: Union[u.Quantity, float]):
         if not isinstance(position, (u.Quantity, float)):
@@ -777,6 +842,17 @@ class AxisControlWidget(QWidget):
         self.update_position_display(pos)
         if self.target_position_label.text() == "":
             self.update_target_position_display(pos)
+
+        encoder = self.encoder
+        self.update_encoder_display(encoder)
+
+        if np.isclose(pos.value, encoder.value, rtol=0.0, atol=0.02):
+            # encoder and absolute readingss are conssistent
+            self.position_label.setStyleSheet("color: black;")
+            self.encoder_label.setStyleSheet("color: black;")
+        else:
+            self.position_label.setStyleSheet("color: red;")
+            self.encoder_label.setStyleSheet("color: red;")
 
         _motor_status = self.axis.motor.status
 
@@ -1344,17 +1420,17 @@ class DriveDesktopController(DriveBaseController):
 
         sub_layout2 = QVBoxLayout()
         sub_layout2.setSpacing(8)
-        sub_layout2.addSpacing(58)
+        sub_layout2.addSpacing(54)
         sub_layout2.addWidget(
             _pos_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
-        sub_layout2.addSpacing(6)
+        sub_layout2.addSpacing(42)
         sub_layout2.addWidget(
             _target_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
         )
-        sub_layout2.addSpacing(108)
+        sub_layout2.addSpacing(86)
         sub_layout2.addWidget(
             _jog_delta_label,
             alignment=Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight,
