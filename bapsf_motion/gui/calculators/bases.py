@@ -1,3 +1,7 @@
+"""
+Collection of base classes for calculator windows and applications.
+"""
+
 __all__ = ["BaseCalculatorApp", "BaseCalculatorWindow"]
 
 from abc import ABC, ABCMeta, abstractmethod

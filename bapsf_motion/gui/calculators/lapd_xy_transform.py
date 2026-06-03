@@ -1,3 +1,8 @@
+"""
+Calculator window and application for the
+`~bapsf_motion.transform.lapd.LaPDXYTransform`.
+"""
+
 __all__ = ["LaPDXYTransformCalculator", "LaPDXYTransformCalculatorApp"]
 
 import ast
