@@ -2,6 +2,7 @@
 A collection of functionality focused around build and managing icon
 widgets.
 """
+
 __all__ = ["icon_name_dict"]
 
 import qtawesome as qta
