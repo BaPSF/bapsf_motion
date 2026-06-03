@@ -1,3 +1,8 @@
+"""
+Calculator window and application for the
+`~bapsf_motion.transform.lapd.LaPDXYTransform`.
+"""
+
 __all__ = ["LaPDXYTransformCalculator", "LaPDXYTransformCalculatorApp"]
 
 import ast
@@ -13,6 +18,9 @@ from bapsf_motion.gui.calculators.bases import BaseCalculatorApp, BaseCalculator
 class LaPDXYTransformCalculator(BaseCalculatorWindow):
     _WINDOW_TITLE = "LaPD XY Transform Calculator"
     _IMAGE_NAME = "LaPDXYTransform_diagram.png"
+
+    _CALCULATOR_FAMILY = "transform"
+    _CALCULATOR_TYPE = "lapd_xy"
 
     _defaults = {  # all values in cm
         "measure_1": 54.2,
@@ -184,6 +192,9 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
         p = self.geometry().topLeft() + QPoint(262, 512)
         self.reset_btn.move(p)
 
+        p = self.reset_btn.pos() + QPoint(self.reset_btn.width() + 12, 0)
+        self.export_btn.move(p)
+
         _btn = QRadioButton(parent=self)
         p = self.measure_2a_label.pos() + QPoint(self.measure_2a_label.width() + 6, 0)
         _btn.move(p)
@@ -234,6 +245,15 @@ class LaPDXYTransformCalculator(BaseCalculatorWindow):
         }
         """
         return _stylesheet
+
+    def _collect_export_parameters(self) -> dict:
+        params = {
+            **super()._collect_export_parameters(),
+            "pivot_to_center": self.pivot_to_center,
+            "pivot_to_drive": self.pivot_to_drive,
+            "pivot_to_feedthru": self.pivot_to_feedthru,
+        }
+        return params
 
     def convert_measure_2a_to_measure_2b(
         self, measure_2a: Optional[float] = None

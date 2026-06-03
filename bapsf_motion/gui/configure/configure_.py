@@ -38,6 +38,7 @@ from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
+from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
     DiscardButton,
@@ -798,8 +799,72 @@ class ConfigureGUI(QMainWindow):
         _window.setObjectName("lapd_xy_calculator")
         _window.show()
         _window.activateWindow()
+        _window.exportParameters.connect(self._import_calculator_parameters)
 
         self._launched_windows["lapd_xy_calculator"] = _window
+
+    @Slot(object)
+    def _import_calculator_parameters(self, parameters: Dict[str, Any]):
+        if not isinstance(parameters, dict):
+            return
+
+        calc_family = parameters.pop("calculator_family", None)
+        calc_type = parameters.pop("calculator_type", None)
+
+        if calc_family != "transform":
+            warn_msg = (
+                "Can NOT import parameters from the calculator, since "
+                f"the calculator family ('{calc_family}') is unknown."
+            )
+            self.logger.warning(warn_msg)
+
+            dialog = WarningMessageBox(warn_msg, parent=self)
+            dialog.exec()
+            return
+
+        active_widget = self._stacked_widget.currentWidget()
+        if not isinstance(active_widget, MGWidget):
+            warn_msg = (
+                "Can NOT import parameters from the calculator, since "
+                f"the Transformation Configuration Overlay is NOT active."
+            )
+            self.logger.warning(warn_msg)
+
+            dialog = WarningMessageBox(warn_msg, parent=self)
+            dialog.exec()
+            return
+
+        active_overlay = active_widget._overlay_widget
+        if not isinstance(active_overlay, TransformConfigOverlay):
+            warn_msg = (
+                "Can NOT import parameters from the calculator, since "
+                f"the Transformation Configuration Overlay is NOT active."
+            )
+            self.logger.warning(warn_msg)
+
+            dialog = WarningMessageBox(warn_msg, parent=self)
+            dialog.exec()
+            return
+
+        overlay_transform_type = active_overlay.transform_type
+        if calc_type != overlay_transform_type:
+            warn_msg = (
+                "Can NOT import parameters from the calculator, since "
+                f"the calculator transform type ('{calc_type}') does NOT "
+                f"match the transform type ('{overlay_transform_type}') "
+                f"of the current configuration window."
+            )
+            self.logger.warning(warn_msg)
+
+            dialog = WarningMessageBox(warn_msg, parent=self)
+            dialog.exec()
+            return
+
+        transform_params = {
+            **active_overlay.transform_inputs,
+            **parameters,
+        }
+        active_overlay.importParameters.emit(transform_params)
 
     @Slot(str)
     def _launched_windows_closed(self, name: str):
