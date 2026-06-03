@@ -851,7 +851,7 @@ class ConfigureGUI(QMainWindow):
             warn_msg = (
                 "Can NOT import parameters from the calculator, since "
                 f"the calculator transform type ('{calc_type}') does NOT "
-                f"match the transfrom type ('{overlay_transform_type}') "
+                f"match the transform type ('{overlay_transform_type}') "
                 f"of the current configuration window."
             )
             self.logger.warning(warn_msg)
