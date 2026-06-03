@@ -313,6 +313,9 @@ class Axis(EventActor):
             (u.steps, self.units),
             (u.steps / u.s, self.units / u.s),
             (u.steps / u.s / u.s, self.units / u.s / u.s),
+            (u.counts, self.units),
+            (u.counts / u.s, self.units / u.s),
+            (u.counts / u.s / u.s, self.units / u.s / u.s),
             (u.rev / u.s, self.units / u.s),
             (u.rev / u.s / u.s, self.units / u.s / u.s),
         ]

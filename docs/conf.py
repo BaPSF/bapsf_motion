@@ -115,6 +115,7 @@ intersphinx_mapping = {
     "astropy": ("https://docs.astropy.org/en/stable/", None),
     "pytest": ("https://docs.pytest.org/en/stable/", None),
     "PySide6": ("https://doc.qt.io/qtforpython-6/", None),
+    "qtawesome": ("https://qtawesome.readthedocs.io/en/latest/", None),
     "sphinx_automodapi": (
         "https://sphinx-automodapi.readthedocs.io/en/latest/",
         None,

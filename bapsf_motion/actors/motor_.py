@@ -2225,14 +2225,14 @@ class Motor(EventActor):
         Set the motor absolute position 'SP' to be consistent with the
         current encoder reading.
         """
-        epos = self.encoder
+        epos = self.encoder.value
         conversion = (self.counts_per_rev / self.steps_per_rev).value
         pos = int(epos / conversion)
 
         self.logger.info(
             f"Correcting absolute position from '{self.position}' to "
-            f"'{pos}' using the encoder as reference.  Difference in "
-            f"setting is '{self.position - pos}'."
+            f"'{pos} steps' using the encoder as reference.  Difference in "
+            f"setting is '{self.position.value - pos} steps'."
         )
 
         self.set_position(pos)
