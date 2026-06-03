@@ -26,11 +26,15 @@ class QABCMainWindow(ABCMeta, type(QMainWindow)): ...
 
 class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
     closing = Signal()
+    exportParameters = Signal(object)
 
     _WINDOW_TITLE = NotImplemented  # type: str
     _WINDOW_MARGIN = 12
     _IMAGE_DIR = _IMAGES_PATH
     _IMAGE_NAME = NotImplemented  # type: str
+
+    _CALCULATOR_FAMILY = None  # type: str | None
+    _CALCULATOR_TYPE = None  # type: str | None
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -58,6 +62,14 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         _btn.move(p)
         self.reset_btn = _btn
 
+        _btn = StyleButton("Export Parameters", parent=self)
+        _btn.setFixedWidth(200)
+        _btn.setFixedHeight(36)
+        _btn.setPointSize(14)
+        p = self.geometry().topLeft() + QPoint(240, 20)
+        _btn.move(p)
+        self.export_btn = _btn
+
         # initialized widgets
         self._init_widgets()
 
@@ -65,6 +77,7 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
         self.centralWidget().setLayout(layout)
 
         self.reset_btn.clicked.connect(self._reset_parameters)
+        self.export_btn.clicked.connect(self.emit_export_parameters)
         self._connect_signals()
 
     @property
@@ -80,6 +93,13 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
             }
             """
         return _stylesheet
+
+    @abstractmethod
+    def _collect_export_parameters(self) -> dict:
+        return {
+            "calculator_family": self._CALCULATOR_FAMILY,
+            "calculator_type": self._CALCULATOR_TYPE,
+        }
 
     @abstractmethod
     def _connect_signals(self): ...
@@ -153,6 +173,11 @@ class BaseCalculatorWindow(QMainWindow, ABC, metaclass=QABCMainWindow):
 
     @abstractmethod
     def _init_widgets(self): ...
+
+    @Slot()
+    def emit_export_parameters(self):
+        parameters = self._collect_export_parameters()
+        self.exportParameters.emit(parameters)
 
     def closeEvent(self, event: QCloseEvent):
         self.closing.emit()
