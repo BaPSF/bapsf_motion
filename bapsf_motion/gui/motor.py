@@ -260,7 +260,7 @@ class MotorGUI(QMainWindow):
 
     def _configure_logger(self):
         _format = logging.Formatter("[{name}] - {levelname}: {message}", style="{")
-        _handler = QLogHandler(widget=self._log["log_box"])
+        _handler = QLogHandler(log_widget=self._log["log_box"])
         _handler.setFormatter(_format)
 
         self.logger.addHandler(_handler)
