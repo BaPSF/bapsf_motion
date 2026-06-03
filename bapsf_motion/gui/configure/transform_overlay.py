@@ -10,7 +10,7 @@ import ast
 import inspect
 import math
 
-from PySide6.QtCore import QSize, Qt, Slot, Signal
+from PySide6.QtCore import QSize, Qt, Signal, Slot
 from PySide6.QtWidgets import (
     QComboBox,
     QGridLayout,
