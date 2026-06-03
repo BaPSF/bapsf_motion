@@ -29,7 +29,7 @@ from bapsf_motion.actors import Axis, Drive, MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.widgets import HLinePlain, IPv4Validator, LED, StyleButton
+from bapsf_motion.gui.widgets import HLinePlain, IPv4Validator, LED, StyleButton, VLinePlain
 from bapsf_motion.utils import _deepcopy_dict, dict_equal, ipv4_pattern, loop_safe_stop
 
 
@@ -147,13 +147,21 @@ class AxisConfigWidget(QWidget):
         layout.addSpacing(12)
         layout.addWidget(ip_label)
         layout.addWidget(self.ip_widget)
-        layout.addSpacing(28)
+        layout.addSpacing(8)
+        layout.addWidget(VLinePlain(parent=self))
+        layout.addSpacing(8)
         layout.addWidget(self.cm_per_rev_widget)
         layout.addWidget(cm_per_rev_label)
-        layout.addSpacing(28)
+        layout.addSpacing(8)
+        layout.addWidget(VLinePlain(parent=self))
+        layout.addSpacing(8)
         layout.addLayout(self._define_limit_mode_layout())
+        layout.addSpacing(8)
+        layout.addWidget(VLinePlain(parent=self))
         layout.addStretch()
         layout.addLayout(sub_layout)
+        layout.addWidget(VLinePlain(parent=self))
+        layout.addSpacing(8)
         return layout
 
     def _define_limit_mode_layout(self):
