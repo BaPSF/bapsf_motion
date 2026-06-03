@@ -11,6 +11,7 @@ __all__ = [
 
 import logging
 
+from bapsf_qt.widgets import QLineEditPayload as QLineEditSpecialized
 from PySide6.QtCore import QSize, Qt, Signal, Slot
 from PySide6.QtGui import QColor, QIcon, QValidator
 from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
@@ -130,19 +131,6 @@ class IPv4Validator(QValidator):
             return QValidator.State.Intermediate
 
         return QValidator.State.Acceptable
-
-
-class QLineEditSpecialized(QLineEdit):
-    editingFinishedPayload = Signal(object)
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.editingFinished.connect(self._send_payload)
-
-    @Slot()
-    def _send_payload(self):
-        self.editingFinishedPayload.emit(self)
 
 
 class HLinePlain(QFrame):
