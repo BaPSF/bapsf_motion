@@ -11,7 +11,6 @@ __all__ = [
 
 import logging
 
-from bapsf_qt.widgets import QLineEditPayload as QLineEditSpecialized
 from PySide6.QtCore import QSize, Qt, Signal, Slot
 from PySide6.QtGui import QColor, QIcon, QValidator
 from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
@@ -19,7 +18,8 @@ from typing import Union
 
 from bapsf_motion.utils import ipv4_pattern as _ipv4_pattern
 
-# import of qtawesome must happen after the PySide6 imports
+# import of qtawesome and bapsf_qt must happen after the PySide6 imports
+from bapsf_qt.widgets import QLineEditPayload as QLineEditSpecialized  # noqa
 import qtawesome as qta  # noqa
 
 
