@@ -15,8 +15,6 @@ __all__ = [
     "ZeroButton",
 ]
 
-import math
-
 from bapsf_qt.buttons import (
     AutoScaleButton,
     DiscardButton,
