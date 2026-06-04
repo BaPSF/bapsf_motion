@@ -528,6 +528,11 @@ class Motor(EventActor):
             two_way=True,
             units=u.steps,
         ),
+        "set_limit_mode": CommandEntry(
+            "set_limit_mode",
+            send="",
+            method_command=True,
+        ),
         "speed": CommandEntry(
             "speed",
             send="VE",
@@ -651,7 +656,16 @@ class Motor(EventActor):
         self._setup = self._setup_defaults.copy()
         self._motor = self._motor_defaults.copy()
         self._status = self._status_defaults.copy()
-        self._limit_mode = limit_mode
+
+        # condition limit_mode
+        limit_mode = self.set_limit_mode(limit_mode, skip_setting=True)
+        if limit_mode is None:
+            self._limit_mode = self.motor["define_limits"]
+        else:
+            self._limit_mode = limit_mode
+            self.motor["define_limits"] = limit_mode
+
+        # condition current
         if isinstance(current, (float, int)) and 0.0 < current <= 1.0:
             self._motor["DEFAULTS"]["current"] = current
 
@@ -688,31 +702,6 @@ class Motor(EventActor):
     def _configure_before_run(self):
         # actions to be done during object instantiation, but before
         # the asyncio event loop starts running.
-        if self._limit_mode is None:
-            self._limit_mode = self.motor["define_limits"]
-        elif not isinstance(self._limit_mode, int):
-            self.logger.warning(
-                "Assuming limit mode 1 for input argument 'limit_mode'.",
-                exc_info=TypeError(
-                    "Was expecting an int of value 1, 2, or 3 for input "
-                    f"argument 'limit_mode', got type "
-                    f"{type(self._limit_mode)} instead."
-                ),
-            )
-            self._limit_mode = self.motor["define_limits"]
-        elif self._limit_mode not in (1, 2, 3):
-            self.logger.warning(
-                "Assuming limit mode 1 for input argument 'limit_mode'.",
-                exc_info=ValueError(
-                    "Was expecting an int of value 1, 2, or 3 for input "
-                    f"argument 'limit_mode', got value "
-                    f"{self._limit_mode} instead."
-                ),
-            )
-            self._limit_mode = self.motor["define_limits"]
-        else:
-            self.motor["define_limits"] = self._limit_mode
-
         try:
             self.connect()
         except ConnectionError:
@@ -885,7 +874,7 @@ class Motor(EventActor):
         # input is closed (energized)
         # TODO: Replace with normal send_command when "define_limits" command
         #       is added to _commands dict
-        self.send_command("define_limits", self.motor["define_limits"])
+        self.set_limit_mode(self.motor["define_limits"])
 
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
@@ -2156,6 +2145,36 @@ class Motor(EventActor):
             return
         new_ic = percent * curr
         self.send_command("idle_current", new_ic)
+
+    def set_limit_mode(self, limit_mode: int, skip_setting: bool = False):
+        if not isinstance(limit_mode, int):
+            self.logger.warning(
+                "Limit mode not set / changed.",
+                exc_info=TypeError(
+                    "Was expecting an int of value 1, 2, or 3 for input "
+                    f"argument 'limit_mode', got type "
+                    f"{type(limit_mode)} instead."
+                ),
+            )
+            return
+
+        if limit_mode not in (1, 2, 3):
+            self.logger.warning(
+                "Limit mode not set / changed.",
+                exc_info=ValueError(
+                    "Was expecting an int of value 1, 2, or 3 for input "
+                    f"argument 'limit_mode', got value "
+                    f"{limit_mode} instead."
+                ),
+            )
+            return
+
+        if not skip_setting:
+            self.send_command("define_limits", limit_mode)
+            self._limit_mode = limit_mode
+            self.motor["define_limits"] = self._limit_mode
+
+        return limit_mode
 
     def reset_currents(self):
         """
