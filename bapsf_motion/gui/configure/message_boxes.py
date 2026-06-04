@@ -3,12 +3,31 @@ __all__ = ["WarningMessageBox"]
 from pathlib import Path
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QMessageBox, QWidget
-from typing import Union
 
 _HERE = Path(__file__).parent
 
 
-class WarningMessageBox(QMessageBox):
+class _BaseWarningMessageBox(QMessageBox):
+    def __init__(self, parent: QWidget | None = None):
+        super().__init__(parent)
+
+        self.setWindowTitle("!!!  WARNING  !!!")
+        self._place_window_icon()
+        self.setIcon(QMessageBox.Icon.Warning)
+
+    def _place_window_icon(self):
+        _image_name = "BaPSF_Logo_Color_yellow_background_RGB_32px.ico"
+        _image_root_path = (_HERE / ".." / "_images").resolve()
+        _image_path = (_image_root_path / _image_name).resolve()
+
+        if not _image_path.exists() or not _image_path.is_file():
+            # do nothing, the image file can not be located
+            return
+
+        self.setWindowIcon(QIcon(f"{_image_path}"))
+
+
+class WarningMessageBox(_BaseWarningMessageBox):
     """
     A generical modal warning dialog box to display arbitrary warning
     messages.
@@ -26,7 +45,7 @@ class WarningMessageBox(QMessageBox):
         and NO button is displayed and the user must choose how to
         proceed.
 
-    parent : Union[QWidget, None]
+    parent : QWidget | None
         The parent / owning widget.
     """
 
@@ -34,13 +53,9 @@ class WarningMessageBox(QMessageBox):
         self,
         message: str,
         button_layout: str = "acknowledge",
-        parent: Union[QWidget, None] = None,
+        parent: QWidget | None = None,
     ):
         super().__init__(parent)
-
-        self.setWindowTitle("!! WARNING !!")
-        self._place_window_icon()
-        self.setIcon(QMessageBox.Icon.Warning)
 
         # create button layout
         if not isinstance(button_layout, str):
@@ -73,17 +88,6 @@ class WarningMessageBox(QMessageBox):
         if button_layout == "approve":
             message += "\n\nDo you want to proceed?"
         self.setText(message)
-
-    def _place_window_icon(self):
-        _image_name = "BaPSF_Logo_Color_yellow_background_RGB_32px.ico"
-        _image_root_path = (_HERE / ".." / "_images").resolve()
-        _image_path = (_image_root_path / _image_name).resolve()
-
-        if not _image_path.exists() or not _image_path.is_file():
-            # do nothing, the image file can not be located
-            return
-
-        self.setWindowIcon(QIcon(f"{_image_path}"))
 
     def _acknowledge_exec(self, /) -> int:
         return super().exec()
