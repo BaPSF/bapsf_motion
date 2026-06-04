@@ -471,21 +471,16 @@ class AxisConfigWidget(QWidget):
 
     @Slot()
     def _change_limit_mode(self):
-        new_limit_mode = self.limit_mode_slider.value()
-        limit_mode = self.axis_config["motor_settings"]["limit_mode"]
+        axis_config = self.axis_config.copy()
+        old_limit_mode = axis_config["motor_settings"].get("limit_mode", None)
 
-        if new_limit_mode == limit_mode:
-            # nothing changed
+        limit_mode = self.limit_mode_slider.value()
+
+        if old_limit_mode is not None and old_limit_mode == limit_mode:
+            # limit_mode did not change
             return
 
-        axis_config = self.axis_config.copy()
-        axis_config["motor_settings"]["limit_mode"] = new_limit_mode
-
-        if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
-            self.axis = None
-
-        self.axis_config = axis_config
+        self._set_limit_mode(limit_mode)
 
     @Slot()
     def _change_speed_from_slider(self):
@@ -637,6 +632,24 @@ class AxisConfigWidget(QWidget):
             self.axis = None
 
         axis_config["motor_settings"]["speed"] = speed
+        self.axis_config = axis_config
+
+    def _set_limit_mode(self, limit_mode: int):
+
+        if isinstance(self.axis, Axis) and isinstance(self.axis.motor, Motor):
+            self.axis.motor.send_command("set_limit_mode", limit_mode)
+
+            motor_limit_mode = self.axis.motor.config["limit_mode"]
+            if motor_limit_mode == limit_mode:
+                self.configChanged.emit()
+                return
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+        
+        axis_config = self.axis_config.copy()
+        axis_config["motor_settings"]["limit_mode"] = limit_mode
         self.axis_config = axis_config
 
     def closeEvent(self, event):
