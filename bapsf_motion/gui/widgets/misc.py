@@ -7,12 +7,14 @@ __all__ = [
     "QTAIconLabel",
     "HLinePlain",
     "VLinePlain",
+    "QDoublePinnedValidator"
 ]
 
+import ast
 import logging
 
 from PySide6.QtCore import QSize, Qt, Signal, Slot
-from PySide6.QtGui import QColor, QIcon, QValidator
+from PySide6.QtGui import QColor, QIcon, QValidator, QDoubleValidator
 from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
 from typing import Union
 
@@ -197,3 +199,20 @@ class VLinePlain(QFrame):
         palette = self.palette()
         palette.setColor(palette.ColorRole.WindowText, QColor(r, g, b))
         self.setPalette(palette)
+
+
+class QDoublePinnedValidator(QDoubleValidator):
+    def fixup(self, input, /):
+        min_value = self.bottom()
+        max_value = self.top()
+
+        value = ast.literal_eval(input)
+
+        if not isinstance(value, (float, int)):
+            return input
+
+        if value < min_value:
+            return f"{min_value}"
+
+        if value > max_value:
+            return f"{max_value}"
