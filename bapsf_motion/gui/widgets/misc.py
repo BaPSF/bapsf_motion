@@ -14,7 +14,7 @@ import ast
 import logging
 
 from PySide6.QtCore import QSize, Qt, Signal, Slot
-from PySide6.QtGui import QColor, QIcon, QValidator, QDoubleValidator
+from PySide6.QtGui import QColor, QDoubleValidator, QIcon, QValidator
 from PySide6.QtWidgets import QFrame, QLabel, QLineEdit, QWidget
 from typing import Union
 

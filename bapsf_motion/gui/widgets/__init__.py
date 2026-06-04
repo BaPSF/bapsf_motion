@@ -46,8 +46,8 @@ from bapsf_motion.gui.widgets.misc import (
     BatteryStatusIcon,
     HLinePlain,
     IPv4Validator,
+    QDoublePinnedValidator,
     QLineEditSpecialized,
     QTAIconLabel,
     VLinePlain,
-    QDoublePinnedValidator,
 )
