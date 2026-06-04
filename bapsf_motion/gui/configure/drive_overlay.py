@@ -34,9 +34,9 @@ from bapsf_motion.gui.widgets import (
     HLinePlain,
     IPv4Validator,
     LED,
+    QDoublePinnedValidator,
     StyleButton,
     VLinePlain,
-    QDoublePinnedValidator,
 )
 from bapsf_motion.utils import _deepcopy_dict, dict_equal, ipv4_pattern, loop_safe_stop
 
