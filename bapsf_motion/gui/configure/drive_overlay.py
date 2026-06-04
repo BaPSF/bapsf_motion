@@ -610,27 +610,19 @@ class AxisConfigWidget(QWidget):
 
     def _set_motor_speed(self, speed: float | int):
 
-        axis_config = self.axis_config.copy()
-
         if isinstance(self.axis, Axis) and isinstance(self.axis.motor, Motor):
-            self.axis.motor.send_command("speed", speed)
-            self.axis.motor.send_command("jog_speed", speed)
-            self.axis.motor._get_motor_parameters()
+            self.axis.motor.send_command("set_speeds", speed)
 
-            motor_speed = float(self.axis.motor.motor["speed"].value)
+            motor_speed = float(self.axis.motor.config["speed"])
             if motor_speed == speed:
                 self.configChanged.emit()
                 return
-            else:
-                axis_config = self.axis_config.copy()
-
-            self.axis.terminate(delay_loop_stop=True)
-            self.axis = None
 
         if isinstance(self.axis, Axis):
             self.axis.terminate(delay_loop_stop=True)
             self.axis = None
 
+        axis_config = self.axis_config.copy()
         axis_config["motor_settings"]["speed"] = speed
         self.axis_config = axis_config
 
@@ -647,7 +639,7 @@ class AxisConfigWidget(QWidget):
         if isinstance(self.axis, Axis):
             self.axis.terminate(delay_loop_stop=True)
             self.axis = None
-        
+
         axis_config = self.axis_config.copy()
         axis_config["motor_settings"]["limit_mode"] = limit_mode
         self.axis_config = axis_config
