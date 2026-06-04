@@ -131,7 +131,11 @@ class AxisConfigWidget(QWidget):
         cm_per_rev_label = _label
 
         layout = QHBoxLayout()
-        layout.addWidget(self.ax_name_widget)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            self.ax_name_widget,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
         layout.addSpacing(12)
         layout.addWidget(ip_label)
         layout.addWidget(self.ip_widget)
