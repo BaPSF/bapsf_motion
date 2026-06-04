@@ -7,7 +7,7 @@ __all__ = [
     "QTAIconLabel",
     "HLinePlain",
     "VLinePlain",
-    "QDoublePinnedValidator"
+    "QDoublePinnedValidator",
 ]
 
 import ast
