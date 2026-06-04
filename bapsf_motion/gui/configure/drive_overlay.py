@@ -30,7 +30,14 @@ from bapsf_motion.actors import Axis, Drive, MotionGroup, Motor
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.widgets import HLinePlain, IPv4Validator, LED, StyleButton, VLinePlain
+from bapsf_motion.gui.widgets import (
+    HLinePlain,
+    IPv4Validator,
+    LED,
+    StyleButton,
+    VLinePlain,
+    QDoublePinnedValidator,
+)
 from bapsf_motion.utils import _deepcopy_dict, dict_equal, ipv4_pattern, loop_safe_stop
 
 
@@ -99,7 +106,7 @@ class AxisConfigWidget(QWidget):
         _widget.setFont(font)
         _widget.setFixedWidth(120)
         _widget.setValidator(
-            QDoubleValidator(bottom=0.5, top=15.0, decimals=1)
+            QDoublePinnedValidator(bottom=0.5, top=15.0, decimals=1)
         )
         _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speed_input = _widget

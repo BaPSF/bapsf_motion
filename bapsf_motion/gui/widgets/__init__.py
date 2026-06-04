@@ -15,6 +15,7 @@ __all__ = [
     "IconButton",
     "IPv4Validator",
     "LED",
+    "QDoublePinnedValidator",
     "QLineEditSpecialized",
     "QLogger",
     "QLogHandler",
@@ -48,4 +49,5 @@ from bapsf_motion.gui.widgets.misc import (
     QLineEditSpecialized,
     QTAIconLabel,
     VLinePlain,
+    QDoublePinnedValidator,
 )

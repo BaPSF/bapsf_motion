@@ -7,11 +7,14 @@ __all__ = [
     "QTAIconLabel",
     "HLinePlain",
     "VLinePlain",
+    "QDoublePinnedValidator"
 ]
 
+import ast
 import logging
 
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import QLabel
 
 # import of qtawesome and bapsf_qt must happen after the PySide6 imports
@@ -49,3 +52,20 @@ class BatteryStatusIcon(QLabel):
             _icon = self._icon_map["unknown"]
 
         self.setPixmap(_icon.pixmap(self._pixmap_size, self._pixmap_size))
+
+
+class QDoublePinnedValidator(QDoubleValidator):
+    def fixup(self, input, /):
+        min_value = self.bottom()
+        max_value = self.top()
+
+        value = ast.literal_eval(input)
+
+        if not isinstance(value, (float, int)):
+            return input
+
+        if value < min_value:
+            return f"{min_value}"
+
+        if value > max_value:
+            return f"{max_value}"
