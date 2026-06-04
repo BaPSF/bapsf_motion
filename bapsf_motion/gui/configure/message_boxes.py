@@ -5,20 +5,42 @@ from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QMessageBox, QWidget
 
 _HERE = Path(__file__).parent
+_IMAGE_ROOT_PATH = (_HERE / ".." / "_images").resolve()
 
 
-class _BaseWarningMessageBox(QMessageBox):
+class _BaseWarningDialog(QDialog):
+    _IMAGE_ROOT_PATH = _IMAGE_ROOT_PATH
+    _ICON_NAME = "BaPSF_Logo_Color_yellow_background_RGB_32px.ico"
+
     def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self.setWindowTitle("!!!  WARNING  !!!")
-        self._place_window_icon()
+        self._set_window_icon()
+
+    def _set_window_icon(self):
+        _image_path = (self._IMAGE_ROOT_PATH / self._ICON_NAME).resolve()
+
+        if not _image_path.exists() or not _image_path.is_file():
+            # do nothing, the image file can not be located
+            return
+
+        self.setWindowIcon(QIcon(f"{_image_path}"))
+
+
+class _BaseWarningMessageBox(QMessageBox):
+    _IMAGE_ROOT_PATH = _IMAGE_ROOT_PATH
+    _ICON_NAME = "BaPSF_Logo_Color_yellow_background_RGB_32px.ico"
+
+    def __init__(self, parent: QWidget | None = None):
+        super().__init__(parent)
+
+        self.setWindowTitle("!!!  WARNING  !!!")
+        self._set_window_icon()
         self.setIcon(QMessageBox.Icon.Warning)
 
-    def _place_window_icon(self):
-        _image_name = "BaPSF_Logo_Color_yellow_background_RGB_32px.ico"
-        _image_root_path = (_HERE / ".." / "_images").resolve()
-        _image_path = (_image_root_path / _image_name).resolve()
+    def _set_window_icon(self):
+        _image_path = (self._IMAGE_ROOT_PATH / self._ICON_NAME).resolve()
 
         if not _image_path.exists() or not _image_path.is_file():
             # do nothing, the image file can not be located
@@ -106,3 +128,4 @@ class WarningMessageBox(_BaseWarningMessageBox):
             return self._acknowledge_exec()
 
         return self._approve_exec()
+
