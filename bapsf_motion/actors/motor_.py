@@ -533,6 +533,11 @@ class Motor(EventActor):
             send="",
             method_command=True,
         ),
+        "set_speeds": CommandEntry(
+            "set_speeds",
+            send="",
+            method_command=True,
+        ),
         "speed": CommandEntry(
             "speed",
             send="VE",
@@ -669,10 +674,12 @@ class Motor(EventActor):
         if isinstance(current, (float, int)) and 0.0 < current <= 1.0:
             self._motor["DEFAULTS"]["current"] = current
 
-        if isinstance(speed, (float, int)) and 0.0 < speed <= 15.0:
-            self._motor["speed"] = float(speed)
-        else:
+        # condition speed
+        speed = self.set_speeds(speed, skip_setting=True)
+        if speed is None:
             self._motor["speed"] = self._motor["DEFAULTS"]["speed"]
+        else:
+            self._motor["speed"] = speed
 
         # SimplgeSignal's to tell handlers about specific motor status
         # changes
@@ -879,13 +886,11 @@ class Motor(EventActor):
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
 
-        # set a slower speed
+        # set  speed
         speed = self.motor["speed"]
         if isinstance(speed, u.Quantity):
             speed = float(speed.value)
-
-        self.send_command("speed", speed)
-        self.send_command("jog_speed", speed)
+        self.set_speeds(speed)
 
         # set currents
         self.send_command("set_current", self.motor["DEFAULTS"]["current"])
@@ -2175,6 +2180,52 @@ class Motor(EventActor):
             self.motor["define_limits"] = self._limit_mode
 
         return limit_mode
+
+    def set_speeds(self, speed: float | int, skip_setting: bool = False):
+        if not isinstance(speed, (float, int)):
+            self.logger.warning(
+                "Speed not set / changed.",
+                exc_info=TypeError(
+                    "Was expecting a positive float, non-zero for input argument "
+                    f"'speed', got type {type(speed)} instead."
+                ),
+            )
+            return
+
+        if isinstance(speed, int):
+            speed = float(speed)
+
+        if speed <= 0.0:
+            self.logger.warning(
+                "Speed not set / changed.",
+                exc_info=ValueError(
+                    "Was expecting a positive, non-zero float for input argument "
+                    f"'speed', got value {speed} instead."
+                ),
+            )
+            return
+
+        if speed > 80.0:
+            self.logger.warning(
+                "Speed not set / changed.",
+                exc_info=ValueError(
+                    "Was expecting a positive, non-zero float less than 80 "
+                    f"for input argument 'speed', got value {speed} instead."
+                ),
+            )
+            return
+
+        if not skip_setting:
+            self.send_command("speed", speed)
+            self.send_command("jog_speed", speed)
+
+            speed = self.send_command("speed")
+            self.motor["speed"] = speed
+
+        if isinstance(speed, u.Quantity):
+            speed = float(speed.value)
+
+        return speed
 
     def reset_currents(self):
         """
