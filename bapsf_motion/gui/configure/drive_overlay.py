@@ -130,18 +130,6 @@ class AxisConfigWidget(QWidget):
         _label.setFont(font)
         cm_per_rev_label = _label
 
-        _label = QLabel("online", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter)
-        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        font = _label.font()
-        font.setPointSize(12)
-        _label.setFont(font)
-        online_label = _label
-
-        sub_layout = QVBoxLayout()
-        sub_layout.addWidget(online_label, alignment=Qt.AlignmentFlag.AlignBottom)
-        sub_layout.addWidget(self.online_led, alignment=Qt.AlignmentFlag.AlignCenter)
-
         layout = QHBoxLayout()
         layout.addWidget(self.ax_name_widget)
         layout.addSpacing(12)
@@ -159,9 +147,9 @@ class AxisConfigWidget(QWidget):
         layout.addSpacing(8)
         layout.addWidget(VLinePlain(parent=self))
         layout.addStretch()
-        layout.addLayout(sub_layout)
         layout.addWidget(VLinePlain(parent=self))
         layout.addSpacing(8)
+        layout.addLayout(self._define_online_indicator_layout())
         return layout
 
     def _define_limit_mode_layout(self):
@@ -220,6 +208,29 @@ class AxisConfigWidget(QWidget):
         layout.addWidget(_energized_label, 0, 1, 1, 3)
         layout.addWidget(_deenergized_label, 2, 4, 1, 3)
         layout.addWidget(_none_label, 0, 7, 1, 3)
+
+        return layout
+
+    def _define_online_indicator_layout(self):
+
+        _label = QLabel("Online?", parent=self)
+        font = _label.font()
+        font.setPointSize(12)
+        _label.setFont(font)
+        online_label = _label
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch(1)
+        layout.addWidget(
+            online_label,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addWidget(
+            self.online_led,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addStretch(1)
 
         return layout
 
