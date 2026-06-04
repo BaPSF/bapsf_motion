@@ -137,8 +137,7 @@ class AxisConfigWidget(QWidget):
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
         layout.addSpacing(12)
-        layout.addWidget(ip_label)
-        layout.addWidget(self.ip_widget)
+        layout.addLayout(self._define_ip_input_layout())
         layout.addLayout(self._define_vdivider_layout())
         layout.addWidget(self.cm_per_rev_widget)
         layout.addWidget(cm_per_rev_label)
@@ -160,6 +159,26 @@ class AxisConfigWidget(QWidget):
         layout.addSpacing(8)
         layout.addWidget(divider)
         layout.addSpacing(8)
+        return layout
+
+    def _define_ip_input_layout(self):
+        _label = QLabel("IP:", parent=self)
+        font = _label.font()
+        font.setPointSize(16)
+        _label.setFont(font)
+        ip_label = _label
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            ip_label,
+            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addSpacing(4)
+        layout.addWidget(
+            self.ip_widget,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
         return layout
 
     def _define_limit_mode_layout(self):
