@@ -147,10 +147,14 @@ class AxisConfigWidget(QWidget):
         return layout
 
     def _define_vdivider_layout(self):
+        divider = VLinePlain(parent=self)
+        divider.set_color(60, 60, 60)
+        divider.setLineWidth(2)
+
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addSpacing(8)
-        layout.addWidget(VLinePlain(parent=self))
+        layout.addWidget(divider)
         layout.addSpacing(8)
         return layout
 
