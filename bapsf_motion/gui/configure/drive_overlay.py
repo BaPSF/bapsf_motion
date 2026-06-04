@@ -146,6 +146,14 @@ class AxisConfigWidget(QWidget):
         layout.addLayout(self._define_online_indicator_layout())
         return layout
 
+    def _define_vdivider_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addSpacing(8)
+        layout.addWidget(VLinePlain(parent=self))
+        layout.addSpacing(8)
+        return layout
+
     def _define_limit_mode_layout(self):
         layout = QGridLayout()
 
@@ -226,14 +234,6 @@ class AxisConfigWidget(QWidget):
         )
         layout.addStretch(1)
 
-        return layout
-
-    def _define_vdivider_layout(self):
-        layout = QHBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addSpacing(8)
-        layout.addWidget(VLinePlain(parent=self))
-        layout.addSpacing(8)
         return layout
 
     @property
