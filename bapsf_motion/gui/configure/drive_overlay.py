@@ -88,6 +88,18 @@ class AxisConfigWidget(QWidget):
         _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.cm_per_rev_widget = _widget
 
+        _widget = QLineEdit(parent=self)
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setFixedWidth(120)
+        _widget.setValidator(
+            QDoubleValidator(bottom=0.5, top=15.0, decimals=1)
+        )
+        _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.speed_input = _widget
+
+        # Define ADVANCED WIDGETS
         _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
         _widget.setMinimum(1)
         _widget.setMaximum(3)
@@ -99,7 +111,19 @@ class AxisConfigWidget(QWidget):
         _widget.setValue(1)
         self.limit_mode_slider = _widget
 
-        # Define ADVANCED WIDGETS
+        speed_validator = self.speed_input.validator()  # type: QDoubleValidator
+        min_tick = int(speed_validator.bottom() / 0.1)
+        max_tick = int(speed_validator.top() / 0.1)
+        _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
+        _widget.setMinimum(min_tick)
+        _widget.setMaximum(max_tick)
+        _widget.setTickInterval(10)
+        _widget.setSingleStep(1)
+        _widget.setTickPosition(QSlider.TickPosition.TicksBothSides)
+        _widget.setFixedHeight(24)
+        _widget.setMinimumWidth(100)
+        _widget.setValue(0)
+        self.speed_slider = _widget
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -127,6 +151,8 @@ class AxisConfigWidget(QWidget):
         layout.addLayout(self._define_cm_per_rev_layout())
         layout.addLayout(self._define_vdivider_layout())
         layout.addLayout(self._define_limit_mode_layout())
+        layout.addLayout(self._define_vdivider_layout())
+        layout.addWidget(self._define_speed_input_widget())
         layout.addLayout(self._define_vdivider_layout())
         layout.addStretch()
         layout.addLayout(self._define_vdivider_layout())
@@ -236,6 +262,76 @@ class AxisConfigWidget(QWidget):
         layout.addSpacing(8)
         layout.addLayout(slider_layout)
         return layout
+
+    def _define_speed_input_widget(self):
+        speed_validator = self.speed_input.validator()  # type: QDoubleValidator
+        min_speed = speed_validator.bottom()
+        max_speed = speed_validator.top()
+
+        min_speed_label = QLabel(f"{min_speed:.1f}", parent=self)
+        font = min_speed_label.font()
+        font.setPointSize(12)
+        min_speed_label.setFont(font)
+        min_speed_label.setStyleSheet("margin: 0px;")
+
+        max_speed_label = QLabel(f"{max_speed:.1f}", parent=self)
+        font = max_speed_label.font()
+        font.setPointSize(12)
+        max_speed_label.setFont(font)
+        max_speed_label.setStyleSheet("margin: 0px;")
+
+        speed_label = QLabel(f"SPEED", parent=self)
+        font = speed_label.font()
+        font.setPointSize(10)
+        speed_label.setFont(font)
+        speed_label.setStyleSheet("margin: 0px;")
+
+        unit_label = QLabel(f"rev / s", parent=self)
+        font = unit_label.font()
+        font.setPointSize(12)
+        unit_label.setFont(font)
+        unit_label.setStyleSheet("margin: 0px;")
+
+        slider_number_layout = QHBoxLayout()
+        slider_number_layout.setContentsMargins(0, 0, 0, 0)
+        slider_number_layout.addWidget(
+            min_speed_label, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        slider_number_layout.addStretch(1)
+        slider_number_layout.addWidget(
+            max_speed_label, alignment=Qt.AlignmentFlag.AlignRight
+        )
+
+        slider_layout = QHBoxLayout()
+        slider_layout.setContentsMargins(0, 0, 0, 0)
+        slider_layout.addSpacing(4)
+        slider_layout.addWidget(self.speed_slider)
+        slider_layout.addSpacing(4)
+
+        input_layout = QHBoxLayout()
+        input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addWidget(self.speed_input)
+        input_layout.addWidget(
+            unit_label,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            speed_label,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addSpacing(-20)
+        layout.addLayout(slider_number_layout)
+        layout.addLayout(slider_layout)
+        layout.addLayout(input_layout)
+
+        widget = QWidget(parent=self)
+        widget.setLayout(layout)
+        widget.setStyleSheet("margin: 0px;")
+        widget.setMinimumWidth(150)
+        return widget
 
     def _define_online_indicator_layout(self):
 
