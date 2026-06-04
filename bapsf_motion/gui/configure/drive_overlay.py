@@ -135,20 +135,14 @@ class AxisConfigWidget(QWidget):
         layout.addSpacing(12)
         layout.addWidget(ip_label)
         layout.addWidget(self.ip_widget)
-        layout.addSpacing(8)
-        layout.addWidget(VLinePlain(parent=self))
-        layout.addSpacing(8)
+        layout.addLayout(self._define_vdivider_layout())
         layout.addWidget(self.cm_per_rev_widget)
         layout.addWidget(cm_per_rev_label)
-        layout.addSpacing(8)
-        layout.addWidget(VLinePlain(parent=self))
-        layout.addSpacing(8)
+        layout.addLayout(self._define_vdivider_layout())
         layout.addLayout(self._define_limit_mode_layout())
-        layout.addSpacing(8)
-        layout.addWidget(VLinePlain(parent=self))
+        layout.addLayout(self._define_vdivider_layout())
         layout.addStretch()
-        layout.addWidget(VLinePlain(parent=self))
-        layout.addSpacing(8)
+        layout.addLayout(self._define_vdivider_layout())
         layout.addLayout(self._define_online_indicator_layout())
         return layout
 
@@ -232,6 +226,14 @@ class AxisConfigWidget(QWidget):
         )
         layout.addStretch(1)
 
+        return layout
+
+    def _define_vdivider_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addSpacing(8)
+        layout.addWidget(VLinePlain(parent=self))
+        layout.addSpacing(8)
         return layout
 
     @property
