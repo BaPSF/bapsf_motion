@@ -189,10 +189,8 @@ class AxisConfigWidget(QWidget):
         return layout
 
     def _define_limit_mode_layout(self):
-        layout = QGridLayout()
-
         _label = QLabel("Limit\nMode", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
+        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
         font.setPointSize(16)
@@ -202,10 +200,6 @@ class AxisConfigWidget(QWidget):
         _energized_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
-        # _energized_label.setMinimumWidth(24)
-        # _energized_label.setSizePolicy(
-        #     QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
-        # )
         font = _energized_label.font()
         font.setPointSize(12)
         _energized_label.setFont(font)
@@ -214,10 +208,6 @@ class AxisConfigWidget(QWidget):
         _deenergized_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
-        # _deenergized_label.setMinimumWidth(24)
-        # _deenergized_label.setSizePolicy(
-        #     QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
-        # )
         font = _deenergized_label.font()
         font.setPointSize(12)
         _deenergized_label.setFont(font)
@@ -226,25 +216,25 @@ class AxisConfigWidget(QWidget):
         _none_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
-        # _none_label.setMinimumWidth(24)
-        # _none_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _none_label.font()
         font.setPointSize(12)
         _none_label.setFont(font)
 
+        slider_layout = QGridLayout()
+        slider_layout.setContentsMargins(0, 0, 0, 0)
+        slider_layout.addWidget(self.limit_mode_slider, 1, 2, 1, 7)
+        slider_layout.addWidget(_energized_label, 0, 1, 1, 3)
+        slider_layout.addWidget(_deenergized_label, 2, 4, 1, 3)
+        slider_layout.addWidget(_none_label, 0, 7, 1, 3)
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(
             _label,
-            0,
-            0,
-            3,
-            1,
-            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
         )
-        layout.addWidget(self.limit_mode_slider, 1, 2, 1, 7)
-        layout.addWidget(_energized_label, 0, 1, 1, 3)
-        layout.addWidget(_deenergized_label, 2, 4, 1, 3)
-        layout.addWidget(_none_label, 0, 7, 1, 3)
-
+        layout.addSpacing(8)
+        layout.addLayout(slider_layout)
         return layout
 
     def _define_online_indicator_layout(self):
