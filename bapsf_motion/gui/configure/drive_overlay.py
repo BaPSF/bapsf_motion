@@ -494,8 +494,6 @@ class AxisConfigWidget(QWidget):
             # speed did not change
             return
 
-        self.logger.info(f"--> Speed change by slider input: {speed} rev/s")
-
         self._set_motor_speed(speed)
 
     @Slot()
@@ -509,8 +507,6 @@ class AxisConfigWidget(QWidget):
         if old_speed is not None and old_speed == speed:
             # speed did not change
             return
-
-        self.logger.info(f"--> Speed change by field input: {speed} rev/s")
 
         self._set_motor_speed(speed)
 
