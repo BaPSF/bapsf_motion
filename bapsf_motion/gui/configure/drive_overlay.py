@@ -5,6 +5,7 @@ configuration overlay portion of the configuration GUI.
 
 __all__ = ["AxisConfigWidget", "DriveConfigOverlay"]
 
+import ast
 import asyncio
 import logging
 import warnings
@@ -48,7 +49,11 @@ class AxisConfigWidget(QWidget):
             "units": "cm",
             "ip": "",
             "units_per_rev": "",
-            "motor_settings": {"limit_mode": 1},
+            "motor_settings": {
+                "current": 0.8,
+                "limit_mode": 1,
+                "speed": 4.0,
+            },
         }
         self._axis = None
 
@@ -132,11 +137,14 @@ class AxisConfigWidget(QWidget):
         self.ip_widget.editingFinished.connect(self._change_ip_address)
         self.cm_per_rev_widget.editingFinished.connect(self._change_cm_per_rev)
         self.limit_mode_slider.valueChanged.connect(self._change_limit_mode)
+        self.speed_input.editingFinished.connect(self._change_speed_from_field)
+        self.speed_slider.valueChanged.connect(self._change_speed_from_slider)
 
         self.configChanged.connect(self._update_ip_widget)
         self.configChanged.connect(self._update_cm_per_rev_widget)
         self.configChanged.connect(self._update_online_led)
         self.configChanged.connect(self._update_limit_mode_widget)
+        self.configChanged.connect(self._update_speed_widgets)
 
     def _define_layout(self):
         layout = QHBoxLayout()
@@ -474,6 +482,51 @@ class AxisConfigWidget(QWidget):
 
         self.axis_config = axis_config
 
+    @Slot()
+    def _change_speed_from_slider(self):
+        speed = 0.1 * self.speed_slider.value()
+        speed = self._validate_speed(speed)
+
+        self.logger.info(f"--> Speed change by slider input: {speed} rev/s")
+
+        axis_config = self.axis_config.copy()
+        axis_config["motor_settings"]["speed"] = speed
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        self.axis_config = axis_config
+
+    @Slot()
+    def _change_speed_from_field(self):
+        speed = ast.literal_eval(self.speed_input.text())
+        speed = self._validate_speed(speed)
+
+        self.logger.info(f"--> Speed change by field input: {speed} rev/s")
+
+        axis_config = self.axis_config.copy()
+        axis_config["motor_settings"]["speed"] = speed
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        self.axis_config = axis_config
+
+    def _validate_speed(self, speed: float) -> float:
+        speed_validator = self.speed_input.validator()  # type: QDoubleValidator
+        min_speed = speed_validator.bottom()
+        max_speed = speed_validator.top()
+
+        speed = round(speed, 1)
+        if speed < min_speed:
+            speed = min_speed
+        elif speed > max_speed:
+            speed = max_speed
+
+        return speed
+
     def _spawn_axis(self) -> Union[Axis, None]:
         self.logger.info("Spawning Axis.")
         if isinstance(self.axis, Axis):
@@ -519,6 +572,22 @@ class AxisConfigWidget(QWidget):
     def _update_limit_mode_widget(self):
         limit_mode = self.axis_config["motor_settings"]["limit_mode"]
         self.limit_mode_slider.setValue(limit_mode)
+
+    @Slot()
+    def _update_speed_widgets(self):
+        speed = self.axis_config["motor_settings"].get("speed", 4.0)
+        slider_value = int(speed / 0.1)
+
+        self.logger.info(f"--> Updating speed widgets {speed} {slider_value}")
+
+        self.speed_input.blockSignals(True)
+        self.speed_slider.blockSignals(True)
+
+        self.speed_input.setText(f"{speed:.1f}")
+        self.speed_slider.setValue(slider_value)
+
+        self.speed_input.blockSignals(False)
+        self.speed_slider.blockSignals(False)
 
     def _validate_ip(self, ip):
         if ip == self.axis_config["ip"]:
