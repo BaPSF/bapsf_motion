@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
 )
 from typing import Any, Callable, Dict, List, Union
 
-from bapsf_motion.actors import Axis, Drive, MotionGroup
+from bapsf_motion.actors import Axis, Drive, MotionGroup, Motor
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
@@ -484,35 +484,35 @@ class AxisConfigWidget(QWidget):
 
     @Slot()
     def _change_speed_from_slider(self):
+        axis_config = self.axis_config.copy()
+        old_speed = axis_config["motor_settings"].get("speed", None)
+
         speed = 0.1 * self.speed_slider.value()
         speed = self._validate_speed(speed)
 
+        if old_speed is not None and old_speed == speed:
+            # speed did not change
+            return
+
         self.logger.info(f"--> Speed change by slider input: {speed} rev/s")
 
-        axis_config = self.axis_config.copy()
-        axis_config["motor_settings"]["speed"] = speed
-
-        if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
-            self.axis = None
-
-        self.axis_config = axis_config
+        self._set_motor_speed(speed)
 
     @Slot()
     def _change_speed_from_field(self):
+        axis_config = self.axis_config.copy()
+        old_speed = axis_config["motor_settings"].get("speed", None)
+
         speed = ast.literal_eval(self.speed_input.text())
         speed = self._validate_speed(speed)
 
+        if old_speed is not None and old_speed == speed:
+            # speed did not change
+            return
+
         self.logger.info(f"--> Speed change by field input: {speed} rev/s")
 
-        axis_config = self.axis_config.copy()
-        axis_config["motor_settings"]["speed"] = speed
-
-        if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
-            self.axis = None
-
-        self.axis_config = axis_config
+        self._set_motor_speed(speed)
 
     def _validate_speed(self, speed: float) -> float:
         speed_validator = self.speed_input.validator()  # type: QDoubleValidator
@@ -607,6 +607,32 @@ class AxisConfigWidget(QWidget):
 
     def set_ip_handler(self, handler: callable):
         self._ip_handlers.append(handler)
+
+    def _set_motor_speed(self, speed: float | int):
+
+        axis_config = self.axis_config.copy()
+
+        if isinstance(self.axis, Axis) and isinstance(self.axis.motor, Motor):
+            self.axis.motor.send_command("speed", speed)
+            self.axis.motor.send_command("jog_speed", speed)
+            self.axis.motor._get_motor_parameters()
+
+            motor_speed = float(self.axis.motor.motor["speed"].value)
+            if motor_speed == speed:
+                self.configChanged.emit()
+                return
+            else:
+                axis_config = self.axis_config.copy()
+
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        axis_config["motor_settings"]["speed"] = speed
+        self.axis_config = axis_config
 
     def closeEvent(self, event):
         self.logger.info("Closing AxisConfigWidget")
