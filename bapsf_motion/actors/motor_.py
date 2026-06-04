@@ -637,7 +637,8 @@ class Motor(EventActor):
         *,
         ip: str,
         limit_mode: int = None,
-        current: float = 0.8,
+        current: float | int = 0.8,
+        speed: float | int = 4.0,
         name: str = None,
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
@@ -651,8 +652,13 @@ class Motor(EventActor):
         self._motor = self._motor_defaults.copy()
         self._status = self._status_defaults.copy()
         self._limit_mode = limit_mode
-        if isinstance(current, float) and 0.0 < current <= 1.0:
+        if isinstance(current, (float, int)) and 0.0 < current <= 1.0:
             self._motor["DEFAULTS"]["current"] = current
+
+        if isinstance(speed, (float, int)) and 0.0 < speed <= 15.0:
+            self._motor["speed"] = float(speed)
+        else:
+            self._motor["speed"] = self._motor["DEFAULTS"]["speed"]
 
         # SimplgeSignal's to tell handlers about specific motor status
         # changes
@@ -789,7 +795,7 @@ class Motor(EventActor):
             "gearing": None,  # steps/rev
             "encoder_resolution": None,  # counts/rev
             "DEFAULTS": {
-                "speed": 12.5,
+                "speed": 4.0,
                 "accel": 25,
                 "decel": 25,
                 "idle_current": 0.3,  # 30% of current
@@ -885,8 +891,12 @@ class Motor(EventActor):
         self._send_raw_command("IFD")
 
         # set a slower speed
-        self.send_command("speed", 4.0)
-        self.send_command("jog_speed", 4.0)
+        speed = self.motor["speed"]
+        if isinstance(speed, u.Quantity):
+            speed = float(speed.value)
+
+        self.send_command("speed", speed)
+        self.send_command("jog_speed", speed)
 
         # set currents
         self.send_command("set_current", self.motor["DEFAULTS"]["current"])
@@ -990,11 +1000,17 @@ class Motor(EventActor):
 
     @property
     def config(self) -> Dict[str, Any]:
+        speed = self.motor["speed"]
+        if isinstance(speed, u.Quantity):
+            speed = speed.value
+        speed = float(speed)
+
         return {
             "name": self.name,
             "ip": self.ip,
             "limit_mode": self.motor["define_limits"],
             "current": self.motor["DEFAULTS"]["current"],
+            "speed": speed,
         }
 
     config.__doc__ = EventActor.config.__doc__
