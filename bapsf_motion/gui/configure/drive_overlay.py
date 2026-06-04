@@ -85,6 +85,7 @@ class AxisConfigWidget(QWidget):
         _widget.setFont(font)
         _widget.setFixedWidth(120)
         _widget.setValidator(QDoubleValidator(decimals=4))
+        _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.cm_per_rev_widget = _widget
 
         _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
@@ -114,22 +115,6 @@ class AxisConfigWidget(QWidget):
         self.configChanged.connect(self._update_limit_mode_widget)
 
     def _define_layout(self):
-        _label = QLabel("IP:  ", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        font = _label.font()
-        font.setPointSize(16)
-        _label.setFont(font)
-        ip_label = _label
-
-        _label = QLabel("cm / rev", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        font = _label.font()
-        font.setPointSize(16)
-        _label.setFont(font)
-        cm_per_rev_label = _label
-
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(
@@ -139,8 +124,7 @@ class AxisConfigWidget(QWidget):
         layout.addSpacing(12)
         layout.addLayout(self._define_ip_input_layout())
         layout.addLayout(self._define_vdivider_layout())
-        layout.addWidget(self.cm_per_rev_widget)
-        layout.addWidget(cm_per_rev_label)
+        layout.addLayout(self._define_cm_per_rev_layout())
         layout.addLayout(self._define_vdivider_layout())
         layout.addLayout(self._define_limit_mode_layout())
         layout.addLayout(self._define_vdivider_layout())
@@ -179,6 +163,29 @@ class AxisConfigWidget(QWidget):
             self.ip_widget,
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
+        return layout
+
+    def _define_cm_per_rev_layout(self):
+        _label = QLabel("cm / rev", parent=self)
+        font = _label.font()
+        font.setPointSize(12)
+        _label.setFont(font)
+        _label.setContentsMargins(0, 0, 0, 0)
+        cm_per_rev_label = _label
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch(1)
+        layout.addWidget(
+            self.cm_per_rev_widget,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addSpacing(-8)
+        layout.addWidget(
+            cm_per_rev_label,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addStretch(1)
         return layout
 
     def _define_limit_mode_layout(self):
@@ -735,6 +742,7 @@ class DriveConfigOverlay(_ConfigOverlay):
                 border: 2px solid rgb(60, 60, 60);
                 border-radius: 5px;
                 padding: 6px;
+                margine: 0px;
             }
             """)
 
