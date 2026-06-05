@@ -708,6 +708,8 @@ class Motor(EventActor):
 
         # condition speed
         speed = self.motor["speed"]
+        if isinstance(speed, u.Quantity):
+            speed = float(speed.value)
         speed = self.set_speeds(speed, skip_setting=True)
         if speed is None:
             speed = self.motor["DEFAULTS"]["speed"]
