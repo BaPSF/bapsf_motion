@@ -1,8 +1,28 @@
-__all__ = ["WarningMessageBox"]
+from __future__ import annotations
+
+__all__ = ["AxisPositionWarningDialog", "WarningMessageBox"]
+
+import logging
 
 from pathlib import Path
-from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QMessageBox, QWidget
+from PySide6.QtCore import Signal, Slot, Qt
+from PySide6.QtGui import QIcon, QCloseEvent
+from PySide6.QtWidgets import (
+    QDialog,
+    QMessageBox,
+    QWidget,
+    QCheckBox,
+    QVBoxLayout,
+    QHBoxLayout,
+)
+from typing import TYPE_CHECKING
+
+from bapsf_motion.actors import Axis, Motor
+from bapsf_motion.gui.configure.helpers import gui_logger
+from bapsf_motion.gui.widgets import DoneButton
+
+if TYPE_CHECKING:
+    from bapsf_motion.gui.configure.motion_group_widget import AxisControlWidget
 
 _HERE = Path(__file__).parent
 _IMAGE_ROOT_PATH = (_HERE / ".." / "_images").resolve()
@@ -129,3 +149,105 @@ class WarningMessageBox(_BaseWarningMessageBox):
 
         return self._approve_exec()
 
+
+class AxisPositionWarningDialog(_BaseWarningDialog):
+
+    def __init__(self, axis_control_widget: AxisControlWidget, parent: QWidget | None = None):
+        super().__init__(parent)
+
+        self._acw = axis_control_widget
+        self._display_dialog = True
+        self._logger = logging.getLogger(f"{gui_logger.name}.APWD")
+
+        self.setModal(True)
+
+        _btn = DoneButton("FINISHED", parent=self)
+        _btn.setFixedHeight(24)
+        font = _btn.font()
+        font.setPointSize(14)
+        _btn.setFont(font)
+        _btn.shrink_width()
+        self.finished_btn = _btn
+
+        _cb = QCheckBox(
+            "Suppress future warnings for this axis.",
+            parent=self,
+        )
+        font = _cb.font()
+        font.setPointSize(14)
+        _cb.setFont(font)
+        self.suppression_checkbox = _cb
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self) -> None:
+        self.suppression_checkbox.checkStateChanged.connect(self._update_display_dialog)
+        self.finished_btn.clicked.connect(self._handle_finished_btn_clicked)
+
+    def _define_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.suppression_checkbox)
+        layout.addSpacing(12)
+        layout.addWidget(self.finished_btn)
+        return layout
+
+    @property
+    def acw(self) -> AxisControlWidget:
+        return self._acw
+
+    @property
+    def axis(self) -> Axis:
+        return self.acw.axis
+
+    @property
+    def display_dialog(self) -> bool:
+        return self._display_dialog
+
+    @display_dialog.setter
+    def display_dialog(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            return
+
+        self._display_dialog = value
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @Slot()
+    def _handle_finished_btn_clicked(self) -> None:
+        self.blockSignals(True)
+        self.display_dialog = False
+        self.suppression_checkbox.setChecked(True)
+        self.blockSignals(False)
+
+        self.close()
+
+    @Slot(Qt.CheckState)
+    def _update_display_dialog(self, state: Qt.CheckState) -> None:
+        self.display_dialog = not (state is Qt.CheckState.Checked)
+
+    def exec(self, /):
+        if not self.display_dialog:
+            return
+
+        if not isinstance(self.axis, Axis):
+            # this dialog is only meaningful is we have an operating Axis actor
+            return
+
+        super().exec()
+
+    def open(self, /):
+        if not self.display_dialog:
+            return
+
+        if not isinstance(self.axis, Axis):
+            # this dialog is only meaningful is we have an operating Axis actor
+            return
+
+        super().open()
+
+    def closeEvent(self, event: QCloseEvent, /):
+        super().closeEvent(event)
