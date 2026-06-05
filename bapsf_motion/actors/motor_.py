@@ -670,13 +670,6 @@ class Motor(EventActor):
         if isinstance(current, (float, int)) and 0.0 < current <= 1.0:
             self._motor["DEFAULTS"]["current"] = current
 
-        # condition speed
-        speed = self.set_speeds(speed, skip_setting=True)
-        if speed is None:
-            self._motor["speed"] = self._motor["DEFAULTS"]["speed"]
-        else:
-            self._motor["speed"] = speed
-
         # SimplgeSignal's to tell handlers about specific motor status
         # changes
         self._signals = MotorSignals()
