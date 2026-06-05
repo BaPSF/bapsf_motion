@@ -662,13 +662,9 @@ class Motor(EventActor):
         self._motor = self._motor_defaults.copy()
         self._status = self._status_defaults.copy()
 
-        # condition limit_mode
-        limit_mode = self.set_limit_mode(limit_mode, skip_setting=True)
-        if limit_mode is None:
-            self._limit_mode = self.motor["define_limits"]
-        else:
-            self._limit_mode = limit_mode
-            self.motor["define_limits"] = limit_mode
+        # initialize attriubtes that will be conditioned in _configure_before_run()
+        self._motor["define_limits"] = limit_mode
+        self._motor["speed"] = speed
 
         # condition current
         if isinstance(current, (float, int)) and 0.0 < current <= 1.0:
@@ -709,6 +705,21 @@ class Motor(EventActor):
     def _configure_before_run(self):
         # actions to be done during object instantiation, but before
         # the asyncio event loop starts running.
+        #
+        # condition limit_mode
+        limit_mode = self.motor["define_limits"]
+        limit_mode = self.set_limit_mode(limit_mode, skip_setting=True)
+        if limit_mode is None:
+            limit_mode = self.motor["DEFAULTS"]["define_limits"]
+        self._motor["define_limits"] = limit_mode
+
+        # condition speed
+        speed = self.motor["speed"]
+        speed = self.set_speeds(speed, skip_setting=True)
+        if speed is None:
+            speed = self.motor["DEFAULTS"]["speed"]
+        self._motor["speed"] = speed
+
         try:
             self.connect()
         except ConnectionError:
@@ -798,12 +809,13 @@ class Motor(EventActor):
                 "current": 0.8,  # 80% of max_current (4.0 amps)
                 "max_idle_current": 0.9,  # 90% of current
                 "max_current": 5.0,  # 5 amps
+                "define_limits": 1,  # 1 = energized, 2 = de-energized, 3 = None
             },
             "speed": None,
             "accel": None,
             "decel": None,
             "protocol_settings": None,
-            "define_limits": 1,  # 1 = energized, 2 = de-energized, 3 = None
+            "define_limits": None,
         }
 
     @property
@@ -2176,8 +2188,7 @@ class Motor(EventActor):
 
         if not skip_setting:
             self.send_command("define_limits", limit_mode)
-            self._limit_mode = limit_mode
-            self.motor["define_limits"] = self._limit_mode
+            self.motor["define_limits"] = limit_mode
 
         return limit_mode
 
