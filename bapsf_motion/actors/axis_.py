@@ -200,6 +200,15 @@ class Axis(EventActor):
         return self.motor.is_moving
 
     @property
+    def encoder(self):
+        """
+        Current axis encoder position in units defined by the
+        :attr:`units` attribute.
+        """
+        pos = self.motor.encoder
+        return pos.to(self.units, equivalencies=self.equivalencies)
+
+    @property
     def position(self):
         """
         Current axis position in units defined by the :attr:`units`
@@ -207,11 +216,6 @@ class Axis(EventActor):
         """
         pos = self.motor.position
         return pos.to(self.units, equivalencies=self.equivalencies)
-
-    @property
-    def steps_per_rev(self):
-        """Number of motor steps for a full revolution."""
-        return self.motor.steps_per_rev
 
     @property
     def units(self) -> u.Unit:
@@ -259,7 +263,8 @@ class Axis(EventActor):
         List of unit equivalencies to convert back-and-forth between
         the axis physical units and the motor units.
         """
-        steps_per_rev = self.steps_per_rev.value
+        steps_per_rev = self.motor.steps_per_rev.value
+        counts_per_rev = self.motor.counts_per_rev.value
         units_per_rev = self.units_per_rev.value
 
         equivs = [
@@ -280,6 +285,12 @@ class Axis(EventActor):
                 self.units,
                 lambda x: x * units_per_rev / steps_per_rev,
                 lambda x: int(x * steps_per_rev / units_per_rev),
+            ),
+            (
+                u.counts,
+                self.units,
+                lambda x: x * units_per_rev / counts_per_rev,
+                lambda x: int(x * counts_per_rev / units_per_rev),
             ),
         ]
         for equiv in equivs.copy():
@@ -302,6 +313,9 @@ class Axis(EventActor):
             (u.steps, self.units),
             (u.steps / u.s, self.units / u.s),
             (u.steps / u.s / u.s, self.units / u.s / u.s),
+            (u.counts, self.units),
+            (u.counts / u.s, self.units / u.s),
+            (u.counts / u.s / u.s, self.units / u.s / u.s),
             (u.rev / u.s, self.units / u.s),
             (u.rev / u.s / u.s, self.units / u.s / u.s),
         ]
