@@ -1,6 +1,7 @@
 # these are dependencies required to use the package
 # ought to mirror 'install_requires' under 'options' in setup.cfg
 -r install.txt
+bapsf_qt
 matplotlib
 packaging
 pygame-ce >= 2.2
