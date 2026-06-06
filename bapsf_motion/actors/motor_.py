@@ -378,11 +378,16 @@ class Motor(EventActor):
         ),
         "disable": CommandEntry("disable", send="MD"),
         "enable": CommandEntry("enable", send="ME"),
+        "encoder_correct_position": CommandEntry(
+            "encoder_correct_position",
+            send="",
+            method_command=True,
+        ),
         "encoder_position": CommandEntry(
             "encoder_position",
             send="EP",
             send_processor=lambda value: f"{int(value)}",
-            recv=re.compile(r"EP=(?P<return>[0-9]+)"),
+            recv=re.compile(r"EP=(?P<return>-?[0-9]+)"),
             recv_processor=int,
             two_way=True,
             units=u.counts,
@@ -401,6 +406,14 @@ class Motor(EventActor):
             recv=re.compile(r"EG=(?P<return>[0-9]+)"),
             recv_processor=int,
             units=u.steps / u.rev,
+        ),
+        "get_encoder": CommandEntry(
+            "immediate_encoder_position",
+            send="IE",
+            recv=re.compile(r"IE=(?P<return>-?[0-9]+)"),
+            recv_processor=int,
+            units=u.counts,
+            buffered=False,
         ),
         "get_position": CommandEntry(
             "immediate_position",
@@ -510,7 +523,7 @@ class Motor(EventActor):
             "set_position_SP",
             send="SP",
             send_processor=lambda value: f"{int(value)}",
-            recv=re.compile(r"SP=(?P<return>[0-9]+)"),
+            recv=re.compile(r"SP=(?P<return>-?[0-9]+)"),
             recv_processor=int,
             two_way=True,
             units=u.steps,
@@ -534,7 +547,7 @@ class Motor(EventActor):
             "target_distance",
             send="DI",
             send_processor=lambda value: f"{int(value)}",
-            recv=re.compile(r"DI=(?P<return>[0-9]+)"),
+            recv=re.compile(r"DI=(?P<return>-?[0-9]+)"),
             recv_processor=int,
             two_way=True,
             units=u.steps,
@@ -815,6 +828,7 @@ class Motor(EventActor):
         return {
             "connected": False,
             "position": None,
+            "encoder": None,
             "alarm": None,
             "enabled": None,
             "fault": None,
@@ -1000,6 +1014,11 @@ class Motor(EventActor):
         return self._setup["local_address"]
 
     @property
+    def counts_per_rev(self) -> u.counts / u.rev:
+        """The number of encoder counts per motor revolution."""
+        return self._motor["encoder_resolution"]
+
+    @property
     def steps_per_rev(self) -> u.steps / u.rev:
         """The number of steps the motor does per revolution."""
         return self._motor["gearing"]
@@ -1030,6 +1049,27 @@ class Motor(EventActor):
         if is_moving is None:
             return False
         return is_moving
+
+    @property
+    def encoder(self) -> u.steps:
+        """
+        Current encoder positional reading for the motor, in encoder units
+        `~bapsf_motion.utils.counts`.
+        """
+        heartbeat_task = self.heartbeat_task
+        if (
+            self.loop.is_running()
+            and isinstance(heartbeat_task, asyncio.Task)
+            and not heartbeat_task.done()
+            and not heartbeat_task.cancelled()
+        ):
+            # read from status if the heartbeat is operational
+            return self.status["encoder"]
+
+        pos = self.send_command("get_encoder")
+        if not isinstance(pos, self.ack_flags):
+            self._update_status(encoder=pos)
+            return pos
 
     @property
     def position(self) -> u.steps:
@@ -1631,9 +1671,17 @@ class Motor(EventActor):
             elif letter in ("T", "W"):
                 _status["waiting"] = True
 
+        # get motor position
         pos = send_command("get_position")
         if not isinstance(pos, self.ack_flags):
             _status["position"] = pos
+        elif pos == self.ack_flags.LOST_CONNECTION:
+            return
+
+        # get motor encoder reading (position)
+        pos = send_command("get_encoder")
+        if not isinstance(pos, self.ack_flags):
+            _status["encoder"] = pos
         elif pos == self.ack_flags.LOST_CONNECTION:
             return
 
@@ -2106,9 +2154,12 @@ class Motor(EventActor):
 
     def set_position(self, pos):
         """
-        Set current motor's absolute position to a value specified by
-        ``pos``.
+        Set current motor's absolute and encoder position.  ``pos`` is
+        the desired absolute position, and the encoder position will
+        be calculated from ``pos``.
 
+        Parameters
+        __________
         pos: `int`
             An integer in the range of +/- 2,147,483,647 to set the
             motor's absolute position.
@@ -2150,7 +2201,12 @@ class Motor(EventActor):
         self.set_current(1)
         self.set_idle_current(self._motor["DEFAULTS"]["max_idle_current"])
 
-        self.send_command("encoder_position", pos)
+        # set encoder position
+        conversion = (self.counts_per_rev / self.steps_per_rev).value
+        epos = int(pos * conversion)
+        self.send_command("encoder_position", epos)
+
+        # set absolute position
         self.send_command("set_position_SP", pos)
 
         self.send_command("current", curr)
@@ -2163,3 +2219,20 @@ class Motor(EventActor):
     def zero(self):
         """Define current motor position as zero."""
         self.set_position(0)
+
+    def encoder_correct_position(self):
+        """
+        Set the motor absolute position 'SP' to be consistent with the
+        current encoder reading.
+        """
+        epos = self.encoder.value
+        conversion = (self.counts_per_rev / self.steps_per_rev).value
+        pos = int(epos / conversion)
+
+        self.logger.info(
+            f"Correcting absolute position from '{self.position}' to "
+            f"'{pos} steps' using the encoder as reference.  Difference in "
+            f"setting is '{self.position.value - pos} steps'."
+        )
+
+        self.set_position(pos)
