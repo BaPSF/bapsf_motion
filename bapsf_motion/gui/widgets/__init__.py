@@ -4,7 +4,7 @@ This module contains helper widgets for constructing the main GUIs in
 """
 
 __all__ = [
-    "BannerButton",
+    "AutoScaleButton",
     "BatteryStatusIcon",
     "DiscardButton",
     "DoneButton",
@@ -28,7 +28,7 @@ __all__ = [
 ]
 
 from bapsf_motion.gui.widgets.buttons import (
-    BannerButton,
+    AutoScaleButton,
     DiscardButton,
     DoneButton,
     EnableIndicator,
