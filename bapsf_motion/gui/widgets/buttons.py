@@ -24,8 +24,8 @@ from bapsf_qt.buttons import (
     GearValidButton,
     IconButton,
     LED,
-    StyleButton,
     StopButton,
+    StyleButton,
     ValidButton,
     ZeroButton,
 )
