@@ -380,12 +380,14 @@ class AxisConfigWidget(QWidget):
 
         input_layout = QHBoxLayout()
         input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addStretch(1)
         input_layout.addWidget(self.speed_input)
         input_layout.addSpacing(4)
         input_layout.addWidget(
             unit_label,
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
+        input_layout.addStretch(1)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -429,7 +431,7 @@ class AxisConfigWidget(QWidget):
 
         unit_label = QLabel(f"I / MAX", parent=self)
         font = unit_label.font()
-        font.setPointSize(10)
+        font.setPointSize(12)
         unit_label.setFont(font)
         unit_label.setStyleSheet("margin: 0px;")
 
@@ -451,12 +453,14 @@ class AxisConfigWidget(QWidget):
 
         input_layout = QHBoxLayout()
         input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addStretch(1)
         input_layout.addWidget(self.current_input)
         input_layout.addSpacing(4)
         input_layout.addWidget(
             unit_label,
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
+        input_layout.addStretch(1)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
