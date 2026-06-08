@@ -347,6 +347,7 @@ class AxisConfigWidget(QWidget):
         input_layout = QHBoxLayout()
         input_layout.setContentsMargins(0, 0, 0, 0)
         input_layout.addWidget(self.speed_input)
+        input_layout.addSpacing(4)
         input_layout.addWidget(
             unit_label,
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
