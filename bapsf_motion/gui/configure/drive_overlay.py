@@ -109,6 +109,15 @@ class AxisConfigWidget(QWidget):
         _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speed_input = _widget
 
+        _widget = QLineEdit(parent=self)
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setFixedWidth(100)
+        _widget.setValidator(QDoublePinnedValidator(bottom=0.5, top=1.0, decimals=2))
+        _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.current_input = _widget
+
         # Define ADVANCED WIDGETS
         _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
         _widget.setMinimum(1)
@@ -134,6 +143,20 @@ class AxisConfigWidget(QWidget):
         _widget.setMinimumWidth(100)
         _widget.setValue(0)
         self.speed_slider = _widget
+
+        current_validator = self.current_input.validator()  # type: QDoubleValidator
+        min_tick = int(current_validator.bottom() / 0.05)
+        max_tick = int(current_validator.top() / 0.05)
+        _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
+        _widget.setMinimum(min_tick)
+        _widget.setMaximum(max_tick)
+        _widget.setTickInterval(2)
+        _widget.setSingleStep(1)
+        _widget.setTickPosition(QSlider.TickPosition.TicksBothSides)
+        _widget.setFixedHeight(24)
+        _widget.setMinimumWidth(100)
+        _widget.setValue(0)
+        self.current_slider = _widget
 
         self.setLayout(self._define_layout())
         self._connect_signals()
