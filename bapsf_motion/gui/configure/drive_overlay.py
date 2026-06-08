@@ -260,52 +260,77 @@ class AxisConfigWidget(QWidget):
         return layout
 
     def _define_limit_mode_layout(self):
-        _label = QLabel("Limit\nMode", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter)
-        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        _label = QLabel("LIMIT MODE", parent=self)
+        _label.setObjectName("limit_mode_label")
         font = _label.font()
-        font.setPointSize(16)
+        font.setPointSize(10)
         _label.setFont(font)
+        _label.setMargin(0)
+        limit_mode_label = _label
 
-        _energized_label = QLabel("energized", parent=self)
-        _energized_label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-        )
-        font = _energized_label.font()
+        _label = QLabel("energized", parent=self)
+        _label.setObjectName("energized_lm")
+        font = _label.font()
         font.setPointSize(12)
-        _energized_label.setFont(font)
+        _label.setFont(font)
+        _label.setMargin(0)
+        _energized_label = _label
 
-        _deenergized_label = QLabel("de-energized", parent=self)
-        _deenergized_label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-        )
-        font = _deenergized_label.font()
+        _label = QLabel("de-energized", parent=self)
+        _label.setObjectName("de-energized_lm")
+        font = _label.font()
         font.setPointSize(12)
-        _deenergized_label.setFont(font)
+        _label.setFont(font)
+        _label.setMargin(0)
+        _deenergized_label = _label
 
-        _none_label = QLabel("NONE", parent=self)
-        _none_label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-        )
-        font = _none_label.font()
+        _label = QLabel("NONE", parent=self)
+        _label.setObjectName("none_lm")
+        font = _label.font()
         font.setPointSize(12)
-        _none_label.setFont(font)
+        _label.setFont(font)
+        _label.setMargin(0)
+        _none_label = _label
 
-        slider_layout = QGridLayout()
+        top_slider_label_layout = QHBoxLayout()
+        top_slider_label_layout.setContentsMargins(0, 0, 0, 0)
+        top_slider_label_layout.addWidget(
+            _energized_label,
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
+        top_slider_label_layout.addStretch(1)
+        top_slider_label_layout.addWidget(
+            _none_label,
+            alignment=Qt.AlignmentFlag.AlignRight,
+        )
+
+        slider_layout = QHBoxLayout()
         slider_layout.setContentsMargins(0, 0, 0, 0)
-        slider_layout.addWidget(self.limit_mode_slider, 1, 2, 1, 7)
-        slider_layout.addWidget(_energized_label, 0, 1, 1, 3)
-        slider_layout.addWidget(_deenergized_label, 2, 4, 1, 3)
-        slider_layout.addWidget(_none_label, 0, 7, 1, 3)
+        slider_layout.addSpacing(18)
+        slider_layout.addWidget(self.limit_mode_slider)
+        slider_layout.addSpacing(18)
 
-        layout = QHBoxLayout()
+        bot_slider_label_layout = QHBoxLayout()
+        bot_slider_label_layout.setContentsMargins(0, 0, 0, 0)
+        bot_slider_label_layout.addStretch(1)
+        bot_slider_label_layout.addWidget(
+            _deenergized_label,
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
+        bot_slider_label_layout.addStretch(1)
+
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(
-            _label,
-            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+            limit_mode_label,
+            alignment=Qt.AlignmentFlag.AlignCenter,
         )
-        layout.addSpacing(8)
+        layout.addSpacing(-0)
+        layout.addLayout(top_slider_label_layout)
         layout.addLayout(slider_layout)
+        layout.addSpacing(-8)
+        layout.addLayout(bot_slider_label_layout)
+        layout.addStretch(1)
         return layout
 
     def _define_speed_input_widget(self):
@@ -355,12 +380,14 @@ class AxisConfigWidget(QWidget):
 
         input_layout = QHBoxLayout()
         input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addStretch(1)
         input_layout.addWidget(self.speed_input)
         input_layout.addSpacing(4)
         input_layout.addWidget(
             unit_label,
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
+        input_layout.addStretch(1)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -404,7 +431,7 @@ class AxisConfigWidget(QWidget):
 
         unit_label = QLabel(f"I / MAX", parent=self)
         font = unit_label.font()
-        font.setPointSize(10)
+        font.setPointSize(12)
         unit_label.setFont(font)
         unit_label.setStyleSheet("margin: 0px;")
 
@@ -426,12 +453,14 @@ class AxisConfigWidget(QWidget):
 
         input_layout = QHBoxLayout()
         input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addStretch(1)
         input_layout.addWidget(self.current_input)
         input_layout.addSpacing(4)
         input_layout.addWidget(
             unit_label,
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
+        input_layout.addStretch(1)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
