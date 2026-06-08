@@ -44,6 +44,12 @@ from bapsf_motion.utils import _deepcopy_dict, dict_equal, ipv4_pattern, loop_sa
 class AxisConfigWidget(QWidget):
     configChanged = Signal()
 
+    _DEFAULTS = {
+        "current": 0.8,
+        "limit_mode": 1.0,
+        "speed": 4.0,
+    }
+
     def __init__(self, name, parent=None):
         super().__init__(parent=parent)
 
@@ -57,9 +63,9 @@ class AxisConfigWidget(QWidget):
             "ip": "",
             "units_per_rev": "",
             "motor_settings": {
-                "current": 0.8,
-                "limit_mode": 1,
-                "speed": 4.0,
+                "current": self._DEFAULTS["current"],
+                "limit_mode": self._DEFAULTS["limit_mode"],
+                "speed": self._DEFAULTS["speed"],
             },
         }
         self._axis = None
@@ -567,7 +573,10 @@ class AxisConfigWidget(QWidget):
     @Slot()
     def _change_limit_mode(self):
         axis_config = self.axis_config.copy()
-        old_limit_mode = axis_config["motor_settings"].get("limit_mode", None)
+        old_limit_mode = axis_config["motor_settings"].get(
+            "limit_mode",
+            self._DEFAULTS["limit_mode"],
+        )
 
         limit_mode = self.limit_mode_slider.value()
 
@@ -580,7 +589,10 @@ class AxisConfigWidget(QWidget):
     @Slot()
     def _change_speed_from_slider(self):
         axis_config = self.axis_config.copy()
-        old_speed = axis_config["motor_settings"].get("speed", None)
+        old_speed = axis_config["motor_settings"].get(
+            "speed",
+            self._DEFAULTS["speed"],
+        )
 
         speed = 0.1 * self.speed_slider.value()
         speed = self._validate_speed(speed)
@@ -594,7 +606,10 @@ class AxisConfigWidget(QWidget):
     @Slot()
     def _change_speed_from_field(self):
         axis_config = self.axis_config.copy()
-        old_speed = axis_config["motor_settings"].get("speed", None)
+        old_speed = axis_config["motor_settings"].get(
+            "speed",
+            self._DEFAULTS["speed"],
+        )
 
         speed = ast.literal_eval(self.speed_input.text())
         speed = self._validate_speed(speed)
@@ -666,7 +681,10 @@ class AxisConfigWidget(QWidget):
 
     @Slot()
     def _update_speed_widgets(self):
-        speed = self.axis_config["motor_settings"].get("speed", 4.0)
+        speed = self.axis_config["motor_settings"].get(
+            "speed",
+            self._DEFAULTS["speed"],
+        )
         slider_value = int(speed / 0.1)
 
         self.logger.info(f"--> Updating speed widgets {speed} {slider_value}")
