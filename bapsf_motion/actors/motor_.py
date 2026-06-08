@@ -2068,7 +2068,11 @@ class Motor(EventActor):
             #       as sleeping.
             pass
 
-    def set_current(self, percent: float | int, skip_setting: bool = False):
+    def set_current(
+        self,
+        percent: float | int,
+        skip_setting: bool = False,
+    ) -> float | None:
         r"""
         Set the peak current setting ("peak of sine") of the stepper
         drive, also known as the running current.  The value given
@@ -2090,6 +2094,12 @@ class Motor(EventActor):
         skip_setting : `bool`
             (DEFAULT: `False`) If `True`, then do NOT set the currents.
             Just to the value validation.
+
+        Returns
+        -------
+        float | None
+            The set fractional current ``percent``, or `None` if input
+            ``percent`` could not be set.
         """
         if not isinstance(percent, (int, float)):
             self.logger.error(
@@ -2097,33 +2107,43 @@ class Motor(EventActor):
                 f"but got type {type(percent)}."
             )
             return
-        elif not (0 <= percent <= 1):
+
+        if isinstance(percent, int):
+            percent = float(percent)
+
+        if not (0 <= percent <= 1):
             self.logger.error(
-                f"Setting motor current, expected a value of 0 - 1 " f"but got {percent}."
+                f"Setting motor current, expected a value of 0 - 1, but got {percent}."
             )
             return
 
-        new_cur = percent * self._motor["DEFAULTS"]["max_current"]
         if skip_setting:
             return percent
 
+        max_cur = self._motor["DEFAULTS"]["max_current"]
+        new_cur = percent * max_cur
 
         ic = self.send_command("idle_current")
         if self._lost_connection(ic):
             self.logger.error("Unable to set current due to a lost connection.")
-            return
-        elif ic == self.ack_flags.MALFORMED:
+            return self.motor["current"]
+
+        if ic == self.ack_flags.MALFORMED:
             self.logger.error(
                 "Unable to set current due to the motor response not matching "
                 "the expected response."
             )
-            return
+            return self.motor["current"]
+
         new_ic = np.min(
             [self._motor["DEFAULTS"]["max_idle_current"] * new_cur, ic],
         )
 
         self.send_command("current", new_cur)
         self.send_command("idle_current", new_ic)
+
+        percent = float(np.round(new_cur/max_cur, 2))
+        return percent
 
     def set_idle_current(self, percent):
         r"""
