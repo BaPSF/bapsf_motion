@@ -173,6 +173,8 @@ class AxisConfigWidget(QWidget):
         self.limit_mode_slider.valueChanged.connect(self._change_limit_mode)
         self.speed_input.editingFinished.connect(self._change_speed_from_field)
         self.speed_slider.valueChanged.connect(self._change_speed_from_slider)
+        self.current_input.editingFinished.connect(self._change_current_from_field)
+        self.current_slider.valueChanged.connect(self._change_current_from_slider)
 
         self.configChanged.connect(self._update_ip_widget)
         self.configChanged.connect(self._update_cm_per_rev_widget)
@@ -547,6 +549,40 @@ class AxisConfigWidget(QWidget):
         config = self.axis_config
         config["units_per_rev"] = new_cpr
         self.axis_config = config
+
+    @Slot()
+    def _change_current_from_slider(self):
+        axis_config = self.axis_config.copy()
+        old_current = axis_config["motor_settings"].get(
+            "current",
+            self._DEFAULTS["current"],
+        )
+
+        current = 0.05 * self.current_slider.value()
+        current = self._validate_current(current)
+
+        if old_current is not None and old_current == current:
+            # current did not change
+            return
+
+        self._set_motor_current(current)
+
+    @Slot()
+    def _change_current_from_field(self):
+        axis_config = self.axis_config.copy()
+        old_current = axis_config["motor_settings"].get(
+            "current",
+            self._DEFAULTS["current"],
+        )
+
+        current = ast.literal_eval(self.current_input.text())
+        current = self._validate_current(current)
+
+        if old_current is not None and old_current == current:
+            # current did not change
+            return
+
+        self._set_motor_current(current)
 
     @Slot()
     def _change_ip_address(self):
