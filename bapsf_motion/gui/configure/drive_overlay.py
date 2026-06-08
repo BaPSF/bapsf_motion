@@ -730,6 +730,24 @@ class AxisConfigWidget(QWidget):
     def set_ip_handler(self, handler: callable):
         self._ip_handlers.append(handler)
 
+    def _set_motor_current(self, current: float | int):
+
+        if isinstance(self.axis, Axis) and isinstance(self.axis.motor, Motor):
+            self.axis.motor.send_command("set_current", current)
+
+            motor_current = float(self.axis.motor.config["current"])
+            if motor_current == current:
+                self.configChanged.emit()
+                return
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        axis_config = self.axis_config.copy()
+        axis_config["motor_settings"]["current"] = current
+        self.axis_config = axis_config
+
     def _set_motor_speed(self, speed: float | int):
 
         if isinstance(self.axis, Axis) and isinstance(self.axis.motor, Motor):
