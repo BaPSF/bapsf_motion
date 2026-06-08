@@ -663,12 +663,9 @@ class Motor(EventActor):
         self._status = self._status_defaults.copy()
 
         # initialize attributes that will be conditioned in _configure_before_run()
+        self._motor["current"] = current
         self._motor["define_limits"] = limit_mode
         self._motor["speed"] = speed
-
-        # condition current
-        if isinstance(current, (float, int)) and 0.0 < current <= 1.0:
-            self._motor["DEFAULTS"]["current"] = current
 
         # SimplgeSignal's to tell handlers about specific motor status
         # changes
@@ -699,6 +696,13 @@ class Motor(EventActor):
         # actions to be done during object instantiation, but before
         # the asyncio event loop starts running.
         #
+        # condition current
+        current = self.motor["current"]
+        current = self.set_current(current, skip_setting=True)
+        if current is None:
+            current = self.motor["DEFAULTS"]["current"]
+        self._motor["current"] = current
+
         # condition limit_mode
         limit_mode = self.motor["define_limits"]
         limit_mode = self.set_limit_mode(limit_mode, skip_setting=True)
