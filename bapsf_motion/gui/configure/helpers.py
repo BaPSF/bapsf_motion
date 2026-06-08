@@ -27,7 +27,7 @@ gui_logger_config_dict = {
     "handlers": {
         "stdout": {
             "class": "logging.StreamHandler",
-            "level": "WARNING",
+            "level": "INFO",
             "formatter": "default",
             "stream": "ext://sys.stdout",
         },

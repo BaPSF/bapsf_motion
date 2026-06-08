@@ -44,6 +44,12 @@ from bapsf_motion.utils import _deepcopy_dict, dict_equal, ipv4_pattern, loop_sa
 class AxisConfigWidget(QWidget):
     configChanged = Signal()
 
+    _DEFAULTS = {
+        "current": 0.8,
+        "limit_mode": 1.0,
+        "speed": 4.0,
+    }
+
     def __init__(self, name, parent=None):
         super().__init__(parent=parent)
 
@@ -57,9 +63,9 @@ class AxisConfigWidget(QWidget):
             "ip": "",
             "units_per_rev": "",
             "motor_settings": {
-                "current": 0.8,
-                "limit_mode": 1,
-                "speed": 4.0,
+                "current": self._DEFAULTS["current"],
+                "limit_mode": self._DEFAULTS["limit_mode"],
+                "speed": self._DEFAULTS["speed"],
             },
         }
         self._axis = None
@@ -104,10 +110,19 @@ class AxisConfigWidget(QWidget):
         font = _widget.font()
         font.setPointSize(16)
         _widget.setFont(font)
-        _widget.setFixedWidth(120)
+        _widget.setFixedWidth(100)
         _widget.setValidator(QDoublePinnedValidator(bottom=0.5, top=15.0, decimals=1))
         _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speed_input = _widget
+
+        _widget = QLineEdit(parent=self)
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setFixedWidth(100)
+        _widget.setValidator(QDoublePinnedValidator(bottom=0.5, top=1.0, decimals=2))
+        _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.current_input = _widget
 
         # Define ADVANCED WIDGETS
         _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
@@ -135,6 +150,20 @@ class AxisConfigWidget(QWidget):
         _widget.setValue(0)
         self.speed_slider = _widget
 
+        current_validator = self.current_input.validator()  # type: QDoubleValidator
+        min_tick = int(current_validator.bottom() / 0.05)
+        max_tick = int(current_validator.top() / 0.05)
+        _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
+        _widget.setMinimum(min_tick)
+        _widget.setMaximum(max_tick)
+        _widget.setTickInterval(2)
+        _widget.setSingleStep(1)
+        _widget.setTickPosition(QSlider.TickPosition.TicksBothSides)
+        _widget.setFixedHeight(24)
+        _widget.setMinimumWidth(100)
+        _widget.setValue(0)
+        self.current_slider = _widget
+
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -144,12 +173,15 @@ class AxisConfigWidget(QWidget):
         self.limit_mode_slider.valueChanged.connect(self._change_limit_mode)
         self.speed_input.editingFinished.connect(self._change_speed_from_field)
         self.speed_slider.valueChanged.connect(self._change_speed_from_slider)
+        self.current_input.editingFinished.connect(self._change_current_from_field)
+        self.current_slider.valueChanged.connect(self._change_current_from_slider)
 
         self.configChanged.connect(self._update_ip_widget)
         self.configChanged.connect(self._update_cm_per_rev_widget)
-        self.configChanged.connect(self._update_online_led)
         self.configChanged.connect(self._update_limit_mode_widget)
         self.configChanged.connect(self._update_speed_widgets)
+        self.configChanged.connect(self._update_current_widgets)
+        self.configChanged.connect(self._update_online_led)
 
     def _define_layout(self):
         layout = QHBoxLayout()
@@ -167,7 +199,7 @@ class AxisConfigWidget(QWidget):
         layout.addLayout(self._define_vdivider_layout())
         layout.addWidget(self._define_speed_input_widget())
         layout.addLayout(self._define_vdivider_layout())
-        layout.addStretch()
+        layout.addWidget(self._define_current_input_widget())
         layout.addLayout(self._define_vdivider_layout())
         layout.addLayout(self._define_online_indicator_layout())
         return layout
@@ -228,52 +260,77 @@ class AxisConfigWidget(QWidget):
         return layout
 
     def _define_limit_mode_layout(self):
-        _label = QLabel("Limit\nMode", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter)
-        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        _label = QLabel("LIMIT MODE", parent=self)
+        _label.setObjectName("limit_mode_label")
         font = _label.font()
-        font.setPointSize(16)
+        font.setPointSize(10)
         _label.setFont(font)
+        _label.setMargin(0)
+        limit_mode_label = _label
 
-        _energized_label = QLabel("energized", parent=self)
-        _energized_label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-        )
-        font = _energized_label.font()
+        _label = QLabel("energized", parent=self)
+        _label.setObjectName("energized_lm")
+        font = _label.font()
         font.setPointSize(12)
-        _energized_label.setFont(font)
+        _label.setFont(font)
+        _label.setMargin(0)
+        _energized_label = _label
 
-        _deenergized_label = QLabel("de-energized", parent=self)
-        _deenergized_label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-        )
-        font = _deenergized_label.font()
+        _label = QLabel("de-energized", parent=self)
+        _label.setObjectName("de-energized_lm")
+        font = _label.font()
         font.setPointSize(12)
-        _deenergized_label.setFont(font)
+        _label.setFont(font)
+        _label.setMargin(0)
+        _deenergized_label = _label
 
-        _none_label = QLabel("NONE", parent=self)
-        _none_label.setAlignment(
-            Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
-        )
-        font = _none_label.font()
+        _label = QLabel("NONE", parent=self)
+        _label.setObjectName("none_lm")
+        font = _label.font()
         font.setPointSize(12)
-        _none_label.setFont(font)
+        _label.setFont(font)
+        _label.setMargin(0)
+        _none_label = _label
 
-        slider_layout = QGridLayout()
+        top_slider_label_layout = QHBoxLayout()
+        top_slider_label_layout.setContentsMargins(0, 0, 0, 0)
+        top_slider_label_layout.addWidget(
+            _energized_label,
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
+        top_slider_label_layout.addStretch(1)
+        top_slider_label_layout.addWidget(
+            _none_label,
+            alignment=Qt.AlignmentFlag.AlignRight,
+        )
+
+        slider_layout = QHBoxLayout()
         slider_layout.setContentsMargins(0, 0, 0, 0)
-        slider_layout.addWidget(self.limit_mode_slider, 1, 2, 1, 7)
-        slider_layout.addWidget(_energized_label, 0, 1, 1, 3)
-        slider_layout.addWidget(_deenergized_label, 2, 4, 1, 3)
-        slider_layout.addWidget(_none_label, 0, 7, 1, 3)
+        slider_layout.addSpacing(18)
+        slider_layout.addWidget(self.limit_mode_slider)
+        slider_layout.addSpacing(18)
 
-        layout = QHBoxLayout()
+        bot_slider_label_layout = QHBoxLayout()
+        bot_slider_label_layout.setContentsMargins(0, 0, 0, 0)
+        bot_slider_label_layout.addStretch(1)
+        bot_slider_label_layout.addWidget(
+            _deenergized_label,
+            alignment=Qt.AlignmentFlag.AlignLeft,
+        )
+        bot_slider_label_layout.addStretch(1)
+
+        layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(
-            _label,
-            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+            limit_mode_label,
+            alignment=Qt.AlignmentFlag.AlignCenter,
         )
-        layout.addSpacing(8)
+        layout.addSpacing(-0)
+        layout.addLayout(top_slider_label_layout)
         layout.addLayout(slider_layout)
+        layout.addSpacing(-8)
+        layout.addLayout(bot_slider_label_layout)
+        layout.addStretch(1)
         return layout
 
     def _define_speed_input_widget(self):
@@ -323,16 +380,92 @@ class AxisConfigWidget(QWidget):
 
         input_layout = QHBoxLayout()
         input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addStretch(1)
         input_layout.addWidget(self.speed_input)
+        input_layout.addSpacing(4)
         input_layout.addWidget(
             unit_label,
             alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
         )
+        input_layout.addStretch(1)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(
             speed_label,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addSpacing(-20)
+        layout.addLayout(slider_number_layout)
+        layout.addLayout(slider_layout)
+        layout.addLayout(input_layout)
+
+        widget = QWidget(parent=self)
+        widget.setLayout(layout)
+        widget.setStyleSheet("margin: 0px;")
+        widget.setMinimumWidth(150)
+        return widget
+
+    def _define_current_input_widget(self):
+        current_validator = self.current_input.validator()  # type: QDoubleValidator
+        min_current = current_validator.bottom()
+        max_current = current_validator.top()
+
+        min_current_label = QLabel(f"{min_current:.1f}", parent=self)
+        font = min_current_label.font()
+        font.setPointSize(12)
+        min_current_label.setFont(font)
+        min_current_label.setStyleSheet("margin: 0px;")
+
+        max_current_label = QLabel(f"{max_current:.1f}", parent=self)
+        font = max_current_label.font()
+        font.setPointSize(12)
+        max_current_label.setFont(font)
+        max_current_label.setStyleSheet("margin: 0px;")
+
+        current_label = QLabel(f"CURRENT", parent=self)
+        font = current_label.font()
+        font.setPointSize(10)
+        current_label.setFont(font)
+        current_label.setStyleSheet("margin: 0px;")
+
+        unit_label = QLabel(f"I / MAX", parent=self)
+        font = unit_label.font()
+        font.setPointSize(12)
+        unit_label.setFont(font)
+        unit_label.setStyleSheet("margin: 0px;")
+
+        slider_number_layout = QHBoxLayout()
+        slider_number_layout.setContentsMargins(0, 0, 0, 0)
+        slider_number_layout.addWidget(
+            min_current_label, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        slider_number_layout.addStretch(1)
+        slider_number_layout.addWidget(
+            max_current_label, alignment=Qt.AlignmentFlag.AlignRight
+        )
+
+        slider_layout = QHBoxLayout()
+        slider_layout.setContentsMargins(0, 0, 0, 0)
+        slider_layout.addSpacing(4)
+        slider_layout.addWidget(self.current_slider)
+        slider_layout.addSpacing(4)
+
+        input_layout = QHBoxLayout()
+        input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addStretch(1)
+        input_layout.addWidget(self.current_input)
+        input_layout.addSpacing(4)
+        input_layout.addWidget(
+            unit_label,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        input_layout.addStretch(1)
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            current_label,
             alignment=Qt.AlignmentFlag.AlignCenter,
         )
         layout.addSpacing(-20)
@@ -448,6 +581,40 @@ class AxisConfigWidget(QWidget):
         self.axis_config = config
 
     @Slot()
+    def _change_current_from_slider(self):
+        axis_config = self.axis_config.copy()
+        old_current = axis_config["motor_settings"].get(
+            "current",
+            self._DEFAULTS["current"],
+        )
+
+        current = 0.05 * self.current_slider.value()
+        current = self._validate_current(current)
+
+        if old_current is not None and old_current == current:
+            # current did not change
+            return
+
+        self._set_motor_current(current)
+
+    @Slot()
+    def _change_current_from_field(self):
+        axis_config = self.axis_config.copy()
+        old_current = axis_config["motor_settings"].get(
+            "current",
+            self._DEFAULTS["current"],
+        )
+
+        current = ast.literal_eval(self.current_input.text())
+        current = self._validate_current(current)
+
+        if old_current is not None and old_current == current:
+            # current did not change
+            return
+
+        self._set_motor_current(current)
+
+    @Slot()
     def _change_ip_address(self):
         new_ip = self.ip_widget.text()
         new_ip = self._validate_ip(new_ip)
@@ -472,7 +639,10 @@ class AxisConfigWidget(QWidget):
     @Slot()
     def _change_limit_mode(self):
         axis_config = self.axis_config.copy()
-        old_limit_mode = axis_config["motor_settings"].get("limit_mode", None)
+        old_limit_mode = axis_config["motor_settings"].get(
+            "limit_mode",
+            self._DEFAULTS["limit_mode"],
+        )
 
         limit_mode = self.limit_mode_slider.value()
 
@@ -485,7 +655,10 @@ class AxisConfigWidget(QWidget):
     @Slot()
     def _change_speed_from_slider(self):
         axis_config = self.axis_config.copy()
-        old_speed = axis_config["motor_settings"].get("speed", None)
+        old_speed = axis_config["motor_settings"].get(
+            "speed",
+            self._DEFAULTS["speed"],
+        )
 
         speed = 0.1 * self.speed_slider.value()
         speed = self._validate_speed(speed)
@@ -499,7 +672,10 @@ class AxisConfigWidget(QWidget):
     @Slot()
     def _change_speed_from_field(self):
         axis_config = self.axis_config.copy()
-        old_speed = axis_config["motor_settings"].get("speed", None)
+        old_speed = axis_config["motor_settings"].get(
+            "speed",
+            self._DEFAULTS["speed"],
+        )
 
         speed = ast.literal_eval(self.speed_input.text())
         speed = self._validate_speed(speed)
@@ -509,6 +685,19 @@ class AxisConfigWidget(QWidget):
             return
 
         self._set_motor_speed(speed)
+
+    def _validate_current(self, current: float) -> float:
+        current_validator = self.current_input.validator()  # type: QDoubleValidator
+        min_current = current_validator.bottom()
+        max_current = current_validator.top()
+
+        current = round(current, 2)
+        if current < min_current:
+            current = min_current
+        elif current > max_current:
+            current = max_current
+
+        return current
 
     def _validate_speed(self, speed: float) -> float:
         speed_validator = self.speed_input.validator()  # type: QDoubleValidator
@@ -552,6 +741,25 @@ class AxisConfigWidget(QWidget):
         self.cm_per_rev_widget.setText(f"{self.axis_config['units_per_rev']}")
 
     @Slot()
+    def _update_current_widgets(self):
+        current = self.axis_config["motor_settings"].get(
+            "current",
+            self._DEFAULTS["current"],
+        )
+        slider_value = int(current / 0.05)
+
+        self.logger.info(f"--> Updating current widgets {current} {slider_value}")
+
+        self.current_input.blockSignals(True)
+        self.current_slider.blockSignals(True)
+
+        self.current_input.setText(f"{current:.2f}")
+        self.current_slider.setValue(slider_value)
+
+        self.current_input.blockSignals(False)
+        self.current_slider.blockSignals(False)
+
+    @Slot()
     def _update_ip_widget(self):
         self.logger.info(f"Updating IP widget with {self.axis_config['ip']}")
         self.ip_widget.setText(self.axis_config["ip"])
@@ -571,7 +779,10 @@ class AxisConfigWidget(QWidget):
 
     @Slot()
     def _update_speed_widgets(self):
-        speed = self.axis_config["motor_settings"].get("speed", 4.0)
+        speed = self.axis_config["motor_settings"].get(
+            "speed",
+            self._DEFAULTS["speed"],
+        )
         slider_value = int(speed / 0.1)
 
         self.logger.info(f"--> Updating speed widgets {speed} {slider_value}")
@@ -603,6 +814,24 @@ class AxisConfigWidget(QWidget):
 
     def set_ip_handler(self, handler: callable):
         self._ip_handlers.append(handler)
+
+    def _set_motor_current(self, current: float | int):
+
+        if isinstance(self.axis, Axis) and isinstance(self.axis.motor, Motor):
+            self.axis.motor.send_command("set_current", current)
+
+            motor_current = float(self.axis.motor.config["current"])
+            if motor_current == current:
+                self.configChanged.emit()
+                return
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        axis_config = self.axis_config.copy()
+        axis_config["motor_settings"]["current"] = current
+        self.axis_config = axis_config
 
     def _set_motor_speed(self, speed: float | int):
 
