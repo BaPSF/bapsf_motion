@@ -178,9 +178,10 @@ class AxisConfigWidget(QWidget):
 
         self.configChanged.connect(self._update_ip_widget)
         self.configChanged.connect(self._update_cm_per_rev_widget)
-        self.configChanged.connect(self._update_online_led)
         self.configChanged.connect(self._update_limit_mode_widget)
         self.configChanged.connect(self._update_speed_widgets)
+        self.configChanged.connect(self._update_current_widgets)
+        self.configChanged.connect(self._update_online_led)
 
     def _define_layout(self):
         layout = QHBoxLayout()
@@ -709,6 +710,25 @@ class AxisConfigWidget(QWidget):
     @Slot()
     def _update_cm_per_rev_widget(self):
         self.cm_per_rev_widget.setText(f"{self.axis_config['units_per_rev']}")
+
+    @Slot()
+    def _update_current_widgets(self):
+        current = self.axis_config["motor_settings"].get(
+            "current",
+            self._DEFAULTS["current"],
+        )
+        slider_value = int(current / 0.05)
+
+        self.logger.info(f"--> Updating current widgets {current} {slider_value}")
+
+        self.current_input.blockSignals(True)
+        self.current_slider.blockSignals(True)
+
+        self.current_input.setText(f"{current:.2f}")
+        self.current_slider.setValue(slider_value)
+
+        self.current_input.blockSignals(False)
+        self.current_slider.blockSignals(False)
 
     @Slot()
     def _update_ip_widget(self):
