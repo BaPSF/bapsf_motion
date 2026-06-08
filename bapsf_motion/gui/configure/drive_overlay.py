@@ -620,6 +620,19 @@ class AxisConfigWidget(QWidget):
 
         self._set_motor_speed(speed)
 
+    def _validate_current(self, current: float) -> float:
+        current_validator = self.current_input.validator()  # type: QDoubleValidator
+        min_current = current_validator.bottom()
+        max_current = current_validator.top()
+
+        current = round(current, 2)
+        if current < min_current:
+            current = min_current
+        elif current > max_current:
+            current = max_current
+
+        return current
+
     def _validate_speed(self, speed: float) -> float:
         speed_validator = self.speed_input.validator()  # type: QDoubleValidator
         min_speed = speed_validator.bottom()
