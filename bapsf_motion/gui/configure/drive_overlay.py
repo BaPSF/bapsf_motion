@@ -104,7 +104,7 @@ class AxisConfigWidget(QWidget):
         font = _widget.font()
         font.setPointSize(16)
         _widget.setFont(font)
-        _widget.setFixedWidth(120)
+        _widget.setFixedWidth(100)
         _widget.setValidator(QDoublePinnedValidator(bottom=0.5, top=15.0, decimals=1))
         _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.speed_input = _widget
