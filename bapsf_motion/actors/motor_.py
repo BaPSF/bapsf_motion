@@ -2068,7 +2068,7 @@ class Motor(EventActor):
             #       as sleeping.
             pass
 
-    def set_current(self, percent):
+    def set_current(self, percent: float | int, skip_setting: bool = False):
         r"""
         Set the peak current setting ("peak of sine") of the stepper
         drive, also known as the running current.  The value given
@@ -2086,6 +2086,10 @@ class Motor(EventActor):
             ``0.5`` will set the running current to 50% of the max
             allowable running current
             (``_motor["DEFAULTS"]["max_current"]``).
+
+        skip_setting : `bool`
+            (DEFAULT: `False`) If `True`, then do NOT set the currents.
+            Just to the value validation.
         """
         if not isinstance(percent, (int, float)):
             self.logger.error(
@@ -2100,6 +2104,9 @@ class Motor(EventActor):
             return
 
         new_cur = percent * self._motor["DEFAULTS"]["max_current"]
+        if skip_setting:
+            return percent
+
 
         ic = self.send_command("idle_current")
         if self._lost_connection(ic):
