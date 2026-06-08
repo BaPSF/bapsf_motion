@@ -52,7 +52,10 @@ from bapsf_motion.gui.configure import configure_
 from bapsf_motion.gui.configure.bases import _ConfigOverlay, _OverlayWidget
 from bapsf_motion.gui.configure.drive_overlay import DriveConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
+from bapsf_motion.gui.configure.message_boxes import (
+    AxisPositionWarningDialog,
+    WarningMessageBox,
+)
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
@@ -426,6 +429,8 @@ class AxisControlWidget(QWidget):
         self._interactive_display_mode = (
             True if axis_display_mode == "interactive" else False
         )
+
+        self.position_warning_dialog = None
 
         self.setFixedWidth(120)
 
@@ -854,6 +859,9 @@ class AxisControlWidget(QWidget):
             self.position_label.setStyleSheet("color: red;")
             self.encoder_label.setStyleSheet("color: red;")
 
+            if not self.axis.is_moving:
+                self.position_warning_dialog.open()
+
         _motor_status = self.axis.motor.status
 
         limits = _motor_status["limits"]
@@ -903,6 +911,11 @@ class AxisControlWidget(QWidget):
         self._mg = mg
         self._axis_index = ax_index
 
+        if isinstance(self.position_warning_dialog, AxisPositionWarningDialog):
+            self.position_warning_dialog.close()
+            self.position_warning_dialog = None
+        self.position_warning_dialog = AxisPositionWarningDialog(self, parent=self)
+
         self.axis_name_label.setText(self.axis.name)
 
         # connect motor SimpleSignals
@@ -944,6 +957,11 @@ class AxisControlWidget(QWidget):
 
         self._mg = None
         self._axis_index = None
+
+        if isinstance(self.position_warning_dialog, AxisPositionWarningDialog):
+            self.position_warning_dialog.close()
+            self.position_warning_dialog = None
+
         self.axisUnlinked.emit()
 
     @Slot()
