@@ -662,7 +662,7 @@ class Motor(EventActor):
         self._motor = self._motor_defaults.copy()
         self._status = self._status_defaults.copy()
 
-        # initialize attriubtes that will be conditioned in _configure_before_run()
+        # initialize attributes that will be conditioned in _configure_before_run()
         self._motor["define_limits"] = limit_mode
         self._motor["speed"] = speed
 
