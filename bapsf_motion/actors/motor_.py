@@ -806,6 +806,7 @@ class Motor(EventActor):
                 "max_current": 5.0,  # 5 amps
                 "define_limits": 1,  # 1 = energized, 2 = de-energized, 3 = None
             },
+            "current": None,
             "speed": None,
             "accel": None,
             "decel": None,
@@ -1010,7 +1011,7 @@ class Motor(EventActor):
             "name": self.name,
             "ip": self.ip,
             "limit_mode": self.motor["define_limits"],
-            "current": self.motor["DEFAULTS"]["current"],
+            "current": self.motor["current"],
             "speed": speed,
         }
 
