@@ -812,7 +812,7 @@ class MotionGroup(EventActor):
             )
             self._drive = None
 
-        if self._drive.terminated or self.terminated:
+        if (isinstance(self._drive, Drive) and self._drive.terminated) or self.terminated:
             # 1. terminated self if the new drive is terminated
             # 2. terminate drive if self is already terminated (it's up
             #    to the caller to re-run the motion group)

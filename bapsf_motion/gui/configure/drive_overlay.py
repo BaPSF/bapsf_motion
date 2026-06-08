@@ -5,6 +5,7 @@ configuration overlay portion of the configuration GUI.
 
 __all__ = ["AxisConfigWidget", "DriveConfigOverlay"]
 
+import ast
 import asyncio
 import logging
 import warnings
@@ -25,11 +26,18 @@ from PySide6.QtWidgets import (
 )
 from typing import Any, Callable, Dict, List, Union
 
-from bapsf_motion.actors import Axis, Drive, MotionGroup
+from bapsf_motion.actors import Axis, Drive, MotionGroup, Motor
 from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.widgets import HLinePlain, IPv4Validator, LED, StyleButton
+from bapsf_motion.gui.widgets import (
+    HLinePlain,
+    IPv4Validator,
+    LED,
+    QDoublePinnedValidator,
+    StyleButton,
+    VLinePlain,
+)
 from bapsf_motion.utils import _deepcopy_dict, dict_equal, ipv4_pattern, loop_safe_stop
 
 
@@ -48,7 +56,11 @@ class AxisConfigWidget(QWidget):
             "units": "cm",
             "ip": "",
             "units_per_rev": "",
-            "motor_settings": {"limit_mode": 1},
+            "motor_settings": {
+                "current": 0.8,
+                "limit_mode": 1,
+                "speed": 4.0,
+            },
         }
         self._axis = None
 
@@ -85,8 +97,19 @@ class AxisConfigWidget(QWidget):
         _widget.setFont(font)
         _widget.setFixedWidth(120)
         _widget.setValidator(QDoubleValidator(decimals=4))
+        _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.cm_per_rev_widget = _widget
 
+        _widget = QLineEdit(parent=self)
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setFixedWidth(120)
+        _widget.setValidator(QDoublePinnedValidator(bottom=0.5, top=15.0, decimals=1))
+        _widget.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.speed_input = _widget
+
+        # Define ADVANCED WIDGETS
         _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
         _widget.setMinimum(1)
         _widget.setMaximum(3)
@@ -98,7 +121,19 @@ class AxisConfigWidget(QWidget):
         _widget.setValue(1)
         self.limit_mode_slider = _widget
 
-        # Define ADVANCED WIDGETS
+        speed_validator = self.speed_input.validator()  # type: QDoubleValidator
+        min_tick = int(speed_validator.bottom() / 0.1)
+        max_tick = int(speed_validator.top() / 0.1)
+        _widget = QSlider(Qt.Orientation.Horizontal, parent=self)
+        _widget.setMinimum(min_tick)
+        _widget.setMaximum(max_tick)
+        _widget.setTickInterval(10)
+        _widget.setSingleStep(1)
+        _widget.setTickPosition(QSlider.TickPosition.TicksBothSides)
+        _widget.setFixedHeight(24)
+        _widget.setMinimumWidth(100)
+        _widget.setValue(0)
+        self.speed_slider = _widget
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -107,60 +142,94 @@ class AxisConfigWidget(QWidget):
         self.ip_widget.editingFinished.connect(self._change_ip_address)
         self.cm_per_rev_widget.editingFinished.connect(self._change_cm_per_rev)
         self.limit_mode_slider.valueChanged.connect(self._change_limit_mode)
+        self.speed_input.editingFinished.connect(self._change_speed_from_field)
+        self.speed_slider.valueChanged.connect(self._change_speed_from_slider)
 
         self.configChanged.connect(self._update_ip_widget)
         self.configChanged.connect(self._update_cm_per_rev_widget)
         self.configChanged.connect(self._update_online_led)
         self.configChanged.connect(self._update_limit_mode_widget)
+        self.configChanged.connect(self._update_speed_widgets)
 
     def _define_layout(self):
-        _label = QLabel("IP:  ", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            self.ax_name_widget,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addSpacing(12)
+        layout.addLayout(self._define_ip_input_layout())
+        layout.addLayout(self._define_vdivider_layout())
+        layout.addLayout(self._define_cm_per_rev_layout())
+        layout.addLayout(self._define_vdivider_layout())
+        layout.addLayout(self._define_limit_mode_layout())
+        layout.addLayout(self._define_vdivider_layout())
+        layout.addWidget(self._define_speed_input_widget())
+        layout.addLayout(self._define_vdivider_layout())
+        layout.addStretch()
+        layout.addLayout(self._define_vdivider_layout())
+        layout.addLayout(self._define_online_indicator_layout())
+        return layout
+
+    def _define_vdivider_layout(self):
+        divider = VLinePlain(parent=self)
+        divider.set_color(60, 60, 60)
+        divider.setLineWidth(2)
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addSpacing(8)
+        layout.addWidget(divider)
+        layout.addSpacing(8)
+        return layout
+
+    def _define_ip_input_layout(self):
+        _label = QLabel("IP:", parent=self)
         font = _label.font()
         font.setPointSize(16)
         _label.setFont(font)
         ip_label = _label
 
-        _label = QLabel("cm / rev", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        font = _label.font()
-        font.setPointSize(16)
-        _label.setFont(font)
-        cm_per_rev_label = _label
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            ip_label,
+            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addSpacing(4)
+        layout.addWidget(
+            self.ip_widget,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        return layout
 
-        _label = QLabel("online", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter)
-        _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+    def _define_cm_per_rev_layout(self):
+        _label = QLabel("cm / rev", parent=self)
         font = _label.font()
         font.setPointSize(12)
         _label.setFont(font)
-        online_label = _label
+        _label.setContentsMargins(0, 0, 0, 0)
+        cm_per_rev_label = _label
 
-        sub_layout = QVBoxLayout()
-        sub_layout.addWidget(online_label, alignment=Qt.AlignmentFlag.AlignBottom)
-        sub_layout.addWidget(self.online_led, alignment=Qt.AlignmentFlag.AlignCenter)
-
-        layout = QHBoxLayout()
-        layout.addWidget(self.ax_name_widget)
-        layout.addSpacing(12)
-        layout.addWidget(ip_label)
-        layout.addWidget(self.ip_widget)
-        layout.addSpacing(28)
-        layout.addWidget(self.cm_per_rev_widget)
-        layout.addWidget(cm_per_rev_label)
-        layout.addSpacing(28)
-        layout.addLayout(self._define_limit_mode_layout())
-        layout.addStretch()
-        layout.addLayout(sub_layout)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch(1)
+        layout.addWidget(
+            self.cm_per_rev_widget,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addSpacing(-8)
+        layout.addWidget(
+            cm_per_rev_label,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addStretch(1)
         return layout
 
     def _define_limit_mode_layout(self):
-        layout = QGridLayout()
-
         _label = QLabel("Limit\nMode", parent=self)
-        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignRight)
+        _label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter)
         _label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _label.font()
         font.setPointSize(16)
@@ -170,10 +239,6 @@ class AxisConfigWidget(QWidget):
         _energized_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
-        # _energized_label.setMinimumWidth(24)
-        # _energized_label.setSizePolicy(
-        #     QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
-        # )
         font = _energized_label.font()
         font.setPointSize(12)
         _energized_label.setFont(font)
@@ -182,10 +247,6 @@ class AxisConfigWidget(QWidget):
         _deenergized_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
-        # _deenergized_label.setMinimumWidth(24)
-        # _deenergized_label.setSizePolicy(
-        #     QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed
-        # )
         font = _deenergized_label.font()
         font.setPointSize(12)
         _deenergized_label.setFont(font)
@@ -194,24 +255,117 @@ class AxisConfigWidget(QWidget):
         _none_label.setAlignment(
             Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
         )
-        # _none_label.setMinimumWidth(24)
-        # _none_label.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
         font = _none_label.font()
         font.setPointSize(12)
         _none_label.setFont(font)
 
+        slider_layout = QGridLayout()
+        slider_layout.setContentsMargins(0, 0, 0, 0)
+        slider_layout.addWidget(self.limit_mode_slider, 1, 2, 1, 7)
+        slider_layout.addWidget(_energized_label, 0, 1, 1, 3)
+        slider_layout.addWidget(_deenergized_label, 2, 4, 1, 3)
+        slider_layout.addWidget(_none_label, 0, 7, 1, 3)
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(
             _label,
-            0,
-            0,
-            3,
-            1,
-            alignment=Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
         )
-        layout.addWidget(self.limit_mode_slider, 1, 2, 1, 7)
-        layout.addWidget(_energized_label, 0, 1, 1, 3)
-        layout.addWidget(_deenergized_label, 2, 4, 1, 3)
-        layout.addWidget(_none_label, 0, 7, 1, 3)
+        layout.addSpacing(8)
+        layout.addLayout(slider_layout)
+        return layout
+
+    def _define_speed_input_widget(self):
+        speed_validator = self.speed_input.validator()  # type: QDoubleValidator
+        min_speed = speed_validator.bottom()
+        max_speed = speed_validator.top()
+
+        min_speed_label = QLabel(f"{min_speed:.1f}", parent=self)
+        font = min_speed_label.font()
+        font.setPointSize(12)
+        min_speed_label.setFont(font)
+        min_speed_label.setStyleSheet("margin: 0px;")
+
+        max_speed_label = QLabel(f"{max_speed:.1f}", parent=self)
+        font = max_speed_label.font()
+        font.setPointSize(12)
+        max_speed_label.setFont(font)
+        max_speed_label.setStyleSheet("margin: 0px;")
+
+        speed_label = QLabel(f"SPEED", parent=self)
+        font = speed_label.font()
+        font.setPointSize(10)
+        speed_label.setFont(font)
+        speed_label.setStyleSheet("margin: 0px;")
+
+        unit_label = QLabel(f"rev / s", parent=self)
+        font = unit_label.font()
+        font.setPointSize(12)
+        unit_label.setFont(font)
+        unit_label.setStyleSheet("margin: 0px;")
+
+        slider_number_layout = QHBoxLayout()
+        slider_number_layout.setContentsMargins(0, 0, 0, 0)
+        slider_number_layout.addWidget(
+            min_speed_label, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        slider_number_layout.addStretch(1)
+        slider_number_layout.addWidget(
+            max_speed_label, alignment=Qt.AlignmentFlag.AlignRight
+        )
+
+        slider_layout = QHBoxLayout()
+        slider_layout.setContentsMargins(0, 0, 0, 0)
+        slider_layout.addSpacing(4)
+        slider_layout.addWidget(self.speed_slider)
+        slider_layout.addSpacing(4)
+
+        input_layout = QHBoxLayout()
+        input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addWidget(self.speed_input)
+        input_layout.addWidget(
+            unit_label,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            speed_label,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addSpacing(-20)
+        layout.addLayout(slider_number_layout)
+        layout.addLayout(slider_layout)
+        layout.addLayout(input_layout)
+
+        widget = QWidget(parent=self)
+        widget.setLayout(layout)
+        widget.setStyleSheet("margin: 0px;")
+        widget.setMinimumWidth(150)
+        return widget
+
+    def _define_online_indicator_layout(self):
+
+        _label = QLabel("Online?", parent=self)
+        font = _label.font()
+        font.setPointSize(12)
+        _label.setFont(font)
+        online_label = _label
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch(1)
+        layout.addWidget(
+            online_label,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addWidget(
+            self.online_led,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addStretch(1)
 
         return layout
 
@@ -317,21 +471,57 @@ class AxisConfigWidget(QWidget):
 
     @Slot()
     def _change_limit_mode(self):
-        new_limit_mode = self.limit_mode_slider.value()
-        limit_mode = self.axis_config["motor_settings"]["limit_mode"]
+        axis_config = self.axis_config.copy()
+        old_limit_mode = axis_config["motor_settings"].get("limit_mode", None)
 
-        if new_limit_mode == limit_mode:
-            # nothing changed
+        limit_mode = self.limit_mode_slider.value()
+
+        if old_limit_mode is not None and old_limit_mode == limit_mode:
+            # limit_mode did not change
             return
 
+        self._set_limit_mode(limit_mode)
+
+    @Slot()
+    def _change_speed_from_slider(self):
         axis_config = self.axis_config.copy()
-        axis_config["motor_settings"]["limit_mode"] = new_limit_mode
+        old_speed = axis_config["motor_settings"].get("speed", None)
 
-        if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
-            self.axis = None
+        speed = 0.1 * self.speed_slider.value()
+        speed = self._validate_speed(speed)
 
-        self.axis_config = axis_config
+        if old_speed is not None and old_speed == speed:
+            # speed did not change
+            return
+
+        self._set_motor_speed(speed)
+
+    @Slot()
+    def _change_speed_from_field(self):
+        axis_config = self.axis_config.copy()
+        old_speed = axis_config["motor_settings"].get("speed", None)
+
+        speed = ast.literal_eval(self.speed_input.text())
+        speed = self._validate_speed(speed)
+
+        if old_speed is not None and old_speed == speed:
+            # speed did not change
+            return
+
+        self._set_motor_speed(speed)
+
+    def _validate_speed(self, speed: float) -> float:
+        speed_validator = self.speed_input.validator()  # type: QDoubleValidator
+        min_speed = speed_validator.bottom()
+        max_speed = speed_validator.top()
+
+        speed = round(speed, 1)
+        if speed < min_speed:
+            speed = min_speed
+        elif speed > max_speed:
+            speed = max_speed
+
+        return speed
 
     def _spawn_axis(self) -> Union[Axis, None]:
         self.logger.info("Spawning Axis.")
@@ -379,6 +569,22 @@ class AxisConfigWidget(QWidget):
         limit_mode = self.axis_config["motor_settings"]["limit_mode"]
         self.limit_mode_slider.setValue(limit_mode)
 
+    @Slot()
+    def _update_speed_widgets(self):
+        speed = self.axis_config["motor_settings"].get("speed", 4.0)
+        slider_value = int(speed / 0.1)
+
+        self.logger.info(f"--> Updating speed widgets {speed} {slider_value}")
+
+        self.speed_input.blockSignals(True)
+        self.speed_slider.blockSignals(True)
+
+        self.speed_input.setText(f"{speed:.1f}")
+        self.speed_slider.setValue(slider_value)
+
+        self.speed_input.blockSignals(False)
+        self.speed_slider.blockSignals(False)
+
     def _validate_ip(self, ip):
         if ip == self.axis_config["ip"]:
             # ip did not change
@@ -397,6 +603,42 @@ class AxisConfigWidget(QWidget):
 
     def set_ip_handler(self, handler: callable):
         self._ip_handlers.append(handler)
+
+    def _set_motor_speed(self, speed: float | int):
+
+        if isinstance(self.axis, Axis) and isinstance(self.axis.motor, Motor):
+            self.axis.motor.send_command("set_speeds", speed)
+
+            motor_speed = float(self.axis.motor.config["speed"])
+            if motor_speed == speed:
+                self.configChanged.emit()
+                return
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        axis_config = self.axis_config.copy()
+        axis_config["motor_settings"]["speed"] = speed
+        self.axis_config = axis_config
+
+    def _set_limit_mode(self, limit_mode: int):
+
+        if isinstance(self.axis, Axis) and isinstance(self.axis.motor, Motor):
+            self.axis.motor.send_command("set_limit_mode", limit_mode)
+
+            motor_limit_mode = self.axis.motor.config["limit_mode"]
+            if motor_limit_mode == limit_mode:
+                self.configChanged.emit()
+                return
+
+        if isinstance(self.axis, Axis):
+            self.axis.terminate(delay_loop_stop=True)
+            self.axis = None
+
+        axis_config = self.axis_config.copy()
+        axis_config["motor_settings"]["limit_mode"] = limit_mode
+        self.axis_config = axis_config
 
     def closeEvent(self, event):
         self.logger.info("Closing AxisConfigWidget")
@@ -687,6 +929,7 @@ class DriveConfigOverlay(_ConfigOverlay):
                 border: 2px solid rgb(60, 60, 60);
                 border-radius: 5px;
                 padding: 6px;
+                margine: 0px;
             }
             """)
 
