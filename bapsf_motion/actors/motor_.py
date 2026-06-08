@@ -2143,6 +2143,7 @@ class Motor(EventActor):
         self.send_command("idle_current", new_ic)
 
         percent = float(np.round(new_cur/max_cur, 2))
+        self.motor["current"] = percent
         return percent
 
     def set_idle_current(self, percent):
@@ -2271,6 +2272,8 @@ class Motor(EventActor):
 
         self.send_command("current", curr)
         self.send_command("idle_current", new_ic)
+
+        self.motor["current"] = float(np.round(curr / max_curr, 2))
 
     def set_position(self, pos):
         """
