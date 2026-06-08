@@ -528,6 +528,16 @@ class Motor(EventActor):
             two_way=True,
             units=u.steps,
         ),
+        "set_limit_mode": CommandEntry(
+            "set_limit_mode",
+            send="",
+            method_command=True,
+        ),
+        "set_speeds": CommandEntry(
+            "set_speeds",
+            send="",
+            method_command=True,
+        ),
         "speed": CommandEntry(
             "speed",
             send="VE",
@@ -637,7 +647,8 @@ class Motor(EventActor):
         *,
         ip: str,
         limit_mode: int = None,
-        current: float = 0.8,
+        current: float | int = 0.8,
+        speed: float | int = 4.0,
         name: str = None,
         logger: logging.Logger = None,
         loop: asyncio.AbstractEventLoop = None,
@@ -650,9 +661,11 @@ class Motor(EventActor):
         self._setup = self._setup_defaults.copy()
         self._motor = self._motor_defaults.copy()
         self._status = self._status_defaults.copy()
-        self._limit_mode = limit_mode
-        if isinstance(current, float) and 0.0 < current <= 1.0:
-            self._motor["DEFAULTS"]["current"] = current
+
+        # initialize attributes that will be conditioned in _configure_before_run()
+        self._motor["current"] = current
+        self._motor["define_limits"] = limit_mode
+        self._motor["speed"] = speed
 
         # SimplgeSignal's to tell handlers about specific motor status
         # changes
@@ -682,30 +695,29 @@ class Motor(EventActor):
     def _configure_before_run(self):
         # actions to be done during object instantiation, but before
         # the asyncio event loop starts running.
-        if self._limit_mode is None:
-            self._limit_mode = self.motor["define_limits"]
-        elif not isinstance(self._limit_mode, int):
-            self.logger.warning(
-                "Assuming limit mode 1 for input argument 'limit_mode'.",
-                exc_info=TypeError(
-                    "Was expecting an int of value 1, 2, or 3 for input "
-                    f"argument 'limit_mode', got type "
-                    f"{type(self._limit_mode)} instead."
-                ),
-            )
-            self._limit_mode = self.motor["define_limits"]
-        elif self._limit_mode not in (1, 2, 3):
-            self.logger.warning(
-                "Assuming limit mode 1 for input argument 'limit_mode'.",
-                exc_info=ValueError(
-                    "Was expecting an int of value 1, 2, or 3 for input "
-                    f"argument 'limit_mode', got value "
-                    f"{self._limit_mode} instead."
-                ),
-            )
-            self._limit_mode = self.motor["define_limits"]
-        else:
-            self.motor["define_limits"] = self._limit_mode
+        #
+        # condition current
+        current = self.motor["current"]
+        current = self.set_current(current, skip_setting=True)
+        if current is None:
+            current = self.motor["DEFAULTS"]["current"]
+        self._motor["current"] = current
+
+        # condition limit_mode
+        limit_mode = self.motor["define_limits"]
+        limit_mode = self.set_limit_mode(limit_mode, skip_setting=True)
+        if limit_mode is None:
+            limit_mode = self.motor["DEFAULTS"]["define_limits"]
+        self._motor["define_limits"] = limit_mode
+
+        # condition speed
+        speed = self.motor["speed"]
+        if isinstance(speed, u.Quantity):
+            speed = float(speed.value)
+        speed = self.set_speeds(speed, skip_setting=True)
+        if speed is None:
+            speed = self.motor["DEFAULTS"]["speed"]
+        self._motor["speed"] = speed
 
         try:
             self.connect()
@@ -789,19 +801,21 @@ class Motor(EventActor):
             "gearing": None,  # steps/rev
             "encoder_resolution": None,  # counts/rev
             "DEFAULTS": {
-                "speed": 12.5,
+                "speed": 4.0,
                 "accel": 25,
                 "decel": 25,
                 "idle_current": 0.3,  # 30% of current
                 "current": 0.8,  # 80% of max_current (4.0 amps)
                 "max_idle_current": 0.9,  # 90% of current
                 "max_current": 5.0,  # 5 amps
+                "define_limits": 1,  # 1 = energized, 2 = de-energized, 3 = None
             },
+            "current": None,
             "speed": None,
             "accel": None,
             "decel": None,
             "protocol_settings": None,
-            "define_limits": 1,  # 1 = energized, 2 = de-energized, 3 = None
+            "define_limits": None,
         }
 
     @property
@@ -879,17 +893,19 @@ class Motor(EventActor):
         # input is closed (energized)
         # TODO: Replace with normal send_command when "define_limits" command
         #       is added to _commands dict
-        self.send_command("define_limits", self.motor["define_limits"])
+        self.set_limit_mode(self.motor["define_limits"])
 
         # set format of immediate commands to decimal
         self._send_raw_command("IFD")
 
-        # set a slower speed
-        self.send_command("speed", 4.0)
-        self.send_command("jog_speed", 4.0)
+        # set  speed
+        speed = self.motor["speed"]
+        if isinstance(speed, u.Quantity):
+            speed = float(speed.value)
+        self.set_speeds(speed)
 
         # set currents
-        self.send_command("set_current", self.motor["DEFAULTS"]["current"])
+        self.send_command("set_current", self.motor["current"])
         self.send_command("set_idle_current", self.motor["DEFAULTS"]["idle_current"])
 
     def _read_and_set_protocol(self):
@@ -990,11 +1006,17 @@ class Motor(EventActor):
 
     @property
     def config(self) -> Dict[str, Any]:
+        speed = self.motor["speed"]
+        if isinstance(speed, u.Quantity):
+            speed = speed.value
+        speed = float(speed)
+
         return {
             "name": self.name,
             "ip": self.ip,
             "limit_mode": self.motor["define_limits"],
-            "current": self.motor["DEFAULTS"]["current"],
+            "current": self.motor["current"],
+            "speed": speed,
         }
 
     config.__doc__ = EventActor.config.__doc__
@@ -2050,7 +2072,11 @@ class Motor(EventActor):
             #       as sleeping.
             pass
 
-    def set_current(self, percent):
+    def set_current(
+        self,
+        percent: float | int,
+        skip_setting: bool = False,
+    ) -> float | None:
         r"""
         Set the peak current setting ("peak of sine") of the stepper
         drive, also known as the running current.  The value given
@@ -2068,6 +2094,16 @@ class Motor(EventActor):
             ``0.5`` will set the running current to 50% of the max
             allowable running current
             (``_motor["DEFAULTS"]["max_current"]``).
+
+        skip_setting : `bool`
+            (DEFAULT: `False`) If `True`, then do NOT set the currents.
+            Just to the value validation.
+
+        Returns
+        -------
+        float | None
+            The set fractional current ``percent``, or `None` if input
+            ``percent`` could not be set.
         """
         if not isinstance(percent, (int, float)):
             self.logger.error(
@@ -2075,30 +2111,44 @@ class Motor(EventActor):
                 f"but got type {type(percent)}."
             )
             return
-        elif not (0 <= percent <= 1):
+
+        if isinstance(percent, int):
+            percent = float(percent)
+
+        if not (0 <= percent <= 1):
             self.logger.error(
-                f"Setting motor current, expected a value of 0 - 1 " f"but got {percent}."
+                f"Setting motor current, expected a value of 0 - 1, but got {percent}."
             )
             return
 
-        new_cur = percent * self._motor["DEFAULTS"]["max_current"]
+        if skip_setting:
+            return percent
+
+        max_cur = self._motor["DEFAULTS"]["max_current"]
+        new_cur = percent * max_cur
 
         ic = self.send_command("idle_current")
         if self._lost_connection(ic):
             self.logger.error("Unable to set current due to a lost connection.")
-            return
-        elif ic == self.ack_flags.MALFORMED:
+            return self.motor["current"]
+
+        if ic == self.ack_flags.MALFORMED:
             self.logger.error(
                 "Unable to set current due to the motor response not matching "
                 "the expected response."
             )
-            return
+            return self.motor["current"]
+
         new_ic = np.min(
             [self._motor["DEFAULTS"]["max_idle_current"] * new_cur, ic],
         )
 
         self.send_command("current", new_cur)
         self.send_command("idle_current", new_ic)
+
+        percent = float(np.round(new_cur / max_cur, 2))
+        self.motor["current"] = percent
+        return percent
 
     def set_idle_current(self, percent):
         r"""
@@ -2141,6 +2191,81 @@ class Motor(EventActor):
         new_ic = percent * curr
         self.send_command("idle_current", new_ic)
 
+    def set_limit_mode(self, limit_mode: int, skip_setting: bool = False):
+        if not isinstance(limit_mode, int):
+            self.logger.warning(
+                "Limit mode not set / changed.",
+                exc_info=TypeError(
+                    "Was expecting an int of value 1, 2, or 3 for input "
+                    f"argument 'limit_mode', got type "
+                    f"{type(limit_mode)} instead."
+                ),
+            )
+            return
+
+        if limit_mode not in (1, 2, 3):
+            self.logger.warning(
+                "Limit mode not set / changed.",
+                exc_info=ValueError(
+                    "Was expecting an int of value 1, 2, or 3 for input "
+                    f"argument 'limit_mode', got value "
+                    f"{limit_mode} instead."
+                ),
+            )
+            return
+
+        if not skip_setting:
+            self.send_command("define_limits", limit_mode)
+            self.motor["define_limits"] = limit_mode
+
+        return limit_mode
+
+    def set_speeds(self, speed: float | int, skip_setting: bool = False):
+        if not isinstance(speed, (float, int)):
+            self.logger.warning(
+                "Speed not set / changed.",
+                exc_info=TypeError(
+                    "Was expecting a positive float, non-zero for input argument "
+                    f"'speed', got type {type(speed)} instead."
+                ),
+            )
+            return
+
+        if isinstance(speed, int):
+            speed = float(speed)
+
+        if speed <= 0.0:
+            self.logger.warning(
+                "Speed not set / changed.",
+                exc_info=ValueError(
+                    "Was expecting a positive, non-zero float for input argument "
+                    f"'speed', got value {speed} instead."
+                ),
+            )
+            return
+
+        if speed > 80.0:
+            self.logger.warning(
+                "Speed not set / changed.",
+                exc_info=ValueError(
+                    "Was expecting a positive, non-zero float less than 80 "
+                    f"for input argument 'speed', got value {speed} instead."
+                ),
+            )
+            return
+
+        if not skip_setting:
+            self.send_command("speed", speed)
+            self.send_command("jog_speed", speed)
+
+            speed = self.send_command("speed")
+            self.motor["speed"] = speed
+
+        if isinstance(speed, u.Quantity):
+            speed = float(speed.value)
+
+        return speed
+
     def reset_currents(self):
         """
         Reset running and idle currents to their default values.
@@ -2151,6 +2276,8 @@ class Motor(EventActor):
 
         self.send_command("current", curr)
         self.send_command("idle_current", new_ic)
+
+        self.motor["current"] = float(np.round(curr / max_curr, 2))
 
     def set_position(self, pos):
         """
