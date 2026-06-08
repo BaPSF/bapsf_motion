@@ -190,7 +190,7 @@ class AxisConfigWidget(QWidget):
         layout.addLayout(self._define_vdivider_layout())
         layout.addWidget(self._define_speed_input_widget())
         layout.addLayout(self._define_vdivider_layout())
-        layout.addStretch()
+        layout.addWidget(self._define_current_input_widget())
         layout.addLayout(self._define_vdivider_layout())
         layout.addLayout(self._define_online_indicator_layout())
         return layout
@@ -357,6 +357,77 @@ class AxisConfigWidget(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(
             speed_label,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
+        layout.addSpacing(-20)
+        layout.addLayout(slider_number_layout)
+        layout.addLayout(slider_layout)
+        layout.addLayout(input_layout)
+
+        widget = QWidget(parent=self)
+        widget.setLayout(layout)
+        widget.setStyleSheet("margin: 0px;")
+        widget.setMinimumWidth(150)
+        return widget
+
+    def _define_current_input_widget(self):
+        current_validator = self.current_input.validator()  # type: QDoubleValidator
+        min_current = current_validator.bottom()
+        max_current = current_validator.top()
+
+        min_current_label = QLabel(f"{min_current:.1f}", parent=self)
+        font = min_current_label.font()
+        font.setPointSize(12)
+        min_current_label.setFont(font)
+        min_current_label.setStyleSheet("margin: 0px;")
+
+        max_current_label = QLabel(f"{max_current:.1f}", parent=self)
+        font = max_current_label.font()
+        font.setPointSize(12)
+        max_current_label.setFont(font)
+        max_current_label.setStyleSheet("margin: 0px;")
+
+        current_label = QLabel(f"CURRENT", parent=self)
+        font = current_label.font()
+        font.setPointSize(10)
+        current_label.setFont(font)
+        current_label.setStyleSheet("margin: 0px;")
+
+        unit_label = QLabel(f"I / MAX", parent=self)
+        font = unit_label.font()
+        font.setPointSize(10)
+        unit_label.setFont(font)
+        unit_label.setStyleSheet("margin: 0px;")
+
+        slider_number_layout = QHBoxLayout()
+        slider_number_layout.setContentsMargins(0, 0, 0, 0)
+        slider_number_layout.addWidget(
+            min_current_label, alignment=Qt.AlignmentFlag.AlignLeft
+        )
+        slider_number_layout.addStretch(1)
+        slider_number_layout.addWidget(
+            max_current_label, alignment=Qt.AlignmentFlag.AlignRight
+        )
+
+        slider_layout = QHBoxLayout()
+        slider_layout.setContentsMargins(0, 0, 0, 0)
+        slider_layout.addSpacing(4)
+        slider_layout.addWidget(self.current_slider)
+        slider_layout.addSpacing(4)
+
+        input_layout = QHBoxLayout()
+        input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.addWidget(self.current_input)
+        input_layout.addSpacing(4)
+        input_layout.addWidget(
+            unit_label,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(
+            current_label,
             alignment=Qt.AlignmentFlag.AlignCenter,
         )
         layout.addSpacing(-20)
