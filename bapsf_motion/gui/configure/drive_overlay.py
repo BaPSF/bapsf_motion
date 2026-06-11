@@ -1151,7 +1151,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.configChanged.emit()
 
     @Slot()
-    def _change_validation_state(self, validate=False):
+    def _change_validation_state(self, validate: bool = False):
         self.logger.info(f"Changing validation state to {validate}.")
         self.validate_led.setChecked(validate)
         self.done_btn.setEnabled(validate)
