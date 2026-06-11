@@ -903,6 +903,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         # Define WIDGETS
         self.add_axis_btn = self._init_add_axis_btn()
+        self.remove_axis_btn = self._init_remove_axis_btn()
         self.validate_btn = self._init_validate_btn()
         self.validate_led = self._init_validate_led()
         self.drive_name_input = self._init_drive_name_input()
@@ -993,14 +994,14 @@ class DriveConfigOverlay(_ConfigOverlay):
         return layout
 
     def _init_add_axis_btn(self):
-        _btn = StyleButton("Add Axis", parent=self)
-        _btn.setFixedWidth(120)
+        _btn = StyleButton("ADD   Axis", parent=self)
+        _btn.setFixedWidth(180)
         _btn.setFixedHeight(36)
         font = _btn.font()
-        font.setPointSize(20)
+        font.setPointSize(16)
         _btn.setFont(font)
-        _btn.setEnabled(False)
-        _btn.setHidden(True)
+        _btn.setEnabled(True)
+        _btn.setVisible(True)
         return _btn
 
     def _init_drive_name_input(self):
@@ -1010,6 +1011,17 @@ class DriveConfigOverlay(_ConfigOverlay):
         _input.setFont(font)
         _input.setMinimumWidth(220)
         return _input
+
+    def _init_remove_axis_btn(self):
+        _btn = StyleButton("REMOVE   Axis", parent=self)
+        _btn.setFixedWidth(180)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
+        _btn.setEnabled(True)
+        _btn.setVisible(True)
+        return _btn
 
     def _init_validate_btn(self):
         _btn = StyleButton("Validate", parent=self)
