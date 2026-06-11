@@ -1147,9 +1147,12 @@ class DriveConfigOverlay(_ConfigOverlay):
         #
         ax_layout = self.findChild(QVBoxLayout, "axis_vbox_layout")
 
+        # remove and cleanup the removed AxisConfigWidget
+        # - using parentWidget() here to ensure the QFrame the widget AxisConfigWidget
+        #   lives in is properly removed
         acw = self.axis_widgets[2]
         ax_layout.removeWidget(acw.parentWidget())
-        acw.parentWidget().close()  # using parent to close since acw lives inside a QFrame
+        acw.parentWidget().close()
         acw.parentWidget().deleteLater()
         self.axis_widgets.remove(acw)
 
