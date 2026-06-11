@@ -933,6 +933,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         super()._connect_signals()
 
         self.validate_btn.clicked.connect(self._validate_drive)
+        self.add_axis_btn.clicked.connect(self._add_axis)
 
         self.configChanged.connect(self._update_drive_name_input)
 
@@ -1116,6 +1117,27 @@ class DriveConfigOverlay(_ConfigOverlay):
             return []
 
         return [axw.axis_config["ip"] for axw in self.axis_widgets]
+
+    @Slot()
+    def _add_axis(self):
+        # Currently the number of axes is restricted to 2 or 3.  Thus,
+        # adding an axis is always a request to add the 3rd axis.
+        #
+        ax_name = self._default_axis_names[2]
+        acw = self._spawn_axis_widget(ax_name)
+
+        ax_layout = self.findChild(QVBoxLayout, "axis_vbox_layout")
+        ax_layout.insertWidget(2, acw)
+
+        # hide and disable the add btn
+        self.add_axis_btn.setVisible(False)
+        self.add_axis_btn.setEnabled(False)
+
+        # show and enable the remove btn
+        self.remove_axis_btn.setVisible(True)
+        self.remove_axis_btn.setEnabled(True)
+
+        self._change_validation_state(False)
 
     @Slot()
     def _change_drive_name(self):
