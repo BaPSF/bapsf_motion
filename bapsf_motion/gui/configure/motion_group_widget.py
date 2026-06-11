@@ -3,6 +3,8 @@ Module contains all the main functionality for the |MotionGroup|
 configuration portion of the configuration GUI.
 """
 
+from __future__ import annotations
+
 __all__ = ["MGWidget"]
 
 import asyncio
@@ -22,11 +24,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
 
-from bapsf_motion.actors import Axis, Drive, MotionGroup, MotionGroupConfig, RunManager
-from bapsf_motion.gui.configure import configure_
-from bapsf_motion.gui.configure.bases import _ConfigOverlay, _OverlayWidget
+from bapsf_motion.actors import Drive, MotionGroup, MotionGroupConfig, RunManager
 from bapsf_motion.gui.configure.controllers import (
     DriveDesktopController,
     DriveGameController,
@@ -54,6 +54,10 @@ from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry
 from bapsf_motion.utils import _deepcopy_dict, dict_equal, loop_safe_stop, toml
+
+if TYPE_CHECKING:
+    from bapsf_motion.gui.configure import configure_
+    from bapsf_motion.gui.configure.bases import _ConfigOverlay, _OverlayWidget
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
