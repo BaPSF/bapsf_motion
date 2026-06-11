@@ -50,7 +50,7 @@ class AxisConfigWidget(QWidget):
         "speed": 4.0,
     }
 
-    def __init__(self, name, parent=None):
+    def __init__(self, name, parent: QWidget | None = None):
         super().__init__(parent=parent)
 
         self.axis_loop = asyncio.new_event_loop()
@@ -890,6 +890,7 @@ class AxisConfigWidget(QWidget):
 
 class DriveConfigOverlay(_ConfigOverlay):
     drive_loop = asyncio.new_event_loop()
+    _default_axis_names = ("X", "Y", "Z")
 
     def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
         super().__init__(mg, parent)
@@ -901,40 +902,12 @@ class DriveConfigOverlay(_ConfigOverlay):
         self._drive_config = None
         self._axis_widgets = None
 
-        # Define BUTTONS
-
-        _btn = StyleButton("Add Axis", parent=self)
-        _btn.setFixedWidth(120)
-        _btn.setFixedHeight(36)
-        font = _btn.font()
-        font.setPointSize(20)
-        _btn.setFont(font)
-        _btn.setEnabled(False)
-        _btn.setHidden(True)
-        self.add_axis_btn = _btn
-
-        _btn = StyleButton("Validate", parent=self)
-        _btn.setFixedWidth(150)
-        _btn.setFixedHeight(36)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
-        self.validate_btn = _btn
-
-        _btn = LED(parent=self)
-        _btn.set_fixed_height(32)
-        _btn.off_color = "d43729"
-        self.validate_led = _btn
-
-        # Define TEXT WIDGETS
-        _widget = QLineEdit(parent=self)
-        font = _widget.font()
-        font.setPointSize(16)
-        _widget.setFont(font)
-        _widget.setMinimumWidth(220)
-        self.dr_name_widget = _widget
-
-        # Define ADVANCED WIDGETS
+        # Define WIDGETS
+        self.add_axis_btn = self._init_add_axis_btn()
+        self.remove_axis_btn = self._init_remove_axis_btn()
+        self.validate_btn = self._init_validate_btn()
+        self.validate_led = self._init_validate_led()
+        self.drive_name_input = self._init_drive_name_input()
 
         # initialize drive configuration
         _drive_config = None
@@ -960,10 +933,12 @@ class DriveConfigOverlay(_ConfigOverlay):
         super()._connect_signals()
 
         self.validate_btn.clicked.connect(self._validate_drive)
+        self.add_axis_btn.clicked.connect(self._add_axis)
+        self.remove_axis_btn.clicked.connect(self._remove_axis)
 
-        self.configChanged.connect(self._update_dr_name_widget)
+        self.configChanged.connect(self._update_drive_name_input)
 
-        self.dr_name_widget.editingFinished.connect(self._change_drive_name)
+        self.drive_name_input.editingFinished.connect(self._change_drive_name)
 
     def _define_layout(self):
 
@@ -972,19 +947,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         layout.addWidget(HLinePlain(parent=self))
         layout.addLayout(self._define_second_row_layout())
         layout.addSpacing(24)
-
-        drive_config = self._drive_config
-        for ii, name in enumerate(("X", "Y")):
-            layout.addWidget(self._spawn_axis_widget(name))
-
-            # initialize axis widget
-            if "axes" in drive_config:
-                try:
-                    ax_config = drive_config["axes"][ii]
-                    self.axis_widgets[ii].axis_config = ax_config
-                except KeyError:
-                    continue
-
+        layout.addLayout(self._define_axis_config_layout())
         layout.addStretch(1)
 
         return layout
@@ -1006,20 +969,112 @@ class DriveConfigOverlay(_ConfigOverlay):
         _label.setFont(font)
         name_label = _label
 
-        self._update_dr_name_widget()
+        self._update_drive_name_input()
 
         layout = QHBoxLayout()
         layout.addSpacing(18)
         layout.addWidget(name_label)
-        layout.addWidget(self.dr_name_widget)
-        layout.addStretch()
-        layout.addWidget(self.add_axis_btn)
+        layout.addWidget(self.drive_name_input)
         layout.addStretch()
         layout.addWidget(self.validate_btn)
         layout.addWidget(self.validate_led)
         layout.addSpacing(18)
 
         return layout
+
+    def _define_axis_config_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setObjectName("axis_vbox_layout")
+
+        drive_config = self._drive_config
+        axis_names = []
+        if "axes" in drive_config:
+            axis_names = []
+            for ii, ax in drive_config["axes"].items():
+                ax_name = ax.get("name", self._default_axis_names[ii])
+                axis_names.append(ax_name)
+            axis_names = tuple(axis_names)
+
+        if len(axis_names) == 0:
+            axis_names = self._default_axis_names[:2]
+
+        for ii, name in enumerate(axis_names):
+            layout.addWidget(self._spawn_axis_widget(name))
+
+            # initialize axis widget
+            if "axes" in drive_config:
+                try:
+                    ax_config = drive_config["axes"][ii]
+                    self.axis_widgets[ii].axis_config = ax_config
+                except KeyError:
+                    continue
+
+        sub_layout = QHBoxLayout()
+        sub_layout.setContentsMargins(0, 0, 0, 0)
+        sub_layout.addStretch(1)
+        sub_layout.addWidget(self.add_axis_btn)
+        sub_layout.addSpacing(8)
+        sub_layout.addWidget(self.remove_axis_btn)
+        sub_layout.addStretch(1)
+
+        layout.addLayout(sub_layout)
+
+        if len(self.axis_widgets) == 2:
+            # can not have less that 2 axes (at the moment)
+            self.remove_axis_btn.setVisible(False)
+            self.remove_axis_btn.setEnabled(False)
+        elif len(self.axis_widgets) == 3:
+            # can not have more than 3 axes (at the moment)
+            self.add_axis_btn.setVisible(False)
+            self.add_axis_btn.setEnabled(False)
+
+        return layout
+
+    def _init_add_axis_btn(self):
+        _btn = StyleButton("ADD   Axis", parent=self)
+        _btn.setFixedWidth(180)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
+        _btn.setEnabled(True)
+        _btn.setVisible(True)
+        return _btn
+
+    def _init_drive_name_input(self):
+        _input = QLineEdit(parent=self)
+        font = _input.font()
+        font.setPointSize(16)
+        _input.setFont(font)
+        _input.setMinimumWidth(220)
+        return _input
+
+    def _init_remove_axis_btn(self):
+        _btn = StyleButton("REMOVE   Axis", parent=self)
+        _btn.setFixedWidth(180)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
+        _btn.setEnabled(True)
+        _btn.setVisible(True)
+        return _btn
+
+    def _init_validate_btn(self):
+        _btn = StyleButton("Validate", parent=self)
+        _btn.setFixedWidth(150)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
+        return _btn
+
+    def _init_validate_led(self):
+        _btn = LED(parent=self)
+        _btn.set_fixed_height(32)
+        _btn.off_color = "d43729"
+        return _btn
 
     @property
     def drive(self) -> Union[Drive, None]:
@@ -1038,7 +1093,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             self._drive_config = self.drive.config.copy()
             return self._drive_config
         elif self._drive_config is None:
-            name = self.dr_name_widget.text()
+            name = self.drive_name_input.text()
             name = "A New Drive" if name == "" else name
             self._drive_config = {"name": name}
 
@@ -1065,9 +1120,56 @@ class DriveConfigOverlay(_ConfigOverlay):
         return [axw.axis_config["ip"] for axw in self.axis_widgets]
 
     @Slot()
+    def _add_axis(self):
+        # Currently the number of axes is restricted to 2 or 3.  Thus,
+        # adding an axis is always a request to add the 3rd axis.
+        #
+        ax_name = self._default_axis_names[2]
+        acw = self._spawn_axis_widget(ax_name)
+
+        ax_layout = self.findChild(QVBoxLayout, "axis_vbox_layout")
+        ax_layout.insertWidget(2, acw)
+
+        # hide and disable the add btn
+        self.add_axis_btn.setVisible(False)
+        self.add_axis_btn.setEnabled(False)
+
+        # show and enable the remove btn
+        self.remove_axis_btn.setVisible(True)
+        self.remove_axis_btn.setEnabled(True)
+
+        self._change_validation_state(False)
+
+    @Slot()
+    def _remove_axis(self):
+        # Currently the number of axes is restricted to 2 or 3.  Thus,
+        # removing an axis is always a request to remove the 3rd axis.
+        #
+        ax_layout = self.findChild(QVBoxLayout, "axis_vbox_layout")
+
+        # remove and cleanup the removed AxisConfigWidget
+        # - using parentWidget() here to ensure the QFrame the widget AxisConfigWidget
+        #   lives in is properly removed
+        acw = self.axis_widgets[2]
+        ax_layout.removeWidget(acw.parentWidget())
+        acw.parentWidget().close()
+        acw.parentWidget().deleteLater()
+        self.axis_widgets.remove(acw)
+
+        # hide and disable the remove btn
+        self.remove_axis_btn.setVisible(False)
+        self.remove_axis_btn.setEnabled(False)
+
+        # show and enable the add btn
+        self.add_axis_btn.setVisible(True)
+        self.add_axis_btn.setEnabled(True)
+
+        self._change_validation_state(False)
+
+    @Slot()
     def _change_drive_name(self):
         self.logger.info("Renaming drive...")
-        new_name = self.dr_name_widget.text()
+        new_name = self.drive_name_input.text()
         if isinstance(self.drive, Drive):
             self.drive.name = new_name
         else:
@@ -1076,7 +1178,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         self.configChanged.emit()
 
     @Slot()
-    def _change_validation_state(self, validate=False):
+    def _change_validation_state(self, validate: bool = False):
         self.logger.info(f"Changing validation state to {validate}.")
         self.validate_led.setChecked(validate)
         self.done_btn.setEnabled(validate)
@@ -1085,9 +1187,9 @@ class DriveConfigOverlay(_ConfigOverlay):
             self._set_drive(None)
 
     @Slot()
-    def _update_dr_name_widget(self):
+    def _update_drive_name_input(self):
         name = self.drive_config.get("name", "")
-        self.dr_name_widget.setText(name)
+        self.drive_name_input.setText(name)
 
     def set_drive_handler(self, handler: Callable): ...
 
@@ -1120,7 +1222,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             self.logger.warning("Drive is not valid since not all axes are online.")
             self._change_validation_state(False)
             return
-        elif self.dr_name_widget.text() == "":
+        elif self.drive_name_input.text() == "":
             self.logger.warning("Drive is not valid, it needs a name.")
             self._change_validation_state(False)
             return
@@ -1143,7 +1245,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         _frame = QFrame(parent=self)
         _frame.setLayout(QVBoxLayout())
 
-        _widget = AxisConfigWidget(name, parent=self)
+        _widget = AxisConfigWidget(name, parent=_frame)
         _widget.set_ip_handler(self._validate_ip)
         _widget.configChanged.connect(
             partial(self._change_validation_state, validate=False),
