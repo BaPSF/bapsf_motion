@@ -1,6 +1,7 @@
 __all__ = [
-    "WarningMessageBox",
+    "LostConnectionMessageBox",
     "MSpaceMessageBox",
+    "WarningMessageBox",
 ]
 
 from pathlib import Path
@@ -106,6 +107,85 @@ class WarningMessageBox(QMessageBox):
             return self._acknowledge_exec()
 
         return self._approve_exec()
+
+
+class LostConnectionMessageBox(QMessageBox):
+    """
+    Modal warning dialog box to warn the user that the TCP connection
+    to a physical motor was lost.
+    """
+
+    def __init__(self, parent: QWidget):
+        super().__init__(parent)
+
+        self._display_dialog = True
+
+        self.setWindowTitle("Lost TCP Connection to Motor")
+        self._base_message = "Lost TCP connection to physical motor."
+        self._lost_motors = {}
+        font = self.font()
+        font.setPointSize(14)
+        self.setFont(font)
+        self.setText(self._base_message)
+
+        self.setIcon(QMessageBox.Icon.Warning)
+        self.setStandardButtons(QMessageBox.StandardButton.Discard)
+        self.setDefaultButton(QMessageBox.StandardButton.Discard)
+
+    @property
+    def display_dialog(self) -> bool:
+        return self._display_dialog
+
+    @display_dialog.setter
+    def display_dialog(self, value: bool) -> None:
+        if not isinstance(value, bool):
+            return
+
+        self._display_dialog = value
+
+    def _update_display_dialog(self) -> None:
+        if len(self._lost_motors) == 0:
+            self.setText(self._base_message)
+
+            if self.isVisible():
+                self.defaultButton().click()
+            return None
+
+        msg = self._base_message + "\n\n"
+        for name, ip in self._lost_motors.items():
+            msg += f"    {name} : {ip}\n"
+
+        self.setText(msg)
+
+        if not self.isVisible():
+            self.exec()
+
+        return None
+
+    def register_lost_motor(self, name: str, ip: str) -> None:
+        if name in self._lost_motors:
+            return
+
+        self._lost_motors[name] = ip
+        self._update_display_dialog()
+
+    def register_resolved_motor(self, name):
+        if name not in self._lost_motors:
+            return
+
+        self._lost_motors.pop(name)
+        self._update_display_dialog()
+
+    def exec(self) -> bool:
+        if not self.display_dialog:
+            return True
+
+        if not self.isEnabled():
+            return True
+
+        super().exec()
+
+        return True
 
 
 class MSpaceMessageBox(QMessageBox):
