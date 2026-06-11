@@ -1,3 +1,8 @@
+"""
+Module contains functionality related to interfacing with `pygame-ce`
+joysticks.
+"""
+
 import logging
 import numpy as np
 import os
