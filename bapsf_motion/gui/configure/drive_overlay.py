@@ -890,6 +890,7 @@ class AxisConfigWidget(QWidget):
 
 class DriveConfigOverlay(_ConfigOverlay):
     drive_loop = asyncio.new_event_loop()
+    _default_axis_names = ("X", "Y", "Z")
 
     def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
         super().__init__(mg, parent)
@@ -944,19 +945,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         layout.addWidget(HLinePlain(parent=self))
         layout.addLayout(self._define_second_row_layout())
         layout.addSpacing(24)
-
-        drive_config = self._drive_config
-        for ii, name in enumerate(("X", "Y")):
-            layout.addWidget(self._spawn_axis_widget(name))
-
-            # initialize axis widget
-            if "axes" in drive_config:
-                try:
-                    ax_config = drive_config["axes"][ii]
-                    self.axis_widgets[ii].axis_config = ax_config
-                except KeyError:
-                    continue
-
+        layout.addLayout(self._define_axis_config_layout())
         layout.addStretch(1)
 
         return layout
@@ -985,11 +974,58 @@ class DriveConfigOverlay(_ConfigOverlay):
         layout.addWidget(name_label)
         layout.addWidget(self.drive_name_input)
         layout.addStretch()
-        layout.addWidget(self.add_axis_btn)
-        layout.addStretch()
         layout.addWidget(self.validate_btn)
         layout.addWidget(self.validate_led)
         layout.addSpacing(18)
+
+        return layout
+
+    def _define_axis_config_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setObjectName("axis_vbox_layout")
+
+        drive_config = self._drive_config
+        axis_names = []
+        if "axes" in drive_config:
+            axis_names = []
+            for ii, ax in drive_config["axes"].items():
+                ax_name = ax.get("name", self._default_axis_names[ii])
+                axis_names.append(ax_name)
+            axis_names = tuple(axis_names)
+
+        if len(axis_names) == 0:
+            axis_names = self._default_axis_names[:2]
+
+        for ii, name in enumerate(axis_names):
+            layout.addWidget(self._spawn_axis_widget(name))
+
+            # initialize axis widget
+            if "axes" in drive_config:
+                try:
+                    ax_config = drive_config["axes"][ii]
+                    self.axis_widgets[ii].axis_config = ax_config
+                except KeyError:
+                    continue
+
+        sub_layout = QHBoxLayout()
+        sub_layout.setContentsMargins(0, 0, 0, 0)
+        sub_layout.addStretch(1)
+        sub_layout.addWidget(self.add_axis_btn)
+        sub_layout.addSpacing(8)
+        sub_layout.addWidget(self.remove_axis_btn)
+        sub_layout.addStretch(1)
+
+        layout.addLayout(sub_layout)
+
+        if len(self.axis_widgets) == 2:
+            # can not have less that 2 axes (at the moment)
+            self.remove_axis_btn.setVisible(False)
+            self.remove_axis_btn.setEnabled(False)
+        elif len(self.axis_widgets) == 3:
+            # can not have more than 3 axes (at the moment)
+            self.add_axis_btn.setVisible(False)
+            self.add_axis_btn.setEnabled(False)
 
         return layout
 
