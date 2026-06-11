@@ -901,20 +901,11 @@ class DriveConfigOverlay(_ConfigOverlay):
         self._drive_config = None
         self._axis_widgets = None
 
-        # Define BUTTONS
+        # Define WIDGETS
         self.add_axis_btn = self._init_add_axis_btn()
         self.validate_btn = self._init_validate_btn()
         self.validate_led = self._init_validate_led()
-
-        # Define TEXT WIDGETS
-        _widget = QLineEdit(parent=self)
-        font = _widget.font()
-        font.setPointSize(16)
-        _widget.setFont(font)
-        _widget.setMinimumWidth(220)
-        self.drive_name_input = _widget
-
-        # Define ADVANCED WIDGETS
+        self.drive_name_input = self._init_drive_name_input()
 
         # initialize drive configuration
         _drive_config = None
@@ -1011,6 +1002,14 @@ class DriveConfigOverlay(_ConfigOverlay):
         _btn.setEnabled(False)
         _btn.setHidden(True)
         return _btn
+
+    def _init_drive_name_input(self):
+        _input = QLineEdit(parent=self)
+        font = _input.font()
+        font.setPointSize(16)
+        _input.setFont(font)
+        _input.setMinimumWidth(220)
+        return _input
 
     def _init_validate_btn(self):
         _btn = StyleButton("Validate", parent=self)
