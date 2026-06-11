@@ -43,7 +43,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 from bapsf_motion.actors import Axis, Drive, MotionGroup, MotionGroupConfig, RunManager
 from bapsf_motion.gui.configure import configure_
@@ -131,7 +131,7 @@ class DriveControlWidget(QWidget):
         self.lost_connection_dialog = LostConnectionMessageBox(parent=self)
 
         self.desktop_controller_widget = DriveDesktopController(parent=self)
-        self.game_controller_widget = None  # type: Union[DriveGameController, None]
+        self.game_controller_widget = None  # type: DriveGameController | None
         self.stacked_controller_widget = QStackedWidget(parent=self)
         self.stacked_controller_widget.addWidget(self.desktop_controller_widget)
 
@@ -218,7 +218,7 @@ class DriveControlWidget(QWidget):
         return self._logger
 
     @property
-    def mg(self) -> Union[MotionGroup, None]:
+    def mg(self) -> MotionGroup | None:
         return self._mg
 
     @property
@@ -547,7 +547,7 @@ class MGWidget(QWidget):
         self.transform_btn = _btn
 
         # Define ADVANCED WIDGETS
-        self._overlay_widget = None  # type: Union[_ConfigOverlay, None]
+        self._overlay_widget = None  # type: _ConfigOverlay | None
         self._overlay_shown = False
 
         self.drive_control_widget = DriveControlWidget(parent=self)
@@ -1311,7 +1311,7 @@ class MGWidget(QWidget):
         """Current working Motion Group"""
         return self._mg
 
-    def _set_mg(self, mg: Union[MotionGroup, None]):
+    def _set_mg(self, mg: MotionGroup| None):
         if not (isinstance(mg, MotionGroup) or mg is None):
             return
 
@@ -1319,7 +1319,7 @@ class MGWidget(QWidget):
         self.configChanged.emit()
 
     @property
-    def mg_config(self) -> Union[Dict[str, Any], "MotionGroupConfig"]:
+    def mg_config(self) -> "Dict[str, Any] | MotionGroupConfig":
         if isinstance(self.mg, MotionGroup):
             self._mg_config = _deepcopy_dict(self.mg.config)
         elif self._mg_config is None:
@@ -1551,7 +1551,7 @@ class MGWidget(QWidget):
         return drive_name, ml_name
 
     @staticmethod
-    def _spawn_motion_builder(config: Dict[str, Any]) -> Union[MotionBuilder, None]:
+    def _spawn_motion_builder(config: Dict[str, Any]) -> MotionBuilder | None:
         """Return an instance of |MotionBuilder|."""
         if config is None or not config:
             return None
@@ -1806,7 +1806,7 @@ class MGWidget(QWidget):
         if index == -1:
             return
 
-        tr_default_config = None  # type: Union[Dict[str, Any], None]
+        tr_default_config = None  # type: Dict[str, Any] | None
         for _name, _config in self.transform_defaults:
             if tr_name != _name:
                 continue
