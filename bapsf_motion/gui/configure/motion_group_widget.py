@@ -10,13 +10,7 @@ import logging
 import os
 import re
 
-from PySide6.QtCore import (
-    QSize,
-    Qt,
-    QTimer,
-    Signal,
-    Slot,
-)
+from PySide6.QtCore import QSize, Qt, QTimer, Signal, Slot
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
@@ -1288,7 +1282,7 @@ class MGWidget(QWidget):
         """Current working Motion Group"""
         return self._mg
 
-    def _set_mg(self, mg: MotionGroup| None):
+    def _set_mg(self, mg: MotionGroup | None):
         if not (isinstance(mg, MotionGroup) or mg is None):
             return
 
