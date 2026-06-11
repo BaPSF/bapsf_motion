@@ -912,7 +912,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         font.setPointSize(16)
         _widget.setFont(font)
         _widget.setMinimumWidth(220)
-        self.dr_name_widget = _widget
+        self.drive_name_input = _widget
 
         # Define ADVANCED WIDGETS
 
@@ -941,9 +941,9 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         self.validate_btn.clicked.connect(self._validate_drive)
 
-        self.configChanged.connect(self._update_dr_name_widget)
+        self.configChanged.connect(self._update_drive_name_input)
 
-        self.dr_name_widget.editingFinished.connect(self._change_drive_name)
+        self.drive_name_input.editingFinished.connect(self._change_drive_name)
 
     def _define_layout(self):
 
@@ -986,12 +986,12 @@ class DriveConfigOverlay(_ConfigOverlay):
         _label.setFont(font)
         name_label = _label
 
-        self._update_dr_name_widget()
+        self._update_drive_name_input()
 
         layout = QHBoxLayout()
         layout.addSpacing(18)
         layout.addWidget(name_label)
-        layout.addWidget(self.dr_name_widget)
+        layout.addWidget(self.drive_name_input)
         layout.addStretch()
         layout.addWidget(self.add_axis_btn)
         layout.addStretch()
@@ -1044,7 +1044,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             self._drive_config = self.drive.config.copy()
             return self._drive_config
         elif self._drive_config is None:
-            name = self.dr_name_widget.text()
+            name = self.drive_name_input.text()
             name = "A New Drive" if name == "" else name
             self._drive_config = {"name": name}
 
@@ -1073,7 +1073,7 @@ class DriveConfigOverlay(_ConfigOverlay):
     @Slot()
     def _change_drive_name(self):
         self.logger.info("Renaming drive...")
-        new_name = self.dr_name_widget.text()
+        new_name = self.drive_name_input.text()
         if isinstance(self.drive, Drive):
             self.drive.name = new_name
         else:
@@ -1091,9 +1091,9 @@ class DriveConfigOverlay(_ConfigOverlay):
             self._set_drive(None)
 
     @Slot()
-    def _update_dr_name_widget(self):
+    def _update_drive_name_input(self):
         name = self.drive_config.get("name", "")
-        self.dr_name_widget.setText(name)
+        self.drive_name_input.setText(name)
 
     def set_drive_handler(self, handler: Callable): ...
 
@@ -1126,7 +1126,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             self.logger.warning("Drive is not valid since not all axes are online.")
             self._change_validation_state(False)
             return
-        elif self.dr_name_widget.text() == "":
+        elif self.drive_name_input.text() == "":
             self.logger.warning("Drive is not valid, it needs a name.")
             self._change_validation_state(False)
             return
