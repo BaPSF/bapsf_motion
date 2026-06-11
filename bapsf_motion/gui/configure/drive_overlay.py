@@ -50,7 +50,7 @@ class AxisConfigWidget(QWidget):
         "speed": 4.0,
     }
 
-    def __init__(self, name, parent=None):
+    def __init__(self, name, parent: QWidget | None = None):
         super().__init__(parent=parent)
 
         self.axis_loop = asyncio.new_event_loop()
