@@ -7,36 +7,21 @@ __all__ = ["MGWidget"]
 
 import asyncio
 import logging
-import numpy as np
 import os
 import re
-import warnings
 
-# ensure joystick events are monitored when the pygame window
-# is not in focus ... this needs to be done before importing pygame
-os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
-
-import pygame  # noqa
-
-from abc import abstractmethod
 from PySide6.QtCore import (
     QSize,
     Qt,
-    QThreadPool,
     QTimer,
     Signal,
     Slot,
 )
-from PySide6.QtGui import QDoubleValidator, QFont
 from PySide6.QtWidgets import (
-    QCheckBox,
     QComboBox,
-    QGridLayout,
     QHBoxLayout,
     QLabel,
-    QLayout,
     QLineEdit,
-    QMessageBox,
     QPlainTextEdit,
     QSizePolicy,
     QStackedWidget,
@@ -61,28 +46,20 @@ from bapsf_motion.gui.configure.message_boxes import (
 )
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
-from bapsf_motion.gui.configure.pygame_ import PyGameJoystickRunner
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
     DiscardButton,
     DoneButton,
-    EnableIndicator,
     GearValidButton,
     HLinePlain,
-    IconButton,
-    LED,
     QTAIconLabel,
     StopButton,
-    StyleButton,
-    ValidButton,
-    ZeroButton,
 )
 from bapsf_motion.motion_builder import MotionBuilder
 from bapsf_motion.transform import BaseTransform
 from bapsf_motion.transform.helpers import transform_registry
 from bapsf_motion.utils import _deepcopy_dict, dict_equal, loop_safe_stop, toml
-from bapsf_motion.utils import units as u
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
