@@ -1218,7 +1218,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         _frame = QFrame(parent=self)
         _frame.setLayout(QVBoxLayout())
 
-        _widget = AxisConfigWidget(name, parent=self)
+        _widget = AxisConfigWidget(name, parent=_frame)
         _widget.set_ip_handler(self._validate_ip)
         _widget.configChanged.connect(
             partial(self._change_validation_state, validate=False),
