@@ -902,29 +902,9 @@ class DriveConfigOverlay(_ConfigOverlay):
         self._axis_widgets = None
 
         # Define BUTTONS
-
-        _btn = StyleButton("Add Axis", parent=self)
-        _btn.setFixedWidth(120)
-        _btn.setFixedHeight(36)
-        font = _btn.font()
-        font.setPointSize(20)
-        _btn.setFont(font)
-        _btn.setEnabled(False)
-        _btn.setHidden(True)
-        self.add_axis_btn = _btn
-
-        _btn = StyleButton("Validate", parent=self)
-        _btn.setFixedWidth(150)
-        _btn.setFixedHeight(36)
-        font = _btn.font()
-        font.setPointSize(16)
-        _btn.setFont(font)
-        self.validate_btn = _btn
-
-        _btn = LED(parent=self)
-        _btn.set_fixed_height(32)
-        _btn.off_color = "d43729"
-        self.validate_led = _btn
+        self.add_axis_btn = self._init_add_axis_btn()
+        self.validate_btn = self._init_validate_btn()
+        self.validate_led = self._init_validate_led()
 
         # Define TEXT WIDGETS
         _widget = QLineEdit(parent=self)
@@ -1020,6 +1000,32 @@ class DriveConfigOverlay(_ConfigOverlay):
         layout.addSpacing(18)
 
         return layout
+
+    def _init_add_axis_btn(self):
+        _btn = StyleButton("Add Axis", parent=self)
+        _btn.setFixedWidth(120)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(20)
+        _btn.setFont(font)
+        _btn.setEnabled(False)
+        _btn.setHidden(True)
+        return _btn
+
+    def _init_validate_btn(self):
+        _btn = StyleButton("Validate", parent=self)
+        _btn.setFixedWidth(150)
+        _btn.setFixedHeight(36)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
+        return _btn
+
+    def _init_validate_led(self):
+        _btn = LED(parent=self)
+        _btn.set_fixed_height(32)
+        _btn.off_color = "d43729"
+        return _btn
 
     @property
     def drive(self) -> Union[Drive, None]:
