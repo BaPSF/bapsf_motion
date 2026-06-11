@@ -934,6 +934,7 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         self.validate_btn.clicked.connect(self._validate_drive)
         self.add_axis_btn.clicked.connect(self._add_axis)
+        self.remove_axis_btn.clicked.connect(self._remove_axis)
 
         self.configChanged.connect(self._update_drive_name_input)
 
@@ -1136,6 +1137,29 @@ class DriveConfigOverlay(_ConfigOverlay):
         # show and enable the remove btn
         self.remove_axis_btn.setVisible(True)
         self.remove_axis_btn.setEnabled(True)
+
+        self._change_validation_state(False)
+
+    @Slot()
+    def _remove_axis(self):
+        # Currently the number of axes is restricted to 2 or 3.  Thus,
+        # removing an axis is always a request to remove the 3rd axis.
+        #
+        ax_layout = self.findChild(QVBoxLayout, "axis_vbox_layout")
+
+        acw = self.axis_widgets[2]
+        ax_layout.removeWidget(acw.parentWidget())
+        acw.parentWidget().close()  # using parent to close since acw lives inside a QFrame
+        acw.parentWidget().deleteLater()
+        self.axis_widgets.remove(acw)
+
+        # hide and disable the remove btn
+        self.remove_axis_btn.setVisible(False)
+        self.remove_axis_btn.setEnabled(False)
+
+        # show and enable the add btn
+        self.add_axis_btn.setVisible(True)
+        self.add_axis_btn.setEnabled(True)
 
         self._change_validation_state(False)
 
