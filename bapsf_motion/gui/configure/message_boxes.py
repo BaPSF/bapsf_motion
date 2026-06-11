@@ -1,3 +1,7 @@
+"""
+Module containg custom `QDialog` and `QMessageBox` classes.
+"""
+
 __all__ = [
     "LostConnectionMessageBox",
     "MSpaceMessageBox",
