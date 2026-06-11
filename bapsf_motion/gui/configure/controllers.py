@@ -2,7 +2,9 @@
 
 import logging
 import numpy as np
+import warnings
 
+from abc import abstractmethod
 from PySide6.QtCore import Signal, QTimer, Qt, Slot
 from PySide6.QtGui import QDoubleValidator
 from PySide6.QtWidgets import (
@@ -12,7 +14,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QHBoxLayout,
     QGridLayout,
+    QLayout,
 )
+from typing import List
 
 from bapsf_motion.actors import MotionGroup, Drive, Axis, Motor
 from bapsf_motion.gui.configure.helpers import gui_logger
@@ -668,5 +672,249 @@ class AxisControlWidget(QWidget):
             self.axis.motor.signals.movement_finished.disconnect(
                 self.update_display_of_axis_status
             )
+
+        event.accept()
+
+
+class DriveBaseController(QWidget):
+    driveStatusChanged = Signal()
+    movementStarted = Signal()
+    movementStopped = Signal()
+    moveTo = Signal(list)
+    zeroDrive = Signal()
+    targetPositionChanged = Signal(list)
+
+    def __init__(self, axis_display_mode="interactive", parent=None):
+        # axis_display_mode == "interactive" or "readonly"
+        super().__init__(parent=parent)
+
+        self._logger = gui_logger
+
+        self._axis_display_mode = axis_display_mode
+        self.mspace_warning_dialog = None
+        if hasattr(parent, "mspace_warning_dialog"):
+            self.mspace_warning_dialog = parent.mspace_warning_dialog
+
+        self.lost_connection_dialog = None
+        if hasattr(parent, "lost_connection_dialog"):
+            self.lost_connection_dialog = parent.lost_connection_dialog
+
+        self._mg = None
+        self._mspace_drive_polarity = None
+
+        self._axis_control_widgets = []  # type: List[AxisControlWidget]
+        self._initialize_axis_control_widgets()
+
+        self._initialize_widgets()
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    @abstractmethod
+    def _initialize_widgets(self): ...
+
+    def _initialize_axis_control_widgets(self):
+        for ii in range(4):
+            acw = AxisControlWidget(
+                axis_display_mode=self._axis_display_mode,
+                parent=self,
+            )
+            visible = True if ii == 0 else False
+            acw.setVisible(visible)
+            self._axis_control_widgets.append(acw)
+
+    def _connect_signals(self):
+        self.movementStarted.connect(self.disable_motion_buttons)
+        self.movementStopped.connect(self.enable_motion_buttons)
+
+        for acw in self._axis_control_widgets:
+            acw.targetPositionChanged.connect(self._target_position_changed)
+
+    @abstractmethod
+    def _define_layout(self) -> QLayout: ...
+
+    @property
+    def logger(self):
+        return self._logger
+
+    @property
+    def mg(self) -> MotionGroup | None:
+        return self._mg
+
+    @property
+    def mspace_drive_polarity(self):
+        return self._mspace_drive_polarity
+
+    @property
+    def position(self) -> List[float]:
+        position = []
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            position.append(acw.position.value)
+
+        return position
+
+    @property
+    def target_position(self) -> List[float] | None:
+        target_position = []
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            target_position.append(acw.target_position)
+
+        if not bool(target_position):
+            # no values in target position
+            return None
+
+        if any(pos is None for pos in target_position):
+            # some target positions are not valid
+            return None
+
+        return target_position
+
+    @Slot()
+    def _target_position_changed(self, position):
+        self.logger.info(f"DBC target position changed {self.target_position}")
+        tpos = self.target_position
+        if tpos is None:
+            tpos = []
+        self.targetPositionChanged.emit(tpos)
+
+    def link_motion_group(self, mg: MotionGroup):
+        if not isinstance(mg, MotionGroup):
+            self.logger.warning(
+                f"Expected type {MotionGroup} for motion group, but got type"
+                f" {type(mg)}."
+            )
+
+        if not isinstance(mg.drive, Drive):
+            # drive has not been set yet
+            self.unlink_motion_group()
+            return
+
+        if (
+            isinstance(self.mg, MotionGroup)
+            and isinstance(self.mg.drive, Drive)
+            and mg.drive is self.mg.drive
+        ):
+            pass
+        else:
+            self.unlink_motion_group()
+            self._mg = mg
+
+        for ii, ax in enumerate(self.mg.drive.axes):
+            acw = self._axis_control_widgets[ii]
+            acw.link_axis(self.mg, ii)
+            acw.establishedConnection.connect(self._drive_connection_established)
+            acw.lostConnection.connect(self._drive_connection_lost)
+            acw.movementStarted.connect(self._drive_movement_started)
+            acw.movementStopped.connect(self._drive_movement_finished)
+            acw.axisStatusChanged.connect(self.update_all_axis_displays)
+            acw.axisStatusChanged.connect(self.driveStatusChanged.emit)
+            acw.show()
+
+        self.setEnabled(not (self._mg.terminated or not self._mg.connected))
+        self._determine_mspace_drive_polarity()
+
+    def unlink_motion_group(self):
+        for ii, acw in enumerate(self._axis_control_widgets):
+            visible = True if ii == 0 else False
+
+            acw.unlink_axis()
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=RuntimeWarning)
+                acw.establishedConnection.disconnect(self._drive_connection_established)
+                acw.lostConnection.disconnect(self._drive_connection_lost)
+                acw.movementStarted.disconnect(self._drive_movement_started)
+                acw.movementStopped.disconnect(self._drive_movement_finished)
+                acw.axisStatusChanged.disconnect(self.update_all_axis_displays)
+                acw.axisStatusChanged.disconnect(self.driveStatusChanged.emit)
+
+            acw.setVisible(visible)
+
+        # self.mg.terminate(delay_loop_stop=True)
+        self._mg = None
+        self._mspace_drive_polarity = None
+        self.setEnabled(False)
+
+    @Slot()
+    def update_all_axis_displays(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+            # elif acw.axis.is_moving:
+            #     continue
+
+            acw.update_display_of_axis_status()
+
+    @Slot()
+    def disable_motion_buttons(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            acw.disable_motion_buttons()
+
+    @Slot()
+    def enable_motion_buttons(self):
+        for acw in self._axis_control_widgets:
+            if acw.isHidden():
+                continue
+
+            acw.enable_motion_buttons()
+
+    @Slot()
+    def _drive_connection_lost(self):
+        self.mg.drive.stop()
+        self.setEnabled(False)
+
+    @Slot()
+    def _drive_connection_established(self):
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
+            return
+
+        if self.mg.drive.connected:
+            self.setEnabled(True)
+
+    @Slot(int)
+    def _drive_movement_started(self, axis_index):
+        self.movementStarted.emit()
+
+    @Slot(int)
+    def _drive_movement_finished(self, axis_index):
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
+            return
+
+        is_moving = [ax.is_moving for ax in self.mg.drive.axes]
+        is_moving[axis_index] = False
+        if not any(is_moving):
+            self.movementStopped.emit()
+
+    def _determine_mspace_drive_polarity(self):
+        naxes = self.mg.drive.naxes
+        polarity = [1] * naxes
+        mspace_zero = [0] * naxes
+        drive_zero = self.mg.transform(mspace_zero, to_coords="drive")
+
+        for ii in range(naxes):
+            test_pt = [0] * naxes
+            test_pt[ii] = 10
+            drive_pt = self.mg.transform(test_pt, to_coords="drive")
+            delta = drive_pt[0][ii] - drive_zero[0][ii]
+
+            pt_polarity = 1 if delta > 0 else -1
+            polarity[ii] = pt_polarity
+
+        self._mspace_drive_polarity = polarity
+
+    def closeEvent(self, event):
+        self.logger.info(f"Closing {self.__class__.__name__}.")
+
+        for acw in self._axis_control_widgets:
+            acw.close()
 
         event.accept()
