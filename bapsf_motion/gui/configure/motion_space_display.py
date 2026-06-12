@@ -98,10 +98,9 @@ class MotionSpaceDisplay(QFrame):
         self._cid_on_draw = None
         self._mpl_pick_callback_id = None
 
-        self.mpl_canvas = FigureCanvas()
-        self.mpl_canvas.setParent(self)
-
-        self.mpl_toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
+        # Define WIDGETS
+        self.mpl_canvas = self._init_mpl_canvas()
+        self.mpl_toolbar = self._init_mpl_toolbar()
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -136,6 +135,15 @@ class MotionSpaceDisplay(QFrame):
             )
 
         return mb
+
+    def _init_mpl_canvas(self):
+        canvas = FigureCanvas()
+        canvas.setParent(self)
+        return canvas
+
+    def _init_mpl_toolbar(self):
+        toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
+        return toolbar
 
     @property
     def logger(self) -> logging.Logger:
