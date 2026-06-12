@@ -1401,7 +1401,12 @@ class DriveGameController(DriveBaseController):
         if isinstance(self._pygame_joystick_runner, PyGameJoystickRunner):
             self.disconnect_controller()
 
-        self._pygame_joystick_runner = PyGameJoystickRunner(self.joystick)
+        selected_joystick = self.joystick
+        if not isinstance(selected_joystick, pygame.joystick.JoystickType):
+            self.logger.warning("Selected joystick not found.")
+            return
+
+        self._pygame_joystick_runner = PyGameJoystickRunner(selected_joystick)
 
         self._pygame_joystick_runner.signals.joystickConnected.connect(
             self._update_connect_led
