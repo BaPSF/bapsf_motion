@@ -9,16 +9,11 @@ import os
 
 # ensure joystick events are monitored when the pygame window
 # is not in focus ... this needs to be done before importing pygame
-os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
+os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"  # noqa
 
 import pygame  # noqa
 
-from PySide6.QtCore import (
-    QObject,
-    QRunnable,
-    Signal,
-    Slot,
-)
+from PySide6.QtCore import QObject, QRunnable, Signal, Slot
 
 from bapsf_motion.gui.configure.helpers import gui_logger
 
