@@ -27,10 +27,9 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, TYPE_CHECKING, Union
 
 from bapsf_motion.actors import MotionGroup
-from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.bases import _ConfigOverlay
 from bapsf_motion.gui.configure.helpers import read_parameter_hints
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
@@ -50,6 +49,9 @@ from bapsf_motion.motion_builder.layers import layer_registry
 from bapsf_motion.utils import _deepcopy_dict
 from bapsf_motion.utils import units as u
 
+if TYPE_CHECKING:
+    from bapsf_motion.gui.configure import motion_group_widget as mgw
+
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
 
@@ -62,7 +64,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     layer_registry = layer_registry
     exclusion_registry = exclusion_registry
 
-    def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget" = None):
+    def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget | None" = None):
         super().__init__(mg, parent)
 
         self._mb = None
