@@ -95,78 +95,22 @@ class AxisControlWidget(QWidget):
         self.setFixedWidth(120)
 
         # Define WIDGETS
+        self.axis_name_label = self._init_axis_name_label()
         self.enable_btn = self._init_enable_btn()
+        self.encoder_label = self._init_encoder_label()
+        self.encoder_label_icon = self._init_encoder_label_icon()
         self.home_btn = self._init_home_btn()
-        self.jog_forward_btn = self._init_jog_forward_btn()
         self.jog_backward_btn = self._init_jog_backward_btn()
-        self.limit_fwd_btn = self._init_limit_fwd_btn()
+        self.jog_delta_label = self._init_jog_delta_label()
+        self.jog_forward_btn = self._init_jog_forward_btn()
         self.limit_bwd_btn = self._init_limit_bwd_btn()
+        self.limit_fwd_btn = self._init_limit_fwd_btn()
+        self.position_label = self._init_position_label()
+        self.target_position_label = self._init_target_position_label()
         self.zero_btn = self._init_zero_btn()
 
-        # Define TEXT WIDGETS
-        _txt = QLabel("Name", parent=self)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        _txt.setFixedHeight(18)
-        self.axis_name_label = _txt
-
-        _txt = QLineEdit("", parent=self)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        _txt.setReadOnly(True)
-        _txt.setToolTip("Motor Position")
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        self.position_label = _txt
-
-        _txt = QLineEdit("", parent=self)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        _txt.setReadOnly(True)
-        _txt.setToolTip(
-            "Encoder read position.\n\n If different than motor position, "
-            "then the motor is likely slipping / stalling."
-        )
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        self.encoder_label = _txt
-
-        _txt = QLabel("E", parent=self)
-        _txt.setObjectName("encoder_icon")
-        _txt.setStyleSheet("""
-            QLabel#encoder_icon {
-            color: grey;
-            padding: 2px;
-            }
-            """)
-        font = _txt.font()
-        font.setPointSize(8)
-        font.setBold(True)
-        _txt.setFont(font)
-        _txt.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
-        self.encoder_label_icon = _txt
-
-        _txt = QLineEdit("", parent=self)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        _txt.setValidator(QDoubleValidator(decimals=2))
-        self.target_position_label = _txt
-
-        _txt = QLineEdit("0", parent=self)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        font = _txt.font()
-        font.setPointSize(14)
-        _txt.setFont(font)
-        _txt.setValidator(QDoubleValidator(decimals=2))
-        self.jog_delta_label = _txt
-
-        # Define ADVANCED WIDGETS
-
         self.mspace_warning_dialog = None
+        # Retrieve Warning Dialogs from Parent
         if hasattr(parent, "mspace_warning_dialog"):
             self.mspace_warning_dialog = parent.mspace_warning_dialog
 
@@ -324,6 +268,15 @@ class AxisControlWidget(QWidget):
 
         return layout
 
+    def _init_axis_name_label(self):
+        _txt = QLabel("Name", parent=self)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setFixedHeight(18)
+        return _txt
+
     def _init_enable_btn(self):
         _btn = EnableIndicator(parent=self)
         font = self.font()
@@ -334,20 +287,66 @@ class AxisControlWidget(QWidget):
         _btn.setFixedWidth(70)
         return _btn
 
+    def _init_encoder_label(self):
+        _txt = QLineEdit("", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setReadOnly(True)
+        _txt.setToolTip(
+            "Encoder read position.\n\n If different than motor position, "
+            "then the motor is likely slipping / stalling."
+        )
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        return _txt
+
+    def _init_encoder_label_icon(self):
+        _txt = QLabel("E", parent=self)
+        _txt.setObjectName("encoder_icon")
+        _txt.setStyleSheet("""
+                    QLabel#encoder_icon {
+                    color: grey;
+                    padding: 2px;
+                    }
+                    """)
+        font = _txt.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        _txt.setFont(font)
+        _txt.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+        return _txt
+
     def _init_home_btn(self):
         _btn = StyleButton("HOME", parent=self)
         _btn.setEnabled(False)
         _btn.setVisible(False)
         return _btn
 
+    def _init_jog_backward_btn(self):
+        _btn = IconButton(icon_name_dict["arrow-down"], parent=self)
+        _btn.setIconSize(42)
+        return _btn
+
+    def _init_jog_delta_label(self):
+        _txt = QLineEdit("0", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        _txt.setValidator(QDoubleValidator(decimals=2))
+        return _txt
+
     def _init_jog_forward_btn(self):
         _btn = IconButton(icon_name_dict["arrow-up"], parent=self)
         _btn.setIconSize(42)
         return _btn
 
-    def _init_jog_backward_btn(self):
-        _btn = IconButton(icon_name_dict["arrow-down"], parent=self)
-        _btn.setIconSize(42)
+    def _init_limit_bwd_btn(self):
+        _btn = ValidButton("BWD LIMIT", parent=self)
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 95, 95)"},
+            action="checked",
+        )
         return _btn
 
     def _init_limit_fwd_btn(self):
@@ -358,13 +357,24 @@ class AxisControlWidget(QWidget):
         )
         return _btn
 
-    def _init_limit_bwd_btn(self):
-        _btn = ValidButton("BWD LIMIT", parent=self)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 95, 95)"},
-            action="checked",
-        )
-        return _btn
+    def _init_position_label(self):
+        _txt = QLineEdit("", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setReadOnly(True)
+        _txt.setToolTip("Motor Position")
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        return _txt
+
+    def _init_target_position_label(self):
+        _txt = QLineEdit("", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        _txt.setValidator(QDoubleValidator(decimals=2))
+        return _txt
 
     def _init_zero_btn(self):
         return ZeroButton("ZERO", parent=self)
