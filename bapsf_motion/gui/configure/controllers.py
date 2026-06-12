@@ -31,7 +31,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import List, TYPE_CHECKING
+from typing import List, Literal, TYPE_CHECKING
 
 from bapsf_motion.actors import Axis, Drive, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger
@@ -94,45 +94,14 @@ class AxisControlWidget(QWidget):
 
         self.setFixedWidth(120)
 
-        # Define BUTTONS
-        _btn = IconButton(icon_name_dict["arrow-up"], parent=self)
-        _btn.setIconSize(42)
-        self.jog_forward_btn = _btn
-
-        _btn = IconButton(icon_name_dict["arrow-down"], parent=self)
-        _btn.setIconSize(42)
-        self.jog_backward_btn = _btn
-
-        _btn = ValidButton("FWD LIMIT", parent=self)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 95, 95)"},
-            action="checked",
-        )
-        self.limit_fwd_btn = _btn
-
-        _btn = ValidButton("BWD LIMIT", parent=self)
-        _btn.update_style_sheet(
-            {"background-color": "rgb(255, 95, 95)"},
-            action="checked",
-        )
-        self.limit_bwd_btn = _btn
-
-        _btn = StyleButton("HOME", parent=self)
-        _btn.setEnabled(False)
-        self.home_btn = _btn
-        self.home_btn.setHidden(True)
-
-        _btn = ZeroButton("ZERO", parent=self)
-        self.zero_btn = _btn
-
-        _btn = EnableIndicator(parent=self)
-        font = self.font()
-        font.setPointSize(8)
-        font.setBold(True)
-        _btn.setFont(font)
-        _btn.setFixedHeight(24)
-        _btn.setFixedWidth(70)
-        self.enable_btn = _btn
+        # Define WIDGETS
+        self.enable_btn = self._init_enable_btn()
+        self.home_btn = self._init_home_btn()
+        self.jog_forward_btn = self._init_jog_forward_btn()
+        self.jog_backward_btn = self._init_jog_backward_btn()
+        self.limit_fwd_btn = self._init_limit_fwd_btn()
+        self.limit_bwd_btn = self._init_limit_bwd_btn()
+        self.zero_btn = self._init_zero_btn()
 
         # Define TEXT WIDGETS
         _txt = QLabel("Name", parent=self)
@@ -354,6 +323,51 @@ class AxisControlWidget(QWidget):
         )
 
         return layout
+
+    def _init_enable_btn(self):
+        _btn = EnableIndicator(parent=self)
+        font = self.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.setFixedHeight(24)
+        _btn.setFixedWidth(70)
+        return _btn
+
+    def _init_home_btn(self):
+        _btn = StyleButton("HOME", parent=self)
+        _btn.setEnabled(False)
+        _btn.setVisible(False)
+        return _btn
+
+    def _init_jog_forward_btn(self):
+        _btn = IconButton(icon_name_dict["arrow-up"], parent=self)
+        _btn.setIconSize(42)
+        return _btn
+
+    def _init_jog_backward_btn(self):
+        _btn = IconButton(icon_name_dict["arrow-down"], parent=self)
+        _btn.setIconSize(42)
+        return _btn
+
+    def _init_limit_fwd_btn(self):
+        _btn = ValidButton("FWD LIMIT", parent=self)
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 95, 95)"},
+            action="checked",
+        )
+        return _btn
+
+    def _init_limit_bwd_btn(self):
+        _btn = ValidButton("BWD LIMIT", parent=self)
+        _btn.update_style_sheet(
+            {"background-color": "rgb(255, 95, 95)"},
+            action="checked",
+        )
+        return _btn
+
+    def _init_zero_btn(self):
+        return ZeroButton("ZERO", parent=self)
 
     @property
     def logger(self) -> logging.Logger:
