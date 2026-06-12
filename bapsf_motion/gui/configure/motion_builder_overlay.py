@@ -27,7 +27,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
@@ -104,13 +104,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         # SET UP LEFT WIDGETS (i.e. list boxes)
 
-        self.exclusion_list_box = None  # type: Union[QListWidget, None]
+        self.exclusion_list_box = None  # type: QListWidget | None
         self.add_ex_btn = None
         self.remove_ex_btn = None
         self.edit_ex_btn = None
         self._initialize_exclusion_list_layout_widgets()
 
-        self.layer_list_box = None  # type: Union[QListWidget, None]
+        self.layer_list_box = None  # type: QListWidget | None
         self.add_ly_btn = None
         self.remove_ly_btn = None
         self.edit_ly_btn = None
@@ -274,7 +274,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return self.mg.drive.anames
 
     @property
-    def mb(self) -> Union[MotionBuilder, None]:
+    def mb(self) -> MotionBuilder| None:
         if (
             self._mb is None
             and isinstance(self.mg, MotionGroup)
