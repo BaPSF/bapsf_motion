@@ -395,10 +395,18 @@ class AxisControlWidget(QWidget):
 
     @property
     def axis(self) -> Axis | None:
-        if self.mg is None or self.axis_index is None:
+        if (
+            not isinstance(self.mg, MotionGroup)
+            or not isinstance(self.mg.drive, Drive)
+            or self.axis_index is None
+        ):
             return None
 
-        return self.mg.drive.axes[self.axis_index]
+        axis = self.mg.drive.axes[self.axis_index]
+        if not isinstance(axis, Axis):
+            return None
+
+        return axis
 
     @property
     def encoder(self) -> u.Quantity:
@@ -576,9 +584,11 @@ class AxisControlWidget(QWidget):
         self.logger.info(f"Setting zero of axis {self.axis_index}")
         self.mg.set_zero(axis=self.axis_index)
 
-    def link_axis(self, mg: MotionGroup, ax_index: int):
+    def link_axis(self, mg: MotionGroup | None, ax_index: int):
         if (
-            not isinstance(ax_index, int)
+            not isinstance(mg, MotionGroup)
+            or not isinstance(mg.drive, Drive)
+            or not isinstance(ax_index, int)
             or ax_index < 0
             or ax_index >= len(mg.drive.axes)
         ):
@@ -586,7 +596,7 @@ class AxisControlWidget(QWidget):
             return
 
         axis = mg.drive.axes[ax_index]
-        if self.axis is not None and self.axis is axis:
+        if isinstance(self.axis, Axis) and self.axis is axis:
             pass
         else:
             self.unlink_axis()
@@ -594,42 +604,42 @@ class AxisControlWidget(QWidget):
         self._mg = mg
         self._axis_index = ax_index
 
-        self.axis_name_label.setText(self.axis.name)
+        axis = self.axis
+        if not isinstance(axis, Axis):
+            self.logger.error("Linking axis failed.")
+            return
+
+        self.axis_name_label.setText(axis.name)
 
         # connect motor SimpleSignals
-        self.axis.motor.signals.connection_established.connect(
+        axis.motor.signals.connection_established.connect(
             self._emit_connection_established
         )
-        self.axis.motor.signals.connection_lost.connect(self._emit_connection_lost)
-        self.axis.motor.signals.status_changed.connect(self.update_display_of_axis_status)
-        self.axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
-        self.axis.motor.signals.movement_started.connect(self._emit_movement_started)
-        self.axis.motor.signals.movement_finished.connect(self._emit_movement_finished)
-        self.axis.motor.signals.movement_finished.connect(
-            self.update_display_of_axis_status
-        )
+        axis.motor.signals.connection_lost.connect(self._emit_connection_lost)
+        axis.motor.signals.status_changed.connect(self.update_display_of_axis_status)
+        axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
+        axis.motor.signals.movement_started.connect(self._emit_movement_started)
+        axis.motor.signals.movement_finished.connect(self._emit_movement_finished)
+        axis.motor.signals.movement_finished.connect(self.update_display_of_axis_status)
 
         self.update_display_of_axis_status()
         self.axisLinked.emit()
 
     def unlink_axis(self):
-        if self.axis is not None:
+        axis = self.axis
+        if isinstance(axis, Axis):
             # disconnect all motor SimpleSignals
-            self.axis.motor.signals.connection_established.disconnect(
+            axis.motor.signals.connection_established.disconnect(
                 self._emit_connection_established
             )
-            self.axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
-            self.axis.motor.signals.status_changed.disconnect(
+            axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
+            axis.motor.signals.status_changed.disconnect(
                 self.update_display_of_axis_status
             )
-            self.axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
-            self.axis.motor.signals.movement_started.disconnect(
-                self._emit_movement_started
-            )
-            self.axis.motor.signals.movement_finished.disconnect(
-                self._emit_movement_finished
-            )
-            self.axis.motor.signals.movement_finished.disconnect(
+            axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
+            axis.motor.signals.movement_started.disconnect(self._emit_movement_started)
+            axis.motor.signals.movement_finished.disconnect(self._emit_movement_finished)
+            axis.motor.signals.movement_finished.disconnect(
                 self.update_display_of_axis_status
             )
 
