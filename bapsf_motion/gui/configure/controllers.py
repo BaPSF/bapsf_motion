@@ -908,8 +908,6 @@ class DriveBaseController(QWidget):
         for acw in self._axis_control_widgets:
             if acw.isHidden():
                 continue
-            # elif acw.axis.is_moving:
-            #     continue
 
             acw.update_display_of_axis_status()
 
