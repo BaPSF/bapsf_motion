@@ -1,4 +1,9 @@
+"""
+Module containing "controller" classes that control the actual movement
+of the probe dirves (i.e. motion groups).
+"""
 
+__all__ = ["DriveDesktopController", "DriveGameController"]
 
 import logging
 import numpy as np
@@ -8,41 +13,43 @@ import warnings
 
 # ensure joystick events are monitored when the pygame window
 # is not in focus ... this needs to be done before importing pygame
-os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"
+os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"  # noqa
 
 import pygame  # noqa
 
 from abc import abstractmethod
-from PySide6.QtCore import Signal, QTimer, Qt, Slot, QThreadPool
+from PySide6.QtCore import Qt, QThreadPool, QTimer, Signal, Slot
 from PySide6.QtGui import QDoubleValidator, QFont
 from PySide6.QtWidgets import (
-    QWidget,
-    QLabel,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QGridLayout,
-    QLayout,
-    QSizePolicy,
     QComboBox,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QLayout,
+    QLineEdit,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
 )
-from typing import List
+from typing import List, TYPE_CHECKING
 
-from bapsf_motion.actors import MotionGroup, Drive, Axis, Motor
+from bapsf_motion.actors import Axis, Drive, MotionGroup
 from bapsf_motion.gui.configure.helpers import gui_logger
-from bapsf_motion.gui.configure.message_boxes import LostConnectionMessageBox
 from bapsf_motion.gui.configure.pygame_ import PyGameJoystickRunner
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
     EnableIndicator,
-    IconButton,
-    ValidButton,
-    StyleButton,
-    ZeroButton,
     HLinePlain,
+    IconButton,
     LED,
+    StyleButton,
+    ValidButton,
+    ZeroButton,
 )
 from bapsf_motion.utils import units as u
+
+if TYPE_CHECKING:
+    from bapsf_motion.gui.configure.message_boxes import LostConnectionMessageBox
 
 
 class AxisControlWidget(QWidget):
