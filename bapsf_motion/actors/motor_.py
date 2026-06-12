@@ -1465,7 +1465,35 @@ class Motor(EventActor):
 
         recv_pattern = self._commands[command]["recv"]
         if recv_pattern is not None:
-            rtn_str = recv_pattern.fullmatch(rtn_str).group("return")
+            # We have observed motors returing a MALFORMED string where
+            # the correct string is returned with a leading digit (generall 1).
+            #
+            # For example, 'AL=0004' would be returned as '1AL=0004'.
+            #
+            # This behavior is unexpected, and could not be found in the
+            # Host-Commands reference document.
+            #
+            # Let's modify all regex patterns to handle this specific case.
+            #
+            recv_pattern = re.compile(r"(?P<bad_leader>[0-9]]?)" + recv_pattern.pattern)
+            match = recv_pattern.fullmatch(rtn_str)
+            try:
+                rtn_str = match.group("return")
+            except AttributeError:
+                # the return string did not match the expected regex
+                self.logger.error(
+                    f"The return string for command '{command} ({_send_str})'"
+                    f" is malformed, received '{rtn_str}'."
+                )
+                return self.ack_flags.MALFORMED
+            else:
+                bad_leader = match.group("bad_leader")
+                if bad_leader == "":
+                    self.logger.warning(
+                        f"The returned string for command '{command}' had a bad "
+                        f"leading digit '{bad_leader}'.  The full returned string "
+                        f"was '{match.string}'."
+                    )
 
         processor = self._commands[command]["recv_processor"]
         rtn = processor(rtn_str)
