@@ -12,7 +12,6 @@ from pathlib import Path
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QDialog, QMessageBox, QWidget, QCheckBox
-from typing import Union
 
 _HERE = Path(__file__).parent
 
@@ -35,7 +34,7 @@ class WarningMessageBox(QMessageBox):
         and NO button is displayed and the user must choose how to
         proceed.
 
-    parent : Union[QWidget, None]
+    parent : QWidget | None
         The parent / owning widget.
     """
 
@@ -43,7 +42,7 @@ class WarningMessageBox(QMessageBox):
         self,
         message: str,
         button_layout: str = "acknowledge",
-        parent: Union[QWidget, None] = None,
+        parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
