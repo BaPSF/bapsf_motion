@@ -11,7 +11,7 @@ __all__ = [
 from pathlib import Path
 from PySide6.QtCore import Qt, Slot
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QDialog, QMessageBox, QWidget, QCheckBox
+from PySide6.QtWidgets import QCheckBox, QDialog, QMessageBox, QWidget
 
 _HERE = Path(__file__).parent
 
