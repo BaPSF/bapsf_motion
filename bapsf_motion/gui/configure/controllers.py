@@ -95,8 +95,6 @@ class AxisControlWidget(QWidget):
             True if axis_display_mode == "interactive" else False
         )
 
-        self.setFixedWidth(120)
-
         # Define WIDGETS
         self.axis_name_label = self._init_axis_name_label()
         self.enable_btn = self._init_enable_btn()
@@ -121,6 +119,7 @@ class AxisControlWidget(QWidget):
         if hasattr(parent, "lost_connection_dialog"):
             self.lost_connection_dialog = parent.lost_connection_dialog
 
+        self.setFixedWidth(120)
         self.setLayout(self._define_layout())
         self._connect_signals()
 
