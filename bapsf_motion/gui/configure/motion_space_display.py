@@ -52,11 +52,37 @@ class MotionSpaceDisplay(QFrame):
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
         self._mb = self._init_motion_builder(mb)
 
+        # Initialize plotting control attributes
+        #
+        # _display_position : bool
+        #     If True, plot the current position of the probe drive.
+        # _display_target_position : bool
+        #     If True, plot the target position.
+        # _display_probe : bool
+        #     If True, add to the plot a representation of the probe [shaft]
+        # _animate_payload : dict
+        #     A dictionary payload when animating the motion list.
+        #      "finished"   - bool   - has the animation finsihed
+        #      "timer"      - QTimer - timer instance
+        #      "delay"      - int    - timer interval
+        #      "index"      - int    - next motionlist index to animate to
+        #      "index_step" - int    - delta / step between animated index
+        # _motionlist_plot_names : list[str]
+        #     list of motionlist names ... these are the same as the
+        #     MotionBuilder layer names
+        # _draw_all : True
+        #     If True, then (re)draw everything.  If False, then only redraw
+        #     the artists that are marked animated=True.  (Note this is
+        #     matplotlib's animated, and not our motion list animateion.)
+        # _cid_on_draw :
+        #     matplotlib call back ID for the "draw_event"
+        # _mpl_pick_callback_id :
+        #     matplotlib call back ID for the "pick_event"
+        #
         self._display_position = True
         self._display_target_position = True
         self._display_probe = True
         self._animate_payload = None
-
         self._motionlist_plot_names = None  # type: List[str] | None
 
         self.setStyleSheet("""
@@ -68,6 +94,9 @@ class MotionSpaceDisplay(QFrame):
             }
             """)
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._draw_all = True
+        self._cid_on_draw = None
+        self._mpl_pick_callback_id = None
 
         self.mpl_canvas = FigureCanvas()
         self.mpl_canvas.setParent(self)
@@ -75,11 +104,6 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
 
         self.setLayout(self._define_layout())
-
-        self._cid_on_draw = None
-        self._draw_all = True
-
-        self._mpl_pick_callback_id = None
         self._connect_signals()
 
     def _connect_signals(self):
