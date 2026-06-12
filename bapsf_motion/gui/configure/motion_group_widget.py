@@ -402,136 +402,62 @@ class MGWidget(QWidget):
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MGW")
 
+        # Initialize motion group and motion group config attributes
         self._mg = None
         self._mg_index = None
-
         self._mg_config = None
         if isinstance(mg_config, MotionGroupConfig):
             self._mg_config = _deepcopy_dict(mg_config)
 
+        # Initialize default entries for the dropdowns
         self._defaults = None if defaults is None else _deepcopy_dict(defaults)
+
+        # Initialized the drive dropdown
         self._drive_defaults = None
         self._custom_drive_index = -1
         self._build_drive_defaults()
 
-        self._transform_defaults = None
-        self._build_transform_defaults()
-
+        # Initialized the motion builder dropdown
         self._mb_defaults = None
         self._custom_mb_index = -1
         self._mb_combo_last_index = -1
         self._build_mb_defaults()
 
+        # Initialized the transform drowpdown
+        self._transform_defaults = None
+        self._build_transform_defaults()
+
+        # Initialize the plot update timeer attributes
         self._update_plot_interval = 200  # in msec
         self._update_plot_timer = QTimer()
         self._update_plot_timer.setSingleShot(True)
         self._plot_timer_issue_new_single_shot = False
 
-        # Define TEXT WIDGETS
-
-        _widget = QPlainTextEdit(parent=self)
-        _widget.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-        )
-        _widget.setReadOnly(True)
-        _widget.font().setPointSize(14)
-        _widget.font().setFamily("Courier New")
-        _widget.setMinimumWidth(350)
-        self.toml_widget = _widget
-
-        _widget = QLineEdit(parent=self)
-        font = _widget.font()
-        font.setPointSize(16)
-        _widget.setFont(font)
-        _widget.setMinimumWidth(220)
-        self.ml_name_widget = _widget
-
-        # Define BUTTONS
-
-        _btn = DoneButton("Add / Update", parent=self)
-        _btn.setEnabled(False)
-        self.done_btn = _btn
-
-        _btn = DiscardButton(parent=self)
-        self.discard_btn = _btn
-
-        _icon = QTAIconLabel("mdi.steering", parent=self)
-        _icon.setFixedSize(32)
-        _icon.setIconSize(24)
-        self.drive_label = _icon
-
-        _w = QComboBox(parent=self)
-        _w.setEditable(False)
-        font = _w.font()
-        font.setPointSize(16)
-        _w.setFont(font)
-        _w.setSizeAdjustPolicy(
-            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
-        )
-        self._drive_dropdown = _w
-        self._populate_drive_dropdown()
-
-        _btn = GearValidButton(parent=self)
-        self.drive_btn = _btn
-
-        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
-        _icon = QTAIconLabel("mdi.motion", parent=self)
-        _icon.setFixedSize(32)
-        _icon.setIconSize(24)
-        self.mb_label = _icon
-
-        _w = QComboBox(parent=self)
-        _w.setEditable(False)
-        font = _w.font()
-        font.setPointSize(16)
-        _w.setFont(font)
-        _w.setSizeAdjustPolicy(
-            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
-        )
-        self._mb_dropdown = _w
-        self._populate_mb_dropdown()
-
-        _btn = GearValidButton(parent=self)
-        _btn.setEnabled(False)
-        self.mb_btn = _btn
-
-        _icon = QTAIconLabel(icon_name_dict["exchange-alt"], parent=self)
-        _icon.setFixedSize(32)
-        _icon.setIconSize(24)
-        self.transform_label = _icon
-
-        _w = QComboBox(parent=self)
-        _w.setEditable(False)
-        font = _w.font()
-        font.setPointSize(16)
-        _w.setFont(font)
-        _w.setSizeAdjustPolicy(
-            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
-        )
-        _w.setIconSize(QSize(20, 20))
-        _w.setToolTip(
-            "Flagged items indicate the base transforms, which are not pre-configured."
-        )
-        _w.setToolTipDuration(30000)
-        self._transform_dropdown = _w
-        self._populate_transform_dropdown()
-
-        _btn = GearValidButton(parent=self)
-        _btn.setEnabled(False)
-        self.transform_btn = _btn
-
-        # Define ADVANCED WIDGETS
+        # Initialize overlay control attributes
         self._overlay_widget = None  # type: _ConfigOverlay | None
         self._overlay_shown = False
 
-        self.drive_control_widget = DriveControlWidget(parent=self)
-        self.drive_control_widget.setEnabled(False)
+        # Define WIDGETS
+        self._drive_dropdown = self._init_drive_dropdown()
+        self._mb_dropdown = self._init_mb_dropdown()
+        self._transform_dropdown = self._init_transform_dropdown()
+        self.discard_btn = self._init_discard_btn()
+        self.done_btn = self._init_done_btn()
+        self.drive_btn = self._init_drive_btn()
+        self.drive_control_widget = self._init_drive_control_widget()
+        self.drive_label = self._init_drive_label()
+        self.mb_btn = self._init_mb_btn()
+        self.mb_label = self._init_mb_label()
+        self.ml_name_widget = self._init_ml_name_widget()
+        self.mpl_canvas = self._init_mpl_canvas()
+        self.toml_widget = self._init_toml_widget()
+        self.transform_btn = self._init_transform_btn()
+        self.transform_label = self._init_transform_label()
 
-        self.mpl_canvas = MotionSpaceDisplay(parent=self)
-        _policy = self.mpl_canvas.sizePolicy()
-        _policy.setRetainSizeWhenHidden(True)
-        self.mpl_canvas.setSizePolicy(_policy)
+        # initialize dropdowns
+        self._populate_drive_dropdown()
+        self._populate_mb_dropdown()
+        self._populate_transform_dropdown()
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -811,6 +737,118 @@ class MGWidget(QWidget):
         _widget.setLayout(layout)
         _widget.setFixedWidth(335)
         return _widget
+
+    def _init_discard_btn(self):
+        return DiscardButton(parent=self)
+
+    def _init_done_btn(self):
+        _btn = DoneButton("Add / Update", parent=self)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_drive_btn(self):
+        return GearValidButton(parent=self)
+
+    def _init_drive_control_widget(self):
+        _w = DriveControlWidget(parent=self)
+        _w.setEnabled(False)
+        return _w
+
+    def _init_drive_dropdown(self):
+        _w = QComboBox(parent=self)
+        _w.setEditable(False)
+        font = _w.font()
+        font.setPointSize(16)
+        _w.setFont(font)
+        _w.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
+        return _w
+
+    def _init_drive_label(self):
+        _icon = QTAIconLabel("mdi.steering", parent=self)
+        _icon.setFixedSize(32)
+        _icon.setIconSize(24)
+        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        return _icon
+
+    def _init_mb_btn(self):
+        _btn = GearValidButton(parent=self)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_mb_dropdown(self):
+        _w = QComboBox(parent=self)
+        _w.setEditable(False)
+        font = _w.font()
+        font.setPointSize(16)
+        _w.setFont(font)
+        _w.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
+        return _w
+
+    def _init_mb_label(self):
+        _icon = QTAIconLabel("mdi.motion", parent=self)
+        _icon.setFixedSize(32)
+        _icon.setIconSize(24)
+        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        return _icon
+
+    def _init_ml_name_widget(self):
+        _widget = QLineEdit(parent=self)
+        font = _widget.font()
+        font.setPointSize(16)
+        _widget.setFont(font)
+        _widget.setMinimumWidth(220)
+        return _widget
+
+    def _init_mpl_canvas(self):
+        canvas = MotionSpaceDisplay(parent=self)
+        _policy = canvas.sizePolicy()
+        _policy.setRetainSizeWhenHidden(True)
+        canvas.setSizePolicy(_policy)
+        return canvas
+
+    def _init_toml_widget(self):
+        _widget = QPlainTextEdit(parent=self)
+        _widget.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        _widget.setReadOnly(True)
+        _widget.font().setPointSize(14)
+        _widget.font().setFamily("Courier New")
+        _widget.setMinimumWidth(350)
+        return _widget
+
+    def _init_transform_btn(self):
+        _btn = GearValidButton(parent=self)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_transform_dropdown(self):
+        _w = QComboBox(parent=self)
+        _w.setEditable(False)
+        font = _w.font()
+        font.setPointSize(16)
+        _w.setFont(font)
+        _w.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToMinimumContentsLengthWithIcon
+        )
+        _w.setIconSize(QSize(20, 20))
+        _w.setToolTip(
+            "Flagged items indicate the base transforms, which are not pre-configured."
+        )
+        _w.setToolTipDuration(30000)
+        return _w
+
+    def _init_transform_label(self):
+        _icon = QTAIconLabel(icon_name_dict["exchange-alt"], parent=self)
+        _icon.setFixedSize(32)
+        _icon.setIconSize(24)
+        _icon.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        return _icon
 
     def _build_drive_defaults(self) -> List[Tuple[str, Dict[str, Any]]]:
         # Returned _drive_defaults is a List of Tuple pairs
