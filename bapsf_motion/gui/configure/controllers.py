@@ -64,8 +64,8 @@ class AxisControlWidget(QWidget):
 
     def __init__(
         self,
-        axis_display_mode="interactive",
-        parent=None,
+        axis_display_mode: Literal["interactive", "readonly"] = "interactive",
+        parent: QWidget | None = None,
     ):
         super().__init__(parent)
 
@@ -74,11 +74,14 @@ class AxisControlWidget(QWidget):
         self._mg = None
         self._axis_index = None
 
+        # Configure display update timer
+        # - to update widgets during a motor movement
         self._update_display_interval = 250  # in msec
         self._update_display_timer = QTimer()
         self._update_display_timer.setSingleShot(True)
         self._display_timer_issue_new_single_shot = False
 
+        # Configure display interactive-ness
         if axis_display_mode not in ("interactive", "readonly"):
             self._logger.info(
                 f"Forcing display mode of {self.__class__.__name__} to be"
