@@ -50,9 +50,8 @@ class MotionSpaceDisplay(QFrame):
         super().__init__(parent=parent)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
+        self._mb = self._init_motion_builder(mb)
 
-        self._mb = None
-        self.link_motion_builder(mb)
         self._display_position = True
         self._display_target_position = True
         self._display_probe = True
@@ -103,6 +102,16 @@ class MotionSpaceDisplay(QFrame):
         layout.addWidget(self.mpl_canvas)
 
         return layout
+
+    @staticmethod
+    def _init_motion_builder(mb: MotionBuilder | None) -> MotionBuilder | None:
+        if mb is not None and not isinstance(mb, MotionBuilder):
+            raise TypeError(
+                "Argument 'mb' must be None or an instance of MotionBuilder, "
+                f"got type {type(mb)} instead."
+            )
+
+        return mb
 
     @property
     def logger(self) -> logging.Logger:
