@@ -27,7 +27,7 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas 
 from matplotlib.backends.backend_qtagg import (  # noqa
     NavigationToolbar2QT as NavigationToolbar,
 )
-from matplotlib.collections import PathCollection
+from matplotlib.collections import PathCollection  # noqa
 
 
 class MotionSpaceDisplay(QFrame):
