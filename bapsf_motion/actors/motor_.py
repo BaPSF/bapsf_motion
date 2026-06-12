@@ -1465,8 +1465,8 @@ class Motor(EventActor):
 
         recv_pattern = self._commands[command]["recv"]
         if recv_pattern is not None:
-            # We have observed motors returing a MALFORMED string where
-            # the correct string is returned with a leading digit (generall 1).
+            # We have observed motors returning a MALFORMED string where
+            # the correct string is returned with a leading digit (generally 1).
             #
             # For example, 'AL=0004' would be returned as '1AL=0004'.
             #
