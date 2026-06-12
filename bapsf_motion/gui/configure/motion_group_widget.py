@@ -449,7 +449,7 @@ class MGWidget(QWidget):
         self.mb_btn = self._init_mb_btn()
         self.mb_label = self._init_mb_label()
         self.ml_name_widget = self._init_ml_name_widget()
-        self.mpl_canvas = self._init_mpl_canvas()
+        self.mspace_display = self._init_mspace_display()
         self.toml_widget = self._init_toml_widget()
         self.transform_btn = self._init_transform_btn()
         self.transform_label = self._init_transform_label()
@@ -531,13 +531,13 @@ class MGWidget(QWidget):
             self._transform_dropdown_new_selection
         )
 
-        self.mpl_canvas.targetPositionSelected.connect(self._update_target_position)
+        self.mspace_display.targetPositionSelected.connect(self._update_target_position)
 
         self.drive_control_widget.movementStarted.connect(self.disable_config_controls)
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
         self.drive_control_widget.movementStopped.connect(self._update_position_in_plot)
         self.drive_control_widget.targetPositionChanged.connect(
-            self.mpl_canvas.update_target_position_plot
+            self.mspace_display.update_target_position_plot
         )
         self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
@@ -570,7 +570,7 @@ class MGWidget(QWidget):
             position = self.drive_control_widget.position
         else:
             position = None
-        self.mpl_canvas.update_position_plot(position)
+        self.mspace_display.update_position_plot(position)
 
         if self._plot_timer_issue_new_single_shot:
             # start another single shot if update_position_in_plot() was
@@ -606,7 +606,7 @@ class MGWidget(QWidget):
         layout.addSpacing(8)
         layout.addWidget(self._define_central_builder_widget())
         layout.addSpacing(8)
-        layout.addWidget(self.mpl_canvas)
+        layout.addWidget(self.mspace_display)
 
         return layout
 
@@ -803,7 +803,7 @@ class MGWidget(QWidget):
         _widget.setMinimumWidth(220)
         return _widget
 
-    def _init_mpl_canvas(self):
+    def _init_mspace_display(self):
         canvas = MotionSpaceDisplay(parent=self)
         _policy = canvas.sizePolicy()
         _policy.setRetainSizeWhenHidden(True)
@@ -1028,7 +1028,7 @@ class MGWidget(QWidget):
         self._update_mb_dropdown()
         self._update_transform_dropdown()
         self._update_toml_widget()
-        self._update_mpl_canvas_mb()
+        self._update_mspace_display_mb()
 
         # updating the drive control widget should always be the last
         # step
@@ -1504,22 +1504,22 @@ class MGWidget(QWidget):
 
         self._refresh_drive_control()
 
-    def _update_mpl_canvas_mb(self):
+    def _update_mspace_display_mb(self):
         if not isinstance(self.mg, MotionGroup) or not isinstance(
             self.mg.mb, MotionBuilder
         ):
-            self.mpl_canvas.unlink_motion_builder()
+            self.mspace_display.unlink_motion_builder()
             return
 
-        if not isinstance(self.mpl_canvas.mb, MotionBuilder):
-            self.mpl_canvas.link_motion_builder(self.mg.mb)
+        if not isinstance(self.mspace_display.mb, MotionBuilder):
+            self.mspace_display.link_motion_builder(self.mg.mb)
             return
 
-        if dict_equal(self.mg.mb.config, self.mpl_canvas.mb.config):
+        if dict_equal(self.mg.mb.config, self.mspace_display.mb.config):
             # canvas already had current motion builder
             return
 
-        self.mpl_canvas.link_motion_builder(self.mg.mb)
+        self.mspace_display.link_motion_builder(self.mg.mb)
 
     @Slot(list)
     def _update_target_position(self, target_position: List[float]):
