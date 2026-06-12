@@ -158,7 +158,7 @@ class AxisControlWidget(QWidget):
 
         return layout
 
-    def _define_interactive_layout(self, layout: QVBoxLayout = None):
+    def _define_interactive_layout(self, layout: QVBoxLayout | None = None):
         if layout is None:
             layout = QVBoxLayout()
 
@@ -186,7 +186,7 @@ class AxisControlWidget(QWidget):
 
         return layout
 
-    def _define_readonly_layout(self, layout: QVBoxLayout = None):
+    def _define_readonly_layout(self, layout: QVBoxLayout | None = None):
         if layout is None:
             layout = QVBoxLayout()
 
@@ -732,7 +732,11 @@ class DriveBaseController(QWidget):
     zeroDrive = Signal()
     targetPositionChanged = Signal(list)
 
-    def __init__(self, axis_display_mode="interactive", parent=None):
+    def __init__(
+        self,
+        axis_display_mode: Literal["interactive", "readonly"] = "interactive",
+        parent: QWidget | None = None,
+    ):
         # axis_display_mode == "interactive" or "readonly"
         super().__init__(parent=parent)
 
@@ -1204,6 +1208,8 @@ class DriveDesktopController(DriveBaseController):
 
 class DriveGameController(DriveBaseController):
     def __init__(self, parent=None):
+        self._pygame_joystick_runner = None  # type: PyGameJoystickRunner | None
+
         super().__init__(axis_display_mode="readonly", parent=parent)
 
     def _connect_signals(self):
@@ -1216,7 +1222,6 @@ class DriveGameController(DriveBaseController):
         )
 
     def _initialize_widgets(self):
-        self._pygame_joystick_runner = None  # type: PyGameJoystickRunner | None
         self._thread_pool = QThreadPool(parent=self)
 
         # BUTTON WIDGETS
