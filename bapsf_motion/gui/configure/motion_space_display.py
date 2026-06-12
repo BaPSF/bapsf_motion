@@ -84,16 +84,6 @@ class MotionSpaceDisplay(QFrame):
         self._display_probe = True
         self._animate_payload = None
         self._motionlist_plot_names = None  # type: List[str] | None
-
-        self.setStyleSheet("""
-            MotionSpaceDisplay {
-                border: 2px solid rgb(125, 125, 125);
-                border-radius: 5px; 
-                padding: 0px;
-                margin: 0px;
-            }
-            """)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._draw_all = True
         self._cid_on_draw = None
         self._mpl_pick_callback_id = None
@@ -102,6 +92,7 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas = self._init_mpl_canvas()
         self.mpl_toolbar = self._init_mpl_toolbar()
 
+        self._init_self()
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -144,6 +135,17 @@ class MotionSpaceDisplay(QFrame):
     def _init_mpl_toolbar(self):
         toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
         return toolbar
+
+    def _init_self(self):
+        self.setStyleSheet("""
+        MotionSpaceDisplay {
+            border: 2px solid rgb(125, 125, 125);
+            border-radius: 5px; 
+            padding: 0px;
+            margin: 0px;
+        }
+        """)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
     @property
     def logger(self) -> logging.Logger:
