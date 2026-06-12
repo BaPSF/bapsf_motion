@@ -49,7 +49,10 @@ from bapsf_motion.gui.widgets import (
 from bapsf_motion.utils import units as u
 
 if TYPE_CHECKING:
-    from bapsf_motion.gui.configure.message_boxes import LostConnectionMessageBox
+    from bapsf_motion.gui.configure.message_boxes import (
+        LostConnectionMessageBox,
+        MSpaceMessageBox,
+    )
 
 
 class AxisControlWidget(QWidget):
@@ -109,8 +112,8 @@ class AxisControlWidget(QWidget):
         self.target_position_label = self._init_target_position_label()
         self.zero_btn = self._init_zero_btn()
 
-        self.mspace_warning_dialog = None
         # Retrieve Warning Dialogs from Parent
+        self.mspace_warning_dialog = None  # type: MSpaceMessageBox | None
         if hasattr(parent, "mspace_warning_dialog"):
             self.mspace_warning_dialog = parent.mspace_warning_dialog
 
