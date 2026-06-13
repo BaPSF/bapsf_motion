@@ -1009,7 +1009,11 @@ class Motor(EventActor):
         speed = self.motor["speed"]
         if isinstance(speed, u.Quantity):
             speed = speed.value
-        speed = float(speed)
+        try:
+            speed = float(speed)
+        except TypeError:
+            # Motor is likely connected and the stored value is an AckFlags
+            speed = 0.0
 
         return {
             "name": self.name,
