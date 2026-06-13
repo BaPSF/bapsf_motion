@@ -32,10 +32,10 @@ if __name__ == "__main__":
         type=pathlib.Path,
     )
     default_debug = (
-            "*.debug=true;"
-            "qt.text.emojisegmenter.debug=false;"
-            "qt.widgets.showhide.debug=false"
-        )
+        "*.debug=true;"
+        "qt.text.emojisegmenter.debug=false;"
+        "qt.widgets.showhide.debug=false"
+    )
     parser.add_argument(
         "--debug",
         nargs="?",
