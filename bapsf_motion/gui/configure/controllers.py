@@ -577,7 +577,10 @@ class AxisControlWidget(QWidget):
 
     @Slot()
     def _validate_target_position_value(self):
-        self.targetPositionChanged.emit(self.target_position)
+        target_position = self.target_position
+        if not isinstance(target_position, list):
+            target_position = []
+        self.targetPositionChanged.emit(target_position)
 
     @Slot()
     def _zero_axis(self):
@@ -840,10 +843,10 @@ class DriveBaseController(QWidget):
     @Slot()
     def _target_position_changed(self, position):
         self.logger.info(f"DBC target position changed {self.target_position}")
-        tpos = self.target_position
-        if tpos is None:
-            tpos = []
-        self.targetPositionChanged.emit(tpos)
+        target_position = self.target_position
+        if target_position is None:
+            target_position = []
+        self.targetPositionChanged.emit(target_position)
 
     def link_motion_group(self, mg: MotionGroup):
         if not isinstance(mg, MotionGroup):
