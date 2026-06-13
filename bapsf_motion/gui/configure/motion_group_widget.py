@@ -1386,6 +1386,8 @@ class MGWidget(QWidget):
         self.drive_control_widget.link_motion_group(self.mg)
 
         target_position = self.drive_control_widget.target_position
+        if not isinstance(target_position, list):
+            target_position = []
         self.drive_control_widget.targetPositionChanged.emit(target_position)
 
         self._update_position_in_plot()
