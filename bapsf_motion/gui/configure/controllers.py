@@ -19,7 +19,7 @@ import pygame  # noqa
 
 from abc import abstractmethod
 from PySide6.QtCore import Qt, QThreadPool, QTimer, Signal, Slot
-from PySide6.QtGui import QDoubleValidator, QFont, QCloseEvent
+from PySide6.QtGui import QCloseEvent, QDoubleValidator, QFont
 from PySide6.QtWidgets import (
     QComboBox,
     QGridLayout,
