@@ -11,6 +11,7 @@ import matplotlib as mpl
 import numpy as np
 import warnings
 
+from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout, QWidget
@@ -28,6 +29,9 @@ from matplotlib.backends.backend_qtagg import (  # noqa
     NavigationToolbar2QT as NavigationToolbar,
 )
 from matplotlib.collections import PathCollection  # noqa
+
+
+class _ABCMotionSpaceDisplay(ABCMeta, type(QWidget)): ...
 
 
 class MotionSpaceDisplay(QFrame):
