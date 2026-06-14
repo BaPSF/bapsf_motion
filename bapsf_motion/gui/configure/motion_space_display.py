@@ -15,10 +15,13 @@ from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout, QWidget
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.motion_builder import MotionBuilder
+
+if TYPE_CHECKING:
+    from PySide6.QtGui import QCloseEvent
 
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
@@ -34,7 +37,7 @@ from matplotlib.collections import PathCollection  # noqa
 class _ABCMotionSpaceDisplay(ABCMeta, type(QWidget)): ...
 
 
-class MotionSpaceDisplay(QFrame):
+class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
     animateMotionListStarted = Signal()
@@ -50,10 +53,15 @@ class MotionSpaceDisplay(QFrame):
         "insertion_point",
     ]
 
-    def __init__(self, mb: MotionBuilder | None = None, parent: QWidget | None = None):
+    def __init__(
+        self,
+        logger: logging.Logger,
+        mb: MotionBuilder | None = None,
+        parent: QWidget | None = None,
+    ):
         super().__init__(parent=parent)
 
-        self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
+        self._logger = self._init_logger(logger)
         self._mb = self._init_motion_builder(mb)
 
         # Initialize plotting control attributes
@@ -91,6 +99,100 @@ class MotionSpaceDisplay(QFrame):
         self._draw_all = True
         self._cid_on_draw = None
         self._mpl_pick_callback_id = None
+
+    @abstractmethod
+    def link_motion_builder(self, mb: MotionBuilder | None): ...
+
+    @abstractmethod
+    def unlink_motion_builder(self): ...
+
+    @abstractmethod
+    @Slot(list)
+    def update_target_position_plot(self, position): ...
+
+    @abstractmethod
+    @Slot(list)
+    def update_position_plot(self, position):
+        ...
+
+    @staticmethod
+    def _init_logger(logger: logging.Logger) -> logging.Logger:
+        if not isinstance(logger, logging.Logger):
+            logger = logging.getLogger("MSD")
+
+        return logger
+
+    @staticmethod
+    def _init_motion_builder(mb: MotionBuilder | None) -> MotionBuilder | None:
+        if mb is not None and not isinstance(mb, MotionBuilder):
+            raise TypeError(
+                "Argument 'mb' must be None or an instance of MotionBuilder, "
+                f"got type {type(mb)} instead."
+            )
+
+        return mb
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def mb(self) -> MotionBuilder | None:
+        return self._mb
+
+    @property
+    def display_position(self) -> bool:
+        return self._display_position
+
+    @display_position.setter
+    def display_position(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
+        self._display_position = value
+        if not value:
+            self._display_probe = value
+
+    @property
+    def display_target_position(self) -> bool:
+        return self._display_target_position
+
+    @display_target_position.setter
+    def display_target_position(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
+        self._display_target_position = value
+
+    @property
+    def display_probe(self) -> bool:
+        return self._display_probe
+
+    @display_probe.setter
+    def display_probe(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
+        self._display_probe = value
+        if value:
+            self._display_position = value
+
+    @property
+    def is_animating_motion_list(self):
+        if self._animate_payload is None:
+            return False
+
+        if self._animate_payload["finished"]:
+            return False
+
+        _timer = self._animate_payload["timer"]  # type: QTimer
+        return _timer.isActive()
+
+    def closeEvent(self, event: "QCloseEvent"):
+        self.logger.info(f"Closing {self.__class__.__name__}")
+        super().closeEvent(event)
+
+
 
         # Define WIDGETS
         self.mpl_canvas = self._init_mpl_canvas()
