@@ -193,12 +193,23 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
         super().closeEvent(event)
 
 
+class MotionSpaceDisplay2D(_MSDBase):
+    dimensionality = 2
+
+    def __init__(
+        self,
+        logger: logging.Logger,
+        mb: MotionBuilder | None = None,
+        parent: QWidget | None = None,
+    ):
+        super().__init__(
+            logger=logger, mb=mb, parent=parent
+        )
 
         # Define WIDGETS
         self.mpl_canvas = self._init_mpl_canvas()
         self.mpl_toolbar = self._init_mpl_toolbar()
 
-        self._init_self()
         self.setLayout(self._define_layout())
         self._connect_signals()
 
@@ -223,16 +234,6 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
         return layout
 
-    @staticmethod
-    def _init_motion_builder(mb: MotionBuilder | None) -> MotionBuilder | None:
-        if mb is not None and not isinstance(mb, MotionBuilder):
-            raise TypeError(
-                "Argument 'mb' must be None or an instance of MotionBuilder, "
-                f"got type {type(mb)} instead."
-            )
-
-        return mb
-
     def _init_mpl_canvas(self):
         canvas = FigureCanvas()
         canvas.setParent(self)
@@ -241,73 +242,6 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     def _init_mpl_toolbar(self):
         toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
         return toolbar
-
-    def _init_self(self):
-        self.setStyleSheet("""
-        MotionSpaceDisplay {
-            border: 2px solid rgb(125, 125, 125);
-            border-radius: 5px; 
-            padding: 0px;
-            margin: 0px;
-        }
-        """)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-    @property
-    def logger(self) -> logging.Logger:
-        return self._logger
-
-    @property
-    def mb(self) -> MotionBuilder | None:
-        return self._mb
-
-    @property
-    def display_position(self) -> bool:
-        return self._display_position
-
-    @display_position.setter
-    def display_position(self, value: bool):
-        if not isinstance(value, bool):
-            return
-
-        self._display_position = value
-        if not value:
-            self._display_probe = value
-
-    @property
-    def display_target_position(self) -> bool:
-        return self._display_target_position
-
-    @display_target_position.setter
-    def display_target_position(self, value: bool):
-        if not isinstance(value, bool):
-            return
-
-        self._display_target_position = value
-
-    @property
-    def display_probe(self) -> bool:
-        return self._display_probe
-
-    @display_probe.setter
-    def display_probe(self, value: bool):
-        if not isinstance(value, bool):
-            return
-
-        self._display_probe = value
-        if value:
-            self._display_position = value
-
-    @property
-    def is_animating_motion_list(self):
-        if self._animate_payload is None:
-            return False
-
-        if self._animate_payload["finished"]:
-            return False
-
-        _timer = self._animate_payload["timer"]  # type: QTimer
-        return _timer.isActive()
 
     def _get_plot_axis_by_name(self, name: str):
         fig_axes = self.mpl_canvas.figure.axes
@@ -394,7 +328,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
         self.animateMotionListCleared.emit()
 
     @Slot()
-    def _update_motion_list_trace(self, *, to_index: int = None):
+    def _update_motion_list_trace(self, *, to_index: int | None = None):
         if to_index is None and self._animate_payload is None:
             return
         elif to_index is None:
