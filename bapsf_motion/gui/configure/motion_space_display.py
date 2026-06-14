@@ -11,13 +11,17 @@ import matplotlib as mpl
 import numpy as np
 import warnings
 
+from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
-from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
-from typing import List, Union
+from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout, QWidget
+from typing import List, TYPE_CHECKING
 
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.motion_builder import MotionBuilder
+
+if TYPE_CHECKING:
+    from PySide6.QtGui import QCloseEvent
 
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
@@ -27,10 +31,13 @@ from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg as FigureCanvas 
 from matplotlib.backends.backend_qtagg import (  # noqa
     NavigationToolbar2QT as NavigationToolbar,
 )
-from matplotlib.collections import PathCollection
+from matplotlib.collections import PathCollection  # noqa
 
 
-class MotionSpaceDisplay(QFrame):
+class _ABCMotionSpaceDisplay(ABCMeta, type(QWidget)): ...
+
+
+class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
     animateMotionListStarted = Signal()
@@ -46,72 +53,91 @@ class MotionSpaceDisplay(QFrame):
         "insertion_point",
     ]
 
-    def __init__(self, mb: MotionBuilder = None, parent=None):
+    def __init__(
+        self,
+        logger: logging.Logger,
+        mb: MotionBuilder | None = None,
+        parent: QWidget | None = None,
+    ):
         super().__init__(parent=parent)
 
-        self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
+        self._logger = self._init_logger(logger)
+        self._mb = self._init_motion_builder(mb)
 
-        self._mb = None
-        self.link_motion_builder(mb)
+        # Initialize plotting control attributes
+        #
+        # _display_position : bool
+        #     If True, plot the current position of the probe drive.
+        # _display_target_position : bool
+        #     If True, plot the target position.
+        # _display_probe : bool
+        #     If True, add to the plot a representation of the probe [shaft]
+        # _animate_payload : dict
+        #     A dictionary payload when animating the motion list.
+        #      "finished"   - bool   - has the animation finsihed
+        #      "timer"      - QTimer - timer instance
+        #      "delay"      - int    - timer interval
+        #      "index"      - int    - next motionlist index to animate to
+        #      "index_step" - int    - delta / step between animated index
+        # _motionlist_plot_names : list[str]
+        #     list of motionlist names ... these are the same as the
+        #     MotionBuilder layer names
+        # _draw_all : True
+        #     If True, then (re)draw everything.  If False, then only redraw
+        #     the artists that are marked animated=True.  (Note this is
+        #     matplotlib's animated, and not our motion list animateion.)
+        # _cid_on_draw :
+        #     matplotlib call back ID for the "draw_event"
+        # _mpl_pick_callback_id :
+        #     matplotlib call back ID for the "pick_event"
+        #
         self._display_position = True
         self._display_target_position = True
         self._display_probe = True
         self._animate_payload = None
-
-        self._motionlist_plot_names = None  # type: Union[None, List[str]]
-
-        self._motionlist_plot_names = None  # type: Union[None, List[str]]
-
-        self.setStyleSheet("""
-            MotionSpaceDisplay {
-                border: 2px solid rgb(125, 125, 125);
-                border-radius: 5px; 
-                padding: 0px;
-                margin: 0px;
-            }
-            """)
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
-
-        self.mpl_canvas = FigureCanvas()
-        self.mpl_canvas.setParent(self)
-
-        self.mpl_toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
-
-        self.setLayout(self._define_layout())
-
-        self._cid_on_draw = None
+        self._motionlist_plot_names = None  # type: List[str] | None
         self._draw_all = True
-
+        self._cid_on_draw = None
         self._mpl_pick_callback_id = None
-        self._connect_signals()
 
-    def _connect_signals(self):
-        self.mbChanged.connect(self.update_canvas)
-        self.targetPositionSelected.connect(self.update_target_position_plot)
-        self.animateMotionListFinished.connect(self.animate_motion_list_pause)
+    @abstractmethod
+    def link_motion_builder(self, mb: MotionBuilder | None): ...
 
-        # matplotlib events
-        self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
-            "pick_event", self.on_pick  # noqa
-        )
-        self._cid_on_draw = self.mpl_canvas.mpl_connect(
-            "draw_event", self.on_draw
-        )  # noqa
+    @abstractmethod
+    def unlink_motion_builder(self): ...
 
-    def _define_layout(self):
-        layout = QVBoxLayout()
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.addWidget(self.mpl_toolbar)
-        layout.addWidget(self.mpl_canvas)
+    @abstractmethod
+    @Slot(list)
+    def update_target_position_plot(self, position): ...
 
-        return layout
+    @abstractmethod
+    @Slot(list)
+    def update_position_plot(self, position):
+        ...
+
+    @staticmethod
+    def _init_logger(logger: logging.Logger) -> logging.Logger:
+        if not isinstance(logger, logging.Logger):
+            logger = logging.getLogger("MSD")
+
+        return logger
+
+    @staticmethod
+    def _init_motion_builder(mb: MotionBuilder | None) -> MotionBuilder | None:
+        if mb is not None and not isinstance(mb, MotionBuilder):
+            raise TypeError(
+                "Argument 'mb' must be None or an instance of MotionBuilder, "
+                f"got type {type(mb)} instead."
+            )
+
+        return mb
 
     @property
     def logger(self) -> logging.Logger:
         return self._logger
 
     @property
-    def mb(self) -> Union[MotionBuilder, None]:
+    def mb(self) -> MotionBuilder | None:
         return self._mb
 
     @property
@@ -161,6 +187,61 @@ class MotionSpaceDisplay(QFrame):
 
         _timer = self._animate_payload["timer"]  # type: QTimer
         return _timer.isActive()
+
+    def closeEvent(self, event: "QCloseEvent"):
+        self.logger.info(f"Closing {self.__class__.__name__}")
+        super().closeEvent(event)
+
+
+class MotionSpaceDisplay2D(_MSDBase):
+    dimensionality = 2
+
+    def __init__(
+        self,
+        logger: logging.Logger,
+        mb: MotionBuilder | None = None,
+        parent: QWidget | None = None,
+    ):
+        super().__init__(
+            logger=logger, mb=mb, parent=parent
+        )
+
+        # Define WIDGETS
+        self.mpl_canvas = self._init_mpl_canvas()
+        self.mpl_toolbar = self._init_mpl_toolbar()
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.mbChanged.connect(self.update_canvas)
+        self.targetPositionSelected.connect(self.update_target_position_plot)
+        self.animateMotionListFinished.connect(self.animate_motion_list_pause)
+
+        # matplotlib events
+        self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
+            "pick_event", self.on_pick  # noqa
+        )
+        self._cid_on_draw = self.mpl_canvas.mpl_connect(
+            "draw_event", self.on_draw
+        )  # noqa
+
+    def _define_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.mpl_toolbar)
+        layout.addWidget(self.mpl_canvas)
+
+        return layout
+
+    def _init_mpl_canvas(self):
+        canvas = FigureCanvas()
+        canvas.setParent(self)
+        return canvas
+
+    def _init_mpl_toolbar(self):
+        toolbar = NavigationToolbar(self.mpl_canvas, parent=self)
+        return toolbar
 
     def _get_plot_axis_by_name(self, name: str):
         fig_axes = self.mpl_canvas.figure.axes
@@ -247,7 +328,7 @@ class MotionSpaceDisplay(QFrame):
         self.animateMotionListCleared.emit()
 
     @Slot()
-    def _update_motion_list_trace(self, *, to_index: int = None):
+    def _update_motion_list_trace(self, *, to_index: int | None = None):
         if to_index is None and self._animate_payload is None:
             return
         elif to_index is None:
@@ -375,7 +456,7 @@ class MotionSpaceDisplay(QFrame):
         self.logger.info(f"target position = {target_position}")
         self.targetPositionSelected.emit(target_position)
 
-    def link_motion_builder(self, mb: Union[MotionBuilder, None]):
+    def link_motion_builder(self, mb: MotionBuilder | None):
         self.logger.info(f"Linking Motion Builder {mb}")
 
         self.blockSignals(True)
@@ -760,6 +841,235 @@ class MotionSpaceDisplay(QFrame):
         self.update_legend()
         self.mpl_canvas.draw()
 
-    def closeEvent(self, event):
+
+class MotionSpaceDisplay(QFrame):
+    mbChanged = Signal()
+    targetPositionSelected = Signal(list)
+    animateMotionListStarted = Signal()
+    animateMotionListFinished = Signal()
+    animateMotionListPaused = Signal()
+    animateMotionListCleared = Signal()
+
+    _default_legend_names = [
+        "motion_list",
+        "probe",
+        "position",
+        "target",
+        "insertion_point",
+    ]
+
+    def __init__(self, mb: MotionBuilder | None = None, parent: QWidget | None = None):
+        super().__init__(parent=parent)
+
+        self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
+        self._mb = self._init_motion_builder(mb)
+
+        # Define WIDGETS
+        self.display = self._init_display()
+
+        self._init_self()
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self._connect_display_signals()
+
+    def _connect_display_signals(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.mbChanged.connect(self.mbChanged.emit)
+        self.display.animateMotionListFinished.connect(
+            self.animateMotionListFinished.emit
+        )
+
+        self.targetPositionSelected.connect(self.display.targetPositionSelected.emit)
+
+    def _disconnect_display_signals(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.mbChanged.disconnect()
+        self.display.animateMotionListFinished.disconnect()
+
+        self.targetPositionSelected.disconnect(self.display.targetPositionSelected.emit)
+
+    def _define_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.display)
+
+        return layout
+
+    @staticmethod
+    def _init_motion_builder(mb: MotionBuilder | None) -> MotionBuilder | None:
+        if mb is not None and not isinstance(mb, MotionBuilder):
+            raise TypeError(
+                "Argument 'mb' must be None or an instance of MotionBuilder, "
+                f"got type {type(mb)} instead."
+            )
+
+        return mb
+
+    def _init_display(self) -> QWidget | _MSDBase:
+        if self._mb is None:
+            display = QWidget(parent=self)
+        elif not isinstance(self._mb, MotionBuilder):
+            raise RuntimeError(
+                "Can not create a display for the motion space.  The "
+                "motion builder is not the right type.  Expected type "
+                f"MotionBuilder, but got type {type(self._mb)}.  "
+            )
+        elif self._mb.mspace_ndims == 2:
+            display = MotionSpaceDisplay2D(
+                logger=self._logger, mb=self._mb, parent=self
+            )
+        else:
+            raise RuntimeError(
+                "Can not create a display for the motion space.  The "
+                "motion builder has an unsupported dimenstioality.  Got "
+                f"dimensionality {type(self._mb.mspace_ndims)}, but can only "
+                f"support 2 or 3 dimensions."
+            )
+
+        display.setObjectName("motion_space_display")
+        return display
+
+    def _init_self(self):
+        self.setStyleSheet("""
+        MotionSpaceDisplay {
+            border: 2px solid rgb(125, 125, 125);
+            border-radius: 5px; 
+            padding: 0px;
+            margin: 0px;
+        }
+        """)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def mb(self) -> MotionBuilder | None:
+        return self._mb
+
+    @property
+    def display_position(self) -> bool:
+        if not isinstance(self.display, _MSDBase):
+            return False
+
+        return self.display.display_position
+
+    @display_position.setter
+    def display_position(self, value: bool):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.display_position = value
+
+    @property
+    def display_target_position(self) -> bool:
+        if not isinstance(self.display, _MSDBase):
+            return False
+
+        return self.display.display_target_position
+
+    @display_target_position.setter
+    def display_target_position(self, value: bool):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.display_target_position = value
+
+    @property
+    def display_probe(self) -> bool:
+        if not isinstance(self.display, _MSDBase):
+            return False
+
+        return self.display.display_probe
+
+    @display_probe.setter
+    def display_probe(self, value: bool):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.display_probe = value
+
+    @property
+    def is_animating_motion_list(self):
+        if not isinstance(self.display, _MSDBase):
+            return False
+
+        return self.display.is_animating_motion_list
+
+    def link_motion_builder(self, mb: MotionBuilder | None = None):
+        display_dimensionality = None
+        if isinstance(self.display, _MSDBase):
+            display_dimensionality = self.display.dimensionality
+
+        new_mspace_dimensionality = None
+        if isinstance(mb, MotionBuilder):
+            new_mspace_dimensionality = mb.mspace_ndims
+
+        if mb is not None or not isinstance(mb, MotionBuilder):
+            mb = None
+
+        if display_dimensionality is None and new_mspace_dimensionality is None:
+            # nothing has changed
+            self.unlink_motion_builder()
+            return
+
+        if (
+            new_mspace_dimensionality is None
+            or new_mspace_dimensionality == display_dimensionality
+        ):
+            self.unlink_motion_builder()
+            self.display.link_motion_builder(mb)
+            return
+
+        if new_mspace_dimensionality != display_dimensionality:
+            self.unlink_motion_builder()
+            self._mb = mb
+            self.display.setVisible(False)
+            self._replace_display()
+
+    def unlink_motion_builder(self, mb: MotionBuilder | None = None):
+        self._mb = None
+
+        if isinstance(self.display, _MSDBase):
+            self.display.unlink_motion_builder()
+            self.display.setVisible(False)
+
+    def _replace_display(self):
+        self._disconnect_display_signals()
+
+        old_display = self.display
+        new_display = self._init_display()
+        self.layout().replaceWidget(old_display, new_display)
+
+        old_display.blockSignals(True)
+        old_display.setVisible(False)
+        old_display.close()
+        old_display.deleteLater()
+
+        self.display = new_display
+        self._connect_display_signals()
+
+    @Slot(list)
+    def update_position_plot(self, position):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.update_position_plot(position)
+
+    @Slot(list)
+    def update_target_position_plot(self, position):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.update_target_position_plot(position)
+
+    def closeEvent(self, event: "QCloseEvent"):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)

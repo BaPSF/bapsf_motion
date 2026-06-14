@@ -1,5 +1,5 @@
 """
-Module containingg custom `QDialog` and `QMessageBox` classes.
+Module containing custom `QDialog` and `QMessageBox` classes.
 """
 
 __all__ = [
