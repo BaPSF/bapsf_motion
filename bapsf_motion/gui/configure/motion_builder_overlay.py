@@ -70,7 +70,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._mb = None
 
         self._space_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
-        self._mpl_canvas_full_draw = True
+        self._mspace_display_full_draw = True
 
         _parameter_hints = read_parameter_hints()
         self._parameter_hints_layer = _parameter_hints.pop("layer", None)
@@ -122,11 +122,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._initialize_layer_list_layout_widgets()
 
         # SET UP PLOT WIDGET
-        self.mpl_canvas = MotionSpaceDisplay(parent=self)
-        self.mpl_canvas.display_position = False
-        self.mpl_canvas.display_target_position = False
+        self.mspace_display = MotionSpaceDisplay(parent=self)
+        self.mspace_display.display_position = False
+        self.mspace_display.display_target_position = False
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
-            self.mpl_canvas.link_motion_builder(self.mg.mb)
+            self.mspace_display.link_motion_builder(self.mg.mb)
 
         self.animate_ml_widget = QFrame(parent=self)
         self.animate_ml_widget.setObjectName("animate_ml_controls")
@@ -207,21 +207,21 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_move_up_btn.clicked.connect(self._layer_list_item_move_up)
         self.layer_move_down_btn.clicked.connect(self._layer_list_item_move_down)
 
-        self.mpl_canvas.animateMotionListFinished.connect(
+        self.mspace_display.animateMotionListFinished.connect(
             self._animate_motion_list_finished
         )
-        self.mpl_canvas.animateMotionListCleared.connect(
+        self.mspace_display.animateMotionListCleared.connect(
             self._animate_motion_list_finished
         )
-        self.mpl_canvas.animateMotionListStarted.connect(
+        self.mspace_display.animateMotionListStarted.connect(
             self._animate_motion_list_btn_txt_to_pause
         )
-        self.mpl_canvas.animateMotionListPaused.connect(
+        self.mspace_display.animateMotionListPaused.connect(
             self._animate_motion_list_btn_txt_to_animate
         )
         self.animate_ml_btn.clicked.connect(self._animate_motion_list)
         self.animate_ml_clear_btn.clicked.connect(
-            self.mpl_canvas.animate_motion_list_clear
+            self.mspace_display.animate_motion_list_clear
         )
 
     def _define_layout(self):
@@ -358,7 +358,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         plot_layout = QHBoxLayout()
         plot_layout.setContentsMargins(0, 0, 0, 0)
         plot_layout.addLayout(side_control_layout)
-        plot_layout.addWidget(self.mpl_canvas)
+        plot_layout.addWidget(self.mspace_display)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -960,9 +960,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _animate_motion_list(self):
         _btn_text = self.animate_ml_btn.text().replace("\n", "")
         if _btn_text == "PAUSE":
-            self.mpl_canvas.animate_motion_list_pause()
+            self.mspace_display.animate_motion_list_pause()
         else:
-            self.mpl_canvas.animate_motion_list()
+            self.mspace_display.animate_motion_list()
 
     @Slot()
     def _animate_motion_list_btn_txt_to_animate(self):
@@ -1075,7 +1075,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # TODO: remove params_widget if the removed exclusion is currently
         #       populating the params_widget
 
-        self._mpl_canvas_full_draw = True
+        self._mspace_display_full_draw = True
         self.configChanged.emit()
 
     @Slot()
@@ -1124,7 +1124,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layer = self.mb.layers.pop(current_index)  # noqa
         self.mb.layers.insert(move_to_index, layer)
         self.mb.generate()
-        self._mpl_canvas_full_draw = False
+        self._mspace_display_full_draw = False
         self.configChanged.emit()
         self.layer_list_box.setCurrentRow(move_to_index)
 
@@ -1154,7 +1154,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         layer = self.mb.layers.pop(current_index)  # noqa
         self.mb.layers.insert(move_to_index, layer)
         self.mb.generate()
-        self._mpl_canvas_full_draw = False
+        self._mspace_display_full_draw = False
         self.configChanged.emit()
         self.layer_list_box.setCurrentRow(move_to_index)
 
@@ -1203,7 +1203,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         # TODO: remove params_widget if the removed exclusion is currently
         #       populating the params_widget
 
-        self._mpl_canvas_full_draw = False
+        self._mspace_display_full_draw = False
         self.configChanged.emit()
 
     def _refresh_params_combo_box(
@@ -1291,7 +1291,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _scheme = "merge" if self.layer_ml_combine_toggle.isChecked() else "sequential"
         self.logger.info(f"Toggling motion list scheme to {_scheme}.")
         self.mb.layer_to_motionlist_scheme = _scheme
-        self._mpl_canvas_full_draw = False
+        self._mspace_display_full_draw = False
         self.configChanged.emit()
 
     @Slot(object)
@@ -1500,12 +1500,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.remove_ly_btn.setEnabled(enable)
 
     def update_canvas(self):
-        if self._mpl_canvas_full_draw:
-            self.mpl_canvas.update_canvas()
+        if self._mspace_display_full_draw:
+            self.mspace_display.update_canvas()
         else:
-            self.mpl_canvas.update_motion_list()
+            self.mspace_display.update_motion_list()
 
-        self._mpl_canvas_full_draw = False
+        self._mspace_display_full_draw = False
 
     def update_exclusion_list_box(self):
         self.logger.info("Updating Exclusion List Box")
@@ -1558,19 +1558,19 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         if _registry is self.exclusion_registry and _name == "New Exclusion":
             self.mb.add_exclusion(_type, **_inputs)
-            self._mpl_canvas_full_draw = True
+            self._mspace_display_full_draw = True
         elif _registry is self.exclusion_registry:
             # modifying existing exclusion
             self.mb.remove_exclusion(_name)
             self.mb.add_exclusion(_type, **_inputs)
-            self._mpl_canvas_full_draw = True
+            self._mspace_display_full_draw = True
         elif _name == "New Layer":
             self.mb.add_layer(_type, **_inputs)
-            self._mpl_canvas_full_draw = False
+            self._mspace_display_full_draw = False
         else:
             self.mb.remove_layer(_name)
             self.mb.add_layer(_type, **_inputs)
-            self._mpl_canvas_full_draw = False
+            self._mspace_display_full_draw = False
 
         self._hide_and_clear_params_widget()
         self.configChanged.emit()
@@ -1658,8 +1658,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"layer looks like : {mb_config.get('layers', None)}")
 
         self._mb = MotionBuilder(**mb_config)
-        self.mpl_canvas.link_motion_builder(self._mb)
-        self._mpl_canvas_full_draw = True
+        self.mspace_display.link_motion_builder(self._mb)
+        self._mspace_display_full_draw = True
         self.configChanged.emit()
         return self._mb
 
