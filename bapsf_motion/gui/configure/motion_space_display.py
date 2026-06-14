@@ -841,6 +841,235 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.update_legend()
         self.mpl_canvas.draw()
 
-    def closeEvent(self, event):
+
+class MotionSpaceDisplay(QFrame):
+    mbChanged = Signal()
+    targetPositionSelected = Signal(list)
+    animateMotionListStarted = Signal()
+    animateMotionListFinished = Signal()
+    animateMotionListPaused = Signal()
+    animateMotionListCleared = Signal()
+
+    _default_legend_names = [
+        "motion_list",
+        "probe",
+        "position",
+        "target",
+        "insertion_point",
+    ]
+
+    def __init__(self, mb: MotionBuilder | None = None, parent: QWidget | None = None):
+        super().__init__(parent=parent)
+
+        self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
+        self._mb = self._init_motion_builder(mb)
+
+        # Define WIDGETS
+        self.display = self._init_display()
+
+        self._init_self()
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self._connect_display_signals()
+
+    def _connect_display_signals(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.mbChanged.connect(self.mbChanged.emit)
+        self.display.animateMotionListFinished.connect(
+            self.animateMotionListFinished.emit
+        )
+
+        self.targetPositionSelected.connect(self.display.targetPositionSelected.emit)
+
+    def _disconnect_display_signals(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.mbChanged.disconnect()
+        self.display.animateMotionListFinished.disconnect()
+
+        self.targetPositionSelected.disconnect(self.display.targetPositionSelected.emit)
+
+    def _define_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.display)
+
+        return layout
+
+    @staticmethod
+    def _init_motion_builder(mb: MotionBuilder | None) -> MotionBuilder | None:
+        if mb is not None and not isinstance(mb, MotionBuilder):
+            raise TypeError(
+                "Argument 'mb' must be None or an instance of MotionBuilder, "
+                f"got type {type(mb)} instead."
+            )
+
+        return mb
+
+    def _init_display(self) -> QWidget | _MSDBase:
+        if self._mb is None:
+            display = QWidget(parent=self)
+        elif not isinstance(self._mb, MotionBuilder):
+            raise RuntimeError(
+                "Can not create a display for the motion space.  The "
+                "motion builder is not the right type.  Expected type "
+                f"MotionBuilder, but got type {type(self._mb)}.  "
+            )
+        elif self._mb.mspace_ndims == 2:
+            display = MotionSpaceDisplay2D(
+                logger=self._logger, mb=self._mb, parent=self
+            )
+        else:
+            raise RuntimeError(
+                "Can not create a display for the motion space.  The "
+                "motion builder has an unsupported dimenstioality.  Got "
+                f"dimensionality {type(self._mb.mspace_ndims)}, but can only "
+                f"support 2 or 3 dimensions."
+            )
+
+        display.setObjectName("motion_space_display")
+        return display
+
+    def _init_self(self):
+        self.setStyleSheet("""
+        MotionSpaceDisplay {
+            border: 2px solid rgb(125, 125, 125);
+            border-radius: 5px; 
+            padding: 0px;
+            margin: 0px;
+        }
+        """)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def mb(self) -> MotionBuilder | None:
+        return self._mb
+
+    @property
+    def display_position(self) -> bool:
+        if not isinstance(self.display, _MSDBase):
+            return False
+
+        return self.display.display_position
+
+    @display_position.setter
+    def display_position(self, value: bool):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.display_position = value
+
+    @property
+    def display_target_position(self) -> bool:
+        if not isinstance(self.display, _MSDBase):
+            return False
+
+        return self.display.display_target_position
+
+    @display_target_position.setter
+    def display_target_position(self, value: bool):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.display_target_position = value
+
+    @property
+    def display_probe(self) -> bool:
+        if not isinstance(self.display, _MSDBase):
+            return False
+
+        return self.display.display_probe
+
+    @display_probe.setter
+    def display_probe(self, value: bool):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.display_probe = value
+
+    @property
+    def is_animating_motion_list(self):
+        if not isinstance(self.display, _MSDBase):
+            return False
+
+        return self.display.is_animating_motion_list
+
+    def link_motion_builder(self, mb: MotionBuilder | None = None):
+        display_dimensionality = None
+        if isinstance(self.display, _MSDBase):
+            display_dimensionality = self.display.dimensionality
+
+        new_mspace_dimensionality = None
+        if isinstance(mb, MotionBuilder):
+            new_mspace_dimensionality = mb.mspace_ndims
+
+        if mb is not None or not isinstance(mb, MotionBuilder):
+            mb = None
+
+        if display_dimensionality is None and new_mspace_dimensionality is None:
+            # nothing has changed
+            self.unlink_motion_builder()
+            return
+
+        if (
+            new_mspace_dimensionality is None
+            or new_mspace_dimensionality == display_dimensionality
+        ):
+            self.unlink_motion_builder()
+            self.display.link_motion_builder(mb)
+            return
+
+        if new_mspace_dimensionality != display_dimensionality:
+            self.unlink_motion_builder()
+            self._mb = mb
+            self.display.setVisible(False)
+            self._replace_display()
+
+    def unlink_motion_builder(self, mb: MotionBuilder | None = None):
+        self._mb = None
+
+        if isinstance(self.display, _MSDBase):
+            self.display.unlink_motion_builder()
+            self.display.setVisible(False)
+
+    def _replace_display(self):
+        self._disconnect_display_signals()
+
+        old_display = self.display
+        new_display = self._init_display()
+        self.layout().replaceWidget(old_display, new_display)
+
+        old_display.blockSignals(True)
+        old_display.setVisible(False)
+        old_display.close()
+        old_display.deleteLater()
+
+        self.display = new_display
+        self._connect_display_signals()
+
+    @Slot(list)
+    def update_position_plot(self, position):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.update_position_plot(position)
+
+    @Slot(list)
+    def update_target_position_plot(self, position):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.update_target_position_plot(position)
+
+    def closeEvent(self, event: "QCloseEvent"):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
