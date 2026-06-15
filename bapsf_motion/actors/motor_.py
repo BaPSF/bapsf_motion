@@ -368,6 +368,19 @@ class Motor(EventActor):
             two_way=True,
             units=u.rev / u.s / u.s,
         ),
+        "define_address": CommandEntry(
+            "define_address",
+            send="DA",
+            send_processor=lambda value: (
+                "" if (
+                    match := re.fullmatch(r"""[!"#$%&'()*+,-./0-9:;<>?@]""", f"{value}")
+                ) is None
+                else match.group(0)
+            ),
+            recv=re.compile(r"""DA=(?P<return>[!"#$%&'()*+,-./0-9:;<>?@])"""),
+            recv_processor=str,
+            two_way=True,
+        ),
         "define_limits": CommandEntry(
             "define_limits",
             send="DL",
