@@ -1296,7 +1296,7 @@ class Motor(EventActor):
             self.start_heartbeat()
 
         cmd_str = self._process_command(command, *args)
-        recv_str = cmd_str if "?" in cmd_str else self._send_raw_command(cmd_str)
+        recv_str = cmd_str if "?3" == cmd_str else self._send_raw_command(cmd_str)
 
         if self._lost_connection(recv_str):
             self.logger.error(
