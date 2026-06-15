@@ -1479,7 +1479,7 @@ class Motor(EventActor):
             #
             # Let's modify all regex patterns to handle this specific case.
             #
-            recv_pattern = re.compile(r"(?P<bad_leader>[0-9]]?)" + recv_pattern.pattern)
+            recv_pattern = re.compile(r"(?P<bad_leader>[0-9]?)" + recv_pattern.pattern)
             match = recv_pattern.fullmatch(rtn_str)
             try:
                 rtn_str = match.group("return")
