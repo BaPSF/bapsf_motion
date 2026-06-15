@@ -7,6 +7,7 @@ __all__ = ["MotionBuilderConfigOverlay"]
 
 import ast
 import inspect
+import logging
 import math
 import matplotlib as mpl
 import numpy as np
@@ -66,6 +67,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget | None" = None):
         super().__init__(mg, parent)
+        self._logger = logging.getLogger(f"{self.logger.name}.MBCO")
 
         self._mb = None
 
