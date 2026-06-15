@@ -1487,15 +1487,8 @@ class Motor(EventActor):
 
         recv_pattern = self._commands[command]["recv"]
         if recv_pattern is not None:
-            # We have observed motors returning a MALFORMED string where
-            # the correct string is returned with a leading digit (generally 1).
-            #
-            # For example, 'AL=0004' would be returned as '1AL=0004'.
-            #
-            # This behavior is unexpected, and could not be found in the
-            # Host-Commands reference document.
-            #
-            # Let's modify all regex patterns to handle this specific case.
+            # Let's modify all regex patterns to handle motro responses that
+            # are prepended with the motor address character.
             #
             recv_pattern = re.compile(
                 r"""(?P<addr_char>[!"#$%&'()*+,-./0-9:;<>?@]?)""" + recv_pattern.pattern
