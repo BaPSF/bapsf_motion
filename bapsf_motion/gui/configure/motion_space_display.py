@@ -936,8 +936,6 @@ class MotionSpaceDisplay(QFrame):
             self.display.update_target_position_plot
         )
 
-        self.targetPositionSelected.connect(self.display.targetPositionSelected.emit)
-
     def _disconnect_display_signals(self):
         if not isinstance(self.display, _MSDBase):
             return
@@ -1134,13 +1132,6 @@ class MotionSpaceDisplay(QFrame):
 
         self.display = new_display
         self._connect_display_signals()
-
-    @Slot(list)
-    def update_position_plot(self, position):
-        if not isinstance(self.display, _MSDBase):
-            return
-
-        self.display.update_position_plot(position)
 
     def closeEvent(self, event: "QCloseEvent"):
         self.logger.info(f"Closing {self.__class__.__name__}")

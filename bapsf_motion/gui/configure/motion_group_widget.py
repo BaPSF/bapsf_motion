@@ -570,7 +570,7 @@ class MGWidget(QWidget):
             position = self.drive_control_widget.position
         else:
             position = None
-        self.mspace_display.update_position_plot(position)
+        self.mspace_display.updateDisplayPosition.emit(position)
 
         if self._plot_timer_issue_new_single_shot:
             # start another single shot if update_position_in_plot() was
