@@ -223,7 +223,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         self.animate_ml_btn.clicked.connect(self._animate_motion_list)
         self.animate_ml_clear_btn.clicked.connect(
-            self.mspace_display.animate_motion_list_clear
+            self.mspace_display.animateMotionListClear.emit
         )
 
     def _define_layout(self):
