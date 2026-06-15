@@ -1505,7 +1505,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         if self._mspace_display_full_draw:
             self.mspace_display.updateDisplay.emit()
         else:
-            self.mspace_display.update_motion_list()
+            self.mspace_display.updateDisplayMotionList.emit()
 
         self._mspace_display_full_draw = False
 
