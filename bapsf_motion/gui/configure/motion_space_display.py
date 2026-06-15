@@ -870,11 +870,22 @@ class MotionSpaceDisplay2D(_MSDBase):
 
 class MotionSpaceDisplay(QFrame):
     mbChanged = Signal()
+
     targetPositionSelected = Signal(list)
+
     animateMotionListStarted = Signal()
     animateMotionListFinished = Signal()
     animateMotionListPaused = Signal()
     animateMotionListCleared = Signal()
+
+    animateMotionListStart = Signal()
+    animateMotionListPause = Signal()
+    animateMotionListClear = Signal()
+
+    updateDisplay = Signal()
+    updateDisplayMotionList = Signal()
+    updateDisplayPosition = Signal(list)
+    updateDisplayTargetPosition = Signal(list)
 
     _default_legend_names = [
         "motion_list",
@@ -904,9 +915,25 @@ class MotionSpaceDisplay(QFrame):
         if not isinstance(self.display, _MSDBase):
             return
 
-        self.display.mbChanged.connect(self.mbChanged.emit)
+        self.display.animateMotionListCleared.connect(self.animateMotionListCleared.emit)
         self.display.animateMotionListFinished.connect(
             self.animateMotionListFinished.emit
+        )
+        self.display.animateMotionListPaused.connect(self.animateMotionListPaused.emit)
+        self.display.animateMotionListStarted.connect(self.animateMotionListStarted.emit)
+
+        self.display.mbChanged.connect(self.mbChanged.emit)
+        self.display.targetPositionSelected.connect(self.targetPositionSelected.emit)
+
+        self.animateMotionListClear.connect(self.display.animate_motion_list_clear)
+        self.animateMotionListPause.connect(self.display.animate_motion_list_pause)
+        self.animateMotionListStart.connect(self.display.animate_motion_list)
+
+        self.updateDisplay.connect(self.display.update_canvas)
+        self.updateDisplayMotionList.connect(self.display.update_motion_list)
+        self.updateDisplayPosition.connect(self.display.update_position_plot)
+        self.updateDisplayTargetPosition.connect(
+            self.display.update_target_position_plot
         )
 
         self.targetPositionSelected.connect(self.display.targetPositionSelected.emit)
@@ -915,10 +942,32 @@ class MotionSpaceDisplay(QFrame):
         if not isinstance(self.display, _MSDBase):
             return
 
-        self.display.mbChanged.disconnect()
-        self.display.animateMotionListFinished.disconnect()
+        self.display.animateMotionListCleared.disconnect(
+            self.animateMotionListCleared.emit
+        )
+        self.display.animateMotionListFinished.disconnect(
+            self.animateMotionListFinished.emit
+        )
+        self.display.animateMotionListPaused.disconnect(
+            self.animateMotionListPaused.emit
+        )
+        self.display.animateMotionListStarted.disconnect(
+            self.animateMotionListStarted.emit
+        )
 
-        self.targetPositionSelected.disconnect(self.display.targetPositionSelected.emit)
+        self.display.mbChanged.disconnect(self.mbChanged.emit)
+        self.display.targetPositionSelected.disconnect(self.targetPositionSelected.emit)
+
+        self.animateMotionListClear.disconnect(self.display.animate_motion_list_clear)
+        self.animateMotionListPause.disconnect(self.display.animate_motion_list_pause)
+        self.animateMotionListStart.disconnect(self.display.animate_motion_list)
+
+        self.updateDisplay.disconnect(self.display.update_canvas)
+        self.updateDisplayMotionList.disconnect(self.display.update_motion_list)
+        self.updateDisplayPosition.disconnect(self.display.update_position_plot)
+        self.updateDisplayTargetPosition.disconnect(
+            self.display.update_target_position_plot
+        )
 
     def _define_layout(self):
         layout = QVBoxLayout()
