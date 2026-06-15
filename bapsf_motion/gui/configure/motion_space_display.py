@@ -1030,6 +1030,8 @@ class MotionSpaceDisplay(QFrame):
         return self.display.is_animating_motion_list
 
     def link_motion_builder(self, mb: MotionBuilder | None = None):
+        self.logger.info(f"Linking motion builder {mb}")
+
         display_dimensionality = None
         if isinstance(self.display, _MSDBase):
             display_dimensionality = self.display.dimensionality
@@ -1060,7 +1062,8 @@ class MotionSpaceDisplay(QFrame):
             self.display.setVisible(False)
             self._replace_display()
 
-    def unlink_motion_builder(self, mb: MotionBuilder | None = None):
+    def unlink_motion_builder(self):
+        self.logger.info(f"Un-Linking motion builder.")
         self._mb = None
 
         if isinstance(self.display, _MSDBase):
@@ -1068,6 +1071,7 @@ class MotionSpaceDisplay(QFrame):
             self.display.setVisible(False)
 
     def _replace_display(self):
+        self.logger.info("Replacing the display widget")
         self._disconnect_display_signals()
 
         old_display = self.display
