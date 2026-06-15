@@ -45,6 +45,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     animateMotionListPaused = Signal()
     animateMotionListCleared = Signal()
 
+    _default_logger_name = "MSD-Base"
     _default_legend_names = [
         "motion_list",
         "probe",
@@ -115,10 +116,11 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     def update_position_plot(self, position):
         ...
 
-    @staticmethod
-    def _init_logger(logger: logging.Logger) -> logging.Logger:
+    def _init_logger(self, logger: logging.Logger) -> logging.Logger:
         if not isinstance(logger, logging.Logger):
-            logger = logging.getLogger("MSD")
+            logger = logging.getLogger(f"{gui_logger.name}.{self._default_logger_name}")
+        else:
+            logger = logging.getLogger(f"{logger.name}.{self._default_logger_name}")
 
         return logger
 
@@ -195,6 +197,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
 class MotionSpaceDisplay2D(_MSDBase):
     dimensionality = 2
+    _default_logger_name = "MSD-2D"
 
     def __init__(
         self,
