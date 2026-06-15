@@ -1456,24 +1456,29 @@ class Motor(EventActor):
 
         _send_str = self._commands[command]["send"]
 
-        if "%" in rtn_str:
+        is_ack_nack_response = _send_str not in rtn_str
+        addr_char_regex = r"""(?P<addr_char>[!"#$%&'()*+,-./0-9:;<>?@]?)"""
+        if is_ack_nack_response and bool(re.fullmatch(addr_char_regex + r"%", rtn_str)):
             # Motor acknowledge and executed command.
             return self.ack_flags.ACK
-        elif "*" in rtn_str:
+        elif is_ack_nack_response and bool(re.fullmatch(addr_char_regex + r"*", rtn_str)):
             # Motor acknowledged command and buffered it into the queue
             return self.ack_flags.ACK_QUEUED
-        elif "?" in rtn_str:
+        elif is_ack_nack_response and bool(
+            match := re.fullmatch(addr_char_regex + r"\?(?P<code>\d{0,2})", rtn_str)
+        ):
             # Motor negatively acknowledge command, error in command
-            err_code = (
-                re.compile(r"\d?\?(?P<code>\d{1,2})").fullmatch(rtn_str).group("code")
-            )
-            err_code = int(err_code)
-            err_msg = f"{err_code} - {self._nack_codes[err_code]}"
+            err_code = match.group("code")
+            if err_code == "":
+                err_msg = "unspecified"
+            else:
+                err_code = int(err_code)
+                err_msg = f"{err_code} - {self._nack_codes[err_code]}"
             self.logger.error(
                 f"Motor returned Nack from command {command} with error: {err_msg}."
             )
             return self.ack_flags.NACK
-        elif not isinstance(rtn_str, str) or _send_str not in rtn_str:
+        elif not isinstance(rtn_str, str) or is_ack_nack_response:
             self.logger.error(
                 f"The return string for command '{command} ({_send_str})'"
                 f" is malformed, received '{rtn_str}'."
@@ -1492,7 +1497,9 @@ class Motor(EventActor):
             #
             # Let's modify all regex patterns to handle this specific case.
             #
-            recv_pattern = re.compile(r"(?P<bad_leader>[0-9]?)" + recv_pattern.pattern)
+            recv_pattern = re.compile(
+                r"""(?P<addr_char>[!"#$%&'()*+,-./0-9:;<>?@]?)""" + recv_pattern.pattern
+            )
             match = recv_pattern.fullmatch(rtn_str)
             try:
                 rtn_str = match.group("return")
@@ -1503,14 +1510,6 @@ class Motor(EventActor):
                     f" is malformed, received '{rtn_str}'."
                 )
                 return self.ack_flags.MALFORMED
-            else:
-                bad_leader = match.group("bad_leader")
-                if bad_leader != "":
-                    self.logger.warning(
-                        f"The returned string for command '{command}' had a bad "
-                        f"leading digit '{bad_leader}'.  The full returned string "
-                        f"was '{match.string}'."
-                    )
 
         processor = self._commands[command]["recv_processor"]
         rtn = processor(rtn_str)
