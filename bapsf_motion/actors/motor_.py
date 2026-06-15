@@ -1492,7 +1492,7 @@ class Motor(EventActor):
                 return self.ack_flags.MALFORMED
             else:
                 bad_leader = match.group("bad_leader")
-                if bad_leader == "":
+                if bad_leader != "":
                     self.logger.warning(
                         f"The returned string for command '{command}' had a bad "
                         f"leading digit '{bad_leader}'.  The full returned string "
