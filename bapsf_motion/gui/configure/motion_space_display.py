@@ -1142,13 +1142,6 @@ class MotionSpaceDisplay(QFrame):
 
         self.display.update_position_plot(position)
 
-    @Slot(list)
-    def update_target_position_plot(self, position):
-        if not isinstance(self.display, _MSDBase):
-            return
-
-        self.display.update_target_position_plot(position)
-
     def closeEvent(self, event: "QCloseEvent"):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
