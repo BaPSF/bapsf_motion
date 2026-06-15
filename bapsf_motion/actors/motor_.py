@@ -372,9 +372,9 @@ class Motor(EventActor):
             "define_address",
             send="DA",
             send_processor=lambda value: (
-                "" if (
-                    match := re.fullmatch(r"""[!"#$%&'()*+,-./0-9:;<>?@]""", f"{value}")
-                ) is None
+                ""
+                if (match := re.fullmatch(r"""[!"#$%&'()*+,-./0-9:;<>?@]""", f"{value}"))
+                is None
                 else match.group(0)
             ),
             recv=re.compile(r"""DA=(?P<return>[!"#$%&'()*+,-./0-9:;<>?@])"""),
