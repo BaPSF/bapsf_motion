@@ -1040,7 +1040,7 @@ class MotionSpaceDisplay(QFrame):
         if isinstance(mb, MotionBuilder):
             new_mspace_dimensionality = mb.mspace_ndims
 
-        if mb is not None or not isinstance(mb, MotionBuilder):
+        if not isinstance(mb, MotionBuilder):
             mb = None
 
         if display_dimensionality is None and new_mspace_dimensionality is None:
