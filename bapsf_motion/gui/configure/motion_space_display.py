@@ -108,6 +108,28 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     def unlink_motion_builder(self): ...
 
     @abstractmethod
+    @Slot()
+    def animate_motion_list(self):
+        ...
+
+    @abstractmethod
+    @Slot()
+    def animate_motion_list_clear(self): ...
+
+    @abstractmethod
+    @Slot()
+    def animate_motion_list_pause(self):
+        ...
+
+    @abstractmethod
+    @Slot()
+    def update_canvas(self): ...
+
+    @abstractmethod
+    @Slot()
+    def update_motion_list(self): ...
+
+    @abstractmethod
     @Slot(list)
     def update_target_position_plot(self, position): ...
 
