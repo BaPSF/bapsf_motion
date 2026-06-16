@@ -127,7 +127,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self.mspace_display.link_motion_builder(self.mg.mb)
 
         self.animate_ml_widget = self._init_animate_ml_widget()
-        self.animate_ml_btn = self._init_animate_ml_btn()
+        self.animate_ml_action_btn = self._init_animate_ml_action_btn()
         self.animate_ml_clear_btn = self._init_animate_ml_clear_btn()
 
         # non-widget initialization
@@ -135,6 +135,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._initialize_motion_builder()
         self._initialize_exclusion_list_box()
         self._initialize_layer_list_box()
+
         self.setLayout(self._define_layout())
 
         self.update_exclusion_list_box()
@@ -190,7 +191,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.mspace_display.animateMotionList.Paused.connect(
             self._animate_motion_list_btn_txt_to_animate
         )
-        self.animate_ml_btn.clicked.connect(self._animate_motion_list)
+        self.animate_ml_action_btn.clicked.connect(self._animate_motion_list)
         self.animate_ml_clear_btn.clicked.connect(
             self.mspace_display.animateMotionList.Clear.emit
         )
@@ -278,7 +279,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         animate_layout.addWidget(_animate_title)
         animate_layout.addSpacing(4)
         animate_layout.addWidget(
-            self.animate_ml_btn,
+            self.animate_ml_action_btn,
             alignment=Qt.AlignmentFlag.AlignCenter,
         )
         animate_layout.addWidget(
@@ -703,7 +704,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         )
         return frame
 
-    def _init_animate_ml_btn(self):
+    def _init_animate_ml_action_btn(self):
         btn = StyleButton("\n".join(list("ANIMATE")), parent=self.animate_ml_widget)
         btn.setFixedWidth(44)
         btn.setFixedHeight(130)
@@ -980,7 +981,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     @Slot()
     def _animate_motion_list(self):
-        _btn_text = self.animate_ml_btn.text().replace("\n", "")
+        _btn_text = self.animate_ml_action_btn.text().replace("\n", "")
         if _btn_text == "PAUSE":
             self.mspace_display.animateMotionList.Pause.emit()
         else:
@@ -988,15 +989,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     @Slot()
     def _animate_motion_list_btn_txt_to_animate(self):
-        self.animate_ml_btn.setText("\n".join(list("ANIMATE")))
+        self.animate_ml_action_btn.setText("\n".join(list("ANIMATE")))
 
     @Slot()
     def _animate_motion_list_btn_txt_to_pause(self):
-        self.animate_ml_btn.setText("\n".join(list("PAUSE")))
+        self.animate_ml_action_btn.setText("\n".join(list("PAUSE")))
 
     @Slot()
     def _animate_motion_list_finished(self):
-        self.animate_ml_btn.setText("\n".join(list("ANIMATE")))
+        self.animate_ml_action_btn.setText("\n".join(list("ANIMATE")))
 
     @Slot()
     def _exclusion_configure_new(self):
