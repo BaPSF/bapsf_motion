@@ -108,11 +108,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         # SET UP LEFT WIDGETS (i.e. list boxes)
 
-        self.exclusion_list_box = None  # type: QListWidget | None
-        self.add_ex_btn = None
-        self.remove_ex_btn = None
-        self.edit_ex_btn = None
-        self._initialize_exclusion_list_layout_widgets()
+        self.exclusion_list_box = self._init_exclusion_list_box()
+        self.add_ex_btn = self._init_add_ex_btn()
+        self.remove_ex_btn = self._init_remove_ex_btn()
+        self.edit_ex_btn = self._init_edit_ex_btn()
 
         self.layer_list_box = self._init_layer_list_box()
         self.layer_add_btn = self._init_layer_add_btn()
@@ -799,6 +798,27 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setFixedWidth(180)
         return btn
 
+    def _init_exclusion_list_box(self):
+        box = QListWidget(parent=self)
+        box.setMinimumHeight(250)
+        _font = box.font()
+        _font.setPointSize(11)
+        box.setFont(_font)
+        return box
+
+    def _init_add_ex_btn(self):
+        return self._generate_btn_widget("ADD")
+
+    def _init_remove_ex_btn(self):
+        btn = self._generate_btn_widget("REMOVE")
+        btn.setEnabled(False)
+        return btn
+
+    def _init_edit_ex_btn(self):
+        btn = self._generate_btn_widget("EDIT")
+        btn.setEnabled(False)
+        return btn
+
     @property
     def dimensionality(self):
         return self.mg.drive.naxes
@@ -829,21 +849,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         if self._parameter_hints_exclusion is None:
             self._parameter_hints_exclusion = dict()
         return self._parameter_hints_exclusion
-
-    def _initialize_exclusion_list_layout_widgets(self):
-        self.exclusion_list_box = QListWidget(parent=self)
-        self.exclusion_list_box.setMinimumHeight(250)
-        _font = self.exclusion_list_box.font()
-        _font.setPointSize(11)
-        self.exclusion_list_box.setFont(_font)
-
-        self.add_ex_btn = self._generate_btn_widget("ADD")
-
-        self.remove_ex_btn = self._generate_btn_widget("REMOVE")
-        self.remove_ex_btn.setEnabled(False)
-
-        self.edit_ex_btn = self._generate_btn_widget("EDIT")
-        self.edit_ex_btn.setEnabled(False)
 
     def _initialize_params_layout_widgets(self):
         self._params_widget.setMinimumHeight(300)
