@@ -118,10 +118,12 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
         self._cid_on_draw = None
         self._mpl_pick_callback_id = None
 
+    def _connect_redraw_signals(self): ...
+
     def _connect_animate_motion_list_signals(self):
         self.animateMotionList.Clear.connect(self.animate_motion_list_clear)
         self.animateMotionList.Pause.connect(self.animate_motion_list_pause)
-        self.animateMotionList.Start.connect(self.animate_motion_list)
+        self.animateMotionList.Start.connect(self.animate_motion_list_start)
         self.animateMotionList.Stop.connect(self.animate_motion_list_pause)
 
         self.animateMotionList.Finished.connect(self.animate_motion_list_pause)
@@ -134,7 +136,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     @abstractmethod
     @Slot()
-    def animate_motion_list(self): ...
+    def animate_motion_list_start(self): ...
 
     @abstractmethod
     @Slot()
@@ -312,7 +314,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         return None
 
     @Slot()
-    def animate_motion_list(self):
+    def animate_motion_list_start(self):
         if self._animate_payload is not None and not self._animate_payload["finished"]:
             self._animate_payload["timer"].start()
             self.animateMotionList.Started.emit()
@@ -619,7 +621,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         # re-start the motion list animation
         if is_animating:
             self.blockSignals(True)
-            self.animate_motion_list()
+            self.animate_motion_list_start()
             self.blockSignals(False)
 
         self.logger.info("Re-draw DONE.")
