@@ -115,7 +115,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._initialize_exclusion_list_layout_widgets()
 
         self.layer_list_box = self._init_layer_list_box()
-        self.add_ly_btn = self._init_add_ly_btn()
+        self.layer_add_btn = self._init_layer_add_btn()
         self.remove_ly_btn = self._init_remove_ly_btn()
         self.edit_ly_btn = self._init_edit_ly_btn()
         self.layer_move_up_btn = self._init_layer_move_up_btn()
@@ -183,7 +183,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.remove_ex_btn.clicked.connect(self._exclusion_remove_from_mb)
         self.edit_ex_btn.clicked.connect(self._exclusion_modify_existing)
 
-        self.add_ly_btn.clicked.connect(self._layer_configure_new)
+        self.layer_add_btn.clicked.connect(self._layer_configure_new)
         self.remove_ly_btn.clicked.connect(self._layer_remove_from_mb)
         self.edit_ly_btn.clicked.connect(self._layer_modify_existing)
 
@@ -504,7 +504,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn_layout = QHBoxLayout()
         btn_layout.setContentsMargins(0, 0, 0, 0)
         btn_layout.setSpacing(8)
-        btn_layout.addWidget(self.add_ly_btn)
+        btn_layout.addWidget(self.layer_add_btn)
         btn_layout.addWidget(self.remove_ly_btn)
         btn_layout.addWidget(self.edit_ly_btn)
 
@@ -724,7 +724,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         box.setFont(_font)
         return box
 
-    def _init_add_ly_btn(self):
+    def _init_layer_add_btn(self):
         return self._generate_btn_widget("ADD")
 
     def _init_remove_ly_btn(self):
@@ -934,7 +934,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 "There are no coded point layers that work with the "
                 f"dimensionality of the existing probe drive, {self.dimensionality}."
             )
-            self.add_ly_btn.setEnabled(False)
+            self.layer_add_btn.setEnabled(False)
             self.remove_ly_btn.setEnabled(False)
             self.edit_ly_btn.setEnabled(False)
 
