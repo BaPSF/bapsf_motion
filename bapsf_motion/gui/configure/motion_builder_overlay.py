@@ -122,9 +122,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_ml_combine_toggle = self._init_layer_ml_combine_toggle()
 
         # SET UP PLOT WIDGET
-        self.mspace_display = MotionSpaceDisplay(parent=self)
-        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
-            self.mspace_display.link_motion_builder(self.mg.mb)
+        self.mspace_display = self._init_mspace_display()
 
         self.animate_ml_frame = self._init_animate_ml_frame()
         self.animate_ml_action_btn = self._init_animate_ml_action_btn()
@@ -721,6 +719,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _font.setBold(True)
         btn.setFont(_font)
         return btn
+
+    def _init_mspace_display(self):
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
+            mb = self.mg.mb
+        else:
+            mb = None
+
+        display = MotionSpaceDisplay(mb=mb, parent=self)
+        return display
 
     def _init_layer_list_box(self):
         box = QListWidget(parent=self)
