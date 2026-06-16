@@ -124,9 +124,9 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
         self.animateMotionList.Clear.connect(self.animate_motion_list_clear)
         self.animateMotionList.Pause.connect(self.animate_motion_list_pause)
         self.animateMotionList.Start.connect(self.animate_motion_list_start)
-        self.animateMotionList.Stop.connect(self.animate_motion_list_pause)
+        self.animateMotionList.Stop.connect(self.animate_motion_list_stop)
 
-        self.animateMotionList.Finished.connect(self.animate_motion_list_pause)
+        self.animateMotionList.Finished.connect(self.animate_motion_list_stop)
 
     @abstractmethod
     def link_motion_builder(self, mb: MotionBuilder | None): ...
@@ -136,15 +136,19 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     @abstractmethod
     @Slot()
-    def animate_motion_list_start(self): ...
-
-    @abstractmethod
-    @Slot()
     def animate_motion_list_clear(self): ...
 
     @abstractmethod
     @Slot()
     def animate_motion_list_pause(self): ...
+
+    @abstractmethod
+    @Slot()
+    def animate_motion_list_start(self): ...
+
+    @abstractmethod
+    @Slot()
+    def animate_motion_list_stop(self): ...
 
     @abstractmethod
     @Slot()
@@ -313,24 +317,6 @@ class MotionSpaceDisplay2D(_MSDBase):
 
         return None
 
-    @Slot()
-    def animate_motion_list_start(self):
-        if self._animate_payload is not None and not self._animate_payload["finished"]:
-            self._animate_payload["timer"].start()
-            self.animateMotionList.Started.emit()
-            return
-        elif self._animate_payload is not None:
-            self.animate_motion_list_clear()
-            self._animate_payload = None
-        elif self.mb.motion_list is None:
-            self.animate_motion_list_clear()
-            return
-
-        self._animate_motion_list_init_payload()
-        self._animate_payload["timer"].start()  # noqa
-
-        self.animateMotionList.Started.emit()
-
     def _animate_motion_list_init_payload(self):
         delay = 200  # msec
         _timer = QTimer(parent=self)
@@ -348,16 +334,6 @@ class MotionSpaceDisplay2D(_MSDBase):
             "timer": _timer,  # type: QTimer
             "finished": False,
         }
-
-    @Slot()
-    def animate_motion_list_pause(self):
-        if self._animate_payload is None:
-            return
-
-        self._animate_payload["timer"].stop()
-
-        if not self._animate_payload["finished"]:
-            self.animateMotionList.Paused.emit()
 
     @Slot()
     def animate_motion_list_clear(self):
@@ -380,6 +356,38 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.mpl_canvas.draw()
 
         self.animateMotionList.Cleared.emit()
+
+    @Slot()
+    def animate_motion_list_pause(self):
+        if self._animate_payload is None:
+            return
+
+        self._animate_payload["timer"].stop()
+
+        if not self._animate_payload["finished"]:
+            self.animateMotionList.Paused.emit()
+
+    @Slot()
+    def animate_motion_list_start(self):
+        if self._animate_payload is not None and not self._animate_payload["finished"]:
+            self._animate_payload["timer"].start()
+            self.animateMotionList.Started.emit()
+            return
+        elif self._animate_payload is not None:
+            self.animate_motion_list_clear()
+            self._animate_payload = None
+        elif self.mb.motion_list is None:
+            self.animate_motion_list_clear()
+            return
+
+        self._animate_motion_list_init_payload()
+        self._animate_payload["timer"].start()  # noqa
+
+        self.animateMotionList.Started.emit()
+
+    @Slot()
+    def animate_motion_list_stop(self):
+        self.animate_motion_list_pause()
 
     @Slot()
     def _update_motion_list_trace(self, *, to_index: int | None = None):
