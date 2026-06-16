@@ -37,6 +37,13 @@ from matplotlib.collections import PathCollection  # noqa
 class _ABCMotionSpaceDisplay(ABCMeta, type(QWidget)): ...
 
 
+class _RedrawDisplaySignals(QObject):
+    All = Signal()
+    MotionList = Signal()
+    Position = Signal(list)
+    TargetPosition = Signal(list)
+
+
 class _AnimationSignals(QObject):
     Cleared = Signal()
     Finished = Signal()
@@ -53,6 +60,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
     animateMotionList = _AnimationSignals()
+    redrawSignals = _RedrawDisplaySignals()
 
     _default_logger_name = "MSD-Base"
     _default_legend_names = [
@@ -885,11 +893,7 @@ class MotionSpaceDisplay(QFrame):
     targetPositionSelected = Signal(list)
 
     animateMotionList = _AnimationSignals()
-
-    updateDisplay = Signal()
-    updateDisplayMotionList = Signal()
-    updateDisplayPosition = Signal(list)
-    updateDisplayTargetPosition = Signal(list)
+    redrawSignals = _RedrawDisplaySignals()
 
     _default_legend_names = [
         "motion_list",
@@ -935,10 +939,10 @@ class MotionSpaceDisplay(QFrame):
         self.animateMotionList.Pause.connect(self.display.animate_motion_list_pause)
         self.animateMotionList.Start.connect(self.display.animate_motion_list)
 
-        self.updateDisplay.connect(self.display.update_canvas)
-        self.updateDisplayMotionList.connect(self.display.update_motion_list)
-        self.updateDisplayPosition.connect(self.display.update_position_plot)
-        self.updateDisplayTargetPosition.connect(
+        self.redrawSignals.All.connect(self.display.update_canvas)
+        self.redrawSignals.MotionList.connect(self.display.update_motion_list)
+        self.redrawSignals.Position.connect(self.display.update_position_plot)
+        self.redrawSignals.TargetPosition.connect(
             self.display.update_target_position_plot
         )
 
@@ -966,10 +970,10 @@ class MotionSpaceDisplay(QFrame):
         self.animateMotionList.Pause.disconnect(self.display.animate_motion_list_pause)
         self.animateMotionList.Start.disconnect(self.display.animate_motion_list)
 
-        self.updateDisplay.disconnect(self.display.update_canvas)
-        self.updateDisplayMotionList.disconnect(self.display.update_motion_list)
-        self.updateDisplayPosition.disconnect(self.display.update_position_plot)
-        self.updateDisplayTargetPosition.disconnect(
+        self.redrawSignals.All.disconnect(self.display.update_canvas)
+        self.redrawSignals.MotionList.disconnect(self.display.update_motion_list)
+        self.redrawSignals.Position.disconnect(self.display.update_position_plot)
+        self.redrawSignals.TargetPosition.disconnect(
             self.display.update_target_position_plot
         )
 
