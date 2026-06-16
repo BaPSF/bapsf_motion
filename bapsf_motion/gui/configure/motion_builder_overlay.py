@@ -126,36 +126,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
             self.mspace_display.link_motion_builder(self.mg.mb)
 
-        self.animate_ml_widget = QFrame(parent=self)
-        self.animate_ml_widget.setObjectName("animate_ml_controls")
-        self.animate_ml_widget.setStyleSheet("""
-            QFrame#animate_ml_controls {
-                border: 2px solid rgb(125, 125, 125);
-                border-radius: 5px; 
-                padding: 0px;
-                margin: 0px;
-            }
-            """)
-        self.animate_ml_widget.setFixedWidth(72)
-        self.animate_ml_widget.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding
-        )
-
-        _btn = StyleButton("\n".join(list("ANIMATE")), parent=self.animate_ml_widget)
-        _btn.setFixedWidth(44)
-        _btn.setFixedHeight(130)
-        _font = _btn.font()
-        _font.setBold(True)
-        _btn.setFont(_font)
-        self.animate_ml_btn = _btn
-
-        _btn = StyleButton("\n".join(list("CLEAR")), parent=self.animate_ml_widget)
-        _btn.setFixedWidth(44)
-        _btn.setFixedHeight(100)
-        _font = _btn.font()
-        _font.setBold(True)
-        _btn.setFont(_font)
-        self.animate_ml_clear_btn = _btn
+        self.animate_ml_widget = self._init_animate_ml_widget()
+        self.animate_ml_btn = self._init_animate_ml_btn()
+        self.animate_ml_clear_btn = self._init_animate_ml_clear_btn()
 
         # non-widget initialization
 
@@ -712,6 +685,41 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         _widget.setLayout(layout)
         return _widget
+
+    def _init_animate_ml_widget(self):
+        frame = QFrame(parent=self)
+        frame.setObjectName("animate_ml_controls")
+        frame.setStyleSheet("""
+            QFrame#animate_ml_controls {
+                border: 2px solid rgb(125, 125, 125);
+                border-radius: 5px; 
+                padding: 0px;
+                margin: 0px;
+            }
+            """)
+        frame.setFixedWidth(72)
+        frame.setSizePolicy(
+            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding
+        )
+        return frame
+
+    def _init_animate_ml_btn(self):
+        btn = StyleButton("\n".join(list("ANIMATE")), parent=self.animate_ml_widget)
+        btn.setFixedWidth(44)
+        btn.setFixedHeight(130)
+        _font = btn.font()
+        _font.setBold(True)
+        btn.setFont(_font)
+        return btn
+
+    def _init_animate_ml_clear_btn(self):
+        btn = StyleButton("\n".join(list("CLEAR")), parent=self.animate_ml_widget)
+        btn.setFixedWidth(44)
+        btn.setFixedHeight(100)
+        _font = btn.font()
+        _font.setBold(True)
+        btn.setFont(_font)
+        return btn
 
     def _init_layer_list_box(self):
         box = QListWidget(parent=self)
