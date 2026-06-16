@@ -118,6 +118,14 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
         self._cid_on_draw = None
         self._mpl_pick_callback_id = None
 
+    def _connect_animate_motion_list_signals(self):
+        self.animateMotionList.Clear.connect(self.animate_motion_list_clear)
+        self.animateMotionList.Pause.connect(self.animate_motion_list_pause)
+        self.animateMotionList.Start.connect(self.animate_motion_list)
+        self.animateMotionList.Stop.connect(self.animate_motion_list_pause)
+
+        self.animateMotionList.Finished.connect(self.animate_motion_list_pause)
+
     @abstractmethod
     def link_motion_builder(self, mb: MotionBuilder | None): ...
 
@@ -126,8 +134,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     @abstractmethod
     @Slot()
-    def animate_motion_list(self):
-        ...
+    def animate_motion_list(self): ...
 
     @abstractmethod
     @Slot()
@@ -135,8 +142,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     @abstractmethod
     @Slot()
-    def animate_motion_list_pause(self):
-        ...
+    def animate_motion_list_pause(self): ...
 
     @abstractmethod
     @Slot()
@@ -258,9 +264,10 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.mbChanged.emit()
 
     def _connect_signals(self):
+        self._connect_animate_motion_list_signals()
+
         self.mbChanged.connect(self.update_canvas)
         self.targetPositionSelected.connect(self.update_target_position_plot)
-        self.animateMotionList.Finished.connect(self.animate_motion_list_pause)
 
         # matplotlib events
         self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
@@ -935,9 +942,9 @@ class MotionSpaceDisplay(QFrame):
         self.display.mbChanged.connect(self.mbChanged.emit)
         self.display.targetPositionSelected.connect(self.targetPositionSelected.emit)
 
-        self.animateMotionList.Clear.connect(self.display.animate_motion_list_clear)
-        self.animateMotionList.Pause.connect(self.display.animate_motion_list_pause)
-        self.animateMotionList.Start.connect(self.display.animate_motion_list)
+        self.animateMotionList.Clear.connect(self.display.animateMotionList.Clear.emit)
+        self.animateMotionList.Pause.connect(self.display.animateMotionList.Pause.emit)
+        self.animateMotionList.Start.connect(self.display.animateMotionList.Start.emit)
 
         self.redrawSignals.All.connect(self.display.update_canvas)
         self.redrawSignals.MotionList.connect(self.display.update_motion_list)
@@ -966,9 +973,9 @@ class MotionSpaceDisplay(QFrame):
         self.display.mbChanged.disconnect(self.mbChanged.emit)
         self.display.targetPositionSelected.disconnect(self.targetPositionSelected.emit)
 
-        self.animateMotionList.Clear.disconnect(self.display.animate_motion_list_clear)
-        self.animateMotionList.Pause.disconnect(self.display.animate_motion_list_pause)
-        self.animateMotionList.Start.disconnect(self.display.animate_motion_list)
+        self.animateMotionList.Clear.disconnect(self.display.animateMotionList.Clear.emit)
+        self.animateMotionList.Pause.disconnect(self.display.animateMotionList.Pause.emit)
+        self.animateMotionList.Start.disconnect(self.display.animateMotionList.Start.emit)
 
         self.redrawSignals.All.disconnect(self.display.update_canvas)
         self.redrawSignals.MotionList.disconnect(self.display.update_motion_list)
