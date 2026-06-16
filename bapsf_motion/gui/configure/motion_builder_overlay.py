@@ -171,7 +171,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.update_exclusion_list_box()
         self.update_layer_list_box()
         self.update_layer_ml_combine_toggle()
-        self.update_canvas()
+        self.redraw_display()
 
         self._connect_signals()
 
@@ -956,7 +956,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.update_exclusion_list_box()
         self.update_layer_list_box()
         self.update_layer_ml_combine_toggle()
-        self.update_canvas()
+        self.redraw_display()
 
     @Slot()
     def _animate_motion_list(self):
@@ -1501,7 +1501,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ly_btn.setEnabled(enable)
         self.remove_ly_btn.setEnabled(enable)
 
-    def update_canvas(self):
+    def redraw_display(self):
         if self._mspace_display_full_draw:
             self.mspace_display.redrawSignals.All.emit()
         else:
