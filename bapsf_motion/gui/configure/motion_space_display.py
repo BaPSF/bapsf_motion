@@ -664,6 +664,7 @@ class MotionSpaceDisplay2D(_MSDBase):
 
         self.mpl_canvas.draw()
 
+    @Slot()
     def update_motion_list(self):
         self.animate_motion_list_clear()
 
@@ -824,6 +825,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.update_legend()
         self.mpl_canvas.draw()
 
+    @Slot(list)
     def update_position_plot(self, position):
         self.logger.info(f"Drawing position {position}")
 
