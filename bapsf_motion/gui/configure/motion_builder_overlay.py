@@ -116,7 +116,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.layer_list_box = self._init_layer_list_box()
         self.layer_add_btn = self._init_layer_add_btn()
-        self.remove_ly_btn = self._init_remove_ly_btn()
+        self.layer_remove_btn = self._init_layer_remove_btn()
         self.edit_ly_btn = self._init_edit_ly_btn()
         self.layer_move_up_btn = self._init_layer_move_up_btn()
         self.layer_move_down_btn = self._init_layer_move_down_btn()
@@ -182,7 +182,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ex_btn.clicked.connect(self._exclusion_modify_existing)
 
         self.layer_add_btn.clicked.connect(self._layer_configure_new)
-        self.remove_ly_btn.clicked.connect(self._layer_remove_from_mb)
+        self.layer_remove_btn.clicked.connect(self._layer_remove_from_mb)
         self.edit_ly_btn.clicked.connect(self._layer_modify_existing)
 
         self.params_discard_btn.clicked.connect(self._hide_and_clear_params_widget)
@@ -503,7 +503,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn_layout.setContentsMargins(0, 0, 0, 0)
         btn_layout.setSpacing(8)
         btn_layout.addWidget(self.layer_add_btn)
-        btn_layout.addWidget(self.remove_ly_btn)
+        btn_layout.addWidget(self.layer_remove_btn)
         btn_layout.addWidget(self.edit_ly_btn)
 
         order_layout = QVBoxLayout()
@@ -725,7 +725,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _init_layer_add_btn(self):
         return self._generate_btn_widget("ADD")
 
-    def _init_remove_ly_btn(self):
+    def _init_layer_remove_btn(self):
         btn = self._generate_btn_widget("REMOVE")
         btn.setEnabled(False)
         return btn
@@ -933,7 +933,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 f"dimensionality of the existing probe drive, {self.dimensionality}."
             )
             self.layer_add_btn.setEnabled(False)
-            self.remove_ly_btn.setEnabled(False)
+            self.layer_remove_btn.setEnabled(False)
             self.edit_ly_btn.setEnabled(False)
 
             layers = self.mb.layers.copy()
@@ -1506,7 +1506,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     @Slot()
     def layer_list_box_set_btn_enable(self, enable=True):
         self.edit_ly_btn.setEnabled(enable)
-        self.remove_ly_btn.setEnabled(enable)
+        self.layer_remove_btn.setEnabled(enable)
 
     def redraw_display(self):
         if self._mspace_display_full_draw:
@@ -1534,7 +1534,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def update_layer_list_box(self):
         self.logger.info("Updating Layer List Box")
-        self.remove_ly_btn.setEnabled(False)
+        self.layer_remove_btn.setEnabled(False)
         self.edit_ly_btn.setEnabled(False)
 
         ly_names = (
