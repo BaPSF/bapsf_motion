@@ -1,0 +1,54 @@
+[run]
+name = "poseidon-test"
+date = "2026-06-27 21:48 UTC"
+
+[run.motion_group.0]
+name = "Poseidon Test"
+
+[run.motion_group.0.drive]
+name = "Poseidon"
+axes.0.name = "X"
+axes.0.ip = "192.168.17.135"
+axes.0.units = "cm"
+axes.0.units_per_rev = 0.254
+axes.0.motor_settings.current = 0.8
+axes.0.motor_settings.limit_mode = 2
+axes.0.motor_settings.speed = 4.0
+axes.1.name = "Y"
+axes.1.ip = "192.168.17.137"
+axes.1.units = "cm"
+axes.1.units_per_rev = 0.254
+axes.1.motor_settings.current = 1.0
+axes.1.motor_settings.limit_mode = 2
+axes.1.motor_settings.speed = 4.0
+axes.2.name = "Z"
+axes.2.ip = "192.168.17.134"
+axes.2.units = "cm"
+axes.2.units_per_rev = 0.254
+axes.2.motor_settings.current = 0.8
+axes.2.motor_settings.limit_mode = 2
+axes.2.motor_settings.speed = 4.0
+
+[run.motion_group.0.motion_builder]
+space.0.label = "X"
+space.0.range = [-55, 55]
+space.0.num = 111
+space.1.label = "Y"
+space.1.range = [-55, 55]
+space.1.num = 111
+space.2.label = "Z"
+space.2.range = [-30, 30]
+space.2.num = 61
+layers.0.type = "grid_CNStep"
+layers.0.center = [0, 0, 0]
+layers.0.npoints = [1, 1, 1]
+layers.0.step_size = [1, 1, 1]
+
+[run.motion_group.0.transform]
+type = "lapd_xyz"
+pivot_to_center = 58.771
+pivot_to_xzcross = 142.4804  # 0.81" + 54.9cm + 0.75" + 79.3cm + 1.7"
+probe_axis_offset = 30.47  # 0.5" + 15.1cm + 5.4cm + 8.7cm
+table_pivot_to_zlead_screw = 12.488  # 0.5" + 2.5cm + 4.4cm + 1.7"
+drive_polarity = [1, -1, 1]
+mspace_polarity = [-1, 1, -1]
