@@ -120,7 +120,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     def _connect_redraw_signals(self):
         self.redrawSignals.All.connect(self.redraw_display)
-        self.redrawSignals.MotionList.connect(self.redraw_motion_list)
+        self.redrawSignals.MotionList.connect(self.redraw_motion_list_plot)
         self.redrawSignals.Position.connect(self.update_position_plot)
         self.redrawSignals.TargetPosition.connect(self.update_target_position_plot)
 
@@ -160,7 +160,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     @abstractmethod
     @Slot()
-    def redraw_motion_list(self): ...
+    def redraw_motion_list_plot(self): ...
 
     @abstractmethod
     @Slot(list)
@@ -587,7 +587,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         fig.tight_layout()
 
         # Draw motion list
-        self.redraw_motion_list()
+        self.redraw_motion_list_plot()
 
         # Draw insertion point
         insertion_point = self.mb.get_insertion_point()
@@ -665,7 +665,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.mpl_canvas.draw()
 
     @Slot()
-    def redraw_motion_list(self):
+    def redraw_motion_list_plot(self):
         self.animate_motion_list_clear()
 
         # plot the individual point layers (if join scheme is sequential)
