@@ -122,7 +122,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
         self.redrawSignals.All.connect(self.redraw_display)
         self.redrawSignals.MotionList.connect(self.redraw_motion_list_plot)
         self.redrawSignals.Position.connect(self.redraw_position_plot)
-        self.redrawSignals.TargetPosition.connect(self.update_target_position_plot)
+        self.redrawSignals.TargetPosition.connect(self.redraw_target_position_plot)
 
     def _connect_animate_motion_list_signals(self):
         self.animateMotionList.Clear.connect(self.animate_motion_list_clear)
@@ -164,7 +164,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     @abstractmethod
     @Slot(list)
-    def update_target_position_plot(self, position): ...
+    def redraw_target_position_plot(self, position): ...
 
     @abstractmethod
     @Slot(list)
@@ -278,7 +278,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self._connect_redraw_signals()
 
         self.mbChanged.connect(self.redraw_display)
-        self.targetPositionSelected.connect(self.update_target_position_plot)
+        self.targetPositionSelected.connect(self.redraw_target_position_plot)
 
         # matplotlib events
         self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
@@ -620,7 +620,7 @@ class MotionSpaceDisplay2D(_MSDBase):
 
         # Draw target position
         if self.display_target_position:
-            self.update_target_position_plot(position=target_position)
+            self.redraw_target_position_plot(position=target_position)
 
         # Draw current position
         if self.display_position:
@@ -783,7 +783,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.mpl_canvas.draw()
 
     @Slot(list)
-    def update_target_position_plot(self, position):
+    def redraw_target_position_plot(self, position):
         self.logger.info(f"Drawing target position {position}")
 
         if not self.display_target_position:
