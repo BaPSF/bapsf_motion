@@ -549,37 +549,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         return layout
 
-    @property
-    def dimensionality(self):
-        return self.mg.drive.naxes
-
-    @property
-    def axis_names(self):
-        return self.mg.drive.anames
-
-    @property
-    def mb(self) -> MotionBuilder| None:
-        if (
-            self._mb is None
-            and isinstance(self.mg, MotionGroup)
-            and isinstance(self.mg.mb, MotionBuilder)
-        ):
-            return self.mg.mb
-
-        return self._mb
-
-    @property
-    def parameter_hints_layer(self):
-        if self._parameter_hints_layer is None:
-            self._parameter_hints_layer = dict()
-        return self._parameter_hints_layer
-
-    @property
-    def parameter_hints_exclusion(self):
-        if self._parameter_hints_exclusion is None:
-            self._parameter_hints_exclusion = dict()
-        return self._parameter_hints_exclusion
-
     def _define_params_layout(self):
         self.params_add_btn.setEnabled(False)
 
@@ -747,6 +716,37 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         _widget.setLayout(layout)
         return _widget
+
+    @property
+    def dimensionality(self):
+        return self.mg.drive.naxes
+
+    @property
+    def axis_names(self):
+        return self.mg.drive.anames
+
+    @property
+    def mb(self) -> MotionBuilder| None:
+        if (
+            self._mb is None
+            and isinstance(self.mg, MotionGroup)
+            and isinstance(self.mg.mb, MotionBuilder)
+        ):
+            return self.mg.mb
+
+        return self._mb
+
+    @property
+    def parameter_hints_layer(self):
+        if self._parameter_hints_layer is None:
+            self._parameter_hints_layer = dict()
+        return self._parameter_hints_layer
+
+    @property
+    def parameter_hints_exclusion(self):
+        if self._parameter_hints_exclusion is None:
+            self._parameter_hints_exclusion = dict()
+        return self._parameter_hints_exclusion
 
     def _initialize_exclusion_list_layout_widgets(self):
         self.exclusion_list_box = QListWidget(parent=self)
