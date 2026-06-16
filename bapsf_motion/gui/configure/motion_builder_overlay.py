@@ -111,7 +111,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.exclusion_list_box = self._init_exclusion_list_box()
         self.exclusion_add_btn = self._init_exclusion_add_btn()
         self.exclusion_remove_btn = self._init_exclusion_remove_btn()
-        self.edit_ex_btn = self._init_edit_ex_btn()
+        self.exclusion_edit_btn = self._init_exclusion_edit_btn()
 
         self.layer_list_box = self._init_layer_list_box()
         self.layer_add_btn = self._init_layer_add_btn()
@@ -178,7 +178,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.exclusion_add_btn.clicked.connect(self._exclusion_configure_new)
         self.exclusion_remove_btn.clicked.connect(self._exclusion_remove_from_mb)
-        self.edit_ex_btn.clicked.connect(self._exclusion_modify_existing)
+        self.exclusion_edit_btn.clicked.connect(self._exclusion_modify_existing)
 
         self.layer_add_btn.clicked.connect(self._layer_configure_new)
         self.layer_remove_btn.clicked.connect(self._layer_remove_from_mb)
@@ -454,7 +454,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         sub_layout.setSpacing(8)
         sub_layout.addWidget(self.exclusion_add_btn)
         sub_layout.addWidget(self.exclusion_remove_btn)
-        sub_layout.addWidget(self.edit_ex_btn)
+        sub_layout.addWidget(self.exclusion_edit_btn)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -814,7 +814,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setEnabled(False)
         return btn
 
-    def _init_edit_ex_btn(self):
+    def _init_exclusion_edit_btn(self):
         btn = self._generate_btn_widget("EDIT")
         btn.setEnabled(False)
         return btn
@@ -910,7 +910,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             )
             self.exclusion_add_btn.setEnabled(False)
             self.exclusion_remove_btn.setEnabled(False)
-            self.edit_ex_btn.setEnabled(False)
+            self.exclusion_edit_btn.setEnabled(False)
 
             exclusions = self.mb.exclusions.copy()
             for ex in exclusions:
@@ -1505,7 +1505,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     @Slot()
     def exclusion_list_box_set_btn_enable(self, enable=True):
-        self.edit_ex_btn.setEnabled(enable)
+        self.exclusion_edit_btn.setEnabled(enable)
         self.exclusion_remove_btn.setEnabled(enable)
 
     @Slot()
@@ -1524,7 +1524,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def update_exclusion_list_box(self):
         self.logger.info("Updating Exclusion List Box")
         self.exclusion_remove_btn.setEnabled(False)
-        self.edit_ex_btn.setEnabled(False)
+        self.exclusion_edit_btn.setEnabled(False)
 
         ex_names = (
             self._generate_list_name(ii, ex.name, ex.exclusion_type)
