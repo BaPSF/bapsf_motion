@@ -15,7 +15,7 @@ from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout, QWidget
-from typing import List, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.motion_builder import MotionBuilder
@@ -933,6 +933,14 @@ class MotionSpaceDisplay(QFrame):
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
         self._mb = self._init_motion_builder(mb)
 
+        # Initialize display attributes
+        self._display_visibility = {
+            "position": False,
+            "target_position": False,
+            "probe": False,
+            # "insertion_point": False,
+        }  # type: Dict[str, bool]
+
         # Define WIDGETS
         self.display = self._init_display()
 
@@ -1031,6 +1039,9 @@ class MotionSpaceDisplay(QFrame):
             display = MotionSpaceDisplay2D(
                 logger=self._logger, mb=self._mb, parent=self
             )
+            display.display_position = self._display_visibility["position"]
+            display.display_target_position = self._display_visibility["target_position"]
+            display.display_probe = self._display_visibility["probe"]
         else:
             raise RuntimeError(
                 "Can not create a display for the motion space.  The "
@@ -1064,44 +1075,65 @@ class MotionSpaceDisplay(QFrame):
     @property
     def display_position(self) -> bool:
         if not isinstance(self.display, _MSDBase):
-            return False
+            return self._display_visibility["position"]
 
-        return self.display.display_position
+        visibility = self.display.display_position
+        self._display_visibility["position"] = visibility
+        return visibility
 
     @display_position.setter
     def display_position(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
         if not isinstance(self.display, _MSDBase):
+            self._display_visibility["position"] = value
             return
 
         self.display.display_position = value
+        self._display_visibility["position"] = self.display.display_position
 
     @property
     def display_target_position(self) -> bool:
         if not isinstance(self.display, _MSDBase):
-            return False
+            return self._display_visibility["target_position"]
 
-        return self.display.display_target_position
+        visibility = self.display.display_target_position
+        self._display_visibility["target_position"] = visibility
+        return visibility
 
     @display_target_position.setter
     def display_target_position(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
         if not isinstance(self.display, _MSDBase):
+            self._display_visibility["target_position"] = value
             return
 
         self.display.display_target_position = value
+        self._display_visibility["target_position"] = self.display.display_target_position
 
     @property
     def display_probe(self) -> bool:
         if not isinstance(self.display, _MSDBase):
-            return False
+            return self._display_visibility["probe"]
 
-        return self.display.display_probe
+        visibility = self.display.display_probe
+        self._display_visibility["probe"] = visibility
+        return visibility
 
     @display_probe.setter
     def display_probe(self, value: bool):
+        if not isinstance(value, bool):
+            return
+
         if not isinstance(self.display, _MSDBase):
+            self._display_visibility["probe"] = value
             return
 
         self.display.display_probe = value
+        self._display_visibility["probe"] = self.display.display_probe
 
     @property
     def is_animating_motion_list(self):
