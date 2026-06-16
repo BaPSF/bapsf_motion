@@ -247,6 +247,8 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
+        self.mbChanged.emit()
+
     def _connect_signals(self):
         self.mbChanged.connect(self.update_canvas)
         self.targetPositionSelected.connect(self.update_target_position_plot)
