@@ -121,7 +121,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     def _connect_redraw_signals(self):
         self.redrawSignals.All.connect(self.redraw_display)
         self.redrawSignals.MotionList.connect(self.redraw_motion_list_plot)
-        self.redrawSignals.Position.connect(self.update_position_plot)
+        self.redrawSignals.Position.connect(self.redraw_position_plot)
         self.redrawSignals.TargetPosition.connect(self.update_target_position_plot)
 
     def _connect_animate_motion_list_signals(self):
@@ -168,7 +168,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     @abstractmethod
     @Slot(list)
-    def update_position_plot(self, position):
+    def redraw_position_plot(self, position):
         ...
 
     def _init_logger(self, logger: logging.Logger) -> logging.Logger:
@@ -624,7 +624,7 @@ class MotionSpaceDisplay2D(_MSDBase):
 
         # Draw current position
         if self.display_position:
-            self.update_position_plot(position=position)
+            self.redraw_position_plot(position=position)
 
         # Draw legend
         self.update_legend()
@@ -826,7 +826,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.mpl_canvas.draw()
 
     @Slot(list)
-    def update_position_plot(self, position):
+    def redraw_position_plot(self, position):
         self.logger.info(f"Drawing position {position}")
 
         if not self.display_position:
