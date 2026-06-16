@@ -118,7 +118,11 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
         self._cid_on_draw = None
         self._mpl_pick_callback_id = None
 
-    def _connect_redraw_signals(self): ...
+    def _connect_redraw_signals(self):
+        self.redrawSignals.All.connect(self.update_canvas)
+        self.redrawSignals.MotionList.connect(self.update_motion_list)
+        self.redrawSignals.Position.connect(self.update_position_plot)
+        self.redrawSignals.TargetPosition.connect(self.update_target_position_plot)
 
     def _connect_animate_motion_list_signals(self):
         self.animateMotionList.Clear.connect(self.animate_motion_list_clear)
@@ -271,6 +275,7 @@ class MotionSpaceDisplay2D(_MSDBase):
 
     def _connect_signals(self):
         self._connect_animate_motion_list_signals()
+        self._connect_redraw_signals()
 
         self.mbChanged.connect(self.update_canvas)
         self.targetPositionSelected.connect(self.update_target_position_plot)
@@ -956,11 +961,11 @@ class MotionSpaceDisplay(QFrame):
         self.animateMotionList.Pause.connect(self.display.animateMotionList.Pause.emit)
         self.animateMotionList.Start.connect(self.display.animateMotionList.Start.emit)
 
-        self.redrawSignals.All.connect(self.display.update_canvas)
-        self.redrawSignals.MotionList.connect(self.display.update_motion_list)
-        self.redrawSignals.Position.connect(self.display.update_position_plot)
+        self.redrawSignals.All.connect(self.display.redrawSignals.All.emit)
+        self.redrawSignals.MotionList.connect(self.display.redrawSignals.MotionList.emit)
+        self.redrawSignals.Position.connect(self.display.redrawSignals.Position.emit)
         self.redrawSignals.TargetPosition.connect(
-            self.display.update_target_position_plot
+            self.display.redrawSignals.TargetPosition.emit
         )
 
     def _disconnect_display_signals(self):
@@ -987,11 +992,11 @@ class MotionSpaceDisplay(QFrame):
         self.animateMotionList.Pause.disconnect(self.display.animateMotionList.Pause.emit)
         self.animateMotionList.Start.disconnect(self.display.animateMotionList.Start.emit)
 
-        self.redrawSignals.All.disconnect(self.display.update_canvas)
-        self.redrawSignals.MotionList.disconnect(self.display.update_motion_list)
-        self.redrawSignals.Position.disconnect(self.display.update_position_plot)
+        self.redrawSignals.All.disconnect(self.display.redrawSignals.All.emit)
+        self.redrawSignals.MotionList.disconnect(self.display.redrawSignals.MotionList.emit)
+        self.redrawSignals.Position.disconnect(self.display.redrawSignals.Position.emit)
         self.redrawSignals.TargetPosition.disconnect(
-            self.display.update_target_position_plot
+            self.display.redrawSignals.TargetPosition.emit
         )
 
     def _define_layout(self):
