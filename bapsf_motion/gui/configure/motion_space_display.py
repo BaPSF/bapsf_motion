@@ -12,7 +12,7 @@ import numpy as np
 import warnings
 
 from abc import ABC, ABCMeta, abstractmethod
-from PySide6.QtCore import QTimer, Signal, Slot
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout, QWidget
 from typing import List, TYPE_CHECKING
@@ -37,13 +37,22 @@ from matplotlib.collections import PathCollection  # noqa
 class _ABCMotionSpaceDisplay(ABCMeta, type(QWidget)): ...
 
 
+class _AnimationSignals(QObject):
+    Cleared = Signal()
+    Finished = Signal()
+    Paused = Signal()
+    Started = Signal()
+
+    Clear = Signal()
+    Pause = Signal()
+    Start = Signal()
+    Stop = Signal()
+
+
 class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
-    animateMotionListStarted = Signal()
-    animateMotionListFinished = Signal()
-    animateMotionListPaused = Signal()
-    animateMotionListCleared = Signal()
+    animateMotionList = _AnimationSignals()
 
     _default_logger_name = "MSD-Base"
     _default_legend_names = [
@@ -241,7 +250,7 @@ class MotionSpaceDisplay2D(_MSDBase):
     def _connect_signals(self):
         self.mbChanged.connect(self.update_canvas)
         self.targetPositionSelected.connect(self.update_target_position_plot)
-        self.animateMotionListFinished.connect(self.animate_motion_list_pause)
+        self.animateMotionList.Finished.connect(self.animate_motion_list_pause)
 
         # matplotlib events
         self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
@@ -289,7 +298,7 @@ class MotionSpaceDisplay2D(_MSDBase):
     def animate_motion_list(self):
         if self._animate_payload is not None and not self._animate_payload["finished"]:
             self._animate_payload["timer"].start()
-            self.animateMotionListStarted.emit()
+            self.animateMotionList.Started.emit()
             return
         elif self._animate_payload is not None:
             self.animate_motion_list_clear()
@@ -301,7 +310,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self._animate_motion_list_init_payload()
         self._animate_payload["timer"].start()  # noqa
 
-        self.animateMotionListStarted.emit()
+        self.animateMotionList.Started.emit()
 
     def _animate_motion_list_init_payload(self):
         delay = 200  # msec
@@ -329,7 +338,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self._animate_payload["timer"].stop()
 
         if not self._animate_payload["finished"]:
-            self.animateMotionListPaused.emit()
+            self.animateMotionList.Paused.emit()
 
     @Slot()
     def animate_motion_list_clear(self):
@@ -351,7 +360,7 @@ class MotionSpaceDisplay2D(_MSDBase):
 
         self.mpl_canvas.draw()
 
-        self.animateMotionListCleared.emit()
+        self.animateMotionList.Cleared.emit()
 
     @Slot()
     def _update_motion_list_trace(self, *, to_index: int | None = None):
@@ -421,7 +430,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.mpl_canvas.draw()
         if to_index == self.mb.motion_list.shape[0] - 1:
             self._animate_payload["finished"] = True
-            self.animateMotionListFinished.emit()
+            self.animateMotionList.Finished.emit()
             return
 
         to_index += self._animate_payload["index_step"]
@@ -873,14 +882,7 @@ class MotionSpaceDisplay(QFrame):
 
     targetPositionSelected = Signal(list)
 
-    animateMotionListStarted = Signal()
-    animateMotionListFinished = Signal()
-    animateMotionListPaused = Signal()
-    animateMotionListCleared = Signal()
-
-    animateMotionListStart = Signal()
-    animateMotionListPause = Signal()
-    animateMotionListClear = Signal()
+    animateMotionList = _AnimationSignals()
 
     updateDisplay = Signal()
     updateDisplayMotionList = Signal()
@@ -915,19 +917,21 @@ class MotionSpaceDisplay(QFrame):
         if not isinstance(self.display, _MSDBase):
             return
 
-        self.display.animateMotionListCleared.connect(self.animateMotionListCleared.emit)
-        self.display.animateMotionListFinished.connect(
-            self.animateMotionListFinished.emit
+        self.display.animateMotionList.Cleared.connect(self.animateMotionList.Cleared.emit)
+        self.display.animateMotionList.Finished.connect(
+            self.animateMotionList.Finished.emit
         )
-        self.display.animateMotionListPaused.connect(self.animateMotionListPaused.emit)
-        self.display.animateMotionListStarted.connect(self.animateMotionListStarted.emit)
+        self.display.animateMotionList.Paused.connect(self.animateMotionList.Paused.emit)
+        self.display.animateMotionList.Started.connect(
+            self.animateMotionList.Started.emit
+        )
 
         self.display.mbChanged.connect(self.mbChanged.emit)
         self.display.targetPositionSelected.connect(self.targetPositionSelected.emit)
 
-        self.animateMotionListClear.connect(self.display.animate_motion_list_clear)
-        self.animateMotionListPause.connect(self.display.animate_motion_list_pause)
-        self.animateMotionListStart.connect(self.display.animate_motion_list)
+        self.animateMotionList.Clear.connect(self.display.animate_motion_list_clear)
+        self.animateMotionList.Pause.connect(self.display.animate_motion_list_pause)
+        self.animateMotionList.Start.connect(self.display.animate_motion_list)
 
         self.updateDisplay.connect(self.display.update_canvas)
         self.updateDisplayMotionList.connect(self.display.update_motion_list)
@@ -940,25 +944,25 @@ class MotionSpaceDisplay(QFrame):
         if not isinstance(self.display, _MSDBase):
             return
 
-        self.display.animateMotionListCleared.disconnect(
-            self.animateMotionListCleared.emit
+        self.display.animateMotionList.Cleared.disconnect(
+            self.animateMotionList.Cleared.emit
         )
-        self.display.animateMotionListFinished.disconnect(
-            self.animateMotionListFinished.emit
+        self.display.animateMotionList.Finished.disconnect(
+            self.animateMotionList.Finished.emit
         )
-        self.display.animateMotionListPaused.disconnect(
-            self.animateMotionListPaused.emit
+        self.display.animateMotionList.Paused.disconnect(
+            self.animateMotionList.Paused.emit
         )
-        self.display.animateMotionListStarted.disconnect(
-            self.animateMotionListStarted.emit
+        self.display.animateMotionList.Started.disconnect(
+            self.animateMotionList.Started.emit
         )
 
         self.display.mbChanged.disconnect(self.mbChanged.emit)
         self.display.targetPositionSelected.disconnect(self.targetPositionSelected.emit)
 
-        self.animateMotionListClear.disconnect(self.display.animate_motion_list_clear)
-        self.animateMotionListPause.disconnect(self.display.animate_motion_list_pause)
-        self.animateMotionListStart.disconnect(self.display.animate_motion_list)
+        self.animateMotionList.Clear.disconnect(self.display.animate_motion_list_clear)
+        self.animateMotionList.Pause.disconnect(self.display.animate_motion_list_pause)
+        self.animateMotionList.Start.disconnect(self.display.animate_motion_list)
 
         self.updateDisplay.disconnect(self.display.update_canvas)
         self.updateDisplayMotionList.disconnect(self.display.update_motion_list)
