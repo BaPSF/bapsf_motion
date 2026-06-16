@@ -114,14 +114,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.edit_ex_btn = None
         self._initialize_exclusion_list_layout_widgets()
 
-        self.layer_list_box = None  # type: QListWidget | None
-        self.add_ly_btn = None
-        self.remove_ly_btn = None
-        self.edit_ly_btn = None
-        self.layer_move_up_btn = None
-        self.layer_move_down_btn = None
-        self.layer_ml_combine_toggle = None
-        self._initialize_layer_list_layout_widgets()
+        self.layer_list_box = self._init_layer_list_box()
+        self.add_ly_btn = self._init_add_ly_btn()
+        self.remove_ly_btn = self._init_remove_ly_btn()
+        self.edit_ly_btn = self._init_edit_ly_btn()
+        self.layer_move_up_btn = self._init_layer_move_up_btn()
+        self.layer_move_down_btn = self._init_layer_move_down_btn()
+        self.layer_ml_combine_toggle = self._init_layer_ml_combine_toggle()
 
         # SET UP PLOT WIDGET
         self.mspace_display = MotionSpaceDisplay(parent=self)
@@ -715,6 +714,91 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget.setLayout(layout)
         return _widget
 
+    def _init_layer_list_box(self):
+        box = QListWidget(parent=self)
+        box.setMinimumHeight(250)
+        _font = box.font()
+        _font.setPointSize(11)
+        box.setFont(_font)
+        return box
+
+    def _init_add_ly_btn(self):
+        return self._generate_btn_widget("ADD")
+
+    def _init_remove_ly_btn(self):
+        btn = self._generate_btn_widget("REMOVE")
+        btn.setEnabled(False)
+        return btn
+
+    def _init_edit_ly_btn(self):
+        btn = self._generate_btn_widget("EDIT")
+        btn.setEnabled(False)
+        return btn
+
+    def _init_layer_move_up_btn(self):
+        btn = IconButton(icon_name_dict["arrow-up"], parent=self)
+        btn.setIconSize(20)
+        btn.setFixedWidth(24)
+        btn.setFixedHeight(48)
+        return btn
+
+    def _init_layer_move_down_btn(self):
+        btn = IconButton(icon_name_dict["arrow-down"], parent=self)
+        btn.setIconSize(20)
+        btn.setFixedWidth(24)
+        btn.setFixedHeight(48)
+        return btn
+
+    def _init_layer_ml_combine_toggle(self):
+        btn = StyleButton("ML Combine", parent=self)
+        btn.setFixedHeight(24)
+        font = btn.font()
+        font.setPointSize(10)
+        btn.setFont(font)
+        _color_str = "rgb(52, 161, 219)"
+        btn.update_style_sheet(
+            styles={
+                "background-color": re.sub(
+                    " +",
+                    " ",
+                    f"""qlineargradient(
+                                x1:0,
+                                y1:0, 
+                                x2:1, 
+                                y2:0,
+                                stop: 0 {_color_str},
+                                stop: 0.1 {_color_str},
+                                stop: 0.12 rgb(163, 163, 163),
+                                stop: 1 rgb(163, 163, 163)
+                            )""".replace("\n", ""),
+                ),
+            },
+            action="base",
+        )
+        btn.update_style_sheet(
+            styles={
+                "background-color": re.sub(
+                    " +",
+                    " ",
+                    f"""qlineargradient(
+                                x1:0,
+                                y1:0, 
+                                x2:1, 
+                                y2:0,
+                                stop: 0 rgb(163, 163, 163),
+                                stop: 0.88 rgb(163, 163, 163),
+                                stop: 0.9 {_color_str},
+                                stop: 1 {_color_str}
+                            )""".replace("\n", ""),
+                ),
+            },
+            action="checked",
+        )
+        btn.setCheckable(True)
+        btn.setChecked(False)
+        btn.setFixedWidth(180)
+        return btn
+
     @property
     def dimensionality(self):
         return self.mg.drive.naxes
@@ -760,79 +844,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.edit_ex_btn = self._generate_btn_widget("EDIT")
         self.edit_ex_btn.setEnabled(False)
-
-    def _initialize_layer_list_layout_widgets(self):
-        self.layer_list_box = QListWidget(parent=self)
-        self.layer_list_box.setMinimumHeight(250)
-        _font = self.layer_list_box.font()
-        _font.setPointSize(11)
-        self.layer_list_box.setFont(_font)
-
-        self.add_ly_btn = self._generate_btn_widget("ADD")
-
-        self.remove_ly_btn = self._generate_btn_widget("REMOVE")
-        self.remove_ly_btn.setEnabled(False)
-
-        self.edit_ly_btn = self._generate_btn_widget("EDIT")
-        self.edit_ly_btn.setEnabled(False)
-
-        self.layer_move_up_btn = IconButton(icon_name_dict["arrow-up"], parent=self)
-        self.layer_move_up_btn.setIconSize(20)
-        self.layer_move_up_btn.setFixedWidth(24)
-        self.layer_move_up_btn.setFixedHeight(48)
-        self.layer_move_down_btn = IconButton(icon_name_dict["arrow-down"], parent=self)
-        self.layer_move_down_btn.setIconSize(18)
-        self.layer_move_down_btn.setFixedWidth(24)
-        self.layer_move_down_btn.setFixedHeight(48)
-
-        _btn = StyleButton("ML Combine", parent=self)
-        _btn.setFixedHeight(24)
-        font = _btn.font()
-        font.setPointSize(10)
-        _btn.setFont(font)
-        _color_str = "rgb(52, 161, 219)"
-        _btn.update_style_sheet(
-            styles={
-                "background-color": re.sub(
-                    " +",
-                    " ",
-                    f"""qlineargradient(
-                        x1:0,
-                        y1:0, 
-                        x2:1, 
-                        y2:0,
-                        stop: 0 {_color_str},
-                        stop: 0.1 {_color_str},
-                        stop: 0.12 rgb(163, 163, 163),
-                        stop: 1 rgb(163, 163, 163)
-                    )""".replace("\n", ""),
-                ),
-            },
-            action="base",
-        )
-        _btn.update_style_sheet(
-            styles={
-                "background-color": re.sub(
-                    " +",
-                    " ",
-                    f"""qlineargradient(
-                        x1:0,
-                        y1:0, 
-                        x2:1, 
-                        y2:0,
-                        stop: 0 rgb(163, 163, 163),
-                        stop: 0.88 rgb(163, 163, 163),
-                        stop: 0.9 {_color_str},
-                        stop: 1 {_color_str}
-                    )""".replace("\n", ""),
-                ),
-            },
-            action="checked",
-        )
-        _btn.setCheckable(True)
-        _btn.setChecked(False)
-        _btn.setFixedWidth(180)
-        self.layer_ml_combine_toggle = _btn
 
     def _initialize_params_layout_widgets(self):
         self._params_widget.setMinimumHeight(300)
