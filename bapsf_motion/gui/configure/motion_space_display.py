@@ -627,7 +627,7 @@ class MotionSpaceDisplay2D(_MSDBase):
             self.redraw_position_plot(position=position)
 
         # Draw legend
-        self.update_legend()
+        self.redraw_legend()
 
         self.mpl_canvas.draw()
 
@@ -639,7 +639,7 @@ class MotionSpaceDisplay2D(_MSDBase):
 
         self.logger.info("Re-draw DONE.")
 
-    def update_legend(self):
+    def redraw_legend(self):
         _plotted_layers = (
             [] if self._motionlist_plot_names is None else self._motionlist_plot_names
         )
@@ -779,7 +779,7 @@ class MotionSpaceDisplay2D(_MSDBase):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw()
 
     @Slot(list)
@@ -822,7 +822,7 @@ class MotionSpaceDisplay2D(_MSDBase):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw()
 
     @Slot(list)
@@ -907,7 +907,7 @@ class MotionSpaceDisplay2D(_MSDBase):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw()
 
 
