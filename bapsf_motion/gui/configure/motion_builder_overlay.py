@@ -1503,9 +1503,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def update_canvas(self):
         if self._mspace_display_full_draw:
-            self.mspace_display.updateDisplay.emit()
+            self.mspace_display.redrawSignals.All.emit()
         else:
-            self.mspace_display.updateDisplayMotionList.emit()
+            self.mspace_display.redrawSignals.MotionList.emit()
 
         self._mspace_display_full_draw = False
 
