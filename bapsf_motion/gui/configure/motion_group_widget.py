@@ -808,6 +808,9 @@ class MGWidget(QWidget):
         _policy = canvas.sizePolicy()
         _policy.setRetainSizeWhenHidden(True)
         canvas.setSizePolicy(_policy)
+        canvas.display_position = True
+        canvas.display_target_position = True
+        canvas.display_probe = True
         return canvas
 
     def _init_toml_widget(self):
