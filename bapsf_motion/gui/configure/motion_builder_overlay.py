@@ -126,7 +126,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
             self.mspace_display.link_motion_builder(self.mg.mb)
 
-        self.animate_ml_widget = self._init_animate_ml_widget()
+        self.animate_ml_frame = self._init_animate_ml_frame()
         self.animate_ml_action_btn = self._init_animate_ml_action_btn()
         self.animate_ml_clear_btn = self._init_animate_ml_clear_btn()
 
@@ -270,7 +270,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return _widget
 
     def _define_right_area_widget(self):
-        _txt = QLabel("Motion\nList\nAnimate", parent=self.animate_ml_widget)
+        _txt = QLabel("Motion\nList\nAnimate", parent=self.animate_ml_frame)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _animate_title = _txt
 
@@ -287,11 +287,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             alignment=Qt.AlignmentFlag.AlignCenter,
         )
         animate_layout.addStretch()
-        self.animate_ml_widget.setLayout(animate_layout)
+        self.animate_ml_frame.setLayout(animate_layout)
 
         side_control_layout = QVBoxLayout()
         side_control_layout.setContentsMargins(0, 0, 0, 0)
-        side_control_layout.addWidget(self.animate_ml_widget)
+        side_control_layout.addWidget(self.animate_ml_frame)
         side_control_layout.addStretch()
 
         plot_layout = QHBoxLayout()
@@ -687,7 +687,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget.setLayout(layout)
         return _widget
 
-    def _init_animate_ml_widget(self):
+    def _init_animate_ml_frame(self):
         frame = QFrame(parent=self)
         frame.setObjectName("animate_ml_controls")
         frame.setStyleSheet("""
@@ -705,7 +705,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return frame
 
     def _init_animate_ml_action_btn(self):
-        btn = StyleButton("\n".join(list("ANIMATE")), parent=self.animate_ml_widget)
+        btn = StyleButton("\n".join(list("ANIMATE")), parent=self.animate_ml_frame)
         btn.setFixedWidth(44)
         btn.setFixedHeight(130)
         _font = btn.font()
@@ -714,7 +714,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return btn
 
     def _init_animate_ml_clear_btn(self):
-        btn = StyleButton("\n".join(list("CLEAR")), parent=self.animate_ml_widget)
+        btn = StyleButton("\n".join(list("CLEAR")), parent=self.animate_ml_frame)
         btn.setFixedWidth(44)
         btn.setFixedHeight(100)
         _font = btn.font()
