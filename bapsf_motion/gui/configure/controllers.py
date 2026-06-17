@@ -581,8 +581,9 @@ class AxisControlWidget(QWidget):
     @Slot()
     def _validate_target_position_value(self):
         target_position = self.target_position
-        if not isinstance(target_position, list):
-            target_position = []
+        if not isinstance(target_position, float):
+            # do nothing, no valid target position
+            return
         self.targetPositionChanged.emit(target_position)
 
     @Slot()
