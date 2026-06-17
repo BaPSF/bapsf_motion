@@ -912,8 +912,6 @@ class MotionSpaceDisplay2D(_MSDBase):
 
 
 class MotionSpaceDisplay(QFrame):
-    mbChanged = Signal()
-
     targetPositionSelected = Signal(list)
 
     animateMotionList = _AnimationSignals()
@@ -964,7 +962,7 @@ class MotionSpaceDisplay(QFrame):
             self.animateMotionList.Started.emit
         )
 
-        self.display.mbChanged.connect(self.mbChanged.emit)
+
         self.display.targetPositionSelected.connect(self.targetPositionSelected.emit)
 
         self.animateMotionList.Clear.connect(self.display.animateMotionList.Clear.emit)
@@ -995,7 +993,6 @@ class MotionSpaceDisplay(QFrame):
             self.animateMotionList.Started.emit
         )
 
-        self.display.mbChanged.disconnect(self.mbChanged.emit)
         self.display.targetPositionSelected.disconnect(self.targetPositionSelected.emit)
 
         self.animateMotionList.Clear.disconnect(self.display.animateMotionList.Clear.emit)
