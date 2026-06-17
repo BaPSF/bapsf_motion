@@ -64,6 +64,7 @@ class AxisControlWidget(QWidget):
     targetPositionChanged = Signal(float)
     lostConnection = Signal()
     establishedConnection = Signal()
+    requestDisplayRefresh = Signal()
 
     def __init__(
         self,
@@ -145,6 +146,8 @@ class AxisControlWidget(QWidget):
 
         self.establishedConnection.connect(self._handle_connection_established)
         self.lostConnection.connect(self._handle_connection_lost)
+
+        self.requestDisplayRefresh.connect(self.update_display_of_axis_status)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -619,11 +622,11 @@ class AxisControlWidget(QWidget):
             self._emit_connection_established
         )
         axis.motor.signals.connection_lost.connect(self._emit_connection_lost)
-        axis.motor.signals.status_changed.connect(self.update_display_of_axis_status)
+        axis.motor.signals.status_changed.connect(self.requestDisplayRefresh.emit)
         axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
         axis.motor.signals.movement_started.connect(self._emit_movement_started)
         axis.motor.signals.movement_finished.connect(self._emit_movement_finished)
-        axis.motor.signals.movement_finished.connect(self.update_display_of_axis_status)
+        axis.motor.signals.movement_finished.connect(self.requestDisplayRefresh.emit)
 
         self.update_display_of_axis_status()
         self.axisLinked.emit()
@@ -637,13 +640,13 @@ class AxisControlWidget(QWidget):
             )
             axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
             axis.motor.signals.status_changed.disconnect(
-                self.update_display_of_axis_status
+                self.requestDisplayRefresh.emit
             )
             axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
             axis.motor.signals.movement_started.disconnect(self._emit_movement_started)
             axis.motor.signals.movement_finished.disconnect(self._emit_movement_finished)
             axis.motor.signals.movement_finished.disconnect(
-                self.update_display_of_axis_status
+                self.requestDisplayRefresh.emit
             )
 
         self._mg = None
@@ -721,7 +724,7 @@ class AxisControlWidget(QWidget):
             )
             self.axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
             self.axis.motor.signals.status_changed.disconnect(
-                self.update_display_of_axis_status
+                self.requestDisplayRefresh.emit
             )
             self.axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
             self.axis.motor.signals.movement_started.disconnect(
@@ -731,7 +734,7 @@ class AxisControlWidget(QWidget):
                 self._emit_movement_finished
             )
             self.axis.motor.signals.movement_finished.disconnect(
-                self.update_display_of_axis_status
+                self.requestDisplayRefresh.emit
             )
 
         event.accept()
