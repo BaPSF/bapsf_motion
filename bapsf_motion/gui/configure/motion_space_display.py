@@ -953,6 +953,7 @@ class MotionSpaceDisplay(QFrame):
         if not isinstance(self.display, _MSDBase):
             return
 
+        # animation response signals
         self.display.animateMotionList.Cleared.connect(self.animateMotionList.Cleared.emit)
         self.display.animateMotionList.Finished.connect(
             self.animateMotionList.Finished.emit
@@ -962,13 +963,14 @@ class MotionSpaceDisplay(QFrame):
             self.animateMotionList.Started.emit
         )
 
-
-        self.display.targetPositionSelected.connect(self.targetPositionSelected.emit)
-
+        # annimation action signals
         self.animateMotionList.Clear.connect(self.display.animateMotionList.Clear.emit)
         self.animateMotionList.Pause.connect(self.display.animateMotionList.Pause.emit)
         self.animateMotionList.Start.connect(self.display.animateMotionList.Start.emit)
 
+        self.display.targetPositionSelected.connect(self.targetPositionSelected.emit)
+
+        # signals to trigger a redraw
         self.redrawSignals.All.connect(self.display.redrawSignals.All.emit)
         self.redrawSignals.MotionList.connect(self.display.redrawSignals.MotionList.emit)
         self.redrawSignals.Position.connect(self.display.redrawSignals.Position.emit)
