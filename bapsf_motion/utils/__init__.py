@@ -37,7 +37,8 @@ class SimpleSignal:
     A very simple, rudimentary class for creating signals.
     """
 
-    _handlers = None
+    def __index__(self):
+        self._handlers = None
 
     @property
     def handlers(self) -> Union[None, List[Callable]]:
