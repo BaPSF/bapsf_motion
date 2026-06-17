@@ -20,7 +20,7 @@ from astropy import units
 from collections import UserDict
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
 from bapsf_motion.utils import exceptions, toml
 from bapsf_motion.utils.units_ import counts, rev, steps, units
@@ -42,7 +42,7 @@ class SimpleSignal:
         self._block = False
 
     @property
-    def handlers(self) -> Union[None, List[Callable]]:
+    def handlers(self) -> List[Callable]:
         """List of callbacks/handlers connect to the signal."""
         if self._handlers is None:
             self._handlers = []
