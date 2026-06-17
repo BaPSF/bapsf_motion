@@ -168,8 +168,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
 
     @abstractmethod
     @Slot(list)
-    def redraw_position_plot(self, position):
-        ...
+    def redraw_position_plot(self, position): ...
 
     def _init_logger(self, logger: logging.Logger) -> logging.Logger:
         if not isinstance(logger, logging.Logger):
@@ -260,9 +259,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         mb: MotionBuilder | None = None,
         parent: QWidget | None = None,
     ):
-        super().__init__(
-            logger=logger, mb=mb, parent=parent
-        )
+        super().__init__(logger=logger, mb=mb, parent=parent)
 
         # Define WIDGETS
         self.mpl_canvas = self._init_mpl_canvas()
@@ -954,7 +951,9 @@ class MotionSpaceDisplay(QFrame):
             return
 
         # animation response signals
-        self.display.animateMotionList.Cleared.connect(self.animateMotionList.Cleared.emit)
+        self.display.animateMotionList.Cleared.connect(
+            self.animateMotionList.Cleared.emit
+        )
         self.display.animateMotionList.Finished.connect(
             self.animateMotionList.Finished.emit
         )
@@ -1002,7 +1001,9 @@ class MotionSpaceDisplay(QFrame):
         self.animateMotionList.Start.disconnect(self.display.animateMotionList.Start.emit)
 
         self.redrawSignals.All.disconnect(self.display.redrawSignals.All.emit)
-        self.redrawSignals.MotionList.disconnect(self.display.redrawSignals.MotionList.emit)
+        self.redrawSignals.MotionList.disconnect(
+            self.display.redrawSignals.MotionList.emit
+        )
         self.redrawSignals.Position.disconnect(self.display.redrawSignals.Position.emit)
         self.redrawSignals.TargetPosition.disconnect(
             self.display.redrawSignals.TargetPosition.emit
@@ -1035,9 +1036,7 @@ class MotionSpaceDisplay(QFrame):
                 f"MotionBuilder, but got type {type(self._mb)}.  "
             )
         elif self._mb.mspace_ndims == 2:
-            display = MotionSpaceDisplay2D(
-                logger=self._logger, mb=self._mb, parent=self
-            )
+            display = MotionSpaceDisplay2D(logger=self._logger, mb=self._mb, parent=self)
             display.display_position = self._display_visibility["position"]
             display.display_target_position = self._display_visibility["target_position"]
             display.display_probe = self._display_visibility["probe"]

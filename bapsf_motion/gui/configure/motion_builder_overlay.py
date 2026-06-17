@@ -711,9 +711,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             }
             """)
         frame.setFixedWidth(72)
-        frame.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding
-        )
+        frame.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         return frame
 
     def _init_animate_ml_action_btn(self):
@@ -858,7 +856,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return self.mg.drive.anames
 
     @property
-    def mb(self) -> MotionBuilder| None:
+    def mb(self) -> MotionBuilder | None:
         if (
             self._mb is None
             and isinstance(self.mg, MotionGroup)
@@ -1723,9 +1721,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"New MotionBuilder configuration is being returned, {config}.")
         self._safe_return_config_emit(config)
         self.close()
-    
+
     def close(self, /):
         if isinstance(self.mspace_display, MotionSpaceDisplay):
             self.mspace_display.animateMotionList.Clear.emit()
-        
+
         super().close()
