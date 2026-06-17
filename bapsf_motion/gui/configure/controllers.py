@@ -581,8 +581,9 @@ class AxisControlWidget(QWidget):
     @Slot()
     def _validate_target_position_value(self):
         target_position = self.target_position
-        if not isinstance(target_position, list):
-            target_position = []
+        if not isinstance(target_position, float):
+            # do nothing, no valid target position
+            return
         self.targetPositionChanged.emit(target_position)
 
     @Slot()
@@ -841,7 +842,7 @@ class DriveBaseController(QWidget):
 
         return target_position
 
-    @Slot()
+    @Slot(float)
     def _target_position_changed(self, position):
         self.logger.info(f"DBC target position changed {self.target_position}")
         target_position = self.target_position
