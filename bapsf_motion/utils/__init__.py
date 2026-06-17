@@ -39,6 +39,7 @@ class SimpleSignal:
 
     def __init__(self):
         self._handlers = None
+        self._block = False
 
     @property
     def handlers(self) -> Union[None, List[Callable]]:
@@ -75,8 +76,17 @@ class SimpleSignal:
 
     def emit(self):
         """Emit the signal, which executes all the connected handlers."""
+        if self._block:
+            return
+
         for handler in self.handlers:
             handler()
+
+    def set_block(self, block: bool):
+        if not isinstance(block, bool):
+            return
+
+        self._block = block
 
 
 def load_example(filename: str, as_string=False):
