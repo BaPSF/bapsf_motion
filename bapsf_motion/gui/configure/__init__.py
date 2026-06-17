@@ -31,11 +31,7 @@ if __name__ == "__main__":
         default=None,
         type=pathlib.Path,
     )
-    default_debug = (
-        "*.debug=true;"
-        "qt.text.emojisegmenter.debug=false;"
-        "qt.widgets.showhide.debug=false"
-    )
+    default_debug = "qt.pyside.*.debug=true;"
     parser.add_argument(
         "--debug",
         nargs="?",
@@ -65,6 +61,7 @@ if __name__ == "__main__":
     if args.debug is not None:
         os.environ["SHIBOKEN_DEBUG"] = "1"
         os.environ["QT_DEBUG_PLUGINS"] = "1"
+        os.environ["QT_FORCE_STDERR_LOGGING"] = "1"
         os.environ["QT_LOGGING_RULES"] = args.debug
 
     # Launch App
