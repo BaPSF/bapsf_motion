@@ -715,9 +715,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             }
             """)
         frame.setFixedWidth(72)
-        frame.setSizePolicy(
-            QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding
-        )
+        frame.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
         return frame
 
     def _init_animate_ml_action_btn(self):
@@ -853,7 +851,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return self.mg.drive.anames
 
     @property
-    def mb(self) -> MotionBuilder| None:
+    def mb(self) -> MotionBuilder | None:
         if (
             self._mb is None
             and isinstance(self.mg, MotionGroup)
