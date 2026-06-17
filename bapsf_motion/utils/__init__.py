@@ -52,7 +52,7 @@ class SimpleSignal:
     def is_blocking(self) -> bool:
         """
         `True` if the signal is currently blocked.  That is, no
-        ``handlers`` will be exectuted on an ``emit``.
+        ``handlers`` will be executed on an ``emit``.
         """
         return self._block
 
