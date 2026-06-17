@@ -37,7 +37,7 @@ class SimpleSignal:
     A very simple, rudimentary class for creating signals.
     """
 
-    def __index__(self):
+    def __init__(self):
         self._handlers = None
 
     @property
