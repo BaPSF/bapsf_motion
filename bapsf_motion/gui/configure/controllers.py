@@ -639,9 +639,7 @@ class AxisControlWidget(QWidget):
                 self._emit_connection_established
             )
             axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
-            axis.motor.signals.status_changed.disconnect(
-                self.requestDisplayRefresh.emit
-            )
+            axis.motor.signals.status_changed.disconnect(self.requestDisplayRefresh.emit)
             axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
             axis.motor.signals.movement_started.disconnect(self._emit_movement_started)
             axis.motor.signals.movement_finished.disconnect(self._emit_movement_finished)
