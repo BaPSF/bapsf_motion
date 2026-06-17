@@ -90,7 +90,10 @@ class SimpleSignal:
         for handler in self.handlers:
             handler()
 
-    def set_block(self, block: bool):
+    def set_blocking(self, block: bool):
+        """
+        Set the signal to be blocked `True` or not `False`.
+        """
         if not isinstance(block, bool):
             return
 
