@@ -92,7 +92,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
         #     If True, add to the plot a representation of the probe [shaft]
         # _animate_payload : dict
         #     A dictionary payload when animating the motion list.
-        #      "finished"   - bool   - has the animation finsihed
+        #      "finished"   - bool   - has the animation finished
         #      "timer"      - QTimer - timer instance
         #      "delay"      - int    - timer interval
         #      "index"      - int    - next motionlist index to animate to

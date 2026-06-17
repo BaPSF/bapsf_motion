@@ -1406,7 +1406,7 @@ class MGWidget(QWidget):
     def _handle_motion_builder_overlay_close(self, config: Dict[str, Any]):
         if len(config) == 0:
             # no config returned, just emit configChanged to refresh
-            # widget visability and enable-ness
+            # widget visibility and enable-ness
             self.configChanged.emit()
             return
 
@@ -1416,7 +1416,7 @@ class MGWidget(QWidget):
     def _handle_transform_overlay_close(self, config: Dict[str, Any]):
         if len(config) == 0:
             # no config returned, just emit configChanged to refresh
-            # widget visability and enable-ness
+            # widget visibility and enable-ness
             self.configChanged.emit()
             return
 
