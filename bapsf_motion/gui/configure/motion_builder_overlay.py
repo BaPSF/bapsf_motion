@@ -419,12 +419,18 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _txt.setMargin(0)
         title = _txt
 
-        sub_layout = QHBoxLayout()
-        sub_layout.setContentsMargins(0, 0, 0, 0)
-        sub_layout.setSpacing(8)
-        sub_layout.addWidget(self.exclusion_add_btn)
-        sub_layout.addWidget(self.exclusion_remove_btn)
-        sub_layout.addWidget(self.exclusion_edit_btn)
+        list_layout = QHBoxLayout()
+        list_layout.setContentsMargins(0, 0, 0, 0)
+        list_layout.addSpacing(8)
+        list_layout.addWidget(self.exclusion_list_box, stretch=1)
+        list_layout.addSpacing(8)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.setContentsMargins(0, 0, 0, 0)
+        btn_layout.setSpacing(8)
+        btn_layout.addWidget(self.exclusion_add_btn)
+        btn_layout.addWidget(self.exclusion_remove_btn)
+        btn_layout.addWidget(self.exclusion_edit_btn)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -433,9 +439,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter,
         )
         layout.addSpacing(8)
-        layout.addWidget(self.exclusion_list_box)
+        layout.addLayout(list_layout)
         layout.addSpacing(8)
-        layout.addLayout(sub_layout)
+        layout.addLayout(btn_layout)
 
         return layout
 
@@ -493,11 +499,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         list_layout = QHBoxLayout()
         list_layout.setContentsMargins(0, 0, 0, 0)
-        list_layout.addWidget(self.layer_list_box)
+        list_layout.addSpacing(8)
+        list_layout.addWidget(self.layer_list_box, stretch=1)
         list_layout.addSpacing(8)
         list_layout.addWidget(order_label)
         list_layout.addSpacing(8)
         list_layout.addWidget(order_widget)
+        list_layout.addSpacing(8)
 
         ml_combine_layout = QHBoxLayout()
         ml_combine_layout.setContentsMargins(0, 0, 0, 0)
