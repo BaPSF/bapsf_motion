@@ -228,11 +228,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         sub_layout.addWidget(self._define_right_area_widget())
 
         layout = QVBoxLayout()
-        layout.setSpacing(12)
-
+        layout.setContentsMargins(8, 8, 8, 8)
         layout.addLayout(self._define_banner_layout())
+        layout.addSpacing(2)
         layout.addWidget(HLinePlain(parent=self))
-        layout.addSpacing(6)
+        layout.addSpacing(2)
         layout.addLayout(sub_layout)
 
         return layout
@@ -256,12 +256,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
 
         layout = QVBoxLayout(_widget)
-        layout.setContentsMargins(4, 4, 4, 4)
+        layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addLayout(self._define_motion_space_layout())
-        layout.addSpacing(20)
+        layout.addSpacing(8)
+        layout.addWidget(HLinePlain(parent=self))
         layout.addLayout(self._define_exclusion_list_layout())
-        layout.addSpacing(24)
+        layout.addSpacing(8)
+        layout.addWidget(HLinePlain(parent=self))
         layout.addLayout(self._define_layer_list_layout())
         layout.addStretch()
 
@@ -312,23 +314,19 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         _txt = QLabel("Motion Space", parent=self)
         font = _txt.font()
-        font.setPointSize(16)
+        font.setPointSize(14)
         font.setBold(True)
         _txt.setFont(font)
+        _txt.setMargin(0)
 
-        layout = QGridLayout()
-        layout.setContentsMargins(8, 4, 12, 4)
-        layout.setSpacing(4)
-        layout.setColumnMinimumWidth(4, 18)
-        layout.setRowMinimumHeight(1, 12)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
         layout.addWidget(
             _txt,
-            0,
-            0,
-            1,
-            8,
-            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignTop,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter,
         )
+        layout.addSpacing(4)
 
         for ii, args in self.mb.config["space"].items():
             axis = self.mg.drive.axes[ii]
@@ -382,27 +380,19 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             _txt.setFont(font)
             unit_label = _txt
 
-            layout.addWidget(
-                axis_label, ii + 2, 0, 1, 1, alignment=Qt.AlignmentFlag.AlignRight
-            )
-            layout.addWidget(
-                range_label, ii + 2, 1, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
-            )
-            layout.addWidget(
-                min_range, ii + 2, 2, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
-            )
-            layout.addWidget(
-                max_range, ii + 2, 3, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
-            )
-            layout.addWidget(
-                delta_label, ii + 2, 5, 1, 1, alignment=Qt.AlignmentFlag.AlignRight
-            )
-            layout.addWidget(
-                delta, ii + 2, 6, 1, 1, alignment=Qt.AlignmentFlag.AlignCenter
-            )
-            layout.addWidget(
-                unit_label, ii + 2, 7, 1, 1, alignment=Qt.AlignmentFlag.AlignLeft
-            )
+            row_layout = QHBoxLayout()
+            row_layout.setContentsMargins(0, 0, 0, 0)
+            row_layout.setSpacing(8)
+            row_layout.addSpacing(8)
+            row_layout.addWidget(axis_label, alignment=Qt.AlignmentFlag.AlignRight)
+            row_layout.addWidget(range_label, alignment=Qt.AlignmentFlag.AlignCenter)
+            row_layout.addWidget(min_range, alignment=Qt.AlignmentFlag.AlignCenter)
+            row_layout.addWidget(max_range, alignment=Qt.AlignmentFlag.AlignCenter)
+            row_layout.addSpacing(8)
+            row_layout.addWidget(delta_label, alignment=Qt.AlignmentFlag.AlignRight)
+            row_layout.addWidget(delta, alignment=Qt.AlignmentFlag.AlignCenter)
+            row_layout.addWidget(unit_label, alignment=Qt.AlignmentFlag.AlignLeft)
+            row_layout.addSpacing(8)
 
             self._space_input_widgets[name] = {
                 "min": min_range,
@@ -410,15 +400,19 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 "delta": delta,
             }
 
+            layout.addSpacing(2)
+            layout.addLayout(row_layout)
+
         return layout
 
     def _define_exclusion_list_layout(self):
 
         _txt = QLabel("Exclusion Layers", parent=self)
         font = _txt.font()
-        font.setPointSize(16)
+        font.setPointSize(14)
         font.setBold(True)
         _txt.setFont(font)
+        _txt.setMargin(0)
         title = _txt
 
         sub_layout = QHBoxLayout()
@@ -430,13 +424,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
         layout.addWidget(
             title,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter,
         )
-        layout.addSpacing(2)
+        layout.addSpacing(8)
         layout.addWidget(self.exclusion_list_box)
+        layout.addSpacing(8)
         layout.addLayout(sub_layout)
 
         return layout
@@ -445,9 +439,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         _txt = QLabel('Point "Motion List" Layers', parent=self)
         font = _txt.font()
-        font.setPointSize(16)
+        font.setPointSize(14)
         font.setBold(True)
         _txt.setFont(font)
+        _txt.setMargin(0)
         title = _txt
 
         order_label = QLabel("\n".join(list("ORDER ITEM")), parent=self)
@@ -463,11 +458,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _font = _txt.font()
         _font.setPointSize(12)
         _txt.setFont(_font)
+        _txt.setFixedWidth(80)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignLeft)
         _merge_txt = _txt
 
         _txt = QLabel("Sequential", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         _txt.setFont(_font)
+        _txt.setFixedWidth(_merge_txt.width())
+        _txt.setAlignment(Qt.AlignmentFlag.AlignRight)
         _sequential_txt = _txt
 
         btn_layout = QHBoxLayout()
@@ -491,28 +490,35 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         list_layout = QHBoxLayout()
         list_layout.setContentsMargins(0, 0, 0, 0)
         list_layout.addWidget(self.layer_list_box)
+        list_layout.addSpacing(8)
         list_layout.addWidget(order_label)
+        list_layout.addSpacing(8)
         list_layout.addWidget(order_widget)
 
         ml_combine_layout = QHBoxLayout()
         ml_combine_layout.setContentsMargins(0, 0, 0, 0)
-        ml_combine_layout.addStretch()
+        ml_combine_layout.addStretch(1)
         ml_combine_layout.addWidget(_sequential_txt)
-        ml_combine_layout.addWidget(self.layer_ml_combine_toggle)
+        ml_combine_layout.addSpacing(4)
+        ml_combine_layout.addWidget(
+            self.layer_ml_combine_toggle,
+            alignment=Qt.AlignmentFlag.AlignCenter,
+        )
+        ml_combine_layout.addSpacing(4)
         ml_combine_layout.addWidget(_merge_txt)
-        ml_combine_layout.addStretch()
-        ml_combine_layout.addSpacing(24 + 10 + 12)
+        ml_combine_layout.addStretch(1)
 
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
         layout.addWidget(
             title,
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter,
         )
-        layout.addSpacing(2)
-        layout.addLayout(list_layout)
+        layout.addSpacing(8)
+        layout.addLayout(list_layout, stretch=1)
+        layout.addSpacing(8)
         layout.addLayout(ml_combine_layout)
+        layout.addSpacing(8)
         layout.addLayout(btn_layout)
 
         return layout
@@ -754,14 +760,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn = IconButton(icon_name_dict["arrow-up"], parent=self)
         btn.setIconSize(20)
         btn.setFixedWidth(24)
-        btn.setFixedHeight(48)
+        btn.setFixedHeight(80)
         return btn
 
     def _init_layer_move_down_btn(self):
         btn = IconButton(icon_name_dict["arrow-down"], parent=self)
         btn.setIconSize(20)
         btn.setFixedWidth(24)
-        btn.setFixedHeight(48)
+        btn.setFixedHeight(80)
         return btn
 
     def _init_layer_ml_combine_toggle(self):
