@@ -94,7 +94,7 @@ class _OverlayWidget(QWidget):
         event.accept()
 
 
-class _ConfigOverlay(_OverlayWidget):
+class _ConfigOverlay(_OverlayWidget, ABC, metaclass=_ABCMetaQWidget):
     configChanged = Signal()
     returnConfig = Signal(object)
 
