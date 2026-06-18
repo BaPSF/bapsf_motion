@@ -344,6 +344,11 @@ class DriveControlWidget(QWidget):
         self.lost_connection_dialog.setEnabled(enable)
         super().setEnabled(enable)
 
+    def motor_signals_set_blocking(self, block: bool):
+        self.desktop_controller_widget.motor_signals_set_blocking(block)
+        if isinstance(self.game_controller_widget, DriveGameController):
+            self.game_controller_widget.motor_signals_set_blocking(block)
+
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
 
