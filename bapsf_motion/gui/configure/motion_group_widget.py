@@ -1036,6 +1036,10 @@ class MGWidget(QWidget):
         self._update_ml_name_widget()
         self.blockSignals(False)
 
+        # re-enable the mspace_display, it is disabled when a popup
+        # config is launched
+        self.mspace_display.setEnabled(True)
+
         self._validate_motion_group()
 
         # now update displays
