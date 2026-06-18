@@ -337,12 +337,18 @@ class DriveControlWidget(QWidget):
         self.desktop_controller_widget.set_target_position(target_position)
 
     def setDisabled(self, disable: bool):
+        if disable != self.isEnabled():
+            return
+
         self.lost_connection_dialog.setDisabled(disable)
         self.motor_signals_set_blocking(disable)
 
         super().setDisabled(disable)
 
     def setEnabled(self, enable: bool):
+        if enable == self.isEnabled():
+            return
+
         self.lost_connection_dialog.setEnabled(enable)
         self.motor_signals_set_blocking(not enable)
 
