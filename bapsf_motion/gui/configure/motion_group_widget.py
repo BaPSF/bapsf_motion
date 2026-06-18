@@ -1910,7 +1910,6 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.setEnabled(False)
         self.mspace_display.setEnabled(False)
-        self.mspace_display.setVisible(False)
 
     @Slot()
     def discard_close(self):
