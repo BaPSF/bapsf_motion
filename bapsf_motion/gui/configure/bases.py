@@ -98,9 +98,7 @@ class _ConfigOverlay(_OverlayWidget, ABC, metaclass=_ABCMetaQWidget):
     configChanged = Signal()
     returnConfig = Signal(object)
 
-    def __init__(
-        self, mg: MotionGroup | None, parent: "mgw.MGWidget | None" = None
-    ):
+    def __init__(self, mg: MotionGroup | None, parent: "mgw.MGWidget | None" = None):
         super().__init__(parent=parent)
 
         self._logger = gui_logger
