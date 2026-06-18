@@ -4,13 +4,14 @@ Module contains base classes for various
 """
 
 __all__ = [
+    "_ABCMetaQWidget",
     "_ConfigOverlay",
     "_OverlayWidget",
 ]
 
 import logging
 
-from abc import abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QSizePolicy, QWidget
@@ -21,6 +22,9 @@ from bapsf_motion.gui.configure import motion_group_widget as mgw
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.widgets import DiscardButton, DoneButton
+
+
+class _ABCMetaQWidget(ABCMeta, type(QWidget)): ...  # noqa: E701
 
 
 class _OverlayWidget(QWidget):
