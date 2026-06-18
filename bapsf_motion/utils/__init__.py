@@ -48,6 +48,14 @@ class SimpleSignal:
             self._handlers = []
         return self._handlers
 
+    @property
+    def is_blocking(self) -> bool:
+        """
+        `True` if the signal is currently blocked.  That is, no
+        ``handlers`` will be executed on an ``emit``.
+        """
+        return self._block
+
     def connect(self, func: Callable):
         """
         Connect the callback/handler ``func`` to the signal.  The
@@ -82,7 +90,10 @@ class SimpleSignal:
         for handler in self.handlers:
             handler()
 
-    def set_block(self, block: bool):
+    def set_blocking(self, block: bool):
+        """
+        Set the signal to be blocked `True` or not `False`.
+        """
         if not isinstance(block, bool):
             return
 
