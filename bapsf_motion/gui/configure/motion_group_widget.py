@@ -337,12 +337,18 @@ class DriveControlWidget(QWidget):
         self.desktop_controller_widget.set_target_position(target_position)
 
     def setDisabled(self, disable: bool):
+        if disable != self.isEnabled():
+            return
+
         self.lost_connection_dialog.setDisabled(disable)
         self.motor_signals_set_blocking(disable)
 
         super().setDisabled(disable)
 
     def setEnabled(self, enable: bool):
+        if enable == self.isEnabled():
+            return
+
         self.lost_connection_dialog.setEnabled(enable)
         self.motor_signals_set_blocking(not enable)
 
@@ -1033,10 +1039,9 @@ class MGWidget(QWidget):
         self._update_ml_name_widget()
         self.blockSignals(False)
 
-        # re-enable the mspace_display, they are disabled when a popup
+        # re-enable the mspace_display, it is disabled when a popup
         # config is launched
         self.mspace_display.setEnabled(True)
-        self.mspace_display.setVisible(True)
 
         self._validate_motion_group()
 
@@ -1918,7 +1923,6 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.setEnabled(False)
         self.mspace_display.setEnabled(False)
-        self.mspace_display.setVisible(False)
 
     @Slot()
     def discard_close(self):
