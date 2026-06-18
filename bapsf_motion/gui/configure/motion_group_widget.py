@@ -338,10 +338,14 @@ class DriveControlWidget(QWidget):
 
     def setDisabled(self, disable: bool):
         self.lost_connection_dialog.setDisabled(disable)
+        self.motor_signals_set_blocking(disable)
+
         super().setDisabled(disable)
 
     def setEnabled(self, enable: bool):
         self.lost_connection_dialog.setEnabled(enable)
+        self.motor_signals_set_blocking(not enable)
+
         super().setEnabled(enable)
 
     def motor_signals_set_blocking(self, block: bool):
