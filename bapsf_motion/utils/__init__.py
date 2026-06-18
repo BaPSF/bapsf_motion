@@ -20,7 +20,7 @@ from astropy import units
 from collections import UserDict
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Optional
 
 from bapsf_motion.utils import exceptions, toml
 from bapsf_motion.utils.units_ import counts, rev, steps, units
@@ -37,14 +37,24 @@ class SimpleSignal:
     A very simple, rudimentary class for creating signals.
     """
 
-    _handlers = None
+    def __init__(self):
+        self._handlers = None
+        self._block = False
 
     @property
-    def handlers(self) -> Union[None, List[Callable]]:
+    def handlers(self) -> List[Callable]:
         """List of callbacks/handlers connect to the signal."""
         if self._handlers is None:
             self._handlers = []
         return self._handlers
+
+    @property
+    def is_blocking(self) -> bool:
+        """
+        `True` if the signal is currently blocked.  That is, no
+        ``handlers`` will be executed on an ``emit``.
+        """
+        return self._block
 
     def connect(self, func: Callable):
         """
@@ -74,8 +84,20 @@ class SimpleSignal:
 
     def emit(self):
         """Emit the signal, which executes all the connected handlers."""
+        if self._block:
+            return
+
         for handler in self.handlers:
             handler()
+
+    def set_blocking(self, block: bool):
+        """
+        Set the signal to be blocked `True` or not `False`.
+        """
+        if not isinstance(block, bool):
+            return
+
+        self._block = block
 
 
 def load_example(filename: str, as_string=False):
