@@ -17,6 +17,7 @@ from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout, QWidget
 from typing import Dict, List, TYPE_CHECKING
 
+from bapsf_motion.gui.configure.bases import _ABCMetaQWidget
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.motion_builder import MotionBuilder
 
@@ -32,9 +33,6 @@ from matplotlib.backends.backend_qtagg import (  # noqa
     NavigationToolbar2QT as NavigationToolbar,
 )
 from matplotlib.collections import PathCollection  # noqa
-
-
-class _ABCMotionSpaceDisplay(ABCMeta, type(QWidget)): ...
 
 
 class _RedrawDisplaySignals(QObject):
@@ -56,7 +54,7 @@ class _AnimationSignals(QObject):
     Stop = Signal()
 
 
-class _MSDBase(QWidget, ABC, metaclass=_ABCMotionSpaceDisplay):
+class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
     animateMotionList = _AnimationSignals()
