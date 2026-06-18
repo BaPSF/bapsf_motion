@@ -46,6 +46,7 @@ from bapsf_motion.gui.widgets import (
     ValidButton,
     ZeroButton,
 )
+from bapsf_motion.utils import SimpleSignal
 from bapsf_motion.utils import units as u
 
 if TYPE_CHECKING:
@@ -77,6 +78,17 @@ class AxisControlWidget(QWidget):
 
         self._mg = None
         self._axis_index = None
+        self._motor_signal_mapping = {
+            "connection_established": [self._emit_connection_established],
+            "connection_lost": [self._emit_connection_lost],
+            "status_changed": [
+                self.requestDisplayRefresh.emit, self.axisStatusChanged.emit
+            ],
+            "movement_started": [self._emit_movement_started],
+            "movement_finished": [
+                self._emit_movement_finished, self.requestDisplayRefresh.emit
+            ],
+        }
 
         # Configure display update timer
         # - to update widgets during a motor movement
@@ -619,15 +631,7 @@ class AxisControlWidget(QWidget):
         self.axis_name_label.setText(axis.name)
 
         # connect motor SimpleSignals
-        axis.motor.signals.connection_established.connect(
-            self._emit_connection_established
-        )
-        axis.motor.signals.connection_lost.connect(self._emit_connection_lost)
-        axis.motor.signals.status_changed.connect(self.requestDisplayRefresh.emit)
-        axis.motor.signals.status_changed.connect(self.axisStatusChanged.emit)
-        axis.motor.signals.movement_started.connect(self._emit_movement_started)
-        axis.motor.signals.movement_finished.connect(self._emit_movement_finished)
-        axis.motor.signals.movement_finished.connect(self.requestDisplayRefresh.emit)
+        self.motor_signals_connect(axis)
 
         self.update_display_of_axis_status()
         self.axisLinked.emit()
@@ -636,17 +640,7 @@ class AxisControlWidget(QWidget):
         axis = self.axis
         if isinstance(axis, Axis):
             # disconnect all motor SimpleSignals
-            axis.motor.signals.connection_established.disconnect(
-                self._emit_connection_established
-            )
-            axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
-            axis.motor.signals.status_changed.disconnect(self.requestDisplayRefresh.emit)
-            axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
-            axis.motor.signals.movement_started.disconnect(self._emit_movement_started)
-            axis.motor.signals.movement_finished.disconnect(self._emit_movement_finished)
-            axis.motor.signals.movement_finished.disconnect(
-                self.requestDisplayRefresh.emit
-            )
+            self.motor_signals_disconnect(axis)
 
         self._mg = None
         self._axis_index = None
@@ -714,27 +708,60 @@ class AxisControlWidget(QWidget):
         self.jog_backward_btn.setEnabled(False)
         self.enable_btn.setEnabled(False)
 
+    def motor_signals_connect(self, axis: Axis | None = None):
+        if axis is None:
+            axis = self.axis
+
+        if not isinstance(axis, Axis):
+            return
+
+        for motor_signal, callbacks in self._motor_signal_mapping.items():
+            signal = getattr(axis.motor.signals, motor_signal, None)
+
+            if not isinstance(signal, SimpleSignal):
+                continue
+
+            for callback in callbacks:
+                signal.connect(callback)
+
+    def motor_signals_disconnect(self, axis: Axis | None = None):
+        if axis is None:
+            axis = self.axis
+
+        if not isinstance(axis, Axis):
+            return
+
+        for motor_signal, callbacks in self._motor_signal_mapping.items():
+            signal = getattr(axis.motor.signals, motor_signal, None)
+
+            if not isinstance(signal, SimpleSignal):
+                continue
+
+            for callback in callbacks:
+                signal.disconnect(callback)
+
+    def motor_signals_set_blocking(self, block: bool, axis: Axis | None = None):
+        if not isinstance(block, bool):
+            return
+
+        if axis is None:
+            axis = self.axis
+
+        if not isinstance(axis, Axis):
+            return
+
+        for motor_signal in self._motor_signal_mapping.keys():
+            signal = getattr(axis.motor.signals, motor_signal, None)
+
+            if not isinstance(signal, SimpleSignal):
+                continue
+
+            signal.set_blocking(block)
+
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing AxisControlWidget")
 
-        if isinstance(self.axis, Axis):
-            self.axis.motor.signals.connection_established.disconnect(
-                self._emit_connection_established
-            )
-            self.axis.motor.signals.connection_lost.disconnect(self._emit_connection_lost)
-            self.axis.motor.signals.status_changed.disconnect(
-                self.requestDisplayRefresh.emit
-            )
-            self.axis.motor.signals.status_changed.disconnect(self.axisStatusChanged.emit)
-            self.axis.motor.signals.movement_started.disconnect(
-                self._emit_movement_started
-            )
-            self.axis.motor.signals.movement_finished.disconnect(
-                self._emit_movement_finished
-            )
-            self.axis.motor.signals.movement_finished.disconnect(
-                self.requestDisplayRefresh.emit
-            )
+        self.motor_signals_disconnect()
 
         event.accept()
 
