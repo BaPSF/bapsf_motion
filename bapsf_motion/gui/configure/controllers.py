@@ -83,11 +83,13 @@ class AxisControlWidget(QWidget):
             "connection_established": [self._emit_connection_established],
             "connection_lost": [self._emit_connection_lost],
             "status_changed": [
-                self.requestDisplayRefresh.emit, self.axisStatusChanged.emit
+                self.requestDisplayRefresh.emit,
+                self.axisStatusChanged.emit,
             ],
             "movement_started": [self._emit_movement_started],
             "movement_finished": [
-                self._emit_movement_finished, self.requestDisplayRefresh.emit
+                self._emit_movement_finished,
+                self.requestDisplayRefresh.emit,
             ],
         }
 
