@@ -30,7 +30,7 @@ class _ABCMetaQWidget(ABCMeta, type(QWidget)): ...  # noqa: E701
 class _OverlayWidget(QWidget):
     closing = Signal()
 
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget | None):
         super().__init__(parent=parent)
 
         # make the window frameless
@@ -98,7 +98,7 @@ class _ConfigOverlay(_OverlayWidget):
     configChanged = Signal()
     returnConfig = Signal(object)
 
-    def __init__(self, mg: Union[MotionGroup, None], parent: "mgw.MGWidget" = None):
+    def __init__(self, mg: Union[MotionGroup, None], parent: "mgw.MGWidget | None" = None):
         super().__init__(parent=parent)
 
         self._logger = gui_logger
