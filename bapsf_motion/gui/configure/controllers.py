@@ -1004,6 +1004,13 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
         self._mspace_drive_polarity = polarity
 
+    def motor_signals_set_blocking(self, block: bool):
+        if not isinstance(block, bool):
+            return
+
+        for acw in self._axis_control_widgets:
+            acw.motor_signals_set_blocking(block)
+
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}.")
 
