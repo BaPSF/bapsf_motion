@@ -17,7 +17,7 @@ os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"  # noqa
 
 import pygame  # noqa
 
-from abc import abstractmethod
+from abc import ABC, abstractmethod
 from PySide6.QtCore import Qt, QThreadPool, QTimer, Signal, Slot
 from PySide6.QtGui import QCloseEvent, QDoubleValidator, QFont
 from PySide6.QtWidgets import (
@@ -34,6 +34,7 @@ from PySide6.QtWidgets import (
 from typing import List, Literal, TYPE_CHECKING
 
 from bapsf_motion.actors import Axis, Drive, MotionGroup
+from bapsf_motion.gui.configure.bases import _ABCMetaQWidget
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.configure.pygame_ import PyGameJoystickRunner
 from bapsf_motion.gui.icons import icon_name_dict
@@ -739,7 +740,7 @@ class AxisControlWidget(QWidget):
         event.accept()
 
 
-class DriveBaseController(QWidget):
+class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
     driveStatusChanged = Signal()
     movementStarted = Signal()
     movementStopped = Signal()
