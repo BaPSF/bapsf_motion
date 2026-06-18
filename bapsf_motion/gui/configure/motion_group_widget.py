@@ -1239,7 +1239,7 @@ class MGWidget(QWidget):
     def _popup_drive_configuration(self):
         # disable the drive_control_widget to prevent popup of the
         # LostConnection dialog.
-        self.drive_control_widget.setEnabled(False)
+        self.set_disable_for_popup()
 
         if isinstance(self.mg, MotionGroup):
             self.mg.terminate(delay_loop_stop=True)
@@ -1254,6 +1254,8 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_transform_configuration(self):
+        self.set_disable_for_popup()
+
         self._overlay_setup(TransformConfigOverlay(self.mg, parent=self))
 
         # overlay signals
@@ -1264,6 +1266,8 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_motion_builder_configuration(self):
+        self.set_disable_for_popup()
+
         self._overlay_setup(MotionBuilderConfigOverlay(self.mg, parent=self))
 
         # overlay signals
@@ -1891,6 +1895,18 @@ class MGWidget(QWidget):
 
         self.returnConfig.emit(index, config)
         self.close()
+
+    def set_disable_for_popup(self):
+        mg = self.mg
+        if isinstance(mg, MotionGroup) and isinstance(mg.drive, Drive):
+            # this should never happen since the the configure gear buttons
+            # are disabled when the motor is moving ... this is here for
+            # redundancy
+            mg.stop()
+
+        self.drive_control_widget.setEnabled(False)
+        self.mspace_display.setEnabled(False)
+        self.mspace_display.setVisible(False)
 
     @Slot()
     def discard_close(self):
