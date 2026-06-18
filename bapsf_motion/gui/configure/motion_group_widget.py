@@ -337,12 +337,27 @@ class DriveControlWidget(QWidget):
         self.desktop_controller_widget.set_target_position(target_position)
 
     def setDisabled(self, disable: bool):
+        if disable != self.isEnabled():
+            return
+
         self.lost_connection_dialog.setDisabled(disable)
+        self.motor_signals_set_blocking(disable)
+
         super().setDisabled(disable)
 
     def setEnabled(self, enable: bool):
+        if enable == self.isEnabled():
+            return
+
         self.lost_connection_dialog.setEnabled(enable)
+        self.motor_signals_set_blocking(not enable)
+
         super().setEnabled(enable)
+
+    def motor_signals_set_blocking(self, block: bool):
+        self.desktop_controller_widget.motor_signals_set_blocking(block)
+        if isinstance(self.game_controller_widget, DriveGameController):
+            self.game_controller_widget.motor_signals_set_blocking(block)
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
@@ -1021,6 +1036,10 @@ class MGWidget(QWidget):
         self._update_ml_name_widget()
         self.blockSignals(False)
 
+        # re-enable the mspace_display, it is disabled when a popup
+        # config is launched
+        self.mspace_display.setEnabled(True)
+
         self._validate_motion_group()
 
         # now update displays
@@ -1230,7 +1249,7 @@ class MGWidget(QWidget):
     def _popup_drive_configuration(self):
         # disable the drive_control_widget to prevent popup of the
         # LostConnection dialog.
-        self.drive_control_widget.setEnabled(False)
+        self.set_disable_for_popup()
 
         if isinstance(self.mg, MotionGroup):
             self.mg.terminate(delay_loop_stop=True)
@@ -1245,6 +1264,8 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_transform_configuration(self):
+        self.set_disable_for_popup()
+
         self._overlay_setup(TransformConfigOverlay(self.mg, parent=self))
 
         # overlay signals
@@ -1255,6 +1276,8 @@ class MGWidget(QWidget):
 
     @Slot()
     def _popup_motion_builder_configuration(self):
+        self.set_disable_for_popup()
+
         self._overlay_setup(MotionBuilderConfigOverlay(self.mg, parent=self))
 
         # overlay signals
@@ -1393,7 +1416,9 @@ class MGWidget(QWidget):
     @Slot(object)
     def _handle_motion_builder_overlay_close(self, config: Dict[str, Any]):
         if len(config) == 0:
-            # no config returned, do nothing
+            # no config returned, just emit configChanged to refresh
+            # widget visibility and enable-ness
+            self.configChanged.emit()
             return
 
         self._change_motion_builder(config)
@@ -1401,7 +1426,9 @@ class MGWidget(QWidget):
     @Slot(object)
     def _handle_transform_overlay_close(self, config: Dict[str, Any]):
         if len(config) == 0:
-            # no config returned, do nothing
+            # no config returned, just emit configChanged to refresh
+            # widget visibility and enable-ness
+            self.configChanged.emit()
             return
 
         self._change_transform(config)
@@ -1882,6 +1909,17 @@ class MGWidget(QWidget):
 
         self.returnConfig.emit(index, config)
         self.close()
+
+    def set_disable_for_popup(self):
+        mg = self.mg
+        if isinstance(mg, MotionGroup) and isinstance(mg.drive, Drive):
+            # this should never happen since the the configure gear buttons
+            # are disabled when the motor is moving ... this is here for
+            # redundancy
+            mg.stop()
+
+        self.drive_control_widget.setEnabled(False)
+        self.mspace_display.setEnabled(False)
 
     @Slot()
     def discard_close(self):
