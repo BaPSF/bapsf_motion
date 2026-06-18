@@ -4,17 +4,18 @@ Module contains base classes for various
 """
 
 __all__ = [
+    "_ABCMetaQWidget",
     "_ConfigOverlay",
     "_OverlayWidget",
 ]
 
 import logging
 
-from abc import abstractmethod
+from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import Qt, Signal, Slot
 from PySide6.QtGui import QColor, QPainter, QPen
 from PySide6.QtWidgets import QSizePolicy, QWidget
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 from bapsf_motion.actors import MotionGroup
 from bapsf_motion.gui.configure import motion_group_widget as mgw
@@ -23,10 +24,13 @@ from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.widgets import DiscardButton, DoneButton
 
 
+class _ABCMetaQWidget(ABCMeta, type(QWidget)): ...  # noqa: E701
+
+
 class _OverlayWidget(QWidget):
     closing = Signal()
 
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget | None):
         super().__init__(parent=parent)
 
         # make the window frameless
@@ -90,11 +94,11 @@ class _OverlayWidget(QWidget):
         event.accept()
 
 
-class _ConfigOverlay(_OverlayWidget):
+class _ConfigOverlay(_OverlayWidget, ABC, metaclass=_ABCMetaQWidget):
     configChanged = Signal()
     returnConfig = Signal(object)
 
-    def __init__(self, mg: Union[MotionGroup, None], parent: "mgw.MGWidget" = None):
+    def __init__(self, mg: MotionGroup | None, parent: "mgw.MGWidget | None" = None):
         super().__init__(parent=parent)
 
         self._logger = gui_logger
@@ -118,7 +122,7 @@ class _ConfigOverlay(_OverlayWidget):
         return self._logger
 
     @property
-    def mg(self) -> Union[MotionGroup, None]:
+    def mg(self) -> MotionGroup | None:
         """Working motion group."""
         return self._mg
 
