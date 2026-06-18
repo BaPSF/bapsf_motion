@@ -750,6 +750,10 @@ class AxisControlWidget(QWidget):
         if not isinstance(axis, Axis):
             return
 
+        self.logger.info(
+            f"<--{self.axis_name_label.text()}--> Set motor blocking to {block}."
+        )
+
         for motor_signal in self._motor_signal_mapping.keys():
             signal = getattr(axis.motor.signals, motor_signal, None)
 
