@@ -241,6 +241,12 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
         _timer = self._animate_payload["timer"]  # type: QTimer
         return _timer.isActive()
+    
+    def blockSignals(self, b, /):
+        self.redrawSignals.blockSignals(b)
+        self.animateMotionList.blockSignals(b)
+        
+        super().blockSignals(b)
 
     def closeEvent(self, event: "QCloseEvent"):
         self.logger.info(f"Closing {self.__class__.__name__}")
