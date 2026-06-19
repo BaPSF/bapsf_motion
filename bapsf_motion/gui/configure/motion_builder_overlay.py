@@ -1647,7 +1647,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             pass
         elif self.mb is self.mg.mb:
             config = _deepcopy_dict(self.mb.config)
-            self._spawn_motion_builder(config)
+            self._spawn_motion_builder(config, skip_mspace_link=True)
             return
 
         config = {"space": {}}
@@ -1680,9 +1680,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 "num": num,
             }
 
-        self._spawn_motion_builder(config)
+        self._spawn_motion_builder(config, skip_mspace_link=True)
 
-    def _spawn_motion_builder(self, config):
+    def _spawn_motion_builder(self, config, skip_mspace_link: bool = False):
         self.logger.info("Rebuilding motion builder...")
         mb_config = _deepcopy_dict(config)
         mb_config["space"] = list(config["space"].values())
@@ -1700,8 +1700,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"layer looks like : {mb_config.get('layers', None)}")
 
         self._mb = MotionBuilder(**mb_config)
-        self.mspace_display.link_motion_builder(self._mb)
-        self._mspace_display_full_draw = True
+
+        if not skip_mspace_link:
+            self.blockSignals(True)
+            self.link_display_motion_builder()
+            self.blockSignals(False)
+
         self.configChanged.emit()
         return self._mb
 
