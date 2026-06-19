@@ -1041,7 +1041,9 @@ class MGWidget(QWidget):
 
         # re-enable the mspace_display, it is disabled when a popup
         # config is launched
-        self.mspace_display.setEnabled(True)
+        if not self.mspace_display.isEnabled():
+            self.mspace_display.setEnabled(True)
+            self.mspace_display.blockSignals(False)
 
         self._validate_motion_group()
 
@@ -1923,6 +1925,7 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.setEnabled(False)
         self.mspace_display.setEnabled(False)
+        self.mspace_display.blockSignals(True)
 
     @Slot()
     def discard_close(self):
