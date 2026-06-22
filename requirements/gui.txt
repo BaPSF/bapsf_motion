@@ -4,6 +4,6 @@
 bapsf_qt
 matplotlib
 packaging
-pygame-ce >= 2.2
+pygame
 PySide6 >= 6.5.0
 qtawesome
