@@ -84,11 +84,9 @@ class AxisControlWidget(QWidget):
         self._mg = None
         self._axis_index = None
         self._motor_signal_mapping = {
-            "status_changed": [
-                self.requestDisplayRefresh.emit,
-                self.axisStatusChanged.emit,
-            ],
+            "connection_established": [self._actor_slot_connection_established],
             "connection_lost": [self._actor_slot_connection_lost],
+            "status_changed": [self._actor_slot_status_changed],
             "movement_started": [self._actor_slot_movement_started],
             "movement_finished": [self._actor_slot_movement_finished],
         }
@@ -695,6 +693,9 @@ class AxisControlWidget(QWidget):
 
     def _actor_slot_movement_finished(self):
         self.movementStopped.emit(self.axis_index)
+
+    def _actor_slot_status_changed(self):
+        self._actorStatusChanged.emit()
 
     def enable_motion_buttons(self):
         self.zero_btn.setEnabled(True)
