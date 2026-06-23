@@ -64,9 +64,12 @@ class AxisControlWidget(QWidget):
     movementStopped = Signal(int)
     axisStatusChanged = Signal()
     targetPositionChanged = Signal(float)
+
     lostConnection = Signal()
     establishedConnection = Signal()
     requestDisplayRefresh = Signal()
+
+    _actorStatusChanged = Signal()
 
     def __init__(
         self,
