@@ -67,7 +67,8 @@ class AxisControlWidget(QWidget):
 
     lostConnection = Signal()
     establishedConnection = Signal()
-    requestDisplayRefresh = Signal()
+
+    refreshDisplay = Signal()
 
     _actorStatusChanged = Signal()
 
@@ -162,7 +163,7 @@ class AxisControlWidget(QWidget):
         self.establishedConnection.connect(self._handle_connection_established)
         self.lostConnection.connect(self._handle_connection_lost)
 
-        self.requestDisplayRefresh.connect(self.update_display_of_axis_status)
+        self.refreshDisplay.connect(self.update_display_of_axis_status)
 
     def _define_layout(self):
         layout = QVBoxLayout()
