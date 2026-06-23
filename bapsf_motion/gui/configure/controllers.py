@@ -1108,7 +1108,7 @@ class DriveDesktopController(DriveBaseController):
     def _connect_signals(self):
         super()._connect_signals()
 
-        self.zero_all_btn.clicked.connect(self.zeroDrive.emit)
+        self.zero_all_btn.clicked.connect(self._handle_zero_all_btn_clicked)
         self.move_to_btn.clicked.connect(self._move_to)
         self.hold_current_btn.clicked.connect(self._toggle_holding_current)
 
@@ -1226,6 +1226,10 @@ class DriveDesktopController(DriveBaseController):
             return
 
         self.moveTo.emit(target_pos)
+
+    @Slot()
+    def _handle_zero_all_btn_clicked(self):
+        self.zeroDrive.emit()
 
     @Slot()
     def _toggle_holding_current(self):
