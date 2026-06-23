@@ -155,6 +155,7 @@ class AxisControlWidget(QWidget):
         )
         self.enable_btn.clicked.connect(self._set_motor_enabled_state)
 
+        self._actorStatusChanged.connect(self._handle_actor_status_changed)
         self.movementStopped.connect(self._handle_movement_stopped)
         self.establishedConnection.connect(self._handle_connection_established)
         self.lostConnection.connect(self._handle_connection_lost)
@@ -682,6 +683,11 @@ class AxisControlWidget(QWidget):
     @Slot()
     def _handle_movement_stopped(self):
         self._disable_motor()
+        self.update_display_of_axis_status()
+        self.axisStatusChanged.emit()
+
+    @Slot()
+    def _handle_actor_status_changed(self):
         self.update_display_of_axis_status()
         self.axisStatusChanged.emit()
 
