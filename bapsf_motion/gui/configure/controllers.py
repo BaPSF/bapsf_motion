@@ -921,7 +921,6 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
             acw.movementStarted.connect(self._drive_movement_started)
             acw.movementStopped.connect(self._drive_movement_finished)
             acw.axisStatusChanged.connect(self.update_all_axis_displays)
-            acw.axisStatusChanged.connect(self.driveStatusChanged.emit)
             acw.show()
 
         self.setEnabled(not (self._mg.terminated or not self._mg.connected))
@@ -940,7 +939,6 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
                 acw.movementStarted.disconnect(self._drive_movement_started)
                 acw.movementStopped.disconnect(self._drive_movement_finished)
                 acw.axisStatusChanged.disconnect(self.update_all_axis_displays)
-                acw.axisStatusChanged.disconnect(self.driveStatusChanged.emit)
 
             acw.setVisible(visible)
 
@@ -955,7 +953,9 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
             if acw.isHidden():
                 continue
 
-            acw.update_display_of_axis_status()
+            acw.refreshDisplay.emit()
+
+        self.driveStatusChanged.emit()
 
     @Slot()
     def disable_motion_buttons(self):
