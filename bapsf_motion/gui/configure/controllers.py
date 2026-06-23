@@ -85,11 +85,11 @@ class AxisControlWidget(QWidget):
         self._axis_index = None
         self._motor_signal_mapping = {
             "connection_established": [self._emit_connection_established],
-            "connection_lost": [self._emit_connection_lost],
             "status_changed": [
                 self.requestDisplayRefresh.emit,
                 self.axisStatusChanged.emit,
             ],
+            "connection_lost": [self._actor_slot_connection_lost],
             "movement_started": [self._actor_slot_movement_started],
             "movement_finished": [self._actor_slot_movement_finished],
         }
@@ -655,10 +655,6 @@ class AxisControlWidget(QWidget):
         self.establishedConnection.emit()
 
     @Slot()
-    def _emit_connection_lost(self):
-        self.lostConnection.emit()
-
-    @Slot()
     def _handle_connection_lost(self):
         # Note: This slot needs to be trigger from a PySide6 signal and
         #       not from any of the SimpleSignals attached to Motor.
@@ -693,6 +689,9 @@ class AxisControlWidget(QWidget):
         self.axisStatusChanged.emit()
 
     @Slot()
+    def _actor_slot_connection_lost(self):
+        self.lostConnection.emit()
+
     def _actor_slot_movement_started(self):
         self.movementStarted.emit(self.axis_index)
 
