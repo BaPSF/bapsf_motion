@@ -86,11 +86,8 @@ class AxisControlWidget(QWidget):
                 self.requestDisplayRefresh.emit,
                 self.axisStatusChanged.emit,
             ],
-            "movement_finished": [
-                self._emit_movement_finished,
-                self.requestDisplayRefresh.emit,
-            ],
             "movement_started": [self._actor_slot_movement_started],
+            "movement_finished": [self._actor_slot_movement_finished],
         }
 
         # Configure display update timer
@@ -695,8 +692,7 @@ class AxisControlWidget(QWidget):
     def _actor_slot_movement_started(self):
         self.movementStarted.emit(self.axis_index)
 
-    @Slot()
-    def _emit_movement_finished(self):
+    def _actor_slot_movement_finished(self):
         self.movementStopped.emit(self.axis_index)
 
     def enable_motion_buttons(self):
