@@ -64,9 +64,13 @@ class AxisControlWidget(QWidget):
     movementStopped = Signal(int)
     axisStatusChanged = Signal()
     targetPositionChanged = Signal(float)
+
     lostConnection = Signal()
     establishedConnection = Signal()
-    requestDisplayRefresh = Signal()
+
+    refreshDisplay = Signal()
+
+    _actorStatusChanged = Signal()
 
     def __init__(
         self,
@@ -80,17 +84,11 @@ class AxisControlWidget(QWidget):
         self._mg = None
         self._axis_index = None
         self._motor_signal_mapping = {
-            "connection_established": [self._emit_connection_established],
-            "connection_lost": [self._emit_connection_lost],
-            "status_changed": [
-                self.requestDisplayRefresh.emit,
-                self.axisStatusChanged.emit,
-            ],
-            "movement_started": [self._emit_movement_started],
-            "movement_finished": [
-                self._emit_movement_finished,
-                self.requestDisplayRefresh.emit,
-            ],
+            "connection_established": [self._actor_slot_connection_established],
+            "connection_lost": [self._actor_slot_connection_lost],
+            "status_changed": [self._actor_slot_status_changed],
+            "movement_started": [self._actor_slot_movement_started],
+            "movement_finished": [self._actor_slot_movement_finished],
         }
 
         # Configure display update timer
@@ -156,13 +154,13 @@ class AxisControlWidget(QWidget):
             self._validate_target_position_value
         )
         self.enable_btn.clicked.connect(self._set_motor_enabled_state)
-        self.movementStopped.connect(self._disable_motor)
-        self.movementStopped.connect(self._update_display_of_axis_status)
 
+        self._actorStatusChanged.connect(self._handle_actor_status_changed)
+        self.movementStopped.connect(self._handle_movement_stopped)
         self.establishedConnection.connect(self._handle_connection_established)
         self.lostConnection.connect(self._handle_connection_lost)
 
-        self.requestDisplayRefresh.connect(self.update_display_of_axis_status)
+        self.refreshDisplay.connect(self.update_display_of_axis_status)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -496,7 +494,6 @@ class AxisControlWidget(QWidget):
 
         self.target_position_label.setText(_txt)
 
-    @Slot()
     def _disable_motor(self):
         self.axis.send_command("disable")
 
@@ -650,14 +647,6 @@ class AxisControlWidget(QWidget):
         self.axisUnlinked.emit()
 
     @Slot()
-    def _emit_connection_established(self):
-        self.establishedConnection.emit()
-
-    @Slot()
-    def _emit_connection_lost(self):
-        self.lostConnection.emit()
-
-    @Slot()
     def _handle_connection_lost(self):
         # Note: This slot needs to be trigger from a PySide6 signal and
         #       not from any of the SimpleSignals attached to Motor.
@@ -692,12 +681,30 @@ class AxisControlWidget(QWidget):
         self.axisStatusChanged.emit()
 
     @Slot()
-    def _emit_movement_started(self):
-        self.movementStarted.emit(self.axis_index)
+    def _handle_movement_stopped(self):
+        self._disable_motor()
+        self.update_display_of_axis_status()
+        self.axisStatusChanged.emit()
 
     @Slot()
-    def _emit_movement_finished(self):
+    def _handle_actor_status_changed(self):
+        self.update_display_of_axis_status()
+        self.axisStatusChanged.emit()
+
+    def _actor_slot_connection_established(self):
+        self.establishedConnection.emit()
+
+    def _actor_slot_connection_lost(self):
+        self.lostConnection.emit()
+
+    def _actor_slot_movement_started(self):
+        self.movementStarted.emit(self.axis_index)
+
+    def _actor_slot_movement_finished(self):
         self.movementStopped.emit(self.axis_index)
+
+    def _actor_slot_status_changed(self):
+        self._actorStatusChanged.emit()
 
     def enable_motion_buttons(self):
         self.zero_btn.setEnabled(True)
@@ -914,7 +921,6 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
             acw.movementStarted.connect(self._drive_movement_started)
             acw.movementStopped.connect(self._drive_movement_finished)
             acw.axisStatusChanged.connect(self.update_all_axis_displays)
-            acw.axisStatusChanged.connect(self.driveStatusChanged.emit)
             acw.show()
 
         self.setEnabled(not (self._mg.terminated or not self._mg.connected))
@@ -933,7 +939,6 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
                 acw.movementStarted.disconnect(self._drive_movement_started)
                 acw.movementStopped.disconnect(self._drive_movement_finished)
                 acw.axisStatusChanged.disconnect(self.update_all_axis_displays)
-                acw.axisStatusChanged.disconnect(self.driveStatusChanged.emit)
 
             acw.setVisible(visible)
 
@@ -948,7 +953,9 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
             if acw.isHidden():
                 continue
 
-            acw.update_display_of_axis_status()
+            acw.refreshDisplay.emit()
+
+        self.driveStatusChanged.emit()
 
     @Slot()
     def disable_motion_buttons(self):
@@ -1101,7 +1108,7 @@ class DriveDesktopController(DriveBaseController):
     def _connect_signals(self):
         super()._connect_signals()
 
-        self.zero_all_btn.clicked.connect(self.zeroDrive.emit)
+        self.zero_all_btn.clicked.connect(self._handle_zero_all_btn_clicked)
         self.move_to_btn.clicked.connect(self._move_to)
         self.hold_current_btn.clicked.connect(self._toggle_holding_current)
 
@@ -1219,6 +1226,10 @@ class DriveDesktopController(DriveBaseController):
             return
 
         self.moveTo.emit(target_pos)
+
+    @Slot()
+    def _handle_zero_all_btn_clicked(self):
+        self.zeroDrive.emit()
 
     @Slot()
     def _toggle_holding_current(self):
