@@ -443,7 +443,7 @@ class MGWidget(QWidget):
         self._build_transform_defaults()
 
         # Initialize the plot update timeer attributes
-        self._update_plot_interval = 200  # in msec
+        self._update_plot_interval = 300  # in msec
         self._update_plot_timer = QTimer()
         self._update_plot_timer.setSingleShot(True)
         self._plot_timer_issue_new_single_shot = False
@@ -552,7 +552,7 @@ class MGWidget(QWidget):
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
         self.drive_control_widget.movementStopped.connect(self._update_position_in_plot)
         self.drive_control_widget.targetPositionChanged.connect(
-            self.mspace_display.update_target_position_plot
+            self.mspace_display.redrawSignals.TargetPosition.emit
         )
         self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
@@ -585,7 +585,7 @@ class MGWidget(QWidget):
             position = self.drive_control_widget.position
         else:
             position = None
-        self.mspace_display.update_position_plot(position)
+        self.mspace_display.redrawSignals.Position.emit(position)
 
         if self._plot_timer_issue_new_single_shot:
             # start another single shot if update_position_in_plot() was
@@ -823,6 +823,9 @@ class MGWidget(QWidget):
         _policy = canvas.sizePolicy()
         _policy.setRetainSizeWhenHidden(True)
         canvas.setSizePolicy(_policy)
+        canvas.display_position = True
+        canvas.display_target_position = True
+        canvas.display_probe = True
         return canvas
 
     def _init_toml_widget(self):
@@ -1038,7 +1041,9 @@ class MGWidget(QWidget):
 
         # re-enable the mspace_display, it is disabled when a popup
         # config is launched
-        self.mspace_display.setEnabled(True)
+        if not self.mspace_display.isEnabled():
+            self.mspace_display.setEnabled(True)
+            self.mspace_display.blockSignals(False)
 
         self._validate_motion_group()
 
@@ -1920,6 +1925,7 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.setEnabled(False)
         self.mspace_display.setEnabled(False)
+        self.mspace_display.blockSignals(True)
 
     @Slot()
     def discard_close(self):

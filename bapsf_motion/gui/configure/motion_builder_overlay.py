@@ -122,11 +122,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_ml_combine_toggle = self._init_layer_ml_combine_toggle()
 
         # SET UP PLOT WIDGET
-        self.mspace_display = MotionSpaceDisplay(parent=self)
-        self.mspace_display.display_position = False
-        self.mspace_display.display_target_position = False
-        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
-            self.mspace_display.link_motion_builder(self.mg.mb)
+        self.mspace_display = self._init_mspace_display()
 
         self.animate_ml_frame = self._init_animate_ml_frame()
         self.animate_ml_action_btn = self._init_animate_ml_action_btn()
@@ -181,21 +177,21 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_move_up_btn.clicked.connect(self._layer_list_item_move_up)
         self.layer_move_down_btn.clicked.connect(self._layer_list_item_move_down)
 
-        self.mspace_display.animateMotionListFinished.connect(
+        self.mspace_display.animateMotionList.Finished.connect(
             self._animate_motion_list_finished
         )
-        self.mspace_display.animateMotionListCleared.connect(
+        self.mspace_display.animateMotionList.Cleared.connect(
             self._animate_motion_list_finished
         )
-        self.mspace_display.animateMotionListStarted.connect(
+        self.mspace_display.animateMotionList.Started.connect(
             self._animate_motion_list_btn_txt_to_pause
         )
-        self.mspace_display.animateMotionListPaused.connect(
+        self.mspace_display.animateMotionList.Paused.connect(
             self._animate_motion_list_btn_txt_to_animate
         )
         self.animate_ml_action_btn.clicked.connect(self._animate_motion_list)
         self.animate_ml_clear_btn.clicked.connect(
-            self.mspace_display.animate_motion_list_clear
+            self.mspace_display.animateMotionList.Clear.emit
         )
 
     def _define_layout(self):
@@ -736,6 +732,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setFont(_font)
         return btn
 
+    def _init_mspace_display(self):
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
+            mb = self.mg.mb
+        else:
+            mb = None
+
+        display = MotionSpaceDisplay(mb=mb, parent=self)
+        return display
+
     def _init_layer_list_box(self):
         box = QListWidget(parent=self)
         box.setMinimumHeight(250)
@@ -997,9 +1002,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _animate_motion_list(self):
         _btn_text = self.animate_ml_action_btn.text().replace("\n", "")
         if _btn_text == "PAUSE":
-            self.mspace_display.animate_motion_list_pause()
+            self.mspace_display.animateMotionList.Pause.emit()
         else:
-            self.mspace_display.animate_motion_list()
+            self.mspace_display.animateMotionList.Start.emit()
 
     @Slot()
     def _animate_motion_list_btn_txt_to_animate(self):
@@ -1538,9 +1543,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def redraw_display(self):
         if self._mspace_display_full_draw:
-            self.mspace_display.update_canvas()
+            self.mspace_display.redrawSignals.All.emit()
         else:
-            self.mspace_display.update_motion_list()
+            self.mspace_display.redrawSignals.MotionList.emit()
 
         self._mspace_display_full_draw = False
 
@@ -1642,7 +1647,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             pass
         elif self.mb is self.mg.mb:
             config = _deepcopy_dict(self.mb.config)
-            self._spawn_motion_builder(config)
+            self._spawn_motion_builder(config, skip_mspace_link=True)
             return
 
         config = {"space": {}}
@@ -1675,9 +1680,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 "num": num,
             }
 
-        self._spawn_motion_builder(config)
+        self._spawn_motion_builder(config, skip_mspace_link=True)
 
-    def _spawn_motion_builder(self, config):
+    def _spawn_motion_builder(self, config, skip_mspace_link: bool = False):
         self.logger.info("Rebuilding motion builder...")
         mb_config = _deepcopy_dict(config)
         mb_config["space"] = list(config["space"].values())
@@ -1695,8 +1700,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"layer looks like : {mb_config.get('layers', None)}")
 
         self._mb = MotionBuilder(**mb_config)
-        self.mspace_display.link_motion_builder(self._mb)
-        self._mspace_display_full_draw = True
+
+        if not skip_mspace_link:
+            self.blockSignals(True)
+            self.link_display_motion_builder()
+            self.blockSignals(False)
+
         self.configChanged.emit()
         return self._mb
 
@@ -1716,3 +1725,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"New MotionBuilder configuration is being returned, {config}.")
         self._safe_return_config_emit(config)
         self.close()
+
+    def close(self, /):
+        if isinstance(self.mspace_display, MotionSpaceDisplay):
+            self.mspace_display.animateMotionList.Clear.emit()
+
+        super().close()
