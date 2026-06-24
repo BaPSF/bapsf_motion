@@ -242,7 +242,7 @@ class MotionSpaceDisplay(QFrame):
             ax, handler = stuff
             handler.remove()
 
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
         self.animateMotionListCleared.emit()
 
@@ -311,7 +311,7 @@ class MotionSpaceDisplay(QFrame):
                     animated=True,
                 )
 
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
         if to_index == self.mb.motion_list.shape[0] - 1:
             self._animate_payload["finished"] = True
             self.animateMotionListFinished.emit()
@@ -326,7 +326,7 @@ class MotionSpaceDisplay(QFrame):
     def on_draw(self, event: DrawEvent):
         if self._draw_all:
             self.mpl_canvas.mpl_disconnect(self._cid_on_draw)
-            self.mpl_canvas.draw()
+            self.mpl_canvas.draw_idle()
             self._cid_on_draw = self.mpl_canvas.mpl_connect("draw_event", self.on_draw)
             self._draw_all = False
         else:
@@ -481,7 +481,7 @@ class MotionSpaceDisplay(QFrame):
         # Draw legend
         self.update_legend()
 
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
         # re-start the motion list animation
         if is_animating:
@@ -508,13 +508,13 @@ class MotionSpaceDisplay(QFrame):
             handles.append(handle)
 
         if len(handles) == 0:
-            self.mpl_canvas.draw()
+            self.mpl_canvas.draw_idle()
             return
 
         ax = self.mpl_canvas.figure.gca()
         ax.legend(handles=handles)
 
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
     def update_motion_list(self):
         self.animate_motion_list_clear()
@@ -631,7 +631,7 @@ class MotionSpaceDisplay(QFrame):
             )
 
         self.update_legend()
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
     @Slot(list)
     def update_target_position_plot(self, position):
@@ -674,7 +674,7 @@ class MotionSpaceDisplay(QFrame):
             )
 
         self.update_legend()
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
     def update_position_plot(self, position):
         self.logger.info(f"Drawing position {position}")
@@ -758,7 +758,7 @@ class MotionSpaceDisplay(QFrame):
             )
 
         self.update_legend()
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
     def closeEvent(self, event):
         self.logger.info(f"Closing {self.__class__.__name__}")
