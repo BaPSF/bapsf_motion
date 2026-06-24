@@ -566,6 +566,9 @@ class AxisConfigWidget(QWidget):
 
         return False
 
+    def _actor_triggered_config_changed(self):
+        self.configChanged.emit()
+
     @Slot()
     def _change_cm_per_rev(self):
         try:
@@ -728,8 +731,12 @@ class AxisConfigWidget(QWidget):
                 auto_run=True,
             )
 
-            axis.motor.signals.connection_established.connect(self.configChanged.emit)
-            axis.motor.signals.connection_lost.connect(self.configChanged.emit)
+            axis.motor.signals.connection_established.connect(
+                self._actor_triggered_config_changed
+            )
+            axis.motor.signals.connection_lost.connect(
+                self._actor_triggered_config_changed
+            )
         except ConnectionError:
             axis = None
 

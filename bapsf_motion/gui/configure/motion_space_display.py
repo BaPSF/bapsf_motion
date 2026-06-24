@@ -241,11 +241,11 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
         _timer = self._animate_payload["timer"]  # type: QTimer
         return _timer.isActive()
-    
+
     def blockSignals(self, b, /):
         self.redrawSignals.blockSignals(b)
         self.animateMotionList.blockSignals(b)
-        
+
         super().blockSignals(b)
 
     def closeEvent(self, event: "QCloseEvent"):
@@ -359,7 +359,7 @@ class MotionSpaceDisplay2D(_MSDBase):
             ax, handler = stuff
             handler.remove()
 
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
         self.animateMotionList.Cleared.emit()
 
@@ -460,7 +460,7 @@ class MotionSpaceDisplay2D(_MSDBase):
                     animated=True,
                 )
 
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
         if to_index == self.mb.motion_list.shape[0] - 1:
             self._animate_payload["finished"] = True
             self.animateMotionList.Finished.emit()
@@ -475,7 +475,7 @@ class MotionSpaceDisplay2D(_MSDBase):
     def on_draw(self, event: DrawEvent):
         if self._draw_all:
             self.mpl_canvas.mpl_disconnect(self._cid_on_draw)
-            self.mpl_canvas.draw()
+            self.mpl_canvas.draw_idle()
             self._cid_on_draw = self.mpl_canvas.mpl_connect("draw_event", self.on_draw)
             self._draw_all = False
         else:
@@ -630,7 +630,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         # Draw legend
         self.redraw_legend()
 
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
         # re-start the motion list animation
         if is_animating:
@@ -657,13 +657,13 @@ class MotionSpaceDisplay2D(_MSDBase):
             handles.append(handle)
 
         if len(handles) == 0:
-            self.mpl_canvas.draw()
+            self.mpl_canvas.draw_idle()
             return
 
         ax = self.mpl_canvas.figure.gca()
         ax.legend(handles=handles)
 
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
     @Slot()
     def redraw_motion_list_plot(self):
@@ -781,7 +781,7 @@ class MotionSpaceDisplay2D(_MSDBase):
             )
 
         self.redraw_legend()
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
     @Slot(list)
     def redraw_target_position_plot(self, position):
@@ -824,7 +824,7 @@ class MotionSpaceDisplay2D(_MSDBase):
             )
 
         self.redraw_legend()
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
     @Slot(list)
     def redraw_position_plot(self, position):
@@ -909,7 +909,7 @@ class MotionSpaceDisplay2D(_MSDBase):
             )
 
         self.redraw_legend()
-        self.mpl_canvas.draw()
+        self.mpl_canvas.draw_idle()
 
 
 class MotionSpaceDisplay(QFrame):
@@ -1205,7 +1205,7 @@ class MotionSpaceDisplay(QFrame):
         display = self.display
         if isinstance(display, _MSDBase):
             display.blockSignals(b)
-        
+
         super().blockSignals(b)
 
     def closeEvent(self, event: "QCloseEvent"):
