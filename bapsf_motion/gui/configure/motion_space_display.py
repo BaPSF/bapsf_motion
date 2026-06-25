@@ -57,8 +57,8 @@ class _AnimationSignals(QObject):
 class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
-    animateMotionList = _AnimationSignals()
-    redrawSignals = _RedrawDisplaySignals()
+    # animateMotionList = _AnimationSignals()
+    # redrawSignals = _RedrawDisplaySignals()
 
     _default_logger_name = "MSD-Base"
     _default_legend_names = [
@@ -76,6 +76,9 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
         parent: QWidget | None = None,
     ):
         super().__init__(parent=parent)
+
+        self.animateMotionList = _AnimationSignals(parent=self)
+        self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
         self._logger = self._init_logger(logger)
         self._mb = self._init_motion_builder(mb)
@@ -915,8 +918,8 @@ class MotionSpaceDisplay2D(_MSDBase):
 class MotionSpaceDisplay(QFrame):
     targetPositionSelected = Signal(list)
 
-    animateMotionList = _AnimationSignals()
-    redrawSignals = _RedrawDisplaySignals()
+    # animateMotionList = _AnimationSignals()
+    # redrawSignals = _RedrawDisplaySignals()
 
     _default_legend_names = [
         "motion_list",
@@ -930,6 +933,9 @@ class MotionSpaceDisplay(QFrame):
         super().__init__(parent=parent)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
+        self.animateMotionList = _AnimationSignals(parent=self)
+        self.redrawSignals = _RedrawDisplaySignals(parent=self)
+
         self._mb = self._init_motion_builder(mb)
 
         # Initialize display attributes
