@@ -130,7 +130,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         # non-widget initialization
 
-        self._initialize_motion_builder()
         self._initialize_exclusion_list_box()
         self._initialize_layer_list_box()
 
@@ -1648,18 +1647,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         ).fullmatch(list_name)
         return None if match is None else match.group("name")
 
-    def _initialize_motion_builder(self):
-        if (
-            not isinstance(self.mg, MotionGroup)
-            or not isinstance(self.mb, MotionBuilder)
-            or not isinstance(self.mg.mb, MotionBuilder)
-        ):
-            pass
-        elif self.mb is self.mg.mb:
-            config = _deepcopy_dict(self.mb.config)
-            self._spawn_motion_builder(config, skip_mspace_link=True)
-            return
-
+    def _default_motion_builder(self):
         config = {"space": {}}
         for ii, aname in enumerate(self.axis_names):
             axis = self.mg.drive.axes[ii]
@@ -1690,7 +1678,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 "num": num,
             }
 
-        self._spawn_motion_builder(config, skip_mspace_link=True)
+        return self._spawn_motion_builder(config, skip_assignment=True)
 
     def _spawn_motion_builder(self, config, skip_assignment: bool = False):
         self.logger.info("Rebuilding motion builder...")
