@@ -939,10 +939,10 @@ class MotionSpaceDisplay(QFrame):
     ):
         super().__init__(parent=parent)
 
-        self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
         self.animateMotionList = _AnimationSignals(parent=self)
         self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
+        self._logger = logging.getLogger(f"{gui_logger.name}.MSD-{self.__hash__() % 100}")
         self._mb = self._init_motion_builder(mb)
 
         # Initialize display attributes
