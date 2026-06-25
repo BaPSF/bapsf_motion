@@ -1259,6 +1259,9 @@ class MotionSpaceDisplay(QFrame):
         if isinstance(display, _MSDBase):
             display.blockSignals(b)
 
+        self.animateMotionList.blockSignals(b)
+        self.redrawSignals.blockSignals(b)
+
         super().blockSignals(b)
 
     def closeEvent(self, event: "QCloseEvent"):
