@@ -931,7 +931,12 @@ class MotionSpaceDisplay(QFrame):
         "insertion_point",
     ]
 
-    def __init__(self, mb: MotionBuilder | None = None, parent: QWidget | None = None):
+    def __init__(
+        self,
+        mb: MotionBuilder | None = None,
+        delay_draw: bool = False,
+        parent: QWidget | None = None,
+    ):
         super().__init__(parent=parent)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
@@ -949,11 +954,14 @@ class MotionSpaceDisplay(QFrame):
         }  # type: Dict[str, bool]
 
         # Define WIDGETS
-        self.display = self._init_display()
+        self.display = self._init_display(skip_draw=delay_draw)
 
         self._init_self()
         self.setLayout(self._define_layout())
         self._connect_signals()
+
+        if delay_draw:
+            QTimer.singleShot(100, self._redraw_display_all)
 
     def _connect_signals(self):
         self._connect_display_signals()
@@ -1030,7 +1038,7 @@ class MotionSpaceDisplay(QFrame):
 
         return mb
 
-    def _init_display(self) -> QWidget | _MSDBase:
+    def _init_display(self, skip_draw: bool) -> QWidget | _MSDBase:
         if self._mb is None:
             display = QWidget(parent=self)
         elif not isinstance(self._mb, MotionBuilder):
@@ -1040,7 +1048,12 @@ class MotionSpaceDisplay(QFrame):
                 f"MotionBuilder, but got type {type(self._mb)}.  "
             )
         elif self._mb.mspace_ndims == 2:
-            display = MotionSpaceDisplay2D(logger=self._logger, mb=self._mb, parent=self)
+            display = MotionSpaceDisplay2D(
+                logger=self._logger,
+                mb=self._mb,
+                skip_initial_draw=skip_draw,
+                parent=self,
+            )
             display.display_position = self._display_visibility["position"]
             display.display_target_position = self._display_visibility["target_position"]
             display.display_probe = self._display_visibility["probe"]
@@ -1251,7 +1264,7 @@ class MotionSpaceDisplay(QFrame):
         self._disconnect_display_signals()
 
         old_display = self.display
-        new_display = self._init_display()
+        new_display = self._init_display(skip_draw=False)
         self.layout().replaceWidget(old_display, new_display)
 
         old_display.blockSignals(True)
