@@ -732,10 +732,18 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setFont(_font)
         return btn
 
-    def _init_mspace_display(self):
-        mb = self.mb
-        display = MotionSpaceDisplay(mb=mb, delay_draw=True, parent=self)
-        return display
+    def _init_exclusion_add_btn(self):
+        return self._generate_btn_widget("ADD")
+
+    def _init_exclusion_remove_btn(self):
+        btn = self._generate_btn_widget("REMOVE")
+        btn.setEnabled(False)
+        return btn
+
+    def _init_exclusion_edit_btn(self):
+        btn = self._generate_btn_widget("EDIT")
+        btn.setEnabled(False)
+        return btn
 
     def _init_layer_list_box(self):
         box = QListWidget(parent=self)
@@ -830,19 +838,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         box.setFont(_font)
         return box
 
-    def _init_exclusion_add_btn(self):
-        return self._generate_btn_widget("ADD")
-
-    def _init_exclusion_remove_btn(self):
-        btn = self._generate_btn_widget("REMOVE")
-        btn.setEnabled(False)
-        return btn
-
-    def _init_exclusion_edit_btn(self):
-        btn = self._generate_btn_widget("EDIT")
-        btn.setEnabled(False)
-        return btn
-
     def _init_motion_builder(self):
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
             mb = copy.deepcopy(self.mg.mb)
@@ -850,6 +845,11 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             mb = self._default_motion_builder()
 
         return mb
+
+    def _init_mspace_display(self):
+        mb = self.mb
+        display = MotionSpaceDisplay(mb=mb, delay_draw=True, parent=self)
+        return display
 
     @property
     def dimensionality(self):
