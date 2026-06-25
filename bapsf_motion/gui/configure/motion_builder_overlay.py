@@ -1542,7 +1542,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_remove_btn.setEnabled(enable)
 
     @Slot()
-    def link_display_motion_builder(self):
+    def link_motion_builder_to_display(self):
         mb = self.mb
         if not isinstance(mb, MotionBuilder):
             return
@@ -1717,7 +1717,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self._mb = mb
 
         self.blockSignals(True)
-        self.link_display_motion_builder()
+        self.link_motion_builder_to_display()
         self.blockSignals(False)
 
         self.configChanged.emit()
