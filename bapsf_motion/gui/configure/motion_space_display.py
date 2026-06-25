@@ -672,6 +672,7 @@ class MotionSpaceDisplay2D(_MSDBase):
 
     @Slot()
     def redraw_motion_list_plot(self):
+        self.logger.info("Redraw motion list plot.")
         self.animate_motion_list_clear()
 
         # plot the individual point layers (if join scheme is sequential)
@@ -782,7 +783,7 @@ class MotionSpaceDisplay2D(_MSDBase):
                 edgecolors="black",
                 picker=True,
                 label=_label,
-                animated=True,
+                animated=False,
             )
 
         self.redraw_legend()
