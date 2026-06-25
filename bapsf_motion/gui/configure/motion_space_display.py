@@ -57,8 +57,6 @@ class _AnimationSignals(QObject):
 class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
-    # animateMotionList = _AnimationSignals()
-    # redrawSignals = _RedrawDisplaySignals()
 
     _default_logger_name = "MSD-Base"
     _default_legend_names = [
@@ -919,9 +917,6 @@ class MotionSpaceDisplay2D(_MSDBase):
 
 class MotionSpaceDisplay(QFrame):
     targetPositionSelected = Signal(list)
-
-    # animateMotionList = _AnimationSignals()
-    # redrawSignals = _RedrawDisplaySignals()
 
     _default_legend_names = [
         "motion_list",
