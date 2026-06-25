@@ -267,6 +267,8 @@ class MotionSpaceDisplay2D(_MSDBase):
     ):
         super().__init__(logger=logger, mb=mb, parent=parent)
 
+        self._sequence_redraw_index = 0
+
         # Define WIDGETS
         self.mpl_canvas = self._init_mpl_canvas()
         self.mpl_toolbar = self._init_mpl_toolbar()
@@ -564,22 +566,6 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.animate_motion_list_clear()
         self.blockSignals(False)
 
-        # retrieve last position
-        stuff = self._get_plot_axis_by_name("position")
-        if stuff is not None:
-            ax, handler = stuff  # type: plt.Axes, PathCollection
-            position = handler.get_offsets()
-        else:
-            position = None
-
-        # retrieve last target position
-        stuff = self._get_plot_axis_by_name("target")
-        if stuff is not None:
-            ax, handler = stuff  # type: plt.Axes, PathCollection
-            target_position = handler.get_offsets()
-        else:
-            target_position = None
-
         self._draw_all = True
         fig = self.mpl_canvas.figure
         fig.clear()
@@ -590,16 +576,13 @@ class MotionSpaceDisplay2D(_MSDBase):
 
         fig.tight_layout()
 
-        # Draw motion list
-        self.redraw_motion_list_plot()
-
         # Draw insertion point
         insertion_point = self.mb.get_insertion_point()
         if insertion_point is not None:
             ax.scatter(
                 x=insertion_point[0],
                 y=insertion_point[1],
-                s=3**2,
+                s=3 ** 2,
                 linewidth=2,
                 facecolors="none",
                 edgecolors="red",
@@ -622,26 +605,9 @@ class MotionSpaceDisplay2D(_MSDBase):
                 ylim = [1.05 * insertion_point[1], ylim[1]]
             ax.set_ylim(ylim)
 
-        # Draw target position
-        if self.display_target_position:
-            self.redraw_target_position_plot(position=target_position)
-
-        # Draw current position
-        if self.display_position:
-            self.redraw_position_plot(position=position)
-
-        # Draw legend
-        self.redraw_legend()
-
         self.mpl_canvas.draw_idle()
 
-        # re-start the motion list animation
-        if is_animating:
-            self.blockSignals(True)
-            self.animate_motion_list_start()
-            self.blockSignals(False)
-
-        self.logger.info("Re-draw DONE.")
+        QTimer.singleShot(10, self._sequence_redraws)
 
     def redraw_legend(self):
         _plotted_layers = (
@@ -667,6 +633,42 @@ class MotionSpaceDisplay2D(_MSDBase):
         ax.legend(handles=handles)
 
         self.mpl_canvas.draw_idle()
+
+    def _sequence_redraws(self):
+        index = self._sequence_redraw_index
+        if index == 0:
+            self.redraw_motion_list_plot()
+
+        elif index == 1 and self.display_position:
+            # retrieve last position
+            stuff = self._get_plot_axis_by_name("position")
+            if stuff is not None:
+                ax, handler = stuff  # type: plt.Axes, PathCollection
+                position = handler.get_offsets()
+            else:
+                position = None
+
+            self.redraw_position_plot(position)
+
+        elif index == 2 and self.display_target_position:
+            # retrieve last target position
+            stuff = self._get_plot_axis_by_name("target")
+            if stuff is not None:
+                ax, handler = stuff  # type: plt.Axes, PathCollection
+                target_position = handler.get_offsets()
+            else:
+                target_position = None
+
+            self.redraw_target_position_plot(target_position)
+
+        else:
+            self.redraw_legend()
+            self._sequence_redraw_index = 0
+            self.logger.info("Sequence redraw DONE.")
+            return
+
+        self._sequence_redraw_index += 1
+        QTimer.singleShot(5, self._sequence_redraws)
 
     @Slot()
     def redraw_motion_list_plot(self):
