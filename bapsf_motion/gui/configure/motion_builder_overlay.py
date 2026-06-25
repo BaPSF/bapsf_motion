@@ -733,12 +733,8 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         return btn
 
     def _init_mspace_display(self):
-        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
-            mb = self.mg.mb
-        else:
-            mb = None
-
-        display = MotionSpaceDisplay(mb=mb, parent=self)
+        mb = self.mb
+        display = MotionSpaceDisplay(mb=mb, delay_draw=True, parent=self)
         return display
 
     def _init_layer_list_box(self):
