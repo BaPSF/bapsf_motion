@@ -961,25 +961,21 @@ class MotionSpaceDisplay(QFrame):
         self.display.animateMotionList.Finished.connect(
             self.animateMotionList.Finished.emit
         )
-        self.display.animateMotionList.Paused.connect(self.animateMotionList.Paused.emit)
-        self.display.animateMotionList.Started.connect(
-            self.animateMotionList.Started.emit
-        )
+        self.display.animateMotionList.Paused.connect(self._animate_motion_list_paused)
+        self.display.animateMotionList.Started.connect(self._animate_motion_list_started)
 
         # annimation action signals
-        self.animateMotionList.Clear.connect(self.display.animateMotionList.Clear.emit)
-        self.animateMotionList.Pause.connect(self.display.animateMotionList.Pause.emit)
-        self.animateMotionList.Start.connect(self.display.animateMotionList.Start.emit)
+        self.animateMotionList.Clear.connect(self._animate_motion_list_clear)
+        self.animateMotionList.Pause.connect(self._animate_motion_list_pause)
+        self.animateMotionList.Start.connect(self._animate_motion_list_start)
 
-        self.display.targetPositionSelected.connect(self.targetPositionSelected.emit)
+        self.display.targetPositionSelected.connect(self._trigger_target_position_selected)
 
         # signals to trigger a redraw
-        self.redrawSignals.All.connect(self.display.redrawSignals.All.emit)
-        self.redrawSignals.MotionList.connect(self.display.redrawSignals.MotionList.emit)
-        self.redrawSignals.Position.connect(self.display.redrawSignals.Position.emit)
-        self.redrawSignals.TargetPosition.connect(
-            self.display.redrawSignals.TargetPosition.emit
-        )
+        self.redrawSignals.All.connect(self._redraw_display_all)
+        self.redrawSignals.MotionList.connect(self._redraw_display_motion_list)
+        self.redrawSignals.Position.connect(self._redraw_display_position)
+        self.redrawSignals.TargetPosition.connect(self._redraw_display_target_position)
 
     def _disconnect_display_signals(self):
         if not isinstance(self.display, _MSDBase):
@@ -998,20 +994,16 @@ class MotionSpaceDisplay(QFrame):
             self.animateMotionList.Started.emit
         )
 
-        self.display.targetPositionSelected.disconnect(self.targetPositionSelected.emit)
+        self.display.targetPositionSelected.disconnect(self._trigger_target_position_selected)
 
-        self.animateMotionList.Clear.disconnect(self.display.animateMotionList.Clear.emit)
-        self.animateMotionList.Pause.disconnect(self.display.animateMotionList.Pause.emit)
-        self.animateMotionList.Start.disconnect(self.display.animateMotionList.Start.emit)
+        self.animateMotionList.Clear.disconnect(self._animate_motion_list_clear)
+        self.animateMotionList.Pause.disconnect(self._animate_motion_list_pause)
+        self.animateMotionList.Start.disconnect(self._animate_motion_list_start)
 
-        self.redrawSignals.All.disconnect(self.display.redrawSignals.All.emit)
-        self.redrawSignals.MotionList.disconnect(
-            self.display.redrawSignals.MotionList.emit
-        )
-        self.redrawSignals.Position.disconnect(self.display.redrawSignals.Position.emit)
-        self.redrawSignals.TargetPosition.disconnect(
-            self.display.redrawSignals.TargetPosition.emit
-        )
+        self.redrawSignals.All.disconnect(self._redraw_display_all)
+        self.redrawSignals.MotionList.disconnect(self._redraw_display_motion_list)
+        self.redrawSignals.Position.disconnect(self._redraw_display_position)
+        self.redrawSignals.TargetPosition.disconnect(self._redraw_display_target_position)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -1143,6 +1135,67 @@ class MotionSpaceDisplay(QFrame):
             return False
 
         return self.display.is_animating_motion_list
+
+    @Slot()
+    def _animate_motion_list_clear(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.animateMotionList.Clear.emit()
+
+    @Slot()
+    def _animate_motion_list_pause(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.animateMotionList.Pause.emit()
+
+    @Slot()
+    def _animate_motion_list_paused(self):
+        self.animateMotionList.Paused.emit()
+
+    @Slot()
+    def _animate_motion_list_start(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.animateMotionList.Start.emit()
+
+    @Slot()
+    def _animate_motion_list_started(self):
+        self.animateMotionList.Started.emit()
+
+    @Slot(list)
+    def _trigger_target_position_selected(self, position: list):
+        self.targetPositionSelected.emit(position)
+
+    @Slot()
+    def _redraw_display_all(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.redrawSignals.All.emit()
+
+    @Slot()
+    def _redraw_display_motion_list(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.redrawSignals.MotionList.emit()
+
+    @Slot()
+    def _redraw_display_position(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.redrawSignals.Position.emit()
+
+    @Slot()
+    def _redraw_display_target_position(self):
+        if not isinstance(self.display, _MSDBase):
+            return
+
+        self.display.redrawSignals.TargetPosition.emit()
 
     def link_motion_builder(self, mb: MotionBuilder | None = None):
         self.logger.info(f"Linking motion builder {mb}")
