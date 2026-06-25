@@ -264,6 +264,7 @@ class MotionSpaceDisplay2D(_MSDBase):
         self,
         logger: logging.Logger,
         mb: MotionBuilder | None = None,
+        skip_initial_draw: bool = False,
         parent: QWidget | None = None,
     ):
         super().__init__(logger=logger, mb=mb, parent=parent)
@@ -275,7 +276,8 @@ class MotionSpaceDisplay2D(_MSDBase):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
-        self.mbChanged.emit()
+        if not skip_initial_draw:
+            self.mbChanged.emit()
 
     def _connect_signals(self):
         self._connect_animate_motion_list_signals()
