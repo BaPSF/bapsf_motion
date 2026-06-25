@@ -1204,19 +1204,19 @@ class MotionSpaceDisplay(QFrame):
 
         self.display.redrawSignals.MotionList.emit()
 
-    @Slot()
-    def _redraw_display_position(self):
+    @Slot(list)
+    def _redraw_display_position(self, position: list):
         if not isinstance(self.display, _MSDBase):
             return
 
-        self.display.redrawSignals.Position.emit()
+        self.display.redrawSignals.Position.emit(position)
 
-    @Slot()
-    def _redraw_display_target_position(self):
+    @Slot(list)
+    def _redraw_display_target_position(self, position: list):
         if not isinstance(self.display, _MSDBase):
             return
 
-        self.display.redrawSignals.TargetPosition.emit()
+        self.display.redrawSignals.TargetPosition.emit(position)
 
     def link_motion_builder(self, mb: MotionBuilder | None = None):
         self.logger.info(f"Linking motion builder {mb}")
