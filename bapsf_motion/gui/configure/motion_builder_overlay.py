@@ -139,7 +139,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.update_exclusion_list_box()
         self.update_layer_list_box()
         self.update_layer_ml_combine_toggle()
-        self.redraw_display()
 
         self._connect_signals()
 
