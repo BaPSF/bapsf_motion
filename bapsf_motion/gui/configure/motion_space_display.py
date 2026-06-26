@@ -449,7 +449,7 @@ class MotionSpaceDisplay(QFrame):
         fig.tight_layout()
 
         # Draw motion list
-        self.update_motion_list()
+        self.redraw_motion_list_plot()
 
         # Draw insertion point
         insertion_point = self.mb.get_insertion_point()
@@ -526,7 +526,7 @@ class MotionSpaceDisplay(QFrame):
 
         self.mpl_canvas.draw_idle()
 
-    def update_motion_list(self):
+    def redraw_motion_list_plot(self):
         self.animate_motion_list_clear()
 
         # plot the individual point layers (if join scheme is sequential)

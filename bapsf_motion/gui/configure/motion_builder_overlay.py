@@ -1540,7 +1540,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         if self._mspace_display_full_draw:
             self.mspace_display.redraw_display()
         else:
-            self.mspace_display.update_motion_list()
+            self.mspace_display.redraw_motion_list_plot()
 
         self._mspace_display_full_draw = False
 
