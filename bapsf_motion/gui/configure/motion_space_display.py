@@ -97,7 +97,7 @@ class MotionSpaceDisplay(QFrame):
 
     def _connect_signals(self):
         self.mbChanged.connect(self.redraw_display)
-        self.targetPositionSelected.connect(self.update_target_position_plot)
+        self.targetPositionSelected.connect(self.redraw_target_position_plot)
         self.animateMotionListFinished.connect(self.animate_motion_list_pause)
 
         # matplotlib events
@@ -482,7 +482,7 @@ class MotionSpaceDisplay(QFrame):
 
         # Draw target position
         if self.display_target_position:
-            self.update_target_position_plot(position=target_position)
+            self.redraw_target_position_plot(position=target_position)
 
         # Draw current position
         if self.display_position:
@@ -644,7 +644,7 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.draw_idle()
 
     @Slot(list)
-    def update_target_position_plot(self, position):
+    def redraw_target_position_plot(self, position):
         self.logger.info(f"Drawing target position {position}")
 
         if not self.display_target_position:

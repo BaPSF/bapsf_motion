@@ -552,7 +552,7 @@ class MGWidget(QWidget):
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
         self.drive_control_widget.movementStopped.connect(self._update_position_in_plot)
         self.drive_control_widget.targetPositionChanged.connect(
-            self.mspace_display.update_target_position_plot
+            self.mspace_display.redraw_target_position_plot
         )
         self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
