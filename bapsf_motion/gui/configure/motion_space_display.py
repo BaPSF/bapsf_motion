@@ -36,6 +36,13 @@ from matplotlib.backends.backend_qtagg import (  # noqa
 from matplotlib.collections import PathCollection  # noqa
 
 
+class _RedrawDisplaySignals(QObject):
+    All = Signal()
+    MotionList = Signal()
+    Position = Signal(list)
+    TargetPosition = Signal(list)
+
+
 class MotionSpaceDisplay(QFrame):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
