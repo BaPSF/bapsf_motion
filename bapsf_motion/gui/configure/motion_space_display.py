@@ -486,7 +486,7 @@ class MotionSpaceDisplay(QFrame):
 
         # Draw current position
         if self.display_position:
-            self.update_position_plot(position=position)
+            self.redraw_position_plot(position=position)
 
         # Draw legend
         self.redraw_legend()
@@ -686,7 +686,7 @@ class MotionSpaceDisplay(QFrame):
         self.redraw_legend()
         self.mpl_canvas.draw_idle()
 
-    def update_position_plot(self, position):
+    def redraw_position_plot(self, position):
         self.logger.info(f"Drawing position {position}")
 
         if not self.display_position:
