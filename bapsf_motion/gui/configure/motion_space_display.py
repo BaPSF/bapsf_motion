@@ -66,6 +66,9 @@ class MotionSpaceDisplay(QFrame):
     ):
         super().__init__(parent=parent)
 
+        # instantiate signal objects
+        self.redrawSignals = _RedrawDisplaySignals(parent=self)
+
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
 
         self._mb = None
@@ -114,6 +117,12 @@ class MotionSpaceDisplay(QFrame):
         self._cid_on_draw = self.mpl_canvas.mpl_connect(
             "draw_event", self.on_draw
         )  # noqa
+
+        # signals to trigger a redraw
+        self.redrawSignals.All.connect(self.redraw_display)
+        self.redrawSignals.MotionList.connect(self.redraw_motion_list_plot)
+        self.redrawSignals.Position.connect(self.redraw_position_plot)
+        self.redrawSignals.TargetPosition.connect(self.redraw_target_position_plot)
 
     def _define_layout(self):
         layout = QVBoxLayout()
