@@ -489,7 +489,7 @@ class MotionSpaceDisplay(QFrame):
             self.update_position_plot(position=position)
 
         # Draw legend
-        self.update_legend()
+        self.redraw_legend()
 
         self.mpl_canvas.draw_idle()
 
@@ -501,7 +501,7 @@ class MotionSpaceDisplay(QFrame):
 
         self.logger.info("Re-draw DONE.")
 
-    def update_legend(self):
+    def redraw_legend(self):
         _plotted_layers = (
             [] if self._motionlist_plot_names is None else self._motionlist_plot_names
         )
@@ -640,7 +640,7 @@ class MotionSpaceDisplay(QFrame):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw_idle()
 
     @Slot(list)
@@ -683,7 +683,7 @@ class MotionSpaceDisplay(QFrame):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw_idle()
 
     def update_position_plot(self, position):
@@ -767,7 +767,7 @@ class MotionSpaceDisplay(QFrame):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw_idle()
 
     def closeEvent(self, event: QCloseEvent):
