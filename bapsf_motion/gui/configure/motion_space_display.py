@@ -16,7 +16,7 @@ import warnings
 from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
-from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
+from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout, QWidget
 from typing import Dict, List, TYPE_CHECKING
 
 from bapsf_motion.gui.configure.bases import _ABCMetaQWidget
@@ -25,7 +25,6 @@ from bapsf_motion.motion_builder import MotionBuilder
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
-    from PySide6.QtWidgets import QWidget
 
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
