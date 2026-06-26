@@ -791,3 +791,8 @@ class MotionSpaceDisplay(QFrame):
     def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
+
+    def blockSignals(self, b, /):
+        self.redrawSignals.blockSignals(b)
+
+        super().blockSignals(b)
