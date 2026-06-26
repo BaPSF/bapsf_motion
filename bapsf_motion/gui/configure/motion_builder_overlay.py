@@ -3,6 +3,8 @@ Module contains the functionality associated with the |MotionBuilder|
 configuration overlay portion of the configuration GUI.
 """
 
+from __future__ import annotations
+
 __all__ = ["MotionBuilderConfigOverlay"]
 
 import ast
@@ -52,7 +54,7 @@ from bapsf_motion.utils import _deepcopy_dict
 from bapsf_motion.utils import units as u
 
 if TYPE_CHECKING:
-    from bapsf_motion.gui.configure import motion_group_widget as mgw
+    from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
@@ -66,7 +68,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     layer_registry = layer_registry
     exclusion_registry = exclusion_registry
 
-    def __init__(self, mg: MotionGroup, parent: "mgw.MGWidget | None" = None):
+    def __init__(self, mg: MotionGroup, parent: MGWidget | None = None):
         super().__init__(mg, parent)
         self._logger = logging.getLogger(f"{self.logger.name}.MBCO")
 
@@ -1526,12 +1528,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.params_add_btn.setEnabled(valid)
 
     @Slot()
-    def exclusion_list_box_set_btn_enable(self, enable=True):
+    def exclusion_list_box_set_btn_enable(self, enable: bool = True):
         self.exclusion_edit_btn.setEnabled(enable)
         self.exclusion_remove_btn.setEnabled(enable)
 
     @Slot()
-    def layer_list_box_set_btn_enable(self, enable=True):
+    def layer_list_box_set_btn_enable(self, enable: bool = True):
         self.layer_edit_btn.setEnabled(enable)
         self.layer_remove_btn.setEnabled(enable)
 

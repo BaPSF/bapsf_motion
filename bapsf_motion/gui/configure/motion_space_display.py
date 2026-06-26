@@ -4,6 +4,8 @@ plotting the :term:`motion space` associated with a |MotionBuilder|
 instance.
 """
 
+from __future__ import annotations
+
 __all__ = ["MotionSpaceDisplay"]
 
 import logging
@@ -14,7 +16,7 @@ import warnings
 from abc import ABC, ABCMeta, abstractmethod
 from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
-from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
 from typing import Dict, List, TYPE_CHECKING
 
 from bapsf_motion.gui.configure.bases import _ABCMetaQWidget
@@ -23,6 +25,7 @@ from bapsf_motion.motion_builder import MotionBuilder
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
+    from PySide6.QtWidgets import QWidget
 
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
@@ -1283,6 +1286,6 @@ class MotionSpaceDisplay(QFrame):
 
         super().blockSignals(b)
 
-    def closeEvent(self, event: "QCloseEvent"):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
