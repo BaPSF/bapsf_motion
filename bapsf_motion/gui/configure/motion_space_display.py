@@ -21,8 +21,8 @@ from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.motion_builder import MotionBuilder
 
 if TYPE_CHECKING:
-    from PySide6.QtWidgets import QWidget
     from PySide6.QtGui import QCloseEvent
+    from PySide6.QtWidgets import QWidget
 
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
