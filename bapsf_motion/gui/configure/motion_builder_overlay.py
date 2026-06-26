@@ -1525,12 +1525,12 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.params_add_btn.setEnabled(valid)
 
     @Slot()
-    def exclusion_list_box_set_btn_enable(self, enable=True):
+    def exclusion_list_box_set_btn_enable(self, enable: bool = True):
         self.exclusion_edit_btn.setEnabled(enable)
         self.exclusion_remove_btn.setEnabled(enable)
 
     @Slot()
-    def layer_list_box_set_btn_enable(self, enable=True):
+    def layer_list_box_set_btn_enable(self, enable: bool = True):
         self.layer_edit_btn.setEnabled(enable)
         self.layer_remove_btn.setEnabled(enable)
 
