@@ -3,6 +3,7 @@ Module contains the `~PySide6.QtWidgets.QWidget` used for displaying /
 plotting the :term:`motion space` associated with a |MotionBuilder|
 instance.
 """
+
 from __future__ import annotations
 
 __all__ = ["MotionSpaceDisplay"]

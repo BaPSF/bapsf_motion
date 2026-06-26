@@ -2,6 +2,7 @@
 Module contains the functionality associated with the |MotionBuilder|
 configuration overlay portion of the configuration GUI.
 """
+
 from __future__ import annotations
 
 __all__ = ["MotionBuilderConfigOverlay"]
