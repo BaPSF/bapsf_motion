@@ -703,6 +703,7 @@ class MotionSpaceDisplay(QFrame):
         self.redraw_legend()
         self.mpl_canvas.draw_idle()
 
+    @Slot(list)
     def redraw_position_plot(self, position):
         self.logger.info(f"Drawing position {position}")
 
