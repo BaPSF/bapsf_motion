@@ -57,7 +57,7 @@ from bapsf_motion.utils import _deepcopy_dict, dict_equal, loop_safe_stop, toml
 
 if TYPE_CHECKING:
     from bapsf_motion.gui.configure import configure_
-    from bapsf_motion.gui.configure.bases import _ConfigOverlay, _OverlayWidget
+    from bapsf_motion.gui.configure.bases import _ConfigOverlay
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
@@ -1288,7 +1288,7 @@ class MGWidget(QWidget):
         self._overlay_widget.show()
         self._overlay_shown = True
 
-    def _overlay_setup(self, overlay: "_OverlayWidget"):
+    def _overlay_setup(self, overlay: "_ConfigOverlay"):
         overlay.move(0, 0)
         overlay.resize(self.width(), self.height())
         overlay.closing.connect(self._overlay_close)
