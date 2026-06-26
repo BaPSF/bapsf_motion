@@ -979,8 +979,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         self.layer_list_box.addItems(ly_names)
 
-    # -- WIDGET INTERACTION FUNCTIONALITY --
-
     @Slot()
     def _config_changed_handler(self):
         # Note: none of the methods executed here should cause a
@@ -1582,8 +1580,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"Updating Layer ML Combine Toggle - {_scheme}")
         _check_state = False if _scheme == "sequential" else True
         self.layer_ml_combine_toggle.setChecked(_check_state)
-
-    # -- NORMAL METHODS --
 
     @Slot()
     def _add_to_mb(self):
