@@ -542,6 +542,7 @@ class MotionSpaceDisplay(QFrame):
 
         self.mpl_canvas.draw_idle()
 
+    @Slot()
     def redraw_motion_list_plot(self):
         self.animate_motion_list_clear()
 
