@@ -14,7 +14,7 @@ import warnings
 from PySide6.QtCore import QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
-from typing import List, Union
+from typing import List
 
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.motion_builder import MotionBuilder
@@ -58,9 +58,9 @@ class MotionSpaceDisplay(QFrame):
         self._display_probe = True
         self._animate_payload = None
 
-        self._motionlist_plot_names = None  # type: Union[None, List[str]]
+        self._motionlist_plot_names = None  # type: List[str] | None
 
-        self._motionlist_plot_names = None  # type: Union[None, List[str]]
+        self._motionlist_plot_names = None  # type: List[str] | None
 
         self.setStyleSheet("""
             MotionSpaceDisplay {
@@ -111,7 +111,7 @@ class MotionSpaceDisplay(QFrame):
         return self._logger
 
     @property
-    def mb(self) -> Union[MotionBuilder, None]:
+    def mb(self) -> MotionBuilder | None:
         return self._mb
 
     @property
@@ -375,7 +375,7 @@ class MotionSpaceDisplay(QFrame):
         self.logger.info(f"target position = {target_position}")
         self.targetPositionSelected.emit(target_position)
 
-    def link_motion_builder(self, mb: Union[MotionBuilder, None]):
+    def link_motion_builder(self, mb: MotionBuilder | None):
         self.logger.info(f"Linking Motion Builder {mb}")
 
         self.blockSignals(True)
