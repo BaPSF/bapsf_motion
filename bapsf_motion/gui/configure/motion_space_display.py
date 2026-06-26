@@ -3,6 +3,7 @@ Module contains the `~PySide6.QtWidgets.QWidget` used for displaying /
 plotting the :term:`motion space` associated with a |MotionBuilder|
 instance.
 """
+from __future__ import annotations
 
 __all__ = ["MotionSpaceDisplay"]
 
@@ -14,10 +15,14 @@ import warnings
 from PySide6.QtCore import QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.motion_builder import MotionBuilder
+
+if TYPE_CHECKING:
+    from PySide6.QtWidgets import QWidget
+    from PySide6.QtGui import QCloseEvent
 
 # the matplotlib backend imports must happen after import matplotlib and PySide6
 mpl.use("qtagg")  # matplotlib's backend for Qt bindings
@@ -46,7 +51,11 @@ class MotionSpaceDisplay(QFrame):
         "insertion_point",
     ]
 
-    def __init__(self, mb: MotionBuilder = None, parent=None):
+    def __init__(
+        self,
+        mb: MotionBuilder | None = None,
+        parent: QWidget | None = None,
+    ):
         super().__init__(parent=parent)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
@@ -760,6 +769,6 @@ class MotionSpaceDisplay(QFrame):
         self.update_legend()
         self.mpl_canvas.draw_idle()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
