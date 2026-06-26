@@ -8,6 +8,7 @@ from __future__ import annotations
 __all__ = ["MotionBuilderConfigOverlay"]
 
 import ast
+import copy
 import inspect
 import logging
 import math
@@ -71,7 +72,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         super().__init__(mg, parent)
         self._logger = logging.getLogger(f"{self.logger.name}.MBCO")
 
-        self._mb = None
+        self._mb = self._init_motion_builder()
 
         self._space_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
         self._mspace_display_full_draw = True
@@ -124,11 +125,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_ml_combine_toggle = self._init_layer_ml_combine_toggle()
 
         # SET UP PLOT WIDGET
-        self.mspace_display = MotionSpaceDisplay(parent=self)
-        self.mspace_display.display_position = False
-        self.mspace_display.display_target_position = False
-        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
-            self.mspace_display.link_motion_builder(self.mg.mb)
+        self.mspace_display = self._init_mspace_display()
 
         self.animate_ml_frame = self._init_animate_ml_frame()
         self.animate_ml_action_btn = self._init_animate_ml_action_btn()
@@ -136,7 +133,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         # non-widget initialization
 
-        self._initialize_motion_builder()
         self._initialize_exclusion_list_box()
         self._initialize_layer_list_box()
 
@@ -145,7 +141,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.update_exclusion_list_box()
         self.update_layer_list_box()
         self.update_layer_ml_combine_toggle()
-        self.redraw_display()
 
         self._connect_signals()
 
@@ -183,21 +178,21 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_move_up_btn.clicked.connect(self._layer_list_item_move_up)
         self.layer_move_down_btn.clicked.connect(self._layer_list_item_move_down)
 
-        self.mspace_display.animateMotionListFinished.connect(
+        self.mspace_display.animateMotionList.Finished.connect(
             self._animate_motion_list_finished
         )
-        self.mspace_display.animateMotionListCleared.connect(
+        self.mspace_display.animateMotionList.Cleared.connect(
             self._animate_motion_list_finished
         )
-        self.mspace_display.animateMotionListStarted.connect(
+        self.mspace_display.animateMotionList.Started.connect(
             self._animate_motion_list_btn_txt_to_pause
         )
-        self.mspace_display.animateMotionListPaused.connect(
+        self.mspace_display.animateMotionList.Paused.connect(
             self._animate_motion_list_btn_txt_to_animate
         )
         self.animate_ml_action_btn.clicked.connect(self._animate_motion_list)
         self.animate_ml_clear_btn.clicked.connect(
-            self.mspace_display.animate_motion_list_clear
+            self.mspace_display.animateMotionList.Clear.emit
         )
 
     def _define_layout(self):
@@ -738,6 +733,19 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setFont(_font)
         return btn
 
+    def _init_exclusion_add_btn(self):
+        return self._generate_btn_widget("ADD")
+
+    def _init_exclusion_remove_btn(self):
+        btn = self._generate_btn_widget("REMOVE")
+        btn.setEnabled(False)
+        return btn
+
+    def _init_exclusion_edit_btn(self):
+        btn = self._generate_btn_widget("EDIT")
+        btn.setEnabled(False)
+        return btn
+
     def _init_layer_list_box(self):
         box = QListWidget(parent=self)
         box.setMinimumHeight(250)
@@ -831,18 +839,18 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         box.setFont(_font)
         return box
 
-    def _init_exclusion_add_btn(self):
-        return self._generate_btn_widget("ADD")
+    def _init_motion_builder(self):
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
+            mb = copy.deepcopy(self.mg.mb)
+        else:
+            mb = self._default_motion_builder()
 
-    def _init_exclusion_remove_btn(self):
-        btn = self._generate_btn_widget("REMOVE")
-        btn.setEnabled(False)
-        return btn
+        return mb
 
-    def _init_exclusion_edit_btn(self):
-        btn = self._generate_btn_widget("EDIT")
-        btn.setEnabled(False)
-        return btn
+    def _init_mspace_display(self):
+        mb = self.mb
+        display = MotionSpaceDisplay(mb=mb, delay_draw=True, parent=self)
+        return display
 
     @property
     def dimensionality(self):
@@ -854,13 +862,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     @property
     def mb(self) -> MotionBuilder | None:
-        if (
-            self._mb is None
-            and isinstance(self.mg, MotionGroup)
-            and isinstance(self.mg.mb, MotionBuilder)
-        ):
-            return self.mg.mb
-
         return self._mb
 
     @property
@@ -997,9 +998,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _animate_motion_list(self):
         _btn_text = self.animate_ml_action_btn.text().replace("\n", "")
         if _btn_text == "PAUSE":
-            self.mspace_display.animate_motion_list_pause()
+            self.mspace_display.animateMotionList.Pause.emit()
         else:
-            self.mspace_display.animate_motion_list()
+            self.mspace_display.animateMotionList.Start.emit()
 
     @Slot()
     def _animate_motion_list_btn_txt_to_animate(self):
@@ -1536,11 +1537,21 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_edit_btn.setEnabled(enable)
         self.layer_remove_btn.setEnabled(enable)
 
+    @Slot()
+    def link_motion_builder_to_display(self):
+        mb = self.mb
+        if not isinstance(mb, MotionBuilder):
+            return
+
+        self.mspace_display.link_motion_builder(mb)
+        self._mspace_display_full_draw = True
+        self.configChanged.emit()
+
     def redraw_display(self):
         if self._mspace_display_full_draw:
-            self.mspace_display.update_canvas()
+            self.mspace_display.redrawSignals.All.emit()
         else:
-            self.mspace_display.update_motion_list()
+            self.mspace_display.redrawSignals.MotionList.emit()
 
         self._mspace_display_full_draw = False
 
@@ -1631,18 +1642,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         ).fullmatch(list_name)
         return None if match is None else match.group("name")
 
-    def _initialize_motion_builder(self):
-        if (
-            not isinstance(self.mg, MotionGroup)
-            or not isinstance(self.mb, MotionBuilder)
-            or not isinstance(self.mg.mb, MotionBuilder)
-        ):
-            pass
-        elif self.mb is self.mg.mb:
-            config = _deepcopy_dict(self.mb.config)
-            self._spawn_motion_builder(config)
-            return
-
+    def _default_motion_builder(self):
         config = {"space": {}}
         for ii, aname in enumerate(self.axis_names):
             axis = self.mg.drive.axes[ii]
@@ -1673,9 +1673,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 "num": num,
             }
 
-        self._spawn_motion_builder(config)
+        return self._spawn_motion_builder(config, skip_assignment=True)
 
-    def _spawn_motion_builder(self, config):
+    def _spawn_motion_builder(self, config, skip_assignment: bool = False):
         self.logger.info("Rebuilding motion builder...")
         mb_config = _deepcopy_dict(config)
         mb_config["space"] = list(config["space"].values())
@@ -1692,9 +1692,17 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"exclusion look like : {mb_config.get('exclusions', None)}")
         self.logger.info(f"layer looks like : {mb_config.get('layers', None)}")
 
-        self._mb = MotionBuilder(**mb_config)
-        self.mspace_display.link_motion_builder(self._mb)
-        self._mspace_display_full_draw = True
+        mb = MotionBuilder(**mb_config)
+
+        if skip_assignment:
+            return mb
+
+        self._mb = mb
+
+        self.blockSignals(True)
+        self.link_motion_builder_to_display()
+        self.blockSignals(False)
+
         self.configChanged.emit()
         return self._mb
 
@@ -1714,3 +1722,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"New MotionBuilder configuration is being returned, {config}.")
         self._safe_return_config_emit(config)
         self.close()
+
+    def close(self, /):
+        if isinstance(self.mspace_display, MotionSpaceDisplay):
+            self.mspace_display.animateMotionList.Clear.emit()
+
+        super().close()
