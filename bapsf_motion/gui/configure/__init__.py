@@ -64,6 +64,7 @@ if __name__ == "__main__":
         os.environ["QT_FORCE_STDERR_LOGGING"] = "1"
         os.environ["QT_LOGGING_RULES"] = args.debug
         os.environ["PYTHONFAULTHANDLER"] = "1"
+        os.environ['PYTHONASYCIODEBUG'] = "1"
 
     # Launch App
     app = ConfigureApp(
