@@ -1538,7 +1538,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def redraw_display(self):
         if self._mspace_display_full_draw:
-            self.mspace_display.update_canvas()
+            self.mspace_display.redraw_display()
         else:
             self.mspace_display.update_motion_list()
 

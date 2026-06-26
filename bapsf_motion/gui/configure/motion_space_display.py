@@ -11,7 +11,7 @@ import matplotlib as mpl
 import numpy as np
 import warnings
 
-from PySide6.QtCore import QTimer, Signal, Slot
+from PySide6.QtCore import QTimer, Signal, Slot, QObject
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
 from typing import List, Union
@@ -28,6 +28,13 @@ from matplotlib.backends.backend_qtagg import (  # noqa
     NavigationToolbar2QT as NavigationToolbar,
 )
 from matplotlib.collections import PathCollection  # noqa
+
+
+class _RedrawDisplaySignals(QObject):
+    All = Signal()
+    MotionList = Signal()
+    Position = Signal(list)
+    TargetPosition = Signal(list)
 
 
 class MotionSpaceDisplay(QFrame):
@@ -86,7 +93,7 @@ class MotionSpaceDisplay(QFrame):
         self._connect_signals()
 
     def _connect_signals(self):
-        self.mbChanged.connect(self.update_canvas)
+        self.mbChanged.connect(self.redraw_display)
         self.targetPositionSelected.connect(self.update_target_position_plot)
         self.animateMotionListFinished.connect(self.animate_motion_list_pause)
 
@@ -396,7 +403,7 @@ class MotionSpaceDisplay(QFrame):
         self.mbChanged.emit()
 
     @Slot()
-    def update_canvas(self):
+    def redraw_display(self):
         if not isinstance(self.mb, MotionBuilder):
             self.setHidden(True)
             return
