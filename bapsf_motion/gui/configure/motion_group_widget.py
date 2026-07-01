@@ -24,7 +24,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Tuple, TYPE_CHECKING
 
 from bapsf_motion.actors import Drive, MotionGroup, MotionGroupConfig, RunManager
 from bapsf_motion.gui.configure.controllers import (
@@ -381,9 +381,9 @@ class MGWidget(QWidget):
     def __init__(
         self,
         *,
-        mg_config: Optional[MotionGroupConfig] = None,
-        defaults: Optional[Dict[str, Any]] = None,
         parent: "configure_.ConfigureGUI",
+        mg_config: MotionGroupConfig | None = None,
+        defaults: Dict[str, Any] | None = None,
     ):
         super().__init__(parent=parent)
 
