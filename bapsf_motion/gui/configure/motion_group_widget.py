@@ -383,9 +383,9 @@ class MGWidget(QWidget):
     def __init__(
         self,
         *,
-        parent: "configure_.ConfigureGUI",
         mg_config: MotionGroupConfig | None = None,
         defaults: Dict[str, Any] | None = None,
+        parent: configure_.ConfigureGUI,
     ):
         super().__init__(parent=parent)
 
@@ -1292,7 +1292,7 @@ class MGWidget(QWidget):
         self._overlay_widget.show()
         self._overlay_shown = True
 
-    def _overlay_setup(self, overlay: "_ConfigOverlay"):
+    def _overlay_setup(self, overlay: _ConfigOverlay):
         overlay.move(0, 0)
         overlay.resize(self.width(), self.height())
         overlay.closing.connect(self._overlay_close)
@@ -1347,7 +1347,7 @@ class MGWidget(QWidget):
         self._mg_index = val
 
     @property
-    def mg(self) -> "MotionGroup":
+    def mg(self) -> MotionGroup:
         """Current working Motion Group"""
         return self._mg
 
@@ -1359,7 +1359,7 @@ class MGWidget(QWidget):
         self.configChanged.emit()
 
     @property
-    def mg_config(self) -> "Dict[str, Any] | MotionGroupConfig":
+    def mg_config(self) -> Dict[str, Any] | MotionGroupConfig:
         if isinstance(self.mg, MotionGroup):
             self._mg_config = _deepcopy_dict(self.mg.config)
         elif self._mg_config is None:
