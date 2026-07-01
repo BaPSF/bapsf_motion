@@ -77,6 +77,7 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
     ):
         super().__init__(parent=parent)
 
+        # instantiate signal objects
         self.animateMotionList = _AnimationSignals(parent=self)
         self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
@@ -245,13 +246,13 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
         _timer = self._animate_payload["timer"]  # type: QTimer
         return _timer.isActive()
 
-    def blockSignals(self, b, /):
+    def blockSignals(self, b: bool, /):
         self.redrawSignals.blockSignals(b)
         self.animateMotionList.blockSignals(b)
 
         super().blockSignals(b)
 
-    def closeEvent(self, event: "QCloseEvent"):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
 
@@ -386,9 +387,11 @@ class MotionSpaceDisplay2D(_MSDBase):
             self._animate_payload["timer"].start()
             self.animateMotionList.Started.emit()
             return
-        elif self._animate_payload is not None:
+
+        if self._animate_payload is not None:
             self.animate_motion_list_clear()
             self._animate_payload = None
+
         elif self.mb.motion_list is None:
             self.animate_motion_list_clear()
             return
@@ -939,6 +942,7 @@ class MotionSpaceDisplay(QFrame):
     ):
         super().__init__(parent=parent)
 
+        # instantiate signal objects
         self.animateMotionList = _AnimationSignals(parent=self)
         self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
@@ -1275,7 +1279,7 @@ class MotionSpaceDisplay(QFrame):
         self.display = new_display
         self._connect_display_signals()
 
-    def blockSignals(self, b, /):
+    def blockSignals(self, b: bool, /):
         display = self.display
         if isinstance(display, _MSDBase):
             display.blockSignals(b)
