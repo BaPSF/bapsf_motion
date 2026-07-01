@@ -788,7 +788,7 @@ class MotionSpaceDisplay(QFrame):
         self.redraw_legend()
         self.mpl_canvas.draw_idle()
 
-    def blockSignals(self, b, /):
+    def blockSignals(self, b: bool, /):
         self.redrawSignals.blockSignals(b)
 
         super().blockSignals(b)
