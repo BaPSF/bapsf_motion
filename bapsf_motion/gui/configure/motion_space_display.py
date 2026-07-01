@@ -238,6 +238,10 @@ class MotionSpaceDisplay(QFrame):
 
         self.animateMotionListStarted.emit()
 
+    @Slot()
+    def animate_motion_list_stop(self):
+        self.animate_motion_list_pause()
+
     def _animate_motion_list_init_payload(self):
         delay = 200  # msec
         _timer = QTimer(parent=self)
