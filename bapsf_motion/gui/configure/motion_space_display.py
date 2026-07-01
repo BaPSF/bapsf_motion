@@ -13,7 +13,7 @@ import matplotlib as mpl
 import numpy as np
 import warnings
 
-from PySide6.QtCore import QTimer, Signal, Slot
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
 from typing import List, TYPE_CHECKING
@@ -34,6 +34,13 @@ from matplotlib.backends.backend_qtagg import (  # noqa
     NavigationToolbar2QT as NavigationToolbar,
 )
 from matplotlib.collections import PathCollection  # noqa
+
+
+class _RedrawDisplaySignals(QObject):
+    All = Signal()
+    MotionList = Signal()
+    Position = Signal(list)
+    TargetPosition = Signal(list)
 
 
 class MotionSpaceDisplay(QFrame):
@@ -58,6 +65,9 @@ class MotionSpaceDisplay(QFrame):
         parent: QWidget | None = None,
     ):
         super().__init__(parent=parent)
+
+        # instantiate signal objects
+        self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
 
@@ -96,8 +106,8 @@ class MotionSpaceDisplay(QFrame):
         self._connect_signals()
 
     def _connect_signals(self):
-        self.mbChanged.connect(self.update_canvas)
-        self.targetPositionSelected.connect(self.update_target_position_plot)
+        self.mbChanged.connect(self.redraw_display)
+        self.targetPositionSelected.connect(self.redraw_target_position_plot)
         self.animateMotionListFinished.connect(self.animate_motion_list_pause)
 
         # matplotlib events
@@ -107,6 +117,12 @@ class MotionSpaceDisplay(QFrame):
         self._cid_on_draw = self.mpl_canvas.mpl_connect(
             "draw_event", self.on_draw
         )  # noqa
+
+        # signals to trigger a redraw
+        self.redrawSignals.All.connect(self.redraw_display)
+        self.redrawSignals.MotionList.connect(self.redraw_motion_list_plot)
+        self.redrawSignals.Position.connect(self.redraw_position_plot)
+        self.redrawSignals.TargetPosition.connect(self.redraw_target_position_plot)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -406,7 +422,7 @@ class MotionSpaceDisplay(QFrame):
         self.mbChanged.emit()
 
     @Slot()
-    def update_canvas(self):
+    def redraw_display(self):
         if not isinstance(self.mb, MotionBuilder):
             self.setHidden(True)
             return
@@ -449,7 +465,7 @@ class MotionSpaceDisplay(QFrame):
         fig.tight_layout()
 
         # Draw motion list
-        self.update_motion_list()
+        self.redraw_motion_list_plot()
 
         # Draw insertion point
         insertion_point = self.mb.get_insertion_point()
@@ -482,14 +498,14 @@ class MotionSpaceDisplay(QFrame):
 
         # Draw target position
         if self.display_target_position:
-            self.update_target_position_plot(position=target_position)
+            self.redraw_target_position_plot(position=target_position)
 
         # Draw current position
         if self.display_position:
-            self.update_position_plot(position=position)
+            self.redraw_position_plot(position=position)
 
         # Draw legend
-        self.update_legend()
+        self.redraw_legend()
 
         self.mpl_canvas.draw_idle()
 
@@ -501,7 +517,7 @@ class MotionSpaceDisplay(QFrame):
 
         self.logger.info("Re-draw DONE.")
 
-    def update_legend(self):
+    def redraw_legend(self):
         _plotted_layers = (
             [] if self._motionlist_plot_names is None else self._motionlist_plot_names
         )
@@ -526,7 +542,8 @@ class MotionSpaceDisplay(QFrame):
 
         self.mpl_canvas.draw_idle()
 
-    def update_motion_list(self):
+    @Slot()
+    def redraw_motion_list_plot(self):
         self.animate_motion_list_clear()
 
         # plot the individual point layers (if join scheme is sequential)
@@ -640,11 +657,11 @@ class MotionSpaceDisplay(QFrame):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw_idle()
 
     @Slot(list)
-    def update_target_position_plot(self, position):
+    def redraw_target_position_plot(self, position):
         self.logger.info(f"Drawing target position {position}")
 
         if not self.display_target_position:
@@ -683,10 +700,11 @@ class MotionSpaceDisplay(QFrame):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw_idle()
 
-    def update_position_plot(self, position):
+    @Slot(list)
+    def redraw_position_plot(self, position):
         self.logger.info(f"Drawing position {position}")
 
         if not self.display_position:
@@ -767,8 +785,13 @@ class MotionSpaceDisplay(QFrame):
                 animated=True,
             )
 
-        self.update_legend()
+        self.redraw_legend()
         self.mpl_canvas.draw_idle()
+
+    def blockSignals(self, b: bool, /):
+        self.redrawSignals.blockSignals(b)
+
+        super().blockSignals(b)
 
     def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
