@@ -79,6 +79,7 @@ class MotionSpaceDisplay(QFrame):
         super().__init__(parent=parent)
 
         # instantiate signal objects
+        self.animateMotionList = _AnimationSignals(parent=self)
         self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
@@ -803,6 +804,7 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.draw_idle()
 
     def blockSignals(self, b: bool, /):
+        self.animateMotionList.blockSignals(b)
         self.redrawSignals.blockSignals(b)
 
         super().blockSignals(b)
