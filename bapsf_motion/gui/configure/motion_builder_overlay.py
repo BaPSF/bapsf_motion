@@ -183,16 +183,16 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_move_up_btn.clicked.connect(self._layer_list_item_move_up)
         self.layer_move_down_btn.clicked.connect(self._layer_list_item_move_down)
 
-        self.mspace_display.animateMotionListFinished.connect(
+        self.mspace_display.animateMotionList.Finished.connect(
             self._animate_motion_list_finished
         )
-        self.mspace_display.animateMotionListCleared.connect(
+        self.mspace_display.animateMotionList.Cleared.connect(
             self._animate_motion_list_finished
         )
-        self.mspace_display.animateMotionListStarted.connect(
+        self.mspace_display.animateMotionList.Started.connect(
             self._animate_motion_list_btn_txt_to_pause
         )
-        self.mspace_display.animateMotionListPaused.connect(
+        self.mspace_display.animateMotionList.Paused.connect(
             self._animate_motion_list_btn_txt_to_animate
         )
         self.animate_ml_action_btn.clicked.connect(self._animate_motion_list)
