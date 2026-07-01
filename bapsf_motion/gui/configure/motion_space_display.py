@@ -383,12 +383,14 @@ class MotionSpaceDisplay2D(_MSDBase):
             self._animate_payload["timer"].start()
             self.animateMotionList.Started.emit()
             return
-        elif self._animate_payload is not None:
-            self.animate_motion_list_clear()
-            self._animate_payload = None
-        elif self.mb.motion_list is None:
+
+        if self._animate_payload is None and self.mb.motion_list is None:
             self.animate_motion_list_clear()
             return
+
+        if self._animate_payload is not None:
+            self.animate_motion_list_clear()
+            self._animate_payload = None
 
         self._animate_motion_list_init_payload()
         self._animate_payload["timer"].start()  # noqa
@@ -1211,6 +1213,9 @@ class MotionSpaceDisplay(QFrame):
         self._connect_display_signals()
 
     def blockSignals(self, b: bool, /):
+        self.animateMotionList.blockSignals(b)
+        self.redrawSignals.blockSignals(b)
+
         display = self.display
         if isinstance(display, _MSDBase):
             display.blockSignals(b)
