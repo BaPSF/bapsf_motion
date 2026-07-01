@@ -4,6 +4,8 @@ plotting the :term:`motion space` associated with a |MotionBuilder|
 instance.
 """
 
+from __future__ import annotations
+
 __all__ = ["MotionSpaceDisplay"]
 
 import logging
@@ -57,8 +59,6 @@ class _AnimationSignals(QObject):
 class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
-    animateMotionList = _AnimationSignals()
-    redrawSignals = _RedrawDisplaySignals()
 
     _default_logger_name = "MSD-Base"
     _default_legend_names = [
@@ -76,6 +76,10 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
         parent: QWidget | None = None,
     ):
         super().__init__(parent=parent)
+
+        # instantiate signal objects
+        self.animateMotionList = _AnimationSignals(parent=self)
+        self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
         self._logger = self._init_logger(logger)
         self._mb = self._init_motion_builder(mb)
@@ -242,13 +246,13 @@ class _MSDBase(QWidget, ABC, metaclass=_ABCMetaQWidget):
         _timer = self._animate_payload["timer"]  # type: QTimer
         return _timer.isActive()
 
-    def blockSignals(self, b, /):
+    def blockSignals(self, b: bool, /):
         self.redrawSignals.blockSignals(b)
         self.animateMotionList.blockSignals(b)
 
         super().blockSignals(b)
 
-    def closeEvent(self, event: "QCloseEvent"):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
 
@@ -915,9 +919,6 @@ class MotionSpaceDisplay2D(_MSDBase):
 class MotionSpaceDisplay(QFrame):
     targetPositionSelected = Signal(list)
 
-    animateMotionList = _AnimationSignals()
-    redrawSignals = _RedrawDisplaySignals()
-
     _default_legend_names = [
         "motion_list",
         "probe",
@@ -926,8 +927,16 @@ class MotionSpaceDisplay(QFrame):
         "insertion_point",
     ]
 
-    def __init__(self, mb: MotionBuilder | None = None, parent: QWidget | None = None):
+    def __init__(
+        self,
+        mb: MotionBuilder | None = None,
+        parent: QWidget | None = None,
+    ):
         super().__init__(parent=parent)
+
+        # instantiate signal objects
+        self.animateMotionList = _AnimationSignals(parent=self)
+        self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
         self._mb = self._init_motion_builder(mb)
@@ -1201,13 +1210,13 @@ class MotionSpaceDisplay(QFrame):
         self.display = new_display
         self._connect_display_signals()
 
-    def blockSignals(self, b, /):
+    def blockSignals(self, b: bool, /):
         display = self.display
         if isinstance(display, _MSDBase):
             display.blockSignals(b)
 
         super().blockSignals(b)
 
-    def closeEvent(self, event: "QCloseEvent"):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
         super().closeEvent(event)
