@@ -43,6 +43,18 @@ class _RedrawDisplaySignals(QObject):
     TargetPosition = Signal(list)
 
 
+class _AnimationSignals(QObject):
+    Cleared = Signal()
+    Finished = Signal()
+    Paused = Signal()
+    Started = Signal()
+
+    Clear = Signal()
+    Pause = Signal()
+    Start = Signal()
+    Stop = Signal()
+
+
 class MotionSpaceDisplay(QFrame):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
