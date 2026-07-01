@@ -13,7 +13,7 @@ import matplotlib as mpl
 import numpy as np
 import warnings
 
-from PySide6.QtCore import QTimer, Signal, Slot, QObject
+from PySide6.QtCore import QObject, QTimer, Signal, Slot
 from PySide6.QtGui import QMouseEvent
 from PySide6.QtWidgets import QFrame, QSizePolicy, QVBoxLayout
 from typing import List, TYPE_CHECKING
