@@ -1703,14 +1703,17 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"exclusion look like : {mb_config.get('exclusions', None)}")
         self.logger.info(f"layer looks like : {mb_config.get('layers', None)}")
 
-        self.mspace_display.link_motion_builder(self._mb)
-        self._mspace_display_full_draw = True
         mb = MotionBuilder(**mb_config)
 
         if skip_assignment:
             return mb
 
         self._mb = mb
+
+        self.blockSignals(True)
+        self.link_motion_builder_to_display()
+        self.blockSignals(False)
+
         self.configChanged.emit()
         return self._mb
 
