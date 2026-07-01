@@ -43,13 +43,21 @@ class _RedrawDisplaySignals(QObject):
     TargetPosition = Signal(list)
 
 
+class _AnimationSignals(QObject):
+    Cleared = Signal()
+    Finished = Signal()
+    Paused = Signal()
+    Started = Signal()
+
+    Clear = Signal()
+    Pause = Signal()
+    Start = Signal()
+    Stop = Signal()
+
+
 class MotionSpaceDisplay(QFrame):
     mbChanged = Signal()
     targetPositionSelected = Signal(list)
-    animateMotionListStarted = Signal()
-    animateMotionListFinished = Signal()
-    animateMotionListPaused = Signal()
-    animateMotionListCleared = Signal()
 
     _default_legend_names = [
         "motion_list",
@@ -67,6 +75,7 @@ class MotionSpaceDisplay(QFrame):
         super().__init__(parent=parent)
 
         # instantiate signal objects
+        self.animateMotionList = _AnimationSignals(parent=self)
         self.redrawSignals = _RedrawDisplaySignals(parent=self)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.MSD")
@@ -108,7 +117,6 @@ class MotionSpaceDisplay(QFrame):
     def _connect_signals(self):
         self.mbChanged.connect(self.redraw_display)
         self.targetPositionSelected.connect(self.redraw_target_position_plot)
-        self.animateMotionListFinished.connect(self.animate_motion_list_pause)
 
         # matplotlib events
         self._mpl_pick_callback_id = self.mpl_canvas.mpl_connect(
@@ -123,6 +131,13 @@ class MotionSpaceDisplay(QFrame):
         self.redrawSignals.MotionList.connect(self.redraw_motion_list_plot)
         self.redrawSignals.Position.connect(self.redraw_position_plot)
         self.redrawSignals.TargetPosition.connect(self.redraw_target_position_plot)
+
+        # signals to trigger motion list animation
+        self.animateMotionList.Clear.connect(self.animate_motion_list_clear)
+        self.animateMotionList.Pause.connect(self.animate_motion_list_pause)
+        self.animateMotionList.Start.connect(self.animate_motion_list_start)
+        self.animateMotionList.Stop.connect(self.animate_motion_list_stop)
+        self.animateMotionList.Finished.connect(self.animate_motion_list_stop)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -205,22 +220,29 @@ class MotionSpaceDisplay(QFrame):
 
         return None
 
-    def animate_motion_list(self):
+    @Slot()
+    def animate_motion_list_start(self):
         if self._animate_payload is not None and not self._animate_payload["finished"]:
             self._animate_payload["timer"].start()
-            self.animateMotionListStarted.emit()
+            self.animateMotionList.Started.emit()
             return
-        elif self._animate_payload is not None:
+
+        if self._animate_payload is None and self.mb.motion_list is None:
+            self.animate_motion_list_clear()
+            return
+
+        if self._animate_payload is not None:
             self.animate_motion_list_clear()
             self._animate_payload = None
-        elif self.mb.motion_list is None:
-            self.animate_motion_list_clear()
-            return
 
         self._animate_motion_list_init_payload()
         self._animate_payload["timer"].start()  # noqa
 
-        self.animateMotionListStarted.emit()
+        self.animateMotionList.Started.emit()
+
+    @Slot()
+    def animate_motion_list_stop(self):
+        self.animate_motion_list_pause()
 
     def _animate_motion_list_init_payload(self):
         delay = 200  # msec
@@ -248,7 +270,7 @@ class MotionSpaceDisplay(QFrame):
         self._animate_payload["timer"].stop()
 
         if not self._animate_payload["finished"]:
-            self.animateMotionListPaused.emit()
+            self.animateMotionList.Paused.emit()
 
     @Slot()
     def animate_motion_list_clear(self):
@@ -270,7 +292,7 @@ class MotionSpaceDisplay(QFrame):
 
         self.mpl_canvas.draw_idle()
 
-        self.animateMotionListCleared.emit()
+        self.animateMotionList.Cleared.emit()
 
     @Slot()
     def _update_motion_list_trace(self, *, to_index: int = None):
@@ -340,7 +362,7 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.draw_idle()
         if to_index == self.mb.motion_list.shape[0] - 1:
             self._animate_payload["finished"] = True
-            self.animateMotionListFinished.emit()
+            self.animateMotionList.Finished.emit()
             return
 
         to_index += self._animate_payload["index_step"]
@@ -512,7 +534,7 @@ class MotionSpaceDisplay(QFrame):
         # re-start the motion list animation
         if is_animating:
             self.blockSignals(True)
-            self.animate_motion_list()
+            self.animate_motion_list_start()
             self.blockSignals(False)
 
         self.logger.info("Re-draw DONE.")
@@ -789,6 +811,7 @@ class MotionSpaceDisplay(QFrame):
         self.mpl_canvas.draw_idle()
 
     def blockSignals(self, b: bool, /):
+        self.animateMotionList.blockSignals(b)
         self.redrawSignals.blockSignals(b)
 
         super().blockSignals(b)
