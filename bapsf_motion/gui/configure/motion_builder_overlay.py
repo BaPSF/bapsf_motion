@@ -1538,6 +1538,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_edit_btn.setEnabled(enable)
         self.layer_remove_btn.setEnabled(enable)
 
+    def link_motion_builder_to_display(self):
+        mb = self.mb
+        if not isinstance(mb, MotionBuilder):
+            return
+
+        self.mspace_display.link_motion_builder(mb)
+        self._mspace_display_full_draw = True
+        self.configChanged.emit()
+
     def redraw_display(self):
         if self._mspace_display_full_draw:
             self.mspace_display.redrawSignals.All.emit()
