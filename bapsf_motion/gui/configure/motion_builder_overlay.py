@@ -703,21 +703,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget.setLayout(layout)
         return _widget
 
-    def _init_animate_ml_frame(self):
-        frame = QFrame(parent=self)
-        frame.setObjectName("animate_ml_controls")
-        frame.setStyleSheet("""
-            QFrame#animate_ml_controls {
-                border: 2px solid rgb(125, 125, 125);
-                border-radius: 5px; 
-                padding: 0px;
-                margin: 0px;
-            }
-            """)
-        frame.setFixedWidth(72)
-        frame.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
-        return frame
-
     def _init_animate_ml_action_btn(self):
         btn = StyleButton("\n".join(list("ANIMATE")), parent=self.animate_ml_frame)
         btn.setFixedWidth(44)
@@ -736,7 +721,30 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setFont(_font)
         return btn
 
-    def _init_layer_list_box(self):
+    def _init_animate_ml_frame(self):
+        frame = QFrame(parent=self)
+        frame.setObjectName("animate_ml_controls")
+        frame.setStyleSheet("""
+            QFrame#animate_ml_controls {
+                border: 2px solid rgb(125, 125, 125);
+                border-radius: 5px; 
+                padding: 0px;
+                margin: 0px;
+            }
+            """)
+        frame.setFixedWidth(72)
+        frame.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        return frame
+
+    def _init_exclusion_add_btn(self):
+        return self._generate_btn_widget("ADD")
+
+    def _init_exclusion_edit_btn(self):
+        btn = self._generate_btn_widget("EDIT")
+        btn.setEnabled(False)
+        return btn
+
+    def _init_exclusion_list_box(self):
         box = QListWidget(parent=self)
         box.setMinimumHeight(250)
         _font = box.font()
@@ -744,32 +752,26 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         box.setFont(_font)
         return box
 
-    def _init_layer_add_btn(self):
-        return self._generate_btn_widget("ADD")
-
-    def _init_layer_remove_btn(self):
+    def _init_exclusion_remove_btn(self):
         btn = self._generate_btn_widget("REMOVE")
         btn.setEnabled(False)
         return btn
+
+    def _init_layer_add_btn(self):
+        return self._generate_btn_widget("ADD")
 
     def _init_layer_edit_btn(self):
         btn = self._generate_btn_widget("EDIT")
         btn.setEnabled(False)
         return btn
 
-    def _init_layer_move_up_btn(self):
-        btn = IconButton(icon_name_dict["arrow-up"], parent=self)
-        btn.setIconSize(20)
-        btn.setFixedWidth(24)
-        btn.setFixedHeight(80)
-        return btn
-
-    def _init_layer_move_down_btn(self):
-        btn = IconButton(icon_name_dict["arrow-down"], parent=self)
-        btn.setIconSize(20)
-        btn.setFixedWidth(24)
-        btn.setFixedHeight(80)
-        return btn
+    def _init_layer_list_box(self):
+        box = QListWidget(parent=self)
+        box.setMinimumHeight(250)
+        _font = box.font()
+        _font.setPointSize(11)
+        box.setFont(_font)
+        return box
 
     def _init_layer_ml_combine_toggle(self):
         btn = StyleButton("ML Combine", parent=self)
@@ -821,24 +823,22 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setFixedWidth(180)
         return btn
 
-    def _init_exclusion_list_box(self):
-        box = QListWidget(parent=self)
-        box.setMinimumHeight(250)
-        _font = box.font()
-        _font.setPointSize(11)
-        box.setFont(_font)
-        return box
-
-    def _init_exclusion_add_btn(self):
-        return self._generate_btn_widget("ADD")
-
-    def _init_exclusion_remove_btn(self):
-        btn = self._generate_btn_widget("REMOVE")
-        btn.setEnabled(False)
+    def _init_layer_move_down_btn(self):
+        btn = IconButton(icon_name_dict["arrow-down"], parent=self)
+        btn.setIconSize(20)
+        btn.setFixedWidth(24)
+        btn.setFixedHeight(80)
         return btn
 
-    def _init_exclusion_edit_btn(self):
-        btn = self._generate_btn_widget("EDIT")
+    def _init_layer_move_up_btn(self):
+        btn = IconButton(icon_name_dict["arrow-up"], parent=self)
+        btn.setIconSize(20)
+        btn.setFixedWidth(24)
+        btn.setFixedHeight(80)
+        return btn
+
+    def _init_layer_remove_btn(self):
+        btn = self._generate_btn_widget("REMOVE")
         btn.setEnabled(False)
         return btn
 
