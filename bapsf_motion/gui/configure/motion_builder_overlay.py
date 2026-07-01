@@ -1725,9 +1725,3 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"New MotionBuilder configuration is being returned, {config}.")
         self._safe_return_config_emit(config)
         self.close()
-
-    def close(self, /):
-        if isinstance(self.mspace_display, MotionSpaceDisplay):
-            self.mspace_display.animateMotionList.Clear.emit()
-
-        super().close()
