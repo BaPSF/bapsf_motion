@@ -552,7 +552,7 @@ class MGWidget(QWidget):
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
         self.drive_control_widget.movementStopped.connect(self._update_position_in_plot)
         self.drive_control_widget.targetPositionChanged.connect(
-            self.mspace_display.redraw_target_position_plot
+            self.mspace_display.redrawSignals.TargetPosition.emit
         )
         self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
@@ -585,7 +585,7 @@ class MGWidget(QWidget):
             position = self.drive_control_widget.position
         else:
             position = None
-        self.mspace_display.redraw_position_plot(position)
+        self.mspace_display.redrawSignals.Position.emit(position)
 
         if self._plot_timer_issue_new_single_shot:
             # start another single shot if update_position_in_plot() was
