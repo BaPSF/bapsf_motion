@@ -24,7 +24,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, List, Tuple, TYPE_CHECKING
 
 from bapsf_motion.actors import Drive, MotionGroup, MotionGroupConfig, RunManager
 from bapsf_motion.gui.configure.controllers import (
@@ -56,6 +56,8 @@ from bapsf_motion.transform.helpers import transform_registry
 from bapsf_motion.utils import _deepcopy_dict, dict_equal, loop_safe_stop, toml
 
 if TYPE_CHECKING:
+    from PySide6.QtGui import QCloseEvent, QResizeEvent
+
     from bapsf_motion.gui.configure import configure_
     from bapsf_motion.gui.configure.bases import _ConfigOverlay
 
@@ -69,7 +71,7 @@ class DriveControlWidget(QWidget):
     driveStatusChanged = Signal()
     targetPositionChanged = Signal(list)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.DCW")
@@ -248,7 +250,7 @@ class DriveControlWidget(QWidget):
         enabled = super().isEnabled()
         return enabled and self.desktop_controller_widget.isEnabled()
 
-    def link_motion_group(self, mg):
+    def link_motion_group(self, mg: MotionGroup | None):
         self.logger.debug("Linking motion group")
 
         if not isinstance(mg, MotionGroup):
@@ -359,7 +361,7 @@ class DriveControlWidget(QWidget):
         if isinstance(self.game_controller_widget, DriveGameController):
             self.game_controller_widget.motor_signals_set_blocking(block)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
 
         self.desktop_controller_widget.close()
@@ -381,9 +383,9 @@ class MGWidget(QWidget):
     def __init__(
         self,
         *,
-        mg_config: Optional[MotionGroupConfig] = None,
-        defaults: Optional[Dict[str, Any]] = None,
-        parent: "configure_.ConfigureGUI",
+        mg_config: MotionGroupConfig | None = None,
+        defaults: Dict[str, Any] | None = None,
+        parent: configure_.ConfigureGUI,
     ):
         super().__init__(parent=parent)
 
@@ -443,7 +445,7 @@ class MGWidget(QWidget):
         self._build_transform_defaults()
 
         # Initialize the plot update timeer attributes
-        self._update_plot_interval = 200  # in msec
+        self._update_plot_interval = 300  # in msec
         self._update_plot_timer = QTimer()
         self._update_plot_timer.setSingleShot(True)
         self._plot_timer_issue_new_single_shot = False
@@ -1038,7 +1040,9 @@ class MGWidget(QWidget):
 
         # re-enable the mspace_display, it is disabled when a popup
         # config is launched
-        self.mspace_display.setEnabled(True)
+        if not self.mspace_display.isEnabled():
+            self.mspace_display.setEnabled(True)
+            self.mspace_display.blockSignals(False)
 
         self._validate_motion_group()
 
@@ -1288,7 +1292,7 @@ class MGWidget(QWidget):
         self._overlay_widget.show()
         self._overlay_shown = True
 
-    def _overlay_setup(self, overlay: "_ConfigOverlay"):
+    def _overlay_setup(self, overlay: _ConfigOverlay):
         overlay.move(0, 0)
         overlay.resize(self.width(), self.height())
         overlay.closing.connect(self._overlay_close)
@@ -1301,7 +1305,7 @@ class MGWidget(QWidget):
         self._overlay_widget = None
         self._overlay_shown = False
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: QResizeEvent):
         if self._overlay_shown:
             self._overlay_widget.resize(event.size())
         super().resizeEvent(event)
@@ -1343,7 +1347,7 @@ class MGWidget(QWidget):
         self._mg_index = val
 
     @property
-    def mg(self) -> "MotionGroup":
+    def mg(self) -> MotionGroup:
         """Current working Motion Group"""
         return self._mg
 
@@ -1355,7 +1359,7 @@ class MGWidget(QWidget):
         self.configChanged.emit()
 
     @property
-    def mg_config(self) -> "Dict[str, Any] | MotionGroupConfig":
+    def mg_config(self) -> Dict[str, Any] | MotionGroupConfig:
         if isinstance(self.mg, MotionGroup):
             self._mg_config = _deepcopy_dict(self.mg.config)
         elif self._mg_config is None:
@@ -1920,6 +1924,7 @@ class MGWidget(QWidget):
 
         self.drive_control_widget.setEnabled(False)
         self.mspace_display.setEnabled(False)
+        self.mspace_display.blockSignals(True)
 
     @Slot()
     def discard_close(self):
@@ -1952,7 +1957,7 @@ class MGWidget(QWidget):
         self.returnConfig.emit(-1, {})
         self.close()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing MGWidget")
         try:
             self.configChanged.disconnect()
