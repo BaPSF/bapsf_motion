@@ -218,7 +218,8 @@ class MotionSpaceDisplay(QFrame):
 
         return None
 
-    def animate_motion_list(self):
+    @Slot()
+    def animate_motion_list_start(self):
         if self._animate_payload is not None and not self._animate_payload["finished"]:
             self._animate_payload["timer"].start()
             self.animateMotionListStarted.emit()
@@ -527,7 +528,7 @@ class MotionSpaceDisplay(QFrame):
         # re-start the motion list animation
         if is_animating:
             self.blockSignals(True)
-            self.animate_motion_list()
+            self.animate_motion_list_start()
             self.blockSignals(False)
 
         self.logger.info("Re-draw DONE.")
