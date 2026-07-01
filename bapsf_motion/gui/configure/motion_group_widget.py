@@ -443,7 +443,7 @@ class MGWidget(QWidget):
         self._build_transform_defaults()
 
         # Initialize the plot update timeer attributes
-        self._update_plot_interval = 200  # in msec
+        self._update_plot_interval = 300  # in msec
         self._update_plot_timer = QTimer()
         self._update_plot_timer.setSingleShot(True)
         self._plot_timer_issue_new_single_shot = False
