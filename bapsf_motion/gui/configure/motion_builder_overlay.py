@@ -997,9 +997,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     def _animate_motion_list(self):
         _btn_text = self.animate_ml_action_btn.text().replace("\n", "")
         if _btn_text == "PAUSE":
-            self.mspace_display.animate_motion_list_pause()
+            self.mspace_display.animateMotionList.Pause.emit()
         else:
-            self.mspace_display.animate_motion_list_start()
+            self.mspace_display.animateMotionList.Start.emit()
 
     @Slot()
     def _animate_motion_list_btn_txt_to_animate(self):
