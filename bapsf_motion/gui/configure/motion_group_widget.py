@@ -56,6 +56,8 @@ from bapsf_motion.transform.helpers import transform_registry
 from bapsf_motion.utils import _deepcopy_dict, dict_equal, loop_safe_stop, toml
 
 if TYPE_CHECKING:
+    from PySide6.QtGui import QCloseEvent, QResizeEvent
+
     from bapsf_motion.gui.configure import configure_
     from bapsf_motion.gui.configure.bases import _ConfigOverlay
 
@@ -69,7 +71,7 @@ class DriveControlWidget(QWidget):
     driveStatusChanged = Signal()
     targetPositionChanged = Signal(list)
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: QWidget | None = None):
         super().__init__(parent)
 
         self._logger = logging.getLogger(f"{gui_logger.name}.DCW")
@@ -248,7 +250,7 @@ class DriveControlWidget(QWidget):
         enabled = super().isEnabled()
         return enabled and self.desktop_controller_widget.isEnabled()
 
-    def link_motion_group(self, mg):
+    def link_motion_group(self, mg: MotionGroup | None):
         self.logger.debug("Linking motion group")
 
         if not isinstance(mg, MotionGroup):
@@ -359,7 +361,7 @@ class DriveControlWidget(QWidget):
         if isinstance(self.game_controller_widget, DriveGameController):
             self.game_controller_widget.motor_signals_set_blocking(block)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
 
         self.desktop_controller_widget.close()
@@ -1303,7 +1305,7 @@ class MGWidget(QWidget):
         self._overlay_widget = None
         self._overlay_shown = False
 
-    def resizeEvent(self, event):
+    def resizeEvent(self, event: QResizeEvent):
         if self._overlay_shown:
             self._overlay_widget.resize(event.size())
         super().resizeEvent(event)
@@ -1955,7 +1957,7 @@ class MGWidget(QWidget):
         self.returnConfig.emit(-1, {})
         self.close()
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing MGWidget")
         try:
             self.configChanged.disconnect()
