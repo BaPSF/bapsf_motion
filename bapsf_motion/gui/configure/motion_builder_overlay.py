@@ -196,9 +196,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self._animate_motion_list_btn_txt_to_animate
         )
         self.animate_ml_action_btn.clicked.connect(self._animate_motion_list)
-        self.animate_ml_clear_btn.clicked.connect(
-            self.mspace_display.animate_motion_list_clear
-        )
+        self.animate_ml_clear_btn.clicked.connect(self._animate_motion_list_clear)
 
     def _define_layout(self):
         #
@@ -1012,6 +1010,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
     @Slot()
     def _animate_motion_list_finished(self):
         self.animate_ml_action_btn.setText("\n".join(list("ANIMATE")))
+
+    @Slot()
+    def _animate_motion_list_clear(self):
+        self.mspace_display.animateMotionList.Clear.emit()
 
     @Slot()
     def _exclusion_configure_new(self):
