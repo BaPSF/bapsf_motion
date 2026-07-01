@@ -1641,7 +1641,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         ).fullmatch(list_name)
         return None if match is None else match.group("name")
 
-    def _default_motion_builder(self):
+    def _default_motion_builder(self) -> MotionBuilder:
         config = {"space": {}}
         for ii, aname in enumerate(self.axis_names):
             axis = self.mg.drive.axes[ii]
