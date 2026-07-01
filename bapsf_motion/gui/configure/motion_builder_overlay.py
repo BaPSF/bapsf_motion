@@ -191,9 +191,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             self._animate_motion_list_btn_txt_to_animate
         )
         self.animate_ml_action_btn.clicked.connect(self._animate_motion_list)
-        self.animate_ml_clear_btn.clicked.connect(
-            self.mspace_display.animateMotionList.Clear.emit
-        )
+        self.animate_ml_clear_btn.clicked.connect(self._animate_motion_list_clear)
 
     def _define_layout(self):
         #
@@ -1015,6 +1013,10 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.animate_ml_action_btn.setText("\n".join(list("ANIMATE")))
 
     @Slot()
+    def _animate_motion_list_clear(self):
+        self.mspace_display.animateMotionList.Clear.emit()
+
+    @Slot()
     def _exclusion_configure_new(self):
         if not self._params_widget.isHidden():
             self._hide_and_clear_params_widget()
@@ -1722,9 +1724,3 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"New MotionBuilder configuration is being returned, {config}.")
         self._safe_return_config_emit(config)
         self.close()
-
-    def close(self, /):
-        if isinstance(self.mspace_display, MotionSpaceDisplay):
-            self.mspace_display.animateMotionList.Clear.emit()
-
-        super().close()
