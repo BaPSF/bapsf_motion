@@ -125,11 +125,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_ml_combine_toggle = self._init_layer_ml_combine_toggle()
 
         # SET UP PLOT WIDGET
-        self.mspace_display = MotionSpaceDisplay(parent=self)
-        self.mspace_display.display_position = False
-        self.mspace_display.display_target_position = False
-        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
-            self.mspace_display.link_motion_builder(self.mg.mb)
+        self.mspace_display = self._init_mspace_display()
 
         self.animate_ml_frame = self._init_animate_ml_frame()
         self.animate_ml_action_btn = self._init_animate_ml_action_btn()
@@ -849,6 +845,13 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
             mb = self._default_motion_builder()
 
         return mb
+
+    def _init_mspace_display(self):
+        mb = self.mb
+        display = MotionSpaceDisplay(mb=mb, parent=self)
+        display.display_position = False
+        display.display_target_position = False
+        return display
 
     @property
     def dimensionality(self):
