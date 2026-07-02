@@ -8,6 +8,7 @@ from __future__ import annotations
 __all__ = ["MotionBuilderConfigOverlay"]
 
 import ast
+import copy
 import inspect
 import logging
 import math
@@ -71,7 +72,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         super().__init__(mg, parent)
         self._logger = logging.getLogger(f"{self.logger.name}.MBCO")
 
-        self._mb = None
+        self._mb = self._init_motion_builder()
 
         self._space_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
         self._mspace_display_full_draw = True
@@ -132,7 +133,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
         # non-widget initialization
 
-        self._initialize_motion_builder()
         self._initialize_exclusion_list_box()
         self._initialize_layer_list_box()
 
@@ -699,21 +699,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _widget.setLayout(layout)
         return _widget
 
-    def _init_animate_ml_frame(self):
-        frame = QFrame(parent=self)
-        frame.setObjectName("animate_ml_controls")
-        frame.setStyleSheet("""
-            QFrame#animate_ml_controls {
-                border: 2px solid rgb(125, 125, 125);
-                border-radius: 5px; 
-                padding: 0px;
-                margin: 0px;
-            }
-            """)
-        frame.setFixedWidth(72)
-        frame.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
-        return frame
-
     def _init_animate_ml_action_btn(self):
         btn = StyleButton("\n".join(list("ANIMATE")), parent=self.animate_ml_frame)
         btn.setFixedWidth(44)
@@ -732,14 +717,49 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setFont(_font)
         return btn
 
-    def _init_mspace_display(self):
-        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
-            mb = self.mg.mb
-        else:
-            mb = None
+    def _init_animate_ml_frame(self):
+        frame = QFrame(parent=self)
+        frame.setObjectName("animate_ml_controls")
+        frame.setStyleSheet("""
+            QFrame#animate_ml_controls {
+                border: 2px solid rgb(125, 125, 125);
+                border-radius: 5px; 
+                padding: 0px;
+                margin: 0px;
+            }
+            """)
+        frame.setFixedWidth(72)
+        frame.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+        return frame
 
-        display = MotionSpaceDisplay(mb=mb, parent=self)
-        return display
+    def _init_exclusion_add_btn(self):
+        return self._generate_btn_widget("ADD")
+
+    def _init_exclusion_edit_btn(self):
+        btn = self._generate_btn_widget("EDIT")
+        btn.setEnabled(False)
+        return btn
+
+    def _init_exclusion_list_box(self):
+        box = QListWidget(parent=self)
+        box.setMinimumHeight(250)
+        _font = box.font()
+        _font.setPointSize(11)
+        box.setFont(_font)
+        return box
+
+    def _init_exclusion_remove_btn(self):
+        btn = self._generate_btn_widget("REMOVE")
+        btn.setEnabled(False)
+        return btn
+
+    def _init_layer_add_btn(self):
+        return self._generate_btn_widget("ADD")
+
+    def _init_layer_edit_btn(self):
+        btn = self._generate_btn_widget("EDIT")
+        btn.setEnabled(False)
+        return btn
 
     def _init_layer_list_box(self):
         box = QListWidget(parent=self)
@@ -748,33 +768,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         _font.setPointSize(11)
         box.setFont(_font)
         return box
-
-    def _init_layer_add_btn(self):
-        return self._generate_btn_widget("ADD")
-
-    def _init_layer_remove_btn(self):
-        btn = self._generate_btn_widget("REMOVE")
-        btn.setEnabled(False)
-        return btn
-
-    def _init_layer_edit_btn(self):
-        btn = self._generate_btn_widget("EDIT")
-        btn.setEnabled(False)
-        return btn
-
-    def _init_layer_move_up_btn(self):
-        btn = IconButton(icon_name_dict["arrow-up"], parent=self)
-        btn.setIconSize(20)
-        btn.setFixedWidth(24)
-        btn.setFixedHeight(80)
-        return btn
-
-    def _init_layer_move_down_btn(self):
-        btn = IconButton(icon_name_dict["arrow-down"], parent=self)
-        btn.setIconSize(20)
-        btn.setFixedWidth(24)
-        btn.setFixedHeight(80)
-        return btn
 
     def _init_layer_ml_combine_toggle(self):
         btn = StyleButton("ML Combine", parent=self)
@@ -826,26 +819,39 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn.setFixedWidth(180)
         return btn
 
-    def _init_exclusion_list_box(self):
-        box = QListWidget(parent=self)
-        box.setMinimumHeight(250)
-        _font = box.font()
-        _font.setPointSize(11)
-        box.setFont(_font)
-        return box
+    def _init_layer_move_down_btn(self):
+        btn = IconButton(icon_name_dict["arrow-down"], parent=self)
+        btn.setIconSize(20)
+        btn.setFixedWidth(24)
+        btn.setFixedHeight(80)
+        return btn
 
-    def _init_exclusion_add_btn(self):
-        return self._generate_btn_widget("ADD")
+    def _init_layer_move_up_btn(self):
+        btn = IconButton(icon_name_dict["arrow-up"], parent=self)
+        btn.setIconSize(20)
+        btn.setFixedWidth(24)
+        btn.setFixedHeight(80)
+        return btn
 
-    def _init_exclusion_remove_btn(self):
+    def _init_layer_remove_btn(self):
         btn = self._generate_btn_widget("REMOVE")
         btn.setEnabled(False)
         return btn
 
-    def _init_exclusion_edit_btn(self):
-        btn = self._generate_btn_widget("EDIT")
-        btn.setEnabled(False)
-        return btn
+    def _init_motion_builder(self):
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
+            mb = copy.deepcopy(self.mg.mb)
+        else:
+            mb = self._default_motion_builder()
+
+        return mb
+
+    def _init_mspace_display(self):
+        mb = self.mb
+        display = MotionSpaceDisplay(mb=mb, parent=self)
+        display.display_position = False
+        display.display_target_position = False
+        return display
 
     @property
     def dimensionality(self):
@@ -857,13 +863,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     @property
     def mb(self) -> MotionBuilder | None:
-        if (
-            self._mb is None
-            and isinstance(self.mg, MotionGroup)
-            and isinstance(self.mg.mb, MotionBuilder)
-        ):
-            return self.mg.mb
-
         return self._mb
 
     @property
@@ -1543,6 +1542,15 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.layer_edit_btn.setEnabled(enable)
         self.layer_remove_btn.setEnabled(enable)
 
+    def link_motion_builder_to_display(self):
+        mb = self.mb
+        if not isinstance(mb, MotionBuilder):
+            return
+
+        self.mspace_display.link_motion_builder(mb)
+        self._mspace_display_full_draw = True
+        self.configChanged.emit()
+
     def redraw_display(self):
         if self._mspace_display_full_draw:
             self.mspace_display.redrawSignals.All.emit()
@@ -1638,18 +1646,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         ).fullmatch(list_name)
         return None if match is None else match.group("name")
 
-    def _initialize_motion_builder(self):
-        if (
-            not isinstance(self.mg, MotionGroup)
-            or not isinstance(self.mb, MotionBuilder)
-            or not isinstance(self.mg.mb, MotionBuilder)
-        ):
-            pass
-        elif self.mb is self.mg.mb:
-            config = _deepcopy_dict(self.mb.config)
-            self._spawn_motion_builder(config, skip_mspace_link=True)
-            return
-
+    def _default_motion_builder(self) -> MotionBuilder:
         config = {"space": {}}
         for ii, aname in enumerate(self.axis_names):
             axis = self.mg.drive.axes[ii]
@@ -1680,9 +1677,9 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
                 "num": num,
             }
 
-        self._spawn_motion_builder(config, skip_mspace_link=True)
+        return self._spawn_motion_builder(config, skip_assignment=True)
 
-    def _spawn_motion_builder(self, config, skip_mspace_link: bool = False):
+    def _spawn_motion_builder(self, config, skip_assignment: bool = False):
         self.logger.info("Rebuilding motion builder...")
         mb_config = _deepcopy_dict(config)
         mb_config["space"] = list(config["space"].values())
@@ -1699,12 +1696,16 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.logger.info(f"exclusion look like : {mb_config.get('exclusions', None)}")
         self.logger.info(f"layer looks like : {mb_config.get('layers', None)}")
 
-        self._mb = MotionBuilder(**mb_config)
+        mb = MotionBuilder(**mb_config)
 
-        if not skip_mspace_link:
-            self.blockSignals(True)
-            self.link_display_motion_builder()
-            self.blockSignals(False)
+        if skip_assignment:
+            return mb
+
+        self._mb = mb
+
+        self.blockSignals(True)
+        self.link_motion_builder_to_display()
+        self.blockSignals(False)
 
         self.configChanged.emit()
         return self._mb
