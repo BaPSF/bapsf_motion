@@ -8,6 +8,7 @@ from __future__ import annotations
 __all__ = ["MotionBuilderConfigOverlay"]
 
 import ast
+import copy
 import inspect
 import logging
 import math
@@ -71,7 +72,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         super().__init__(mg, parent)
         self._logger = logging.getLogger(f"{self.logger.name}.MBCO")
 
-        self._mb = None
+        self._mb = self._init_motion_builder()
 
         self._space_input_widgets = {}  # type: Dict[str, Dict[str, QLineEditSpecialized]]
         self._mspace_display_full_draw = True
@@ -840,6 +841,14 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         btn = self._generate_btn_widget("REMOVE")
         btn.setEnabled(False)
         return btn
+
+    def _init_motion_builder(self):
+        if isinstance(self.mg, MotionGroup) and isinstance(self.mg.mb, MotionBuilder):
+            mb = copy.deepcopy(self.mg.mb)
+        else:
+            mb = self._default_motion_builder()
+
+        return mb
 
     @property
     def dimensionality(self):
