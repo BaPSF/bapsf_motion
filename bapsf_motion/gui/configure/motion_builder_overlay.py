@@ -141,7 +141,6 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
         self.update_exclusion_list_box()
         self.update_layer_list_box()
         self.update_layer_ml_combine_toggle()
-        self.redraw_display()
 
         self._connect_signals()
 
@@ -848,7 +847,7 @@ class MotionBuilderConfigOverlay(_ConfigOverlay):
 
     def _init_mspace_display(self):
         mb = self.mb
-        display = MotionSpaceDisplay(mb=mb, parent=self)
+        display = MotionSpaceDisplay(mb=mb, delay_draw=True, parent=self)
         display.display_position = False
         display.display_target_position = False
         return display
