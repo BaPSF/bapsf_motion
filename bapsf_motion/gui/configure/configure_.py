@@ -528,10 +528,10 @@ class ConfigureGUI(QMainWindow):
 
         _remove = []
         for key, mg in _rm.mgs.items():
-            if mg.drive.naxes != 2:
+            if mg.drive.naxes not in (2, 3):
                 self.logger.warning(
                     f"The Configuration GUI currently only supports motion"
-                    f" groups with a dimensionality of 2, got {mg.drive.naxes}"
+                    f" groups with a dimensionality of 2 or 3, got {mg.drive.naxes}"
                     f" for motion group '{mg.name}'.  Removing motion group."
                 )
                 _remove.append(key)

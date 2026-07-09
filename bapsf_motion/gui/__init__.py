@@ -3,13 +3,17 @@
 __all__ = [
     "ConfigureApp",
     "LaPDXYTransformCalculatorApp",
+    "LaPDXYZTransformCalculatorApp",
     "get_qapplication",
     "get_color_scheme",
     "cast_color_to_rgba_string",
 ]
 
 try:
-    from bapsf_motion.gui.calculators import LaPDXYTransformCalculatorApp
+    from bapsf_motion.gui.calculators import (
+        LaPDXYTransformCalculatorApp,
+        LaPDXYZTransformCalculatorApp,
+    )
     from bapsf_motion.gui.configure.configure_ import ConfigureApp
     from bapsf_motion.gui.helpers import (
         cast_color_to_rgba_string,
