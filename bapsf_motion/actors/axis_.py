@@ -111,7 +111,7 @@ class Axis(EventActor):
             # terminate self if Motor is terminated
             self.terminate(delay_loop_stop=True)
         else:
-            self.run(auto_run=auto_run)
+            self.run(auto_run=auto_run, force_run=False)
 
     def _configure_before_run(self):
         return
@@ -119,7 +119,7 @@ class Axis(EventActor):
     def _initialize_tasks(self):
         return
 
-    def run(self, auto_run=True):
+    def run(self, auto_run: bool = True, force_run: bool = True):
         if self.terminated:
             # we are restarting
             self._terminated = False
@@ -128,10 +128,10 @@ class Axis(EventActor):
                 motor_settings=self.config["motor_settings"],
             )
 
-        super().run(auto_run=auto_run)
+        super().run(auto_run=auto_run, force_run=force_run)
 
         if isinstance(self.motor, Motor):
-            self.motor.run(auto_run=auto_run)
+            self.motor.run(auto_run=auto_run, force_run=force_run)
 
     def terminate(self, delay_loop_stop=False):
         self.motor.terminate(delay_loop_stop=True)

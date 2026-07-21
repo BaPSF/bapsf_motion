@@ -765,7 +765,7 @@ class MotionGroup(EventActor):
             # terminate self if Drive is terminated
             self.terminate(delay_loop_stop=True)
         elif not self.terminated:
-            self.run(auto_run=auto_run)
+            self.run(auto_run=auto_run, force_run=False)
 
     def _configure_before_run(self):
         return
@@ -773,11 +773,11 @@ class MotionGroup(EventActor):
     def _initialize_tasks(self):
         return
 
-    def run(self, auto_run=True):
-        super().run(auto_run=auto_run)
+    def run(self, auto_run: bool = True, force_run: bool = True):
+        super().run(auto_run=auto_run, force_run=force_run)
 
         if isinstance(self.drive, Drive):
-            self.drive.run(auto_run=auto_run)
+            self.drive.run(auto_run=auto_run, force_run=force_run)
 
     def _spawn_drive(self, config: Dict[str, Any]) -> Union[Drive, None]:
         """

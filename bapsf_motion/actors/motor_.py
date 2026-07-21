@@ -703,7 +703,7 @@ class Motor(EventActor):
             self.terminate(delay_loop_stop=True)
 
         if not self.terminated:
-            self.run(auto_run=auto_run)
+            self.run(auto_run=auto_run, force_run=False)
 
     def _configure_before_run(self):
         # actions to be done during object instantiation, but before
@@ -747,8 +747,10 @@ class Motor(EventActor):
         # self.start_heartbeat()
         return None
 
-    def run(self, auto_run=True):
+    def run(self, auto_run: bool = True, force_run: bool = True):
         self.logger.info(f"Running motor - async loop has is {self.loop.__hash__()}")
+        if not force_run and not self.connected:
+            return
 
         heartbeat_task = self.heartbeat_task
         if (
