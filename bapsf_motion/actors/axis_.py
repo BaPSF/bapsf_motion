@@ -120,6 +120,7 @@ class Axis(EventActor):
         return
 
     def run(self, auto_run: bool = True, force_run: bool = True):
+        self.logger.info(f"Run start-up Axis {self.name}...")
         if self.terminated:
             # we are restarting
             self._terminated = False

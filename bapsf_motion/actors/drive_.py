@@ -112,6 +112,7 @@ class Drive(EventActor):
         return
 
     def run(self, auto_run: bool = True, force_run: bool = True):
+        self.logger.info(f"Run start-up Drive {self.name}...")
         super().run(auto_run=auto_run, force_run=force_run)
 
         if self.axes is None or not self.axes:
