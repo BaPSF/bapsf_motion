@@ -92,9 +92,14 @@ class Axis(EventActor):
         parent: Optional["EventActor"] = None,
     ):
         # TODO: update units so inches can be used
-        self._motor = None
         self._units = u.Unit(units)
         self._units_per_rev = units_per_rev * self._units / u.rev
+
+        self._motor = None
+        self._init_motor_payload = {
+            "ip": ip,
+            "motor_settings": motor_settings,
+        }
 
         super().__init__(
             name=name,
@@ -104,9 +109,6 @@ class Axis(EventActor):
             parent=parent,
         )
 
-        self._motor = None
-        self._spawn_motor(ip=ip, motor_settings=motor_settings)
-
         if isinstance(self._motor, Motor) and self._motor.terminated:
             # terminate self if Motor is terminated
             self.terminate(delay_loop_stop=True)
@@ -114,7 +116,7 @@ class Axis(EventActor):
             self.run(auto_run=auto_run, force_run=False)
 
     def _configure_before_run(self):
-        return
+        self._spawn_motor(**self._init_motor_payload)
 
     def _initialize_tasks(self):
         return
