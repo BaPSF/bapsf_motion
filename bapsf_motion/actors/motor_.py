@@ -735,6 +735,9 @@ class Motor(EventActor):
         try:
             self.connect()
         except ConnectionError:
+            self._update_status(connected=False)
+
+        if not self.connected:
             self.logger.warning("Unable initialize connection to motor.")
             return None
 
