@@ -291,7 +291,7 @@ class EventActor(BaseActor, ABC):
             loop.
 
         force_run: `bool`, optional
-            (DEFAULT: `True`)  This keyword argument is NOT explicityly
+            (DEFAULT: `True`)  This keyword argument is NOT explicitly
             used by `EventActor`, but is a provision for sub-classes
             so they and distinguish between ``run()`` being called
             during ``__init__`` or outside.
