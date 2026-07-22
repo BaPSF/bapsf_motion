@@ -315,7 +315,7 @@ class RunManager(EventActor):
         for key, mgc in self._config["motion_group"].items():
             self._raw_add_motion_group(mgc, key)
 
-        self.run(auto_run=auto_run)
+        self.run(auto_run=auto_run, force_run=False)
 
     def _configure_before_run(self):
         return
@@ -323,15 +323,15 @@ class RunManager(EventActor):
     def _initialize_tasks(self):
         return
 
-    def run(self, auto_run=True):
-        super().run(auto_run=auto_run)
+    def run(self, auto_run: bool = True, force_run: bool = True):
+        self.logger.info(f"Run start-up RunManger {self.name}...")
+        super().run(auto_run=auto_run, force_run=force_run)
 
         if self.mgs is None or not self.mgs:
             return
 
         for mg in self.mgs.values():
-            if not mg.terminated:
-                mg.run()
+            mg.run(auto_run=auto_run, force_run=force_run)
 
     @property
     def mgs(self) -> Dict[Union[str, int], MotionGroup]:

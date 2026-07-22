@@ -103,7 +103,7 @@ class Drive(EventActor):
         if any(ax.terminated for ax in self._axes):
             self.terminate(delay_loop_stop=True)
         else:
-            self.run(auto_run=auto_run)
+            self.run(auto_run=auto_run, force_run=False)
 
     def _configure_before_run(self):
         return
@@ -111,14 +111,15 @@ class Drive(EventActor):
     def _initialize_tasks(self):
         return
 
-    def run(self, auto_run=True):
-        super().run(auto_run=auto_run)
+    def run(self, auto_run: bool = True, force_run: bool = True):
+        self.logger.info(f"Run start-up Drive {self.name}...")
+        super().run(auto_run=auto_run, force_run=force_run)
 
         if self.axes is None or not self.axes:
             return
 
         for ax in self.axes:
-            ax.run(auto_run=auto_run)
+            ax.run(auto_run=auto_run, force_run=force_run)
 
     def _validate_axes(
         self, settings: List[Dict[str, Any]]

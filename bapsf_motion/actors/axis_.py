@@ -92,9 +92,14 @@ class Axis(EventActor):
         parent: Optional["EventActor"] = None,
     ):
         # TODO: update units so inches can be used
-        self._motor = None
         self._units = u.Unit(units)
         self._units_per_rev = units_per_rev * self._units / u.rev
+
+        self._motor = None
+        self._init_motor_payload = {
+            "ip": ip,
+            "motor_settings": motor_settings,
+        }
 
         super().__init__(
             name=name,
@@ -104,34 +109,28 @@ class Axis(EventActor):
             parent=parent,
         )
 
-        self._motor = None
-        self._spawn_motor(ip=ip, motor_settings=motor_settings)
-
         if isinstance(self._motor, Motor) and self._motor.terminated:
             # terminate self if Motor is terminated
             self.terminate(delay_loop_stop=True)
         else:
-            self.run(auto_run=auto_run)
+            self.run(auto_run=auto_run, force_run=False)
 
     def _configure_before_run(self):
-        return
+        self._spawn_motor(**self._init_motor_payload)
 
     def _initialize_tasks(self):
         return
 
-    def run(self, auto_run=True):
+    def run(self, auto_run: bool = True, force_run: bool = True):
+        self.logger.info(f"Run start-up Axis {self.name}...")
         if self.terminated:
             # we are restarting
             self._terminated = False
-            self._spawn_motor(
-                ip=self.config["ip"],
-                motor_settings=self.config["motor_settings"],
-            )
 
-        super().run(auto_run=auto_run)
+        super().run(auto_run=auto_run, force_run=force_run)
 
         if isinstance(self.motor, Motor):
-            self.motor.run(auto_run=auto_run)
+            self.motor.run(auto_run=auto_run, force_run=force_run)
 
     def terminate(self, delay_loop_stop=False):
         self.motor.terminate(delay_loop_stop=True)

@@ -147,7 +147,7 @@ class EventActor(BaseActor, ABC):
         self._configure_before_run()
         self._initialize_tasks()
 
-        self.run(auto_run)
+        self.run(auto_run=auto_run, force_run=False)
 
     @property
     def parent(self) -> Optional["EventActor"]:
@@ -277,7 +277,7 @@ class EventActor(BaseActor, ABC):
             loop = asyncio.new_event_loop()
         return loop
 
-    def run(self, auto_run=True):
+    def run(self, auto_run: bool = True, force_run: bool = True):
         r"""
         Activate the `asyncio` `event loop`_\ .   If the event loop is
         running, then nothing happens.  Otherwise, the event loop is
@@ -287,9 +287,14 @@ class EventActor(BaseActor, ABC):
         Parameters
         ----------
         auto_run: `bool`, optional
-            If `False`, then do NOT start the event loop.  This keyword
-            is only made available to help with subclassing.
-            (DEFAULT: `True`)
+            (DEFAULT: `True`)  If `False`, then do NOT start the event
+            loop.
+
+        force_run: `bool`, optional
+            (DEFAULT: `True`)  This keyword argument is NOT explicitly
+            used by `EventActor`, but is a provision for sub-classes
+            so they and distinguish between ``run()`` being called
+            during ``__init__`` or outside.
         """
         self._terminated = False
         if self.loop is None:
