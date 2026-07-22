@@ -42,6 +42,9 @@ class PyGameJoystickRunner(QRunnable):
         # instantiated in a different thread.
         self._joystick = joystick
 
+        self._connect_signals()
+
+    def _connect_signals(self):
         self.signals.shutdownLoop.connect(self.run_shutdown)
 
     def run(self) -> None:
