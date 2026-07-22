@@ -28,12 +28,11 @@ class PyGameJoystickRunnerSignals(QObject):
 
 
 class PyGameJoystickRunner(QRunnable):
-    # signals must be patterned in separate class, otherwise we can not
-    # connect the signals in out __init__
-    signals = PyGameJoystickRunnerSignals()
 
     def __init__(self, joystick: pygame.joystick.JoystickType):
         super().__init__()
+
+        self.signals = PyGameJoystickRunnerSignals()
 
         self._logger = gui_logger
         self._axis_dead_zone = 0.25
