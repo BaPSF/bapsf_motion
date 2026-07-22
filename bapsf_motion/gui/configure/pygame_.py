@@ -180,3 +180,9 @@ class PyGameJoystickRunner(QRunnable):
         self.run_loop = False
 
         self.signals.joystickConnected.emit(self.run_loop)
+
+    def blockSignals(self, b: bool, /):
+        self.signals.blockSignals(b)
+
+    def signalsBlocked(self, /) -> bool:
+        return self.signals.signalsBlocked()
