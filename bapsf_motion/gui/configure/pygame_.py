@@ -110,6 +110,10 @@ class PyGameJoystickRunner(QRunnable):
                     previous_value = self._last_axis_value.get(jaxis, 0.0)
                     self._last_axis_value[jaxis] = value
 
+                    self.logger.info(
+                        f"PyGame event {event.type} - Data = {event.dict}."
+                    )
+
                         continue
 
                     value2 = self.joystick.get_axis(jaxis)
@@ -119,9 +123,6 @@ class PyGameJoystickRunner(QRunnable):
 
                     self.signals.axisMoved.emit(jaxis, value)
 
-                    # self.logger.info(
-                    #     f"PyGame event {event.type} - Data = {event.dict}."
-                    # )
 
             clock.tick(20)
 
