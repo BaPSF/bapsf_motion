@@ -102,34 +102,11 @@ class PyGameJoystickRunner(QRunnable):
                     jaxis = event.dict["axis"]
                     value = event.dict["value"]
 
-                    if jaxis in (0, 2):
-                        jaxis += 1
-                        value = self.joystick.get_axis(jaxis)
 
-                    previous_value = self._last_axis_value.get(jaxis, 0.0)
-                    self._last_axis_value[jaxis] = value
+                    self._handle_axis_move(jaxis, value)
 
-                    self.logger.info(
-                        f"PyGame event {event.type} - Data = {event.dict}."
-                    )
 
-                    if (
-                        np.abs(value) <= self.axis_dead_zone
-                        and np.abs(previous_value) <= self.axis_dead_zone
-                    ):
-                        continue
 
-                    if np.abs(value) <= self.axis_dead_zone:
-                        # joystick is in the neutral position
-                        value = 0.0
-                    elif previous_value / value < 0.0:
-                        # joystick switched sides
-                        pass
-                    elif np.abs(value) - np.abs(previous_value) < -0.01:
-                        # joystick is moving back towards the neutral position
-                        value = 0.0
-
-                    self.signals.axisMoved.emit(jaxis, value)
 
 
             clock.tick(20)
@@ -187,6 +164,37 @@ class PyGameJoystickRunner(QRunnable):
     def run_loop(self, value: bool) -> None:
         if isinstance(value, bool):
             self._run_loop = value
+
+    def _handle_axis_move(self, axis_id: int, value: float) -> None:
+        if axis_id in (0, 2):
+            axis_id += 1
+            value = self.joystick.get_axis(axis_id)
+
+        previous_value = self._last_axis_value.get(axis_id, 0.0)
+        self._last_axis_value[axis_id] = value
+
+        if (
+            np.abs(value) <= self.axis_dead_zone
+            and np.abs(previous_value) <= self.axis_dead_zone
+        ):
+            return
+
+        if np.abs(value) <= self.axis_dead_zone:
+            # joystick is in the neutral position
+            self.logger.info(f"<--0-->  Axis {axis_id} is in dead zone {value}")
+            value = 0.0
+        elif previous_value / value < 0.0:
+            # joystick switched sides
+            pass
+        elif (
+            np.abs(value) - np.abs(previous_value) < -0.1
+            and np.isclose(value, self.axis_dead_zone, atol=0.0, rtol=0.1)
+        ):
+            # joystick is moving back towards the neutral position
+            self.logger.info(f"<--1-->  Axis {axis_id} is moving towards dead zone {value} [{previous_value}]")
+            value = 0.0
+
+        self.signals.axisMoved.emit(axis_id, value)
 
     def set_immediate_handler(self, func, event_type): ...
 
