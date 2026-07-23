@@ -84,8 +84,12 @@ class PyGameJoystickRunner(QRunnable):
         #
         # _joy_axis_values = {}
         frame_rate = 20
+        frames_with_no_events = 0
         while self.run_loop:
+            event_count = 0
             for event in pygame.event.get():
+                event_count += 1
+
                 if event.type == pygame.QUIT:
                     self.run_loop = False
                 elif event.type == pygame.JOYBUTTONDOWN:
@@ -106,8 +110,17 @@ class PyGameJoystickRunner(QRunnable):
 
                     self._handle_axis_move(jaxis, value)
 
+            if event_count == 0:
+                frames_with_no_events += 1
+            else:
+                frames_with_no_events = 0
 
+            if frames_with_no_events / frame_rate > 0.5:
+                frames_with_no_events = 0
 
+                for jaxis in (1, 3):
+                    value = self.joystick.get_axis(jaxis)
+                    self._handle_axis_move(jaxis, value)
 
             clock.tick(frame_rate)
 
