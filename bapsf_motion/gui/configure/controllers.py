@@ -1544,12 +1544,12 @@ class DriveGameController(DriveBaseController):
         if not proceed:
             return
 
-            # pygame up-down axes are inverted
-            sign = 1 if value <= 0 else -1
-            sign = self.mspace_drive_polarity[axis_id] * sign
-            direction = "forward" if sign > 0 else "backward"
+        # pygame up-down axes are inverted
+        sign = 1 if value <= 0 else -1
+        sign = self.mspace_drive_polarity[axis_id] * sign
 
-            self.mg.drive.send_command("continuous_jog", direction, axis=axis_id)
+        pos = self.mg.drive.position.value[axis_id]
+        self.mg.drive.move_to(pos + sign * 1.0, axis=axis_id)
 
     @Slot(int)
     def _handle_button_press(self, button):
