@@ -42,6 +42,8 @@ class PyGameJoystickRunner(QRunnable):
         # instantiated in a different thread.
         self._joystick = joystick
 
+        self._last_axis_value = {}
+
         self._connect_signals()
 
     def _connect_signals(self):
@@ -104,6 +106,9 @@ class PyGameJoystickRunner(QRunnable):
                     if jaxis in (0, 2):
                         jaxis += 1
                         value = self.joystick.get_axis(jaxis)
+
+                    previous_value = self._last_axis_value.get(jaxis, 0.0)
+                    self._last_axis_value[jaxis] = value
 
                         continue
 
