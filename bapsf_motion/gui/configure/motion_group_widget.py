@@ -1893,7 +1893,7 @@ class MGWidget(QWidget):
         self.transform_btn.setEnabled(False)
 
     @Slot()
-    def enable_config_controls(self):
+    def enable_config_controls_after_motion(self):
         self._validate_motion_group()
 
     @Slot()
