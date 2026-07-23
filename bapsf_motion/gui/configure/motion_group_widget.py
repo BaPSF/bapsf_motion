@@ -550,9 +550,9 @@ class MGWidget(QWidget):
 
         self.mspace_display.targetPositionSelected.connect(self._update_target_position)
 
-        self.drive_control_widget.movementStarted.connect(self.disable_config_controls)
         self.drive_control_widget.movementStopped.connect(self.enable_config_controls)
         self.drive_control_widget.movementStopped.connect(self._update_position_in_plot)
+        self.drive_control_widget.movementStarted.connect(self._handle_movement_started)
         self.drive_control_widget.targetPositionChanged.connect(
             self.mspace_display.redrawSignals.TargetPosition.emit
         )
@@ -1436,6 +1436,10 @@ class MGWidget(QWidget):
             return
 
         self._change_transform(config)
+
+    @Slot()
+    def _handle_movement_started(self):
+        self.disable_config_controls_for_motion()
 
     def _rerun_drive(self):
         self.logger.info("Restarting the motion group's drive")
