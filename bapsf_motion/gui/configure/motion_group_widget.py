@@ -1882,7 +1882,7 @@ class MGWidget(QWidget):
         self._change_transform(tr_default_config)
 
     @Slot()
-    def disable_config_controls(self):
+    def disable_config_controls_for_motion(self):
         self.drive_dropdown.setEnabled(False)
         self.drive_btn.setEnabled(False)
 
