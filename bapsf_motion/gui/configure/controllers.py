@@ -1531,18 +1531,18 @@ class DriveGameController(DriveBaseController):
 
         if value == 0.0:
             self.stop_move(axis=axis_id, soft=True)
-            pass
-        else:
-            try:
-                proceed = self.mspace_warning_dialog.exec()
-            except AttributeError:
-                proceed = False
             return
 
         if ax.is_moving:
+            return
 
-            if not proceed:
-                return
+        try:
+            proceed = self.mspace_warning_dialog.exec()
+        except AttributeError:
+            proceed = False
+
+        if not proceed:
+            return
 
             # pygame up-down axes are inverted
             sign = 1 if value <= 0 else -1
