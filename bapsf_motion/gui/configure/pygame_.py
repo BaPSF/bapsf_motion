@@ -83,6 +83,7 @@ class PyGameJoystickRunner(QRunnable):
         #   JOYDEVICEREMOVED
         #
         # _joy_axis_values = {}
+        frame_rate = 20
         while self.run_loop:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -108,8 +109,7 @@ class PyGameJoystickRunner(QRunnable):
 
 
 
-
-            clock.tick(20)
+            clock.tick(frame_rate)
 
         self.logger.info("PyGame loop ended.")
         self.run_shutdown()
