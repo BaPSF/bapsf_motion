@@ -1894,6 +1894,10 @@ class MGWidget(QWidget):
 
     @Slot()
     def enable_config_controls_after_motion(self):
+        if self.mg.is_moving:
+            self.disable_config_controls_for_motion()
+            return
+
         self._validate_motion_group()
 
     @Slot()
