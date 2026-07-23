@@ -149,7 +149,7 @@ class AxisControlWidget(QWidget):
         self.jog_forward_btn.clicked.connect(self.jog_forward)
         self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
-        self.jog_delta_input.editingFinished.connect(self._validate_jog_value)
+        self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
         self.target_position_label.editingFinished.connect(
             self._validate_target_position_value
         )
@@ -584,7 +584,7 @@ class AxisControlWidget(QWidget):
             self._display_timer_issue_new_single_shot = False
 
     @Slot()
-    def _validate_jog_value(self):
+    def _validate_jog_delta_input(self):
         _txt = self.jog_delta_input.text()
         val = 0.0 if _txt == "" else float(_txt)
         val = abs(val)
