@@ -727,7 +727,7 @@ class MotionSpaceDisplay(QFrame):
 
     @Slot(list)
     def redraw_position_plot(self, position):
-        self.logger.info(f"Drawing position {position}")
+        self.logger.debug(f"Drawing position {position}")
 
         if not self.display_position:
             position = None
