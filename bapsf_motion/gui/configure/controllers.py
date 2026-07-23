@@ -116,7 +116,7 @@ class AxisControlWidget(QWidget):
         self.encoder_label_icon = self._init_encoder_label_icon()
         self.home_btn = self._init_home_btn()
         self.jog_backward_btn = self._init_jog_backward_btn()
-        self.jog_delta_label = self._init_jog_delta_label()
+        self.jog_delta_input = self._init_jog_delta_input()
         self.jog_forward_btn = self._init_jog_forward_btn()
         self.limit_bwd_btn = self._init_limit_bwd_btn()
         self.limit_fwd_btn = self._init_limit_fwd_btn()
@@ -149,7 +149,7 @@ class AxisControlWidget(QWidget):
         self.jog_forward_btn.clicked.connect(self.jog_forward)
         self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
-        self.jog_delta_label.editingFinished.connect(self._validate_jog_value)
+        self.jog_delta_input.editingFinished.connect(self._validate_jog_value)
         self.target_position_label.editingFinished.connect(
             self._validate_target_position_value
         )
@@ -192,7 +192,7 @@ class AxisControlWidget(QWidget):
         layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addWidget(self.jog_forward_btn)
         layout.addStretch(1)
-        layout.addWidget(self.jog_delta_label)
+        layout.addWidget(self.jog_delta_input)
         layout.addWidget(self.home_btn)
         layout.addStretch(1)
         layout.addWidget(self.jog_backward_btn, alignment=Qt.AlignmentFlag.AlignBottom)
@@ -224,7 +224,7 @@ class AxisControlWidget(QWidget):
         self.limit_fwd_btn.setFixedHeight(24)
         self.limit_bwd_btn.setFixedHeight(24)
 
-        self.jog_delta_label.setText("0.1")
+        self.jog_delta_input.setText("0.1")
 
         _fine_step_label = QLabel("Fine Step", parent=self)
         _font = _fine_step_label.font()
@@ -247,7 +247,7 @@ class AxisControlWidget(QWidget):
             _fine_step_label,
             alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBaseline,
         )
-        layout.addWidget(self.jog_delta_label)
+        layout.addWidget(self.jog_delta_input)
         layout.addStretch(1)
 
         return layout
@@ -345,7 +345,7 @@ class AxisControlWidget(QWidget):
         _btn.setIconSize(42)
         return _btn
 
-    def _init_jog_delta_label(self):
+    def _init_jog_delta_input(self):
         _txt = QLineEdit("0", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
@@ -451,7 +451,7 @@ class AxisControlWidget(QWidget):
         return self._interactive_display_mode
 
     def _get_jog_delta(self):
-        delta_str = self.jog_delta_label.text()
+        delta_str = self.jog_delta_input.text()
         return float(delta_str)
 
     @Slot()
@@ -585,10 +585,10 @@ class AxisControlWidget(QWidget):
 
     @Slot()
     def _validate_jog_value(self):
-        _txt = self.jog_delta_label.text()
+        _txt = self.jog_delta_input.text()
         val = 0.0 if _txt == "" else float(_txt)
         val = abs(val)
-        self.jog_delta_label.setText(f"{val:.2f}")
+        self.jog_delta_input.setText(f"{val:.2f}")
 
     @Slot()
     def _validate_target_position_value(self):
