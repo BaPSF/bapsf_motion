@@ -102,7 +102,6 @@ class PyGameJoystickRunner(QRunnable):
                     jaxis = event.dict["axis"]
                     value = event.dict["value"]
 
-                    if np.abs(value) <= self.axis_dead_zone:
                     if jaxis in (0, 2):
                         jaxis += 1
                         value = self.joystick.get_axis(jaxis)
@@ -114,6 +113,10 @@ class PyGameJoystickRunner(QRunnable):
                         f"PyGame event {event.type} - Data = {event.dict}."
                     )
 
+                    if (
+                        np.abs(value) <= self.axis_dead_zone
+                        and np.abs(previous_value) <= self.axis_dead_zone
+                    ):
                         continue
 
                     value2 = self.joystick.get_axis(jaxis)
