@@ -105,8 +105,19 @@ class PyGameJoystickRunner(QRunnable):
 
                 elif event.type == pygame.JOYAXISMOTION:
                     jaxis = event.dict["axis"]
-                    value = event.dict["value"]
 
+                    # The joystick value held in the event bundle does not
+                    # represent the current joystick value.  This was leading
+                    # to incosistent behavior since an event would occur with
+                    # a value of say 0.87 followed by an event with a value
+                    # in the dead zone eventhough the joystick was NOT in the
+                    # dead zone.
+                    #
+                    # To mitigate this, we will just get the current axis
+                    # value for the axis associated with the event.
+                    #
+                    # value = event.dict["value"]
+                    value = self.joystick.get_axis(jaxis)
 
                     self._handle_axis_move(jaxis, value)
 
