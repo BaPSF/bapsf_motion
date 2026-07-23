@@ -1529,15 +1529,17 @@ class DriveGameController(DriveBaseController):
 
         ax = self.mg.drive.axes[axis_id]
 
-        if np.absolute(value) < 0.5:
+        if value == 0.0:
             self.stop_move(axis=axis_id, soft=True)
-        elif ax.is_moving:
             pass
         else:
             try:
                 proceed = self.mspace_warning_dialog.exec()
             except AttributeError:
                 proceed = False
+            return
+
+        if ax.is_moving:
 
             if not proceed:
                 return
