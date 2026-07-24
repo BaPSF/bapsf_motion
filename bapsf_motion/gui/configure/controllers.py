@@ -118,6 +118,7 @@ class AxisControlWidget(QWidget):
         self.jog_backward_btn = self._init_jog_backward_btn()
         self.jog_delta_input = self._init_jog_delta_input()
         self.jog_forward_btn = self._init_jog_forward_btn()
+        self.joystick_delta_input = self._init_joystick_delta_input()
         self.limit_bwd_btn = self._init_limit_bwd_btn()
         self.limit_fwd_btn = self._init_limit_fwd_btn()
         self.position_label = self._init_position_label()
@@ -358,6 +359,15 @@ class AxisControlWidget(QWidget):
         _btn = IconButton(icon_name_dict["arrow-up"], parent=self)
         _btn.setIconSize(42)
         return _btn
+
+    def _init_joystick_delta_input(self):
+        _txt = QLineEdit(f"{0:.2f}", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        _txt.setValidator(QDoubleValidator(decimals=2))
+        return _txt
 
     def _init_limit_bwd_btn(self):
         _btn = ValidButton("BWD LIMIT", parent=self)
