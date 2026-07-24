@@ -15,6 +15,7 @@ import warnings
 # is not in focus ... this needs to be done before importing pygame
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"  # noqa
 
+import functools
 import pygame  # noqa
 
 from abc import ABC, abstractmethod
@@ -1556,6 +1557,17 @@ class DriveGameController(DriveBaseController):
             # mg is None instead of a MotionGroup instance
             return
 
+        if (
+            (axis is None and self.mg.is_moving)
+            or (axis is not None and self.mg.drive.axes[axis].is_moving)
+        ):
+            _timer = QTimer(parent=self)
+            _timer.setSingleShot(True)
+            _timer.setInterval(100)
+            _timer.timeout.connect(
+                functools.partial(self.stop_move, axis=axis, soft=soft)
+            )
+            _timer.start()
 
     def zero_drive(self):
         self.mg.set_zero()
