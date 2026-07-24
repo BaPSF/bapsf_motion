@@ -15,7 +15,8 @@ import warnings
 # is not in focus ... this needs to be done before importing pygame
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"  # noqa
 
-import pygame  # noqa
+import functools
+import pygame
 
 from abc import ABC, abstractmethod
 from PySide6.QtCore import Qt, QThreadPool, QTimer, Signal, Slot
@@ -116,8 +117,9 @@ class AxisControlWidget(QWidget):
         self.encoder_label_icon = self._init_encoder_label_icon()
         self.home_btn = self._init_home_btn()
         self.jog_backward_btn = self._init_jog_backward_btn()
-        self.jog_delta_label = self._init_jog_delta_label()
+        self.jog_delta_input = self._init_jog_delta_input()
         self.jog_forward_btn = self._init_jog_forward_btn()
+        self.joystick_delta_input = self._init_joystick_delta_input()
         self.limit_bwd_btn = self._init_limit_bwd_btn()
         self.limit_fwd_btn = self._init_limit_fwd_btn()
         self.position_label = self._init_position_label()
@@ -149,7 +151,10 @@ class AxisControlWidget(QWidget):
         self.jog_forward_btn.clicked.connect(self.jog_forward)
         self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
-        self.jog_delta_label.editingFinished.connect(self._validate_jog_value)
+        self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
+        self.joystick_delta_input.editingFinished.connect(
+            self._validate_joystick_delta_input
+        )
         self.target_position_label.editingFinished.connect(
             self._validate_target_position_value
         )
@@ -160,6 +165,7 @@ class AxisControlWidget(QWidget):
         self.establishedConnection.connect(self._handle_connection_established)
         self.lostConnection.connect(self._handle_connection_lost)
 
+        self.axisLinked.connect(self._initialize_display_of_axis_status)
         self.refreshDisplay.connect(self.update_display_of_axis_status)
 
     def _define_layout(self):
@@ -175,6 +181,9 @@ class AxisControlWidget(QWidget):
         return layout
 
     def _define_interactive_layout(self, layout: QVBoxLayout | None = None):
+        self.joystick_delta_input.setEnabled(False)
+        self.joystick_delta_input.setVisible(False)
+
         if layout is None:
             layout = QVBoxLayout()
 
@@ -192,7 +201,7 @@ class AxisControlWidget(QWidget):
         layout.addWidget(self.limit_fwd_btn, alignment=Qt.AlignmentFlag.AlignTop)
         layout.addWidget(self.jog_forward_btn)
         layout.addStretch(1)
-        layout.addWidget(self.jog_delta_label)
+        layout.addWidget(self.jog_delta_input)
         layout.addWidget(self.home_btn)
         layout.addStretch(1)
         layout.addWidget(self.jog_backward_btn, alignment=Qt.AlignmentFlag.AlignBottom)
@@ -215,6 +224,9 @@ class AxisControlWidget(QWidget):
         self.jog_backward_btn.setEnabled(False)
         self.jog_backward_btn.setVisible(False)
 
+        self.joystick_delta_input.setEnabled(True)
+        self.joystick_delta_input.setVisible(True)
+
         self.home_btn.setEnabled(False)
         self.home_btn.setVisible(False)
 
@@ -224,7 +236,18 @@ class AxisControlWidget(QWidget):
         self.limit_fwd_btn.setFixedHeight(24)
         self.limit_bwd_btn.setFixedHeight(24)
 
-        self.jog_delta_label.setText("0.1")
+        self.joystick_delta_input.setToolTip(
+            "Macro step taken when the controller joystick is used."
+        )
+
+        self.jog_delta_input.setToolTip(
+            "Micro step taken when the controller D-pad is used."
+        )
+
+        _joystick_step_label = QLabel("Joystick Step", parent=self)
+        _font = _joystick_step_label.font()
+        _font.setPointSize(12)
+        _joystick_step_label.setFont(_font)
 
         _fine_step_label = QLabel("Fine Step", parent=self)
         _font = _fine_step_label.font()
@@ -242,12 +265,18 @@ class AxisControlWidget(QWidget):
         layout.addLayout(self._define_encoder_label_layout())
         layout.addSpacing(8)
         layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
-        layout.addSpacing(24)
+        layout.addSpacing(36)
+        layout.addWidget(
+            _joystick_step_label,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBaseline,
+        )
+        layout.addWidget(self.joystick_delta_input)
+        layout.addSpacing(8)
         layout.addWidget(
             _fine_step_label,
             alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBaseline,
         )
-        layout.addWidget(self.jog_delta_label)
+        layout.addWidget(self.jog_delta_input)
         layout.addStretch(1)
 
         return layout
@@ -345,8 +374,8 @@ class AxisControlWidget(QWidget):
         _btn.setIconSize(42)
         return _btn
 
-    def _init_jog_delta_label(self):
-        _txt = QLineEdit("0", parent=self)
+    def _init_jog_delta_input(self):
+        _txt = QLineEdit(f"{0:.2f}", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
@@ -358,6 +387,15 @@ class AxisControlWidget(QWidget):
         _btn = IconButton(icon_name_dict["arrow-up"], parent=self)
         _btn.setIconSize(42)
         return _btn
+
+    def _init_joystick_delta_input(self):
+        _txt = QLineEdit(f"{0:.2f}", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        _txt.setValidator(QDoubleValidator(decimals=2))
+        return _txt
 
     def _init_limit_bwd_btn(self):
         _btn = ValidButton("BWD LIMIT", parent=self)
@@ -451,7 +489,7 @@ class AxisControlWidget(QWidget):
         return self._interactive_display_mode
 
     def _get_jog_delta(self):
-        delta_str = self.jog_delta_label.text()
+        delta_str = self.jog_delta_input.text()
         return float(delta_str)
 
     @Slot()
@@ -531,6 +569,19 @@ class AxisControlWidget(QWidget):
         self.axis.send_command(cmd_string)
 
     @Slot()
+    def _initialize_display_of_axis_status(self):
+        if not self.interactive_display_mode:
+            # i.e. readonly mode
+            self.jog_delta_input.setText(f"{0.1:.2f}")
+
+            macro_step = 2
+            if self.axis_name_label.text().casefold() == "x":
+                macro_step = 10
+            self.joystick_delta_input.setText(f"{macro_step:.2f}")
+
+        self.update_display_of_axis_status()
+
+    @Slot()
     def update_display_of_axis_status(self):
         timer_active = self._update_display_timer.isActive()
         if timer_active:
@@ -584,11 +635,18 @@ class AxisControlWidget(QWidget):
             self._display_timer_issue_new_single_shot = False
 
     @Slot()
-    def _validate_jog_value(self):
-        _txt = self.jog_delta_label.text()
+    def _validate_jog_delta_input(self):
+        _txt = self.jog_delta_input.text()
         val = 0.0 if _txt == "" else float(_txt)
         val = abs(val)
-        self.jog_delta_label.setText(f"{val:.2f}")
+        self.jog_delta_input.setText(f"{val:.2f}")
+
+    @Slot()
+    def _validate_joystick_delta_input(self):
+        _txt = self.joystick_delta_input.text()
+        val = 0.0 if _txt == "" else float(_txt)
+        val = abs(val)
+        self.joystick_delta_input.setText(f"{val:.2f}")
 
     @Slot()
     def _validate_target_position_value(self):
@@ -633,7 +691,6 @@ class AxisControlWidget(QWidget):
         # connect motor SimpleSignals
         self.motor_signals_connect(axis)
 
-        self.update_display_of_axis_status()
         self.axisLinked.emit()
 
     def unlink_axis(self):
@@ -1493,17 +1550,25 @@ class DriveGameController(DriveBaseController):
         if isinstance(self.mg, MotionGroup) and self.mg.is_moving:
             self.stop_move()
 
-    def stop_move(self, axis=None, soft=False):
-        self.logger.debug("Stopping move.")
-
-        if axis is None:
-            self.mg.stop(soft=soft)
-            return
+    def stop_move(self, axis=None, soft: bool = False):
+        self.logger.debug(f"Stopping move. axis = {axis}, soft = {soft}")
 
         try:
-            self.mg.drive.send_command("stop", soft, axis=axis)
-        except Exception:  # noqa
-            self.mg.stop()
+            self.mg.stop(axis=axis, soft=soft)
+        except AttributeError:
+            # mg is None instead of a MotionGroup instance
+            return
+
+        if (axis is None and self.mg.is_moving) or (
+            axis is not None and self.mg.drive.axes[axis].is_moving
+        ):
+            _timer = QTimer(parent=self)
+            _timer.setSingleShot(True)
+            _timer.setInterval(100)
+            _timer.timeout.connect(
+                functools.partial(self.stop_move, axis=axis, soft=soft)
+            )
+            _timer.start()
 
     def zero_drive(self):
         self.mg.set_zero()
@@ -1529,25 +1594,32 @@ class DriveGameController(DriveBaseController):
 
         ax = self.mg.drive.axes[axis_id]
 
-        if np.absolute(value) < 0.5:
+        if value == 0.0:
             self.stop_move(axis=axis_id, soft=True)
-        elif ax.is_moving:
-            pass
-        else:
-            try:
-                proceed = self.mspace_warning_dialog.exec()
-            except AttributeError:
-                proceed = False
+            return
 
-            if not proceed:
-                return
+        if ax.is_moving:
+            return
 
-            # pygame up-down axes are inverted
-            sign = 1 if value <= 0 else -1
-            sign = self.mspace_drive_polarity[axis_id] * sign
-            direction = "forward" if sign > 0 else "backward"
+        try:
+            proceed = self.mspace_warning_dialog.exec()
+        except AttributeError:
+            proceed = False
 
-            self.mg.drive.send_command("continuous_jog", direction, axis=axis_id)
+        if not proceed:
+            return
+
+        # pygame up-down axes are inverted
+        sign = 1 if value <= 0 else -1
+        sign = self.mspace_drive_polarity[axis_id] * sign
+
+        pos = self.mg.drive.position.value[axis_id]
+
+        acw = self._axis_control_widgets[axis_id]
+        step = float(acw.joystick_delta_input.text())
+
+        move_to = pos + sign * step
+        self.mg.drive.move_to(move_to, axis=axis_id)
 
     @Slot(int)
     def _handle_button_press(self, button):

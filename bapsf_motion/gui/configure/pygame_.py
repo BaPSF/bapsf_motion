@@ -28,12 +28,11 @@ class PyGameJoystickRunnerSignals(QObject):
 
 
 class PyGameJoystickRunner(QRunnable):
-    # signals must be patterned in separate class, otherwise we can not
-    # connect the signals in out __init__
-    signals = PyGameJoystickRunnerSignals()
 
     def __init__(self, joystick: pygame.joystick.JoystickType):
         super().__init__()
+
+        self.signals = PyGameJoystickRunnerSignals()
 
         self._logger = gui_logger
         self._axis_dead_zone = 0.25
@@ -43,6 +42,11 @@ class PyGameJoystickRunner(QRunnable):
         # instantiated in a different thread.
         self._joystick = joystick
 
+        self._last_axis_value = {}
+
+        self._connect_signals()
+
+    def _connect_signals(self):
         self.signals.shutdownLoop.connect(self.run_shutdown)
 
     def run(self) -> None:
@@ -79,8 +83,13 @@ class PyGameJoystickRunner(QRunnable):
         #   JOYDEVICEREMOVED
         #
         # _joy_axis_values = {}
+        frame_rate = 20
+        frames_with_no_events = 0
         while self.run_loop:
+            event_count = 0
             for event in pygame.event.get():
+                event_count += 1
+
                 if event.type == pygame.QUIT:
                     self.run_loop = False
                 elif event.type == pygame.JOYBUTTONDOWN:
@@ -96,23 +105,35 @@ class PyGameJoystickRunner(QRunnable):
 
                 elif event.type == pygame.JOYAXISMOTION:
                     jaxis = event.dict["axis"]
-                    value = event.dict["value"]
 
-                    if np.abs(value) <= self.axis_dead_zone:
-                        continue
+                    # The joystick value held in the event bundle does not
+                    # represent the current joystick value.  This was leading
+                    # to inconsistent behavior since an event would occur with
+                    # a value of say 0.87 followed by an event with a value
+                    # in the dead zone even though the joystick was NOT in the
+                    # dead zone.
+                    #
+                    # To mitigate this, we will just get the current axis
+                    # value for the axis associated with the event.
+                    #
+                    # value = event.dict["value"]
+                    value = self.joystick.get_axis(jaxis)
 
-                    value2 = self.joystick.get_axis(jaxis)
-                    if np.abs(value2) - np.abs(value) < -0.01:
-                        # joystick is moving back towards the neutral position
-                        value = 0.0
+                    self._handle_axis_move(jaxis, value)
 
-                    self.signals.axisMoved.emit(jaxis, value)
+            if event_count == 0:
+                frames_with_no_events += 1
+            else:
+                frames_with_no_events = 0
 
-                    # self.logger.info(
-                    #     f"PyGame event {event.type} - Data = {event.dict}."
-                    # )
+            if frames_with_no_events / frame_rate > 0.5:
+                frames_with_no_events = 0
 
-            clock.tick(20)
+                for jaxis in (1, 3):
+                    value = self.joystick.get_axis(jaxis)
+                    self._handle_axis_move(jaxis, value)
+
+            clock.tick(frame_rate)
 
         self.logger.info("PyGame loop ended.")
         self.run_shutdown()
@@ -168,6 +189,34 @@ class PyGameJoystickRunner(QRunnable):
         if isinstance(value, bool):
             self._run_loop = value
 
+    def _handle_axis_move(self, axis_id: int, value: float) -> None:
+        if axis_id in (0, 2):
+            axis_id += 1
+            value = self.joystick.get_axis(axis_id)
+
+        previous_value = self._last_axis_value.get(axis_id, 0.0)
+        self._last_axis_value[axis_id] = value
+
+        if (
+            np.abs(value) <= self.axis_dead_zone
+            and np.abs(previous_value) <= self.axis_dead_zone
+        ):
+            return
+
+        if np.abs(value) <= self.axis_dead_zone:
+            # joystick is in the neutral position
+            value = 0.0
+        elif previous_value / value < 0.0:
+            # joystick switched sides
+            pass
+        elif np.abs(value) - np.abs(previous_value) < -0.1 and np.isclose(
+            value, self.axis_dead_zone, atol=0.0, rtol=0.1
+        ):
+            # joystick is moving back towards the neutral position
+            value = 0.0
+
+        self.signals.axisMoved.emit(axis_id, value)
+
     def set_immediate_handler(self, func, event_type): ...
 
     def quit(self) -> None:
@@ -178,3 +227,9 @@ class PyGameJoystickRunner(QRunnable):
         self.run_loop = False
 
         self.signals.joystickConnected.emit(self.run_loop)
+
+    def blockSignals(self, b: bool, /):
+        self.signals.blockSignals(b)
+
+    def signalsBlocked(self, /) -> bool:
+        return self.signals.signalsBlocked()
