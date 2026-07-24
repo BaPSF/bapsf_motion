@@ -151,6 +151,7 @@ class AxisControlWidget(QWidget):
         self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
         self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
+        self.joystick_delta_input.editingFinished.connect(self._validate_joystick_delta_input)
         self.target_position_label.editingFinished.connect(
             self._validate_target_position_value
         )
@@ -636,6 +637,13 @@ class AxisControlWidget(QWidget):
         val = 0.0 if _txt == "" else float(_txt)
         val = abs(val)
         self.jog_delta_input.setText(f"{val:.2f}")
+
+    @Slot()
+    def _validate_joystick_delta_input(self):
+        _txt = self.joystick_delta_input.text()
+        val = 0.0 if _txt == "" else float(_txt)
+        val = abs(val)
+        self.joystick_delta_input.setText(f"{val:.2f}")
 
     @Slot()
     def _validate_target_position_value(self):
