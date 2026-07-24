@@ -212,12 +212,12 @@ class RunWidget(QWidget):
         )
 
         # Initialize Widgets
-        self.mg_add_btn = self._init_mg_add_btn()
         self.done_btn = self._init_done_btn()
+        self.mg_add_btn = self._init_mg_add_btn()
         self.mg_list_widget = self._init_mg_list_widget()
         self.mg_modify_btn = self._init_mg_modify_btn()
-        self.quit_btn = self._init_quit_btn()
         self.mg_remove_btn = self._init_mg_remove_btn()
+        self.quit_btn = self._init_quit_btn()
         self.run_name_label = self._init_run_name_label()
         self.run_name_widget = self._init_run_name_widget()
         self.toml_widget = self._init_toml_widget()
@@ -290,14 +290,14 @@ class RunWidget(QWidget):
 
         return layout
 
+    def _init_done_btn(self):
+        return DoneButton(parent=self)
+
     def _init_mg_add_btn(self):
         _btn = StyleButton("ADD", parent=self)
         _btn.setFixedHeight(38)
         _btn.setPointSize(16)
         return _btn
-
-    def _init_done_btn(self):
-        return DoneButton(parent=self)
 
     def _init_mg_list_widget(self):
         _widget = QListWidget(parent=self)
@@ -313,15 +313,15 @@ class RunWidget(QWidget):
         _btn.setEnabled(False)
         return _btn
 
-    def _init_quit_btn(self):
-        return DiscardButton("Discard && Quit", parent=self)
-
     def _init_mg_remove_btn(self):
         _btn = StyleButton("REMOVE", parent=self)
         _btn.setFixedHeight(38)
         _btn.setPointSize(16)
         _btn.setEnabled(False)
         return _btn
+
+    def _init_quit_btn(self):
+        return DiscardButton("Discard && Quit", parent=self)
 
     def _init_run_name_label(self):
         _txt = QLabel("Run Name:  ", parent=self)
