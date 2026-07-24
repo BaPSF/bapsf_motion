@@ -176,6 +176,9 @@ class AxisControlWidget(QWidget):
         return layout
 
     def _define_interactive_layout(self, layout: QVBoxLayout | None = None):
+        self.joystick_delta_input.setEnabled(False)
+        self.joystick_delta_input.setVisible(False)
+
         if layout is None:
             layout = QVBoxLayout()
 
@@ -216,6 +219,9 @@ class AxisControlWidget(QWidget):
         self.jog_backward_btn.setEnabled(False)
         self.jog_backward_btn.setVisible(False)
 
+        self.joystick_delta_input.setEnabled(True)
+        self.joystick_delta_input.setVisible(True)
+
         self.home_btn.setEnabled(False)
         self.home_btn.setVisible(False)
 
@@ -225,7 +231,18 @@ class AxisControlWidget(QWidget):
         self.limit_fwd_btn.setFixedHeight(24)
         self.limit_bwd_btn.setFixedHeight(24)
 
-        self.jog_delta_input.setText("0.1")
+        self.joystick_delta_input.setToolTip(
+            "Macro step taken when the controller joystick is used."
+        )
+
+        self.jog_delta_input.setToolTip(
+            "Micro step taken when the controller D-pad is used."
+        )
+
+        _joystick_step_label = QLabel("Joystick Step", parent=self)
+        _font = _joystick_step_label.font()
+        _font.setPointSize(12)
+        _joystick_step_label.setFont(_font)
 
         _fine_step_label = QLabel("Fine Step", parent=self)
         _font = _fine_step_label.font()
@@ -243,7 +260,13 @@ class AxisControlWidget(QWidget):
         layout.addLayout(self._define_encoder_label_layout())
         layout.addSpacing(8)
         layout.addWidget(self.limit_bwd_btn, alignment=Qt.AlignmentFlag.AlignBottom)
-        layout.addSpacing(24)
+        layout.addSpacing(36)
+        layout.addWidget(
+            _joystick_step_label,
+            alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBaseline,
+        )
+        layout.addWidget(self.joystick_delta_input)
+        layout.addSpacing(8)
         layout.addWidget(
             _fine_step_label,
             alignment=Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBaseline,
