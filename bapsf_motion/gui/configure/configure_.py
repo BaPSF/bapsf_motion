@@ -290,8 +290,10 @@ class RunWidget(QWidget):
         self.run_name_label.setVisible(self._enable_run_name)
 
         self.setLayout(self._define_layout())
-
         self._connect_signals()
+
+    def _connect_signals(self):
+        self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
 
     def _define_layout(self):
 
@@ -355,8 +357,6 @@ class RunWidget(QWidget):
 
         return layout
 
-    def _connect_signals(self):
-        self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
 
     @Slot()
     def enable_mg_buttons(self):
