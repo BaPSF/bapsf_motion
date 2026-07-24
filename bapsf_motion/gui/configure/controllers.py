@@ -16,7 +16,7 @@ import warnings
 os.environ["SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"] = "1"  # noqa
 
 import functools
-import pygame  # noqa
+import pygame
 
 from abc import ABC, abstractmethod
 from PySide6.QtCore import Qt, QThreadPool, QTimer, Signal, Slot
