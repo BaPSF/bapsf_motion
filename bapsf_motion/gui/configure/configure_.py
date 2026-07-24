@@ -230,6 +230,7 @@ class RunWidget(QWidget):
     def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
         super().__init__(parent=parent)
 
+        # Initialize attributes
         self._logger = gui_logger
         self._enable_run_name = (
             enable_run_name if isinstance(enable_run_name, bool) else True
