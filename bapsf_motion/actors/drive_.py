@@ -292,7 +292,7 @@ class Drive(EventActor):
 
         super().terminate(delay_loop_stop=delay_loop_stop)
 
-    def send_command(self, command, *args, axis: Optional[int] = None):
+    def send_command(self, command: str, *args, axis: int | None = None):
         """
         Send ``command`` to the motor, and receive its response.  If the
         `event loop`_ is running, then the command will be sent as
