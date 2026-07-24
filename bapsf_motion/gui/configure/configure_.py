@@ -62,46 +62,18 @@ class RunTOMLWidget(QWidget):
     def __init__(self, parent: Union[QWidget, None]):
         super().__init__(parent=parent)
 
+        # Initialize Attributes
         self._logger = gui_logger
         self._TOML_FILE = None
 
-        label = QLabel("Run Configuration", parent=self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
-        font = label.font()
-        font.setPointSize(16)
-        label.setFont(font)
-        self.title_label = label
-
-        _txt = QPlainTextEdit(parent=self)
-        _txt.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-        )
-        _txt.setReadOnly(True)
-        font = _txt.font()
-        font.setPointSize(10)
-        font.setFamily("Courier New")
-        _txt.setFont(font)
-        self.toml_text_widget = _txt
-
-        _btn = StyleButton("IMPORT", parent=self)
-        _btn.setFixedHeight(48)
-        _btn.setPointSize(16)
-        _btn.setEnabled(False)
-        self.import_btn = _btn
-
-        _btn = StyleButton("EXPORT", parent=self)
-        _btn.setFixedHeight(48)
-        _btn.setPointSize(16)
-        self.export_btn = _btn
-
-        _btn = StyleButton("COPY", parent=self)
-        _btn.setFixedHeight(48)
-        _btn.setPointSize(16)
-        self.copy_btn = _btn
+        # Initialize Widgets
+        self.copy_btn = self._init_copy_btn()
+        self.export_btn = self._init_export_btn()
+        self.import_btn = self._init_import_btn()
+        self.title_label = self._init_title_label()
+        self.toml_text_widget = self._init_toml_text_widget()
 
         self.setLayout(self._define_layout())
-
         self._connect_signals()
 
     def _connect_signals(self):
@@ -117,6 +89,46 @@ class RunTOMLWidget(QWidget):
         layout.addWidget(self.export_btn, 2, 1)
         layout.addWidget(self.copy_btn, 2, 2)
         return layout
+
+    def _init_copy_btn(self):
+        _btn = StyleButton("COPY", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        return _btn
+
+    def _init_export_btn(self):
+        _btn = StyleButton("EXPORT", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        return _btn
+
+    def _init_import_btn(self):
+        _btn = StyleButton("IMPORT", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_title_label(self):
+        label = QLabel("Run Configuration", parent=self)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
+        font = label.font()
+        font.setPointSize(16)
+        label.setFont(font)
+        return label
+
+    def _init_toml_text_widget(self):
+        _txt = QPlainTextEdit(parent=self)
+        _txt.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        _txt.setReadOnly(True)
+        font = _txt.font()
+        font.setPointSize(10)
+        font.setFamily("Courier New")
+        _txt.setFont(font)
+        return _txt
 
     @property
     def logger(self) -> logging.Logger:
