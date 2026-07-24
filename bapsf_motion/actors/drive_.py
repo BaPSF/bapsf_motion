@@ -380,13 +380,25 @@ class Drive(EventActor):
 
         return rtn
 
-    def stop(self, soft=False):
+    def stop(self, *, soft: bool = False, axis: int | None = None):
         """Stop all axes from moving."""
         # TODO: should I really be construct a return here?
         # TODO: is there a quicker/more efficient way of stopping the motors?
+        if axis is not None:
+            try:
+                axis = int(axis)
+            except (ValueError, TypeError):
+                axis = None
+
+        if axis is None:
+            axes = self.axes
+        elif axis in range(len(self.axes)):
+            axes = (self.axes[axis], )
+        else:
+            axes = self.axes
 
         rtn = []
-        for ax in self.axes:
+        for ax in axes:
             if ax.motor.terminated:
                 self.logger.warning(
                     f"Motor for axis {ax.name} has been terminated, can NOT "

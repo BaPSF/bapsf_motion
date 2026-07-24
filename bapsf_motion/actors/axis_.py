@@ -380,7 +380,7 @@ class Axis(EventActor):
         """
         return self.send_command("move_to", *args)
 
-    def stop(self, soft=False):
+    def stop(self, *, soft: bool = False):
         """
         Quick access command for ``send_command("stop")``.
         """

@@ -1976,7 +1976,7 @@ class Motor(EventActor):
         self.send_command("target_distance", direction)
         self.send_command("commence_jogging")
 
-    def stop(self, soft=False):
+    def stop(self, *, soft: bool = False):
         """Stop motor movement."""
         self.send_command("stop", soft)
 
