@@ -212,7 +212,7 @@ class RunWidget(QWidget):
         )
 
         # Initialize Widgets
-        self.add_mg_btn = self._init_add_mg_btn()
+        self.mg_add_btn = self._init_mg_add_btn()
         self.done_btn = self._init_done_btn()
         self.mg_list_widget = self._init_mg_list_widget()
         self.modify_mg_btn = self._init_modify_mg_btn()
@@ -282,7 +282,7 @@ class RunWidget(QWidget):
         layout.addWidget(self.mg_list_widget)
 
         sub_layout = QHBoxLayout()
-        sub_layout.addWidget(self.add_mg_btn)
+        sub_layout.addWidget(self.mg_add_btn)
         sub_layout.addWidget(self.remove_mg_btn)
         layout.addLayout(sub_layout)
 
@@ -290,7 +290,7 @@ class RunWidget(QWidget):
 
         return layout
 
-    def _init_add_mg_btn(self):
+    def _init_mg_add_btn(self):
         _btn = StyleButton("ADD", parent=self)
         _btn.setFixedHeight(38)
         _btn.setPointSize(16)
@@ -352,7 +352,7 @@ class RunWidget(QWidget):
 
     @Slot()
     def enable_mg_buttons(self):
-        self.add_mg_btn.setEnabled(True)
+        self.mg_add_btn.setEnabled(True)
         self.remove_mg_btn.setEnabled(True)
         self.modify_mg_btn.setEnabled(True)
 
@@ -453,7 +453,7 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
 
-        self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
+        self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
         self._run_widget.modify_mg_btn.clicked.connect(self._motion_group_modify_existing)
 
