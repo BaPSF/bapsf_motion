@@ -161,6 +161,7 @@ class AxisControlWidget(QWidget):
         self.establishedConnection.connect(self._handle_connection_established)
         self.lostConnection.connect(self._handle_connection_lost)
 
+        self.axisLinked.connect(self._initialize_display_of_axis_status)
         self.refreshDisplay.connect(self.update_display_of_axis_status)
 
     def _define_layout(self):
@@ -564,6 +565,19 @@ class AxisControlWidget(QWidget):
         self.axis.send_command(cmd_string)
 
     @Slot()
+    def _initialize_display_of_axis_status(self):
+        if not self.interactive_display_mode:
+            # i.e. readonly mode
+            self.jog_delta_input.setText(f"{0.1:.2f}")
+
+            macro_step = 2
+            if self.axis_name_label.text().casefold() == "x":
+                macro_step = 10
+            self.joystick_delta_input.setText(f"{macro_step:.2f}")
+
+        self.update_display_of_axis_status()
+
+    @Slot()
     def update_display_of_axis_status(self):
         timer_active = self._update_display_timer.isActive()
         if timer_active:
@@ -666,7 +680,6 @@ class AxisControlWidget(QWidget):
         # connect motor SimpleSignals
         self.motor_signals_connect(axis)
 
-        self.update_display_of_axis_status()
         self.axisLinked.emit()
 
     def unlink_axis(self):
