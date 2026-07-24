@@ -1494,7 +1494,6 @@ class DriveGameController(DriveBaseController):
             self.stop_move()
 
     def stop_move(self, axis=None, soft: bool = False):
-        self.logger.debug("Stopping move.")
 
         if axis is None:
             self.mg.stop(soft=soft)
