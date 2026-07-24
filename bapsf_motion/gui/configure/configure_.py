@@ -215,7 +215,7 @@ class RunWidget(QWidget):
         self.mg_add_btn = self._init_mg_add_btn()
         self.done_btn = self._init_done_btn()
         self.mg_list_widget = self._init_mg_list_widget()
-        self.modify_mg_btn = self._init_modify_mg_btn()
+        self.mg_modify_btn = self._init_mg_modify_btn()
         self.quit_btn = self._init_quit_btn()
         self.remove_mg_btn = self._init_remove_mg_btn()
         self.run_name_label = self._init_run_name_label()
@@ -286,7 +286,7 @@ class RunWidget(QWidget):
         sub_layout.addWidget(self.remove_mg_btn)
         layout.addLayout(sub_layout)
 
-        layout.addWidget(self.modify_mg_btn)
+        layout.addWidget(self.mg_modify_btn)
 
         return layout
 
@@ -306,7 +306,7 @@ class RunWidget(QWidget):
         _widget.setFont(_font)
         return _widget
 
-    def _init_modify_mg_btn(self):
+    def _init_mg_modify_btn(self):
         _btn = StyleButton("Edit / Control", parent=self)
         _btn.setFixedHeight(38)
         _btn.setPointSize(16)
@@ -354,7 +354,7 @@ class RunWidget(QWidget):
     def enable_mg_buttons(self):
         self.mg_add_btn.setEnabled(True)
         self.remove_mg_btn.setEnabled(True)
-        self.modify_mg_btn.setEnabled(True)
+        self.mg_modify_btn.setEnabled(True)
 
     @property
     def logger(self) -> logging.Logger:
@@ -455,7 +455,7 @@ class ConfigureGUI(QMainWindow):
 
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
-        self._run_widget.modify_mg_btn.clicked.connect(self._motion_group_modify_existing)
+        self._run_widget.mg_modify_btn.clicked.connect(self._motion_group_modify_existing)
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
@@ -583,7 +583,7 @@ class ConfigureGUI(QMainWindow):
     def update_display_mg_list(self):
         self._run_widget.mg_list_widget.clear()
         self._run_widget.remove_mg_btn.setEnabled(False)
-        self._run_widget.modify_mg_btn.setEnabled(False)
+        self._run_widget.mg_modify_btn.setEnabled(False)
 
         if self.rm.mgs is None or not self.rm.mgs:
             return
