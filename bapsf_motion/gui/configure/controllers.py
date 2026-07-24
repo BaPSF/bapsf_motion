@@ -1498,6 +1498,7 @@ class DriveGameController(DriveBaseController):
         if axis is None:
             self.mg.stop(soft=soft)
             return
+        self.logger.debug(f"Stopping move. axis = {axis}, soft = {soft}")
 
         try:
             self.mg.drive.send_command("stop", soft, axis=axis)
