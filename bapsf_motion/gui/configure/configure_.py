@@ -211,58 +211,16 @@ class RunWidget(QWidget):
             enable_run_name if isinstance(enable_run_name, bool) else True
         )
 
-        # Define BUTTONS
-
-        self.done_btn = DoneButton(parent=self)
-        self.quit_btn = DiscardButton("Discard && Quit", parent=self)
-
-        _btn = StyleButton("ADD", parent=self)
-        _btn.setFixedHeight(38)
-        _btn.setPointSize(16)
-        self.add_mg_btn = _btn
-
-        _btn = StyleButton("REMOVE", parent=self)
-        _btn.setFixedHeight(38)
-        _btn.setPointSize(16)
-        _btn.setEnabled(False)
-        self.remove_mg_btn = _btn
-
-        _btn = StyleButton("Edit / Control", parent=self)
-        _btn.setFixedHeight(38)
-        _btn.setPointSize(16)
-        _btn.setEnabled(False)
-        self.modify_mg_btn = _btn
-
-        # Define TEXT WIDGETS
-
-        # TOML config display widget
-        self.toml_widget = RunTOMLWidget(parent=self)
-        self.toml_widget.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-        )
-        self.toml_widget.setFixedWidth(500)
-
-        self.mg_list_widget = QListWidget(parent=self)
-        _font = self.mg_list_widget.font()
-        _font.setPointSize(14)
-        self.mg_list_widget.setFont(_font)
-
-        _txt_widget = QLineEdit(parent=self)
-        font = _txt_widget.font()
-        font.setPointSize(16)
-        _txt_widget.setFont(font)
-        self.run_name_widget = _txt_widget
-        self.run_name_widget.setVisible(self._enable_run_name)
-
-        _txt = QLabel("Run Name:  ", parent=self)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        _txt.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        font = _txt.font()
-        font.setPointSize(16)
-        _txt.setFont(font)
-        self.run_name_label = _txt
-        self.run_name_label.setVisible(self._enable_run_name)
+        # Initialize Widgets
+        self.add_mg_btn = self._init_add_mg_btn()
+        self.done_btn = self._init_done_btn()
+        self.mg_list_widget = self._init_mg_list_widget()
+        self.modify_mg_btn = self._init_modify_mg_btn()
+        self.quit_btn = self._init_quit_btn()
+        self.remove_mg_btn = self._init_remove_mg_btn()
+        self.run_name_label = self._init_run_name_label()
+        self.run_name_widget = self._init_run_name_widget()
+        self.toml_widget = self._init_toml_widget()
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -332,6 +290,65 @@ class RunWidget(QWidget):
 
         return layout
 
+    def _init_add_mg_btn(self):
+        _btn = StyleButton("ADD", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
+        return _btn
+
+    def _init_done_btn(self):
+        return DoneButton(parent=self)
+
+    def _init_mg_list_widget(self):
+        _widget = QListWidget(parent=self)
+        _font = _widget.font()
+        _font.setPointSize(14)
+        _widget.setFont(_font)
+        return _widget
+
+    def _init_modify_mg_btn(self):
+        _btn = StyleButton("Edit / Control", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_quit_btn(self):
+        return DiscardButton("Discard && Quit", parent=self)
+
+    def _init_remove_mg_btn(self):
+        _btn = StyleButton("REMOVE", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_run_name_label(self):
+        _txt = QLabel("Run Name:  ", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        _txt.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _txt.font()
+        font.setPointSize(16)
+        _txt.setFont(font)
+        _txt.setVisible(self._enable_run_name)
+        return _txt
+
+    def _init_run_name_widget(self):
+        _txt = QLineEdit(parent=self)
+        font = _txt.font()
+        font.setPointSize(16)
+        _txt.setFont(font)
+        _txt.setVisible(self._enable_run_name)
+        return _txt
+
+    def _init_toml_widget(self):
+        _widget = RunTOMLWidget(parent=self)
+        _widget.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        _widget.setFixedWidth(500)
+        return _widget
 
     @Slot()
     def enable_mg_buttons(self):
