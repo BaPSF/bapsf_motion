@@ -108,9 +108,9 @@ class PyGameJoystickRunner(QRunnable):
 
                     # The joystick value held in the event bundle does not
                     # represent the current joystick value.  This was leading
-                    # to incosistent behavior since an event would occur with
+                    # to inconsistent behavior since an event would occur with
                     # a value of say 0.87 followed by an event with a value
-                    # in the dead zone eventhough the joystick was NOT in the
+                    # in the dead zone even though the joystick was NOT in the
                     # dead zone.
                     #
                     # To mitigate this, we will just get the current axis
