@@ -1548,16 +1548,14 @@ class DriveGameController(DriveBaseController):
             self.stop_move()
 
     def stop_move(self, axis=None, soft: bool = False):
-
-        if axis is None:
-            self.mg.stop(soft=soft)
-            return
         self.logger.debug(f"Stopping move. axis = {axis}, soft = {soft}")
 
         try:
-            self.mg.drive.send_command("stop", soft, axis=axis)
-        except Exception:  # noqa
-            self.mg.stop()
+            self.mg.stop(axis=axis, soft=soft)
+        except AttributeError:
+            # mg is None instead of a MotionGroup instance
+            return
+
 
     def zero_drive(self):
         self.mg.set_zero()
