@@ -1613,7 +1613,12 @@ class DriveGameController(DriveBaseController):
         sign = self.mspace_drive_polarity[axis_id] * sign
 
         pos = self.mg.drive.position.value[axis_id]
-        self.mg.drive.move_to(pos + sign * 1.0, axis=axis_id)
+
+        acw = self._axis_control_widgets[axis_id]
+        step = float(acw.joystick_delta_input.text())
+
+        move_to = pos + sign * step
+        self.mg.drive.move_to(move_to, axis=axis_id)
 
     @Slot(int)
     def _handle_button_press(self, button):
