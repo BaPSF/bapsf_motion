@@ -227,7 +227,7 @@ class RunTOMLWidget(QWidget):
 
 
 class RunWidget(QWidget):
-    def __init__(self, parent: "ConfigureGUI", *, enable_run_name: bool = True):
+    def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
         super().__init__(parent=parent)
 
         self._logger = gui_logger
