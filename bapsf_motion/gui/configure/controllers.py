@@ -372,7 +372,7 @@ class AxisControlWidget(QWidget):
         return _btn
 
     def _init_jog_delta_input(self):
-        _txt = QLineEdit("0", parent=self)
+        _txt = QLineEdit(f"{0:.2f}", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         font = _txt.font()
         font.setPointSize(14)
