@@ -205,7 +205,6 @@ class PyGameJoystickRunner(QRunnable):
 
         if np.abs(value) <= self.axis_dead_zone:
             # joystick is in the neutral position
-            self.logger.info(f"<--0-->  Axis {axis_id} is in dead zone {value}")
             value = 0.0
         elif previous_value / value < 0.0:
             # joystick switched sides
@@ -215,7 +214,6 @@ class PyGameJoystickRunner(QRunnable):
             and np.isclose(value, self.axis_dead_zone, atol=0.0, rtol=0.1)
         ):
             # joystick is moving back towards the neutral position
-            self.logger.info(f"<--1-->  Axis {axis_id} is moving towards dead zone {value} [{previous_value}]")
             value = 0.0
 
         self.signals.axisMoved.emit(axis_id, value)
