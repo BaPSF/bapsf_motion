@@ -393,7 +393,7 @@ class Drive(EventActor):
         if axis is None:
             axes = self.axes
         elif axis in range(len(self.axes)):
-            axes = (self.axes[axis], )
+            axes = (self.axes[axis],)
         else:
             axes = self.axes
 

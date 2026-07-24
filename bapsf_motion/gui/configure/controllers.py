@@ -152,7 +152,9 @@ class AxisControlWidget(QWidget):
         self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.zero_btn.clicked.connect(self._zero_axis)
         self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
-        self.joystick_delta_input.editingFinished.connect(self._validate_joystick_delta_input)
+        self.joystick_delta_input.editingFinished.connect(
+            self._validate_joystick_delta_input
+        )
         self.target_position_label.editingFinished.connect(
             self._validate_target_position_value
         )
@@ -1557,9 +1559,8 @@ class DriveGameController(DriveBaseController):
             # mg is None instead of a MotionGroup instance
             return
 
-        if (
-            (axis is None and self.mg.is_moving)
-            or (axis is not None and self.mg.drive.axes[axis].is_moving)
+        if (axis is None and self.mg.is_moving) or (
+            axis is not None and self.mg.drive.axes[axis].is_moving
         ):
             _timer = QTimer(parent=self)
             _timer.setSingleShot(True)

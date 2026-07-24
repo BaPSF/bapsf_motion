@@ -209,9 +209,8 @@ class PyGameJoystickRunner(QRunnable):
         elif previous_value / value < 0.0:
             # joystick switched sides
             pass
-        elif (
-            np.abs(value) - np.abs(previous_value) < -0.1
-            and np.isclose(value, self.axis_dead_zone, atol=0.0, rtol=0.1)
+        elif np.abs(value) - np.abs(previous_value) < -0.1 and np.isclose(
+            value, self.axis_dead_zone, atol=0.0, rtol=0.1
         ):
             # joystick is moving back towards the neutral position
             value = 0.0
