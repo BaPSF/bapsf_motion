@@ -82,12 +82,30 @@ class RunTOMLWidget(QWidget):
         self.copy_btn.clicked.connect(self.copy_toml)
 
     def _define_layout(self):
-        layout = QGridLayout()
-        layout.addWidget(self.title_label, 0, 0, 1, 3)
-        layout.addWidget(self.toml_text_widget, 1, 0, 1, 3)
-        layout.addWidget(self.import_btn, 2, 0)
-        layout.addWidget(self.export_btn, 2, 1)
-        layout.addWidget(self.copy_btn, 2, 2)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        layout.addLayout(self._define_header_layout())
+        layout.addWidget(self.toml_text_widget, stretch=1)
+        layout.addLayout(self._define_button_layout())
+        return layout
+
+    def _define_header_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addStretch(1)
+        layout.addWidget(self.title_label)
+        layout.addStretch(1)
+        return layout
+
+    def _define_button_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        layout.addWidget(self.import_btn, stretch=1)
+        layout.addWidget(self.export_btn, stretch=1)
+        layout.addWidget(self.copy_btn, stretch=1)
         return layout
 
     def _init_copy_btn(self):
