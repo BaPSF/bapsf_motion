@@ -318,6 +318,7 @@ class RunWidget(QWidget):
         layout.addLayout(sub_layout)
 
         layout.addWidget(self.mg_config_btn)
+        layout.addWidget(self.mg_control_btn)
 
         return layout
 
