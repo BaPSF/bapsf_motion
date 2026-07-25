@@ -321,16 +321,14 @@ class RunWidget(QWidget):
             layout.addSpacing(12)
 
         layout.addWidget(mg_label)
-        layout.addWidget(self.mg_list_widget)
-
-        sub_layout = QHBoxLayout()
-        sub_layout.addWidget(self.mg_add_btn)
-        sub_layout.addWidget(self.mg_remove_btn)
-        layout.addLayout(sub_layout)
-
+        layout.addSpacing(4)
+        layout.addWidget(self.mg_list_widget, stretch=1)
+        layout.addSpacing(8)
+        layout.addLayout(self._define_control_row1_button_layout())
+        layout.addSpacing(8)
         layout.addWidget(self.mg_config_btn)
+        layout.addSpacing(8)
         layout.addWidget(self.mg_control_btn)
-
         return layout
 
     def _define_control_run_name_layout(self):
@@ -345,6 +343,15 @@ class RunWidget(QWidget):
         layout.addSpacerItem(
             QSpacerItem(18, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
         )
+        return layout
+
+    def _define_control_row1_button_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.mg_add_btn, stretch=1)
+        layout.addSpacing(8)
+        layout.addWidget(self.mg_remove_btn, stretch=1)
         return layout
 
     def _init_done_btn(self):
