@@ -246,6 +246,7 @@ class RunWidget(QWidget):
         self.mg_add_btn = self._init_mg_add_btn()
         self.mg_list_widget = self._init_mg_list_widget()
         self.mg_config_btn = self._init_mg_config_btn()
+        self.mg_control_btn = self._init_mg_control_btn()
         self.mg_remove_btn = self._init_mg_remove_btn()
         self.quit_btn = self._init_quit_btn()
         self.run_name_label = self._init_run_name_label()
@@ -338,6 +339,13 @@ class RunWidget(QWidget):
 
     def _init_mg_config_btn(self):
         _btn = StyleButton("Configure", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_mg_control_btn(self):
+        _btn = StyleButton("Control All", parent=self)
         _btn.setFixedHeight(38)
         _btn.setPointSize(16)
         _btn.setEnabled(False)
