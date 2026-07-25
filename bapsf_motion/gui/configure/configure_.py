@@ -272,11 +272,16 @@ class RunWidget(QWidget):
 
     def _define_banner_layout(self):
         layout = QHBoxLayout()
-
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addSpacerItem(
+            QSpacerItem(8, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
         layout.addWidget(self.quit_btn)
         layout.addStretch()
         layout.addWidget(self.done_btn)
-
+        layout.addSpacerItem(
+            QSpacerItem(8, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
         return layout
 
     def _define_content_layout(self):
