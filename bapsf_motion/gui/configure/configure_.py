@@ -298,8 +298,6 @@ class RunWidget(QWidget):
         return layout
 
     def _define_control_layout(self):
-        layout = QVBoxLayout()
-
         mg_label = QLabel("Defined Motion Groups", parent=self)
         mg_label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
@@ -308,13 +306,19 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         mg_label.setFont(font)
 
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addSpacerItem(
+            QSpacerItem(0, 8, QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        )
+
         if self._enable_run_name:
-            sub_layout = QHBoxLayout()
-            sub_layout.addWidget(self.run_name_label)
-            sub_layout.addWidget(self.run_name_widget)
-            layout.addSpacing(18)
-            layout.addLayout(sub_layout)
-            layout.addSpacing(18)
+            self.run_name_label.setVisible(True)
+            self.run_name_widget.setVisible(True)
+
+            layout.addLayout(self._define_control_run_name_layout())
+            layout.addSpacing(12)
 
         layout.addWidget(mg_label)
         layout.addWidget(self.mg_list_widget)
@@ -327,6 +331,20 @@ class RunWidget(QWidget):
         layout.addWidget(self.mg_config_btn)
         layout.addWidget(self.mg_control_btn)
 
+        return layout
+
+    def _define_control_run_name_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addSpacerItem(
+            QSpacerItem(18, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
+        layout.addWidget(self.run_name_label)
+        layout.addWidget(self.run_name_widget)
+        layout.addSpacerItem(
+            QSpacerItem(18, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
         return layout
 
     def _init_done_btn(self):
