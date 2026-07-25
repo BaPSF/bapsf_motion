@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QPlainTextEdit,
     QSizePolicy,
+    QSpacerItem,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -260,26 +261,14 @@ class RunWidget(QWidget):
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
 
     def _define_layout(self):
-
-        # Create layout for banner (top header)
-        banner_layout = self._define_banner_layout()
-
-        # Create layout for controls
-        control_widget = QWidget(parent=self)
-        control_widget.setLayout(self._define_control_layout())
-
-        # Construct layout below top banner
-        layout = QHBoxLayout()
-        layout.addWidget(self.toml_widget)
-        layout.addWidget(VLinePlain(parent=self))
-        layout.addWidget(control_widget)
-
-        # Populate the main layout
-        main_layout = QVBoxLayout()
-        main_layout.addLayout(banner_layout)
-        main_layout.addLayout(layout)
-
-        return main_layout
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addLayout(self._define_banner_layout())
+        layout.addSpacing(8)
+        layout.addLayout(self._define_content_layout())
+        layout.addSpacing(8)
+        return layout
 
     def _define_banner_layout(self):
         layout = QHBoxLayout()
@@ -288,6 +277,19 @@ class RunWidget(QWidget):
         layout.addStretch()
         layout.addWidget(self.done_btn)
 
+        return layout
+
+    def _define_content_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addSpacing(8)
+        layout.addWidget(self.toml_widget)
+        layout.addSpacing(12)
+        layout.addWidget(VLinePlain(parent=self))
+        layout.addSpacing(12)
+        layout.addLayout(self._define_control_layout())
+        layout.addSpacing(8)
         return layout
 
     def _define_control_layout(self):
