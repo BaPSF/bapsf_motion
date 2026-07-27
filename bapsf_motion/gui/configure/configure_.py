@@ -38,6 +38,7 @@ from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
+from bapsf_motion.gui.configure.toml_ import TOMLText
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
@@ -136,16 +137,11 @@ class RunTOMLWidget(QWidget):
         return label
 
     def _init_toml_text_widget(self):
-        _txt = QPlainTextEdit(parent=self)
+        _txt = TOMLText(parent=self)
         _txt.setSizePolicy(
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Expanding,
         )
-        _txt.setReadOnly(True)
-        font = _txt.font()
-        font.setPointSize(10)
-        font.setFamily("Courier New")
-        _txt.setFont(font)
         return _txt
 
     @property
