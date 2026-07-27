@@ -40,6 +40,7 @@ from bapsf_motion.gui.configure.message_boxes import (
 )
 from bapsf_motion.gui.configure.motion_builder_overlay import MotionBuilderConfigOverlay
 from bapsf_motion.gui.configure.motion_space_display import MotionSpaceDisplay
+from bapsf_motion.gui.configure.toml_ import TOMLText
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
@@ -827,14 +828,11 @@ class MGWidget(QWidget):
         return canvas
 
     def _init_toml_widget(self):
-        _widget = QPlainTextEdit(parent=self)
+        _widget = TOMLText(parent=self)
         _widget.setSizePolicy(
             QSizePolicy.Policy.Preferred,
             QSizePolicy.Policy.Expanding,
         )
-        _widget.setReadOnly(True)
-        _widget.font().setPointSize(14)
-        _widget.font().setFamily("Courier New")
         _widget.setMinimumWidth(350)
         return _widget
 
