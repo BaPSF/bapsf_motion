@@ -1,12 +1,12 @@
 __all__ = ["TOMLSyntaxHighlighter", "TOMLText"]
 
-from PySide6.QtCore import Qt, QRegularExpression
+from PySide6.QtCore import QRegularExpression, Qt
 from PySide6.QtGui import (
     QColor,
     QFont,
+    QPalette,
     QSyntaxHighlighter,
     QTextCharFormat,
-    QPalette,
     QTextDocument,
 )
 from PySide6.QtWidgets import QPlainTextEdit, QWidget
