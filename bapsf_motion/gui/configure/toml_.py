@@ -98,9 +98,19 @@ class TOMLText(QPlainTextEdit):
 
         super().__init__(text, parent=parent)
 
+        self.highlighter = TOMLSyntaxHighlighter(self.document())
+
         self.setReadOnly(True)
         font = self.font()
         font.setPointSize(10)
         font.setFamily("Courier New")
         self.setFont(font)
+
+        # set background color of text box
+        # - note: using setStyleSheet to set background-color also affects
+        #         the scrollbar
+        #
+        palette = self.palette()
+        palette.setColor(QPalette.ColorRole.Base, QColor("#faf9f6"))
+        self.setPalette(palette)
 
