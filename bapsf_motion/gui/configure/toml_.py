@@ -65,8 +65,15 @@ class TOMLSyntaxHighlighter(QSyntaxHighlighter):
             content_pattern, content_format = content_value
             match_iterator = content_pattern.globalMatch(text)
             set_format = False
+            end_of_string = None  # type: int | None
             while match_iterator.hasNext():
                 match = match_iterator.next()
+
+                if end_of_string is not None and match.capturedStart() < end_of_string:
+                    continue
+                elif end_of_string is not None:
+                    end_of_string = None
+
                 self.setFormat(
                     match.capturedStart(), match.capturedLength(), content_format
                 )
@@ -82,6 +89,9 @@ class TOMLSyntaxHighlighter(QSyntaxHighlighter):
                 if content_name == "string" and match.capturedEnd() == len(text):
                     set_format = True
                     break
+
+                if content_name == "string":
+                    end_of_string = match.capturedEnd()
 
             if set_format:
                 return
