@@ -19,22 +19,22 @@ class TOMLSyntaxHighlighter(QSyntaxHighlighter):
 
         # Formats
         comment_format = QTextCharFormat()
-        comment_format.setForeground(QColor('#898887'))
+        comment_format.setForeground(QColor("#898887"))
         comment_format.setFontItalic(True)
 
         key_format = QTextCharFormat()
-        key_format.setForeground(QColor('#0057ae'))
+        key_format.setForeground(QColor("#0057ae"))
         key_format.setFontWeight(QFont.Weight.Bold)
 
         table_format = QTextCharFormat()
-        table_format.setForeground(QColor('#1f1c1b'))
+        table_format.setForeground(QColor("#1f1c1b"))
         table_format.setFontWeight(QFont.Weight.Bold)
 
         string_format = QTextCharFormat()
-        string_format.setForeground(QColor('#bf0303'))
+        string_format.setForeground(QColor("#bf0303"))
 
         value_format = QTextCharFormat()
-        value_format.setForeground(QColor('#b08000'))
+        value_format.setForeground(QColor("#b08000"))
 
         # Rules mapping (Regex -> Format)
         self.rules = {
@@ -123,4 +123,3 @@ class TOMLText(QPlainTextEdit):
         palette = self.palette()
         palette.setColor(QPalette.ColorRole.Base, QColor("#faf9f6"))
         self.setPalette(palette)
-
