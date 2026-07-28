@@ -562,7 +562,7 @@ class MGWidget(QWidget):
         self.drive_control_widget.movementStarted.connect(self._handle_movement_started)
         self.drive_control_widget.movementStopped.connect(self._handle_movement_stopped)
         self.drive_control_widget.targetPositionChanged.connect(
-            self.mspace_display.redrawSignals.TargetPosition.emit
+            self._handle_drive_control_target_position_changed
         )
         self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
@@ -1429,6 +1429,10 @@ class MGWidget(QWidget):
         self.logger.info(f"Replacing the motion group's motion builder.\n{config}")
         self.mg.replace_motion_builder(_deepcopy_dict(config))
         self.configChanged.emit()
+
+    @Slot(list)
+    def _handle_drive_control_target_position_changed(self, target_position: list):
+        self.mspace_display.redrawSignals.TargetPosition.emit(target_position)
 
     @Slot(object)
     def _handle_drive_overlay_close(self, config: Dict[str, Any]):
