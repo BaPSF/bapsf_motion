@@ -138,10 +138,10 @@ class DriveControlWidget(QWidget):
         self.desktop_controller_widget.zeroDrive.connect(self._zero_drive)
         self.desktop_controller_widget.moveTo.connect(self._move_to)
         self.desktop_controller_widget.targetPositionChanged.connect(
-            self.targetPositionChanged.emit
+            self._handle_controller_target_position_changed
         )
         self.desktop_controller_widget.driveStatusChanged.connect(
-            self.driveStatusChanged.emit
+            self._handle_controller_drive_status_changed
         )
         self.desktop_controller_widget.movementStarted.connect(
             self._drive_movement_started
@@ -206,6 +206,14 @@ class DriveControlWidget(QWidget):
     @property
     def target_position(self):
         return self.desktop_controller_widget.target_position
+
+    @Slot()
+    def _handle_controller_drive_status_changed(self):
+        self.driveStatusChanged.emit()
+
+    @Slot(list)
+    def _handle_controller_target_position_changed(self, target_position):
+        self.targetPositionChanged.emit(target_position)
 
     @Slot()
     def _stop_move(self):
@@ -554,7 +562,7 @@ class MGWidget(QWidget):
         self.drive_control_widget.movementStarted.connect(self._handle_movement_started)
         self.drive_control_widget.movementStopped.connect(self._handle_movement_stopped)
         self.drive_control_widget.targetPositionChanged.connect(
-            self.mspace_display.redrawSignals.TargetPosition.emit
+            self._handle_drive_control_target_position_changed
         )
         self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
 
@@ -586,7 +594,7 @@ class MGWidget(QWidget):
         if self.drive_control_widget.isEnabled():
             position = self.drive_control_widget.position
         else:
-            position = None
+            position = []
         self.mspace_display.redrawSignals.Position.emit(position)
 
         if self._plot_timer_issue_new_single_shot:
@@ -1404,6 +1412,10 @@ class MGWidget(QWidget):
         self.logger.info(f"Replacing the motion group's motion builder.\n{config}")
         self.mg.replace_motion_builder(_deepcopy_dict(config))
         self.configChanged.emit()
+
+    @Slot(list)
+    def _handle_drive_control_target_position_changed(self, target_position: list):
+        self.mspace_display.redrawSignals.TargetPosition.emit(target_position)
 
     @Slot(object)
     def _handle_drive_overlay_close(self, config: Dict[str, Any]):
