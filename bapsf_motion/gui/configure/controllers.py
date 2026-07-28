@@ -942,8 +942,8 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
     @Slot(float)
     def _target_position_changed(self, position):
-        self.logger.info(f"DBC target position changed {self.target_position}")
         target_position = self.target_position
+        self.logger.info(f"DBC target position changed {self.target_position}")
         if target_position is None:
             target_position = []
         self.targetPositionChanged.emit(target_position)
