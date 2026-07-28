@@ -1671,7 +1671,7 @@ class MGWidget(QWidget):
                 exc_info=err,
             )
             try:
-                mg.terminate(delay_loop_stop=True)
+                mg.terminate(delay_loop_stop=True, disconnect_signals=True)
             except AttributeError:
                 pass
 

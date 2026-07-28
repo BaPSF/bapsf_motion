@@ -999,7 +999,6 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
             acw.setVisible(visible)
 
-        # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self._mspace_drive_polarity = None
         self.setEnabled(False)
