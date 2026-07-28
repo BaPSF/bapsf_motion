@@ -25,7 +25,6 @@ from PySide6.QtWidgets import (
     QListWidget,
     QListWidgetItem,
     QMainWindow,
-    QPlainTextEdit,
     QSizePolicy,
     QStackedWidget,
     QVBoxLayout,
@@ -38,6 +37,7 @@ from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
+from bapsf_motion.gui.configure.toml_ import TOMLText
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
@@ -62,46 +62,18 @@ class RunTOMLWidget(QWidget):
     def __init__(self, parent: Union[QWidget, None]):
         super().__init__(parent=parent)
 
+        # Initialize Attributes
         self._logger = gui_logger
         self._TOML_FILE = None
 
-        label = QLabel("Run Configuration", parent=self)
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
-        font = label.font()
-        font.setPointSize(16)
-        label.setFont(font)
-        self.title_label = label
-
-        _txt = QPlainTextEdit(parent=self)
-        _txt.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-        )
-        _txt.setReadOnly(True)
-        font = _txt.font()
-        font.setPointSize(10)
-        font.setFamily("Courier New")
-        _txt.setFont(font)
-        self.toml_text_widget = _txt
-
-        _btn = StyleButton("IMPORT", parent=self)
-        _btn.setFixedHeight(48)
-        _btn.setPointSize(16)
-        _btn.setEnabled(False)
-        self.import_btn = _btn
-
-        _btn = StyleButton("EXPORT", parent=self)
-        _btn.setFixedHeight(48)
-        _btn.setPointSize(16)
-        self.export_btn = _btn
-
-        _btn = StyleButton("COPY", parent=self)
-        _btn.setFixedHeight(48)
-        _btn.setPointSize(16)
-        self.copy_btn = _btn
+        # Initialize Widgets
+        self.copy_btn = self._init_copy_btn()
+        self.export_btn = self._init_export_btn()
+        self.import_btn = self._init_import_btn()
+        self.title_label = self._init_title_label()
+        self.toml_text_widget = self._init_toml_text_widget()
 
         self.setLayout(self._define_layout())
-
         self._connect_signals()
 
     def _connect_signals(self):
@@ -110,13 +82,66 @@ class RunTOMLWidget(QWidget):
         self.copy_btn.clicked.connect(self.copy_toml)
 
     def _define_layout(self):
-        layout = QGridLayout()
-        layout.addWidget(self.title_label, 0, 0, 1, 3)
-        layout.addWidget(self.toml_text_widget, 1, 0, 1, 3)
-        layout.addWidget(self.import_btn, 2, 0)
-        layout.addWidget(self.export_btn, 2, 1)
-        layout.addWidget(self.copy_btn, 2, 2)
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        layout.addLayout(self._define_header_layout())
+        layout.addWidget(self.toml_text_widget, stretch=1)
+        layout.addLayout(self._define_button_layout())
         return layout
+
+    def _define_header_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addStretch(1)
+        layout.addWidget(self.title_label)
+        layout.addStretch(1)
+        return layout
+
+    def _define_button_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        layout.addWidget(self.import_btn, stretch=1)
+        layout.addWidget(self.export_btn, stretch=1)
+        layout.addWidget(self.copy_btn, stretch=1)
+        return layout
+
+    def _init_copy_btn(self):
+        _btn = StyleButton("COPY", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        return _btn
+
+    def _init_export_btn(self):
+        _btn = StyleButton("EXPORT", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        return _btn
+
+    def _init_import_btn(self):
+        _btn = StyleButton("IMPORT", parent=self)
+        _btn.setFixedHeight(48)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_title_label(self):
+        label = QLabel("Run Configuration", parent=self)
+        label.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignBottom)
+        font = label.font()
+        font.setPointSize(16)
+        label.setFont(font)
+        return label
+
+    def _init_toml_text_widget(self):
+        _txt = TOMLText(parent=self)
+        _txt.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        return _txt
 
     @property
     def logger(self) -> logging.Logger:
