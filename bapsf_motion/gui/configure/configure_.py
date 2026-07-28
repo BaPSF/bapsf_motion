@@ -600,7 +600,7 @@ class ConfigureGUI(QMainWindow):
             self.logger.info(f"Adding to MG List - {label}")
             _icon = (
                 qta.icon(icon_name_dict["window-close"], color="red")
-                if mg.terminated
+                if mg.terminated or not mg.connected
                 else qta.icon(icon_name_dict["check-circle"], color="green")
             )  # type: QIcon
             _item = QListWidgetItem(
