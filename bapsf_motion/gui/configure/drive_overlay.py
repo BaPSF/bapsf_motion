@@ -1180,6 +1180,7 @@ class DriveConfigOverlay(_ConfigOverlay):
         for axw in self.axis_widgets:
             if axw.axis is None:
                 continue
+
             axw.axis.terminate(delay_loop_stop=True)
 
         config = config if config is not None else self.drive_config
