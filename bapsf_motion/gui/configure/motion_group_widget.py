@@ -1252,8 +1252,7 @@ class MGWidget(QWidget):
         # LostConnection dialog.
         self.set_disable_for_popup()
 
-        if isinstance(self.mg, MotionGroup):
-            self.mg.terminate(delay_loop_stop=True)
+        self._terminate_mg(delay_loop_stop=True, disconnect_signals=False)
 
         self._overlay_setup(DriveConfigOverlay(self.mg, parent=self))
 
@@ -1301,6 +1300,24 @@ class MGWidget(QWidget):
         self._overlay_widget.deleteLater()
         self._overlay_widget = None
         self._overlay_shown = False
+
+    def _terminate_mg(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = False,
+    ):
+        mg = self.mg
+        if not isinstance(mg, MotionGroup):
+            return
+
+        drive = mg.drive
+        if not isinstance(drive, Drive):
+            return
+
+        mg.terminate(
+            delay_loop_stop=delay_loop_stop,
+            disconnect_signals=disconnect_signals,
+        )
 
     def resizeEvent(self, event: QResizeEvent):
         if self._overlay_shown:
@@ -1637,8 +1654,7 @@ class MGWidget(QWidget):
 
         if isinstance(self.mg, MotionGroup):
             self.logger.info("Terminating Motion Group for re-spawn.")
-            self.mg.terminate(delay_loop_stop=True)
-            # self._set_mg(None)
+            self._terminate_mg(delay_loop_stop=True, disconnect_signals=True)
             self._mg = None
 
         mg = None
@@ -1925,7 +1941,7 @@ class MGWidget(QWidget):
             # disable the Drive control widget, so we do not risk creating
             # extra events while terminating
             self.drive_control_widget.setEnabled(False)
-            self.mg.terminate(delay_loop_stop=True)
+            self._terminate_mg(delay_loop_stop=True, disconnect_signals=True)
 
         self.returnConfig.emit(index, config)
         self.close()
@@ -1968,7 +1984,7 @@ class MGWidget(QWidget):
             # disable the Drive control widget, so we do not risk creating
             # extra events while terminating
             self.drive_control_widget.setEnabled(False)
-            self.mg.terminate(delay_loop_stop=True)
+            self._terminate_mg(delay_loop_stop=True, disconnect_signals=True)
 
         self.returnConfig.emit(-1, {})
         self.close()
@@ -1984,8 +2000,7 @@ class MGWidget(QWidget):
         # extra events while terminating
         self.drive_control_widget.setEnabled(False)
 
-        if isinstance(self.mg, MotionGroup) and not self.mg.terminated:
-            self.mg.terminate(delay_loop_stop=True)
+        self._terminate_mg(delay_loop_stop=True, disconnect_signals=True)
 
         if self._overlay_widget is not None:
             self._overlay_widget.close()
