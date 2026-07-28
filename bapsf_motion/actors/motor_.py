@@ -199,6 +199,14 @@ class MotorSignals:
         self._movement_started = SimpleSignal()
         self._status_changed = SimpleSignal()
 
+        self._signal_names = (
+            "connection_established",
+            "connection_lost",
+            "movement_finished",
+            "movement_started",
+            "status_changed",
+        )
+
     @property
     def connection_established(self) -> SimpleSignal:
         """
@@ -237,6 +245,28 @@ class MotorSignals:
         `~bapsf_motion.utils.SimpleSignal` emitted when the motor
         `~Motor.status` is changes."""
         return self._status_changed
+
+    def _get_signal(self, name: str) -> SimpleSignal:
+        return getattr(self, name)
+
+    def set_blocking(self, block: bool):
+        """Block or unblock the all signals."""
+
+        for name in self._signal_names:
+            signal = self._get_signal(name)
+            signal.set_blocking(block)
+
+    def disconnect(self, func: Callable):
+        """Dissconnect the callback/handler ``func`` from all signals."""
+        for name in self._signal_names:
+            signal = getattr(self, name)
+            signal.disconnect(func)
+
+    def disconnect_all(self):
+        """Disconnect all callbacks/handlers from all signals."""
+        for name in self._signal_names:
+            signal = getattr(self, name)
+            signal.disconnect_all()
 
 
 class Motor(EventActor):
