@@ -1814,6 +1814,8 @@ class MGWidget(QWidget):
         return True
 
     def _validate_drive(self) -> bool:
+        self.logger.info("Validating drive")
+
         self.drive_btn.setToolTip("")
 
         if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
@@ -1834,6 +1836,24 @@ class MGWidget(QWidget):
             self.done_btn.setEnabled(False)
             self.drive_btn.setToolTip(
                 "Drive is terminated (i.e. not running). Try re-configuring."
+            )
+            return False
+
+        if not self.mg.drive.connected:
+            self.drive_btn.set_invalid()
+            self.drive_control_widget.setEnabled(False)
+            self.done_btn.setEnabled(False)
+
+            not_connected = {}
+            for ax in self.mg.drive.axes:
+                if ax.connected:
+                    continue
+
+                not_connected[ax.name] = ax.ip
+
+            self.drive_btn.setToolTip(
+                "Drive is not fully connected to the motors. The "
+                f"following motors are NOT connected {not_connected}."
             )
             return False
 
