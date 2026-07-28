@@ -797,6 +797,7 @@ class Motor(EventActor):
             self._initialize_tasks()
 
         super().run(auto_run=auto_run)
+        self.signals.set_blocking(False)
 
     @property
     def connected(self):
