@@ -586,7 +586,7 @@ class MGWidget(QWidget):
         if self.drive_control_widget.isEnabled():
             position = self.drive_control_widget.position
         else:
-            position = None
+            position = []
         self.mspace_display.redrawSignals.Position.emit(position)
 
         if self._plot_timer_issue_new_single_shot:
