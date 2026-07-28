@@ -1918,19 +1918,26 @@ class Motor(EventActor):
             old_HR = heartrate
             await asyncio.sleep(heartrate)
 
-    def terminate(self, delay_loop_stop=False):
+    def terminate(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = False,
+    ):
         self.logger.info("Terminating motor")
 
-        # disconnect all signals before terminating
-        self.signals.status_changed.disconnect_all()
-        self.signals.movement_started.disconnect_all()
-        self.signals.movement_finished.disconnect_all()
+        # handle signals
+        self.signals.set_blocking(True)
+        if disconnect_signals:
+            self.signals.disconnect_all()
 
         if not self.terminated and self.connected:
             self.stop()
             self.disable()
 
-        super().terminate(delay_loop_stop=delay_loop_stop)
+        super().terminate(
+            delay_loop_stop=delay_loop_stop,
+            disconnect_signals=disconnect_signals,
+        )
         self._heartbeat_task = None
 
         try:
