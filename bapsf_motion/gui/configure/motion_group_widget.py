@@ -141,7 +141,7 @@ class DriveControlWidget(QWidget):
             self._handle_controller_target_position_changed
         )
         self.desktop_controller_widget.driveStatusChanged.connect(
-            self.driveStatusChanged.emit
+            self._handle_controller_drive_status_changed
         )
         self.desktop_controller_widget.movementStarted.connect(
             self._drive_movement_started
@@ -206,6 +206,10 @@ class DriveControlWidget(QWidget):
     @property
     def target_position(self):
         return self.desktop_controller_widget.target_position
+
+    @Slot()
+    def _handle_controller_drive_status_changed(self):
+        self.driveStatusChanged.emit()
 
     @Slot(list)
     def _handle_controller_target_position_changed(self, target_position):
