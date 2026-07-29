@@ -1033,6 +1033,7 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
     def _drive_connection_lost(self):
         self.mg.drive.stop()
         self.setEnabled(False)
+        self.driveStatusChanged.emit()
 
     @Slot()
     def _drive_connection_established(self):
@@ -1041,6 +1042,7 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
         if self.mg.drive.connected:
             self.setEnabled(True)
+            self.driveStatusChanged.emit()
 
     @Slot(int)
     def _drive_movement_started(self, axis_index):
