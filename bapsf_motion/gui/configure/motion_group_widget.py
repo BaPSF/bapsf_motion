@@ -564,7 +564,9 @@ class MGWidget(QWidget):
         self.drive_control_widget.targetPositionChanged.connect(
             self._handle_drive_control_target_position_changed
         )
-        self.drive_control_widget.driveStatusChanged.connect(self.update_position_in_plot)
+        self.drive_control_widget.driveStatusChanged.connect(
+            self._handle_drive_status_changed
+        )
 
         self.done_btn.clicked.connect(self.return_and_close)
         self.discard_btn.clicked.connect(self.discard_close)
@@ -1462,6 +1464,20 @@ class MGWidget(QWidget):
             return
 
         self._change_transform(config)
+
+    @Slot()
+    def _handle_drive_status_changed(self):
+        valid = self._validate_drive()
+
+        if not valid:
+            self.done_btn.setEnabled(False)
+            return
+
+        if valid and not self.done_btn.isEnabled():
+            self.configChanged.emit()
+            return
+
+        self.update_position_in_plot()
 
     @Slot()
     def _handle_movement_started(self):
