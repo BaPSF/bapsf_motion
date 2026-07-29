@@ -257,7 +257,7 @@ class MotorSignals:
             signal.set_blocking(block)
 
     def disconnect(self, func: Callable):
-        """Dissconnect the callback/handler ``func`` from all signals."""
+        """Disconnect the callback/handler ``func`` from all signals."""
         for name in self._signal_names:
             signal = getattr(self, name)
             signal.disconnect(func)
