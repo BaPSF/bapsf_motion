@@ -1122,18 +1122,26 @@ class DriveConfigOverlay(_ConfigOverlay):
         # 5. The drive is instantiable Drive()
         self.logger.info("Validating drive.")
 
-        if not all([isinstance(axw.axis, Axis) for axw in self.axis_widgets]):
-            self.logger.warning("Drive is not valid since not all axes are configured.")
-            self._change_validation_state(False)
-            return
-        elif not all([axw.axis.connected for axw in self.axis_widgets]):
-            self.logger.warning("Drive is not valid since not all axes are online.")
-            self._change_validation_state(False)
-            return
-        elif self.dr_name_widget.text() == "":
+        if self.dr_name_widget.text() == "":
             self.logger.warning("Drive is not valid, it needs a name.")
             self._change_validation_state(False)
             return
+
+        for axw in self.axis_widgets:
+            if not isinstance(axw.axis, Axis):
+                self.logger.warning(
+                    "Drive is not valid since not ALL axes are configured."
+                )
+                self._change_validation_state(False)
+                return
+
+            if axw.axis.terminated or not axw.axis.connected:
+                axw.axis.run()
+
+            if not axw.axis.connected:
+                self.logger.warning("Drive is not valid since not all axes are online.")
+                self._change_validation_state(False)
+                return
 
         # TODO: NEED AN HANDLER THAT ENSURES NO OTHER MOTION GROUP USES
         #       A DRIVE WITH THE SAME IPs
