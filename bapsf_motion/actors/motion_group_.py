@@ -864,10 +864,20 @@ class MotionGroup(EventActor):
         )
         return self._transform
 
-    def terminate(self, delay_loop_stop=False):
+    def terminate(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = True,
+    ):
         if self.drive is not None:
-            self.drive.terminate(delay_loop_stop=True)
-        super().terminate(delay_loop_stop=delay_loop_stop)
+            self.drive.terminate(
+                delay_loop_stop=True,
+                disconnect_signals=disconnect_signals,
+            )
+        super().terminate(
+            delay_loop_stop=delay_loop_stop,
+            disconnect_signals=disconnect_signals,
+        )
 
     @property
     def config(self) -> "MotionGroupConfig":

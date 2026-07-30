@@ -539,7 +539,7 @@ class AxisConfigWidget(QWidget):
         if isinstance(self.axis, Axis):
             # configuration has changed and is different from current axis actor
             self.blockSignals(True)
-            self.axis.terminate(delay_loop_stop=True)
+            self.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
             self.axis = None
             self.blockSignals(False)
 
@@ -634,7 +634,7 @@ class AxisConfigWidget(QWidget):
         config = self.axis_config
         config["ip"] = new_ip
         if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
+            self.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
             self.axis = None
 
         self.axis_config = config
@@ -719,7 +719,7 @@ class AxisConfigWidget(QWidget):
         self.logger.info("Spawning Axis.")
         if isinstance(self.axis, Axis):
             self.blockSignals(True)
-            self.axis.terminate(delay_loop_stop=True)
+            self.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
             self.axis = None
             self.blockSignals(False)
 
@@ -833,7 +833,7 @@ class AxisConfigWidget(QWidget):
                 return
 
         if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
+            self.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
             self.axis = None
 
         axis_config = self.axis_config.copy()
@@ -851,7 +851,7 @@ class AxisConfigWidget(QWidget):
                 return
 
         if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
+            self.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
             self.axis = None
 
         axis_config = self.axis_config.copy()
@@ -869,7 +869,7 @@ class AxisConfigWidget(QWidget):
                 return
 
         if isinstance(self.axis, Axis):
-            self.axis.terminate(delay_loop_stop=True)
+            self.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
             self.axis = None
 
         axis_config = self.axis_config.copy()
@@ -888,7 +888,7 @@ class AxisConfigWidget(QWidget):
             pass
 
         if isinstance(self.axis, Axis) and not self.axis.terminated:
-            self.axis.terminate(delay_loop_stop=True)
+            self.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
 
         loop_safe_stop(self.axis_loop)
 
@@ -946,13 +946,16 @@ class DriveConfigOverlay(_ConfigOverlay):
         # initialize drive configuration
         _drive_config = None
         if isinstance(self.mg, MotionGroup) and isinstance(self.mg.drive, Drive):
-            self.mg.drive.terminate(delay_loop_stop=True)
+            self.mg.drive.terminate(delay_loop_stop=True, disconnect_signals=False)
             _drive_config = _deepcopy_dict(self.mg.drive.config)
+
         elif not isinstance(parent, mgw.MGWidget):
             pass
+
         elif parent.drive_dropdown.currentText != "Custom Drive":
             index = parent.drive_dropdown.currentIndex()
             _drive_config = _deepcopy_dict(parent.drive_defaults[index][1])
+
         elif "drive" in parent._initial_mg_config:
             _drive_config = _deepcopy_dict(parent._initial_mg_config["drive"])
 
@@ -1119,18 +1122,26 @@ class DriveConfigOverlay(_ConfigOverlay):
         # 5. The drive is instantiable Drive()
         self.logger.info("Validating drive.")
 
-        if not all([isinstance(axw.axis, Axis) for axw in self.axis_widgets]):
-            self.logger.warning("Drive is not valid since not all axes are configured.")
-            self._change_validation_state(False)
-            return
-        elif not all([axw.axis.connected for axw in self.axis_widgets]):
-            self.logger.warning("Drive is not valid since not all axes are online.")
-            self._change_validation_state(False)
-            return
-        elif self.dr_name_widget.text() == "":
+        if self.dr_name_widget.text() == "":
             self.logger.warning("Drive is not valid, it needs a name.")
             self._change_validation_state(False)
             return
+
+        for axw in self.axis_widgets:
+            if not isinstance(axw.axis, Axis):
+                self.logger.warning(
+                    "Drive is not valid since not ALL axes are configured."
+                )
+                self._change_validation_state(False)
+                return
+
+            if axw.axis.terminated or not axw.axis.connected:
+                axw.axis.run()
+
+            if not axw.axis.connected:
+                self.logger.warning("Drive is not valid since not all axes are online.")
+                self._change_validation_state(False)
+                return
 
         # TODO: NEED AN HANDLER THAT ENSURES NO OTHER MOTION GROUP USES
         #       A DRIVE WITH THE SAME IPs
@@ -1174,13 +1185,14 @@ class DriveConfigOverlay(_ConfigOverlay):
     def _spawn_drive(self, config=None):
         self.logger.info(f"Spawning Drive. {self.drive_config}")
         if isinstance(self.drive, Drive):
-            self.drive.terminate(delay_loop_stop=True)
+            self.drive.terminate(delay_loop_stop=True, disconnect_signals=True)
             self._set_drive(None)
 
         for axw in self.axis_widgets:
             if axw.axis is None:
                 continue
-            axw.axis.terminate(delay_loop_stop=True)
+
+            axw.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
 
         config = config if config is not None else self.drive_config
         try:
@@ -1195,7 +1207,7 @@ class DriveConfigOverlay(_ConfigOverlay):
             # we do NOT want the drive actor to be running, since the
             # AxisConfigWidgets will have running Axis actors
             #
-            drive.terminate(delay_loop_stop=True)
+            drive.terminate(delay_loop_stop=True, disconnect_signals=True)
 
             # update Axis actors
             for ii, ax in enumerate(drive.axes):
@@ -1217,12 +1229,12 @@ class DriveConfigOverlay(_ConfigOverlay):
     def _safe_return_config_emit(self, config: Dict[str, Any]):
         self.configChanged.disconnect()
         if isinstance(self.drive, Drive) and not self.drive.terminated:
-            self.drive.terminate(delay_loop_stop=True)
+            self.drive.terminate(delay_loop_stop=True, disconnect_signals=True)
         self._set_drive(None)
 
         for axw in self.axis_widgets:
             axw.configChanged.disconnect()
-            axw.axis.terminate(delay_loop_stop=True)
+            axw.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
             axw.axis = None
             axw.close()
 

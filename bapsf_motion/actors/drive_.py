@@ -286,11 +286,18 @@ class Drive(EventActor):
 
         return pos * self.axes[0].units
 
-    def terminate(self, delay_loop_stop=False):
+    def terminate(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = False,
+    ):
         for ax in self.axes:
-            ax.terminate(delay_loop_stop=True)
+            ax.terminate(delay_loop_stop=True, disconnect_signals=disconnect_signals)
 
-        super().terminate(delay_loop_stop=delay_loop_stop)
+        super().terminate(
+            delay_loop_stop=delay_loop_stop,
+            disconnect_signals=disconnect_signals,
+        )
 
     def send_command(self, command: str, *args, axis: int | None = None):
         """

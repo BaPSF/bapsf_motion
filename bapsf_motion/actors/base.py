@@ -314,7 +314,11 @@ class EventActor(BaseActor, ABC):
         self._thread = threading.Thread(target=self._loop.run_forever)
         self._thread.start()
 
-    def terminate(self, delay_loop_stop=False):
+    def terminate(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = False,
+    ):
         r"""
         Stop the actor's `event loop`_\ .  All actor tasks will be
         cancelled, the connection to the motor will be shutdown, and
@@ -322,11 +326,16 @@ class EventActor(BaseActor, ABC):
 
         Parameters
         ----------
-        delay_loop_stop: bool
-            If `True`, then do NOT stop the `event loop`_\ .  In this
-            case it is assumed the calling functionality is managing
-            additional tasks in the event loop, and it is up to that
-            functionality to stop the loop.  (DEFAULT: `False`)
+        delay_loop_stop: `bool`
+            (DEFAULT: `False`) If `True`, then do NOT stop the
+            `event loop`_\ .  In this case it is assumed the calling
+            functionality is managing additional tasks in the event
+            loop, and it is up to that functionality to stop the loop.
+
+        disconnect_signals: `bool`
+            (DEFAULT: `False`)  If `True`, then disconnect any signal
+            when terminating the actor.  If `False`, then signals
+            are NOT disconnected, but are block.
         """
         for task in list(self.tasks):
             self.loop.call_soon_threadsafe(task.cancel)
