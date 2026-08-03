@@ -308,10 +308,18 @@ class DriveControlWidget(QWidget):
         self.mspace_warning_dialog.display_dialog = True
         self.setEnabled(False)
 
-    def update_controller_displays(self):
+    def update_controller_displays(self, block: bool = False):
+
+        block_state = self.desktop_controller_widget.signalsBlocked()
+        self.desktop_controller_widget.blockSignals(block or block_state)
         self.desktop_controller_widget.update_all_axis_displays()
+        self.desktop_controller_widget.blockSignals(block_state)
+
         if self.game_controller_widget is not None:
+            block_state = self.game_controller_widget.signalsBlocked()
+            self.game_controller_widget.blockSignals(block or block_state)
             self.game_controller_widget.update_all_axis_displays()
+            self.game_controller_widget.blockSignals(block_state)
 
     @Slot()
     def _drive_movement_started(self):
