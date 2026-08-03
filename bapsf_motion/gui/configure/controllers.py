@@ -673,9 +673,8 @@ class AxisControlWidget(QWidget):
             return
 
         axis = mg.drive.axes[ax_index]
-        if isinstance(self.axis, Axis) and self.axis is axis:
-            pass
-        else:
+        if not isinstance(self.axis, Axis) or axis is not self.axis:
+            # new axis is different than self.axis
             self.unlink_axis()
 
         self._mg = mg
@@ -961,12 +960,10 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
             return
 
         if (
-            isinstance(self.mg, MotionGroup)
-            and isinstance(self.mg.drive, Drive)
-            and mg.drive is self.mg.drive
+            not isinstance(self.mg, MotionGroup)
+            or not isinstance(self.mg.drive, Drive)
+            or mg.drive is not self.mg.drive
         ):
-            pass
-        else:
             self.unlink_motion_group()
             self._mg = mg
 
