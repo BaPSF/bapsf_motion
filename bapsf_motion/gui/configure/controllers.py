@@ -953,6 +953,8 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
                 f"Expected type {MotionGroup} for motion group, but got type"
                 f" {type(mg)}."
             )
+            self.unlink_motion_group()
+            return
 
         if not isinstance(mg.drive, Drive):
             # drive has not been set yet
