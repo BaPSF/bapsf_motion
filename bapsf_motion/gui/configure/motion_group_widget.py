@@ -274,9 +274,13 @@ class DriveControlWidget(QWidget):
             # drive has not been set yet
             self.unlink_motion_group()
             return
-        else:
-            self.unlink_motion_group()
-            self._mg = mg
+
+        if isinstance(self.mg, MotionGroup) and mg is self.mg:
+            # motion group has not changed, do nothing
+            return
+
+        self.unlink_motion_group()
+        self._mg = mg
 
         if self._mg.terminated:
             # MotionGroup is terminated so disabled controls and return
