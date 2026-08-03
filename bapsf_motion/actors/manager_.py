@@ -346,10 +346,17 @@ class RunManager(EventActor):
 
     config.__doc__ = EventActor.config.__doc__
 
-    def terminate(self, delay_loop_stop=False):
+    def terminate(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = False,
+    ):
         for mg in self.mgs.values():
-            mg.terminate(delay_loop_stop=True)
-        super().terminate(delay_loop_stop=delay_loop_stop)
+            mg.terminate(delay_loop_stop=True, disconnect_signals=disconnect_signals)
+        super().terminate(
+            delay_loop_stop=delay_loop_stop,
+            disconnect_signals=disconnect_signals,
+        )
 
     def _spawn_motion_group(self, config: Dict[str, Any]) -> MotionGroup:
         return MotionGroup(

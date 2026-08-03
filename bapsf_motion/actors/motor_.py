@@ -199,6 +199,14 @@ class MotorSignals:
         self._movement_started = SimpleSignal()
         self._status_changed = SimpleSignal()
 
+        self._signal_names = (
+            "connection_established",
+            "connection_lost",
+            "movement_finished",
+            "movement_started",
+            "status_changed",
+        )
+
     @property
     def connection_established(self) -> SimpleSignal:
         """
@@ -237,6 +245,28 @@ class MotorSignals:
         `~bapsf_motion.utils.SimpleSignal` emitted when the motor
         `~Motor.status` is changes."""
         return self._status_changed
+
+    def _get_signal(self, name: str) -> SimpleSignal:
+        return getattr(self, name)
+
+    def set_blocking(self, block: bool):
+        """Block or unblock the all signals."""
+
+        for name in self._signal_names:
+            signal = self._get_signal(name)
+            signal.set_blocking(block)
+
+    def disconnect(self, func: Callable):
+        """Disconnect the callback/handler ``func`` from all signals."""
+        for name in self._signal_names:
+            signal = getattr(self, name)
+            signal.disconnect(func)
+
+    def disconnect_all(self):
+        """Disconnect all callbacks/handlers from all signals."""
+        for name in self._signal_names:
+            signal = getattr(self, name)
+            signal.disconnect_all()
 
 
 class Motor(EventActor):
@@ -767,6 +797,7 @@ class Motor(EventActor):
             self._initialize_tasks()
 
         super().run(auto_run=auto_run)
+        self.signals.set_blocking(False)
 
     @property
     def connected(self):
@@ -1888,19 +1919,26 @@ class Motor(EventActor):
             old_HR = heartrate
             await asyncio.sleep(heartrate)
 
-    def terminate(self, delay_loop_stop=False):
+    def terminate(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = False,
+    ):
         self.logger.info("Terminating motor")
 
-        # disconnect all signals before terminating
-        self.signals.status_changed.disconnect_all()
-        self.signals.movement_started.disconnect_all()
-        self.signals.movement_finished.disconnect_all()
+        # handle signals
+        self.signals.set_blocking(True)
+        if disconnect_signals:
+            self.signals.disconnect_all()
 
         if not self.terminated and self.connected:
             self.stop()
             self.disable()
 
-        super().terminate(delay_loop_stop=delay_loop_stop)
+        super().terminate(
+            delay_loop_stop=delay_loop_stop,
+            disconnect_signals=disconnect_signals,
+        )
         self._heartbeat_task = None
 
         try:

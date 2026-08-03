@@ -942,8 +942,8 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
     @Slot(float)
     def _target_position_changed(self, position):
-        self.logger.info(f"DBC target position changed {self.target_position}")
         target_position = self.target_position
+        self.logger.info(f"DBC target position changed {self.target_position}")
         if target_position is None:
             target_position = []
         self.targetPositionChanged.emit(target_position)
@@ -999,7 +999,6 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
             acw.setVisible(visible)
 
-        # self.mg.terminate(delay_loop_stop=True)
         self._mg = None
         self._mspace_drive_polarity = None
         self.setEnabled(False)
@@ -1034,6 +1033,7 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
     def _drive_connection_lost(self):
         self.mg.drive.stop()
         self.setEnabled(False)
+        self.driveStatusChanged.emit()
 
     @Slot()
     def _drive_connection_established(self):
@@ -1042,6 +1042,7 @@ class DriveBaseController(QWidget, ABC, metaclass=_ABCMetaQWidget):
 
         if self.mg.drive.connected:
             self.setEnabled(True)
+            self.driveStatusChanged.emit()
 
     @Slot(int)
     def _drive_movement_started(self, axis_index):

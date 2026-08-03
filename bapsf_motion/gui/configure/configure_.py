@@ -588,7 +588,7 @@ class ConfigureGUI(QMainWindow):
         if not isinstance(new_rm, RunManager):
             return
         elif isinstance(self._rm, RunManager):
-            self._rm.terminate()
+            self._rm.terminate(disconnect_signals=True)
 
         self._rm = new_rm
 
@@ -605,7 +605,7 @@ class ConfigureGUI(QMainWindow):
 
     def replace_rm(self, config):
         if isinstance(self.rm, RunManager):
-            self.rm.terminate()
+            self.rm.terminate(disconnect_signals=True)
 
         self.logger.info(f"Replacing the run manager with new config: {config}.")
         _rm = RunManager(config=config, auto_run=True, build_mode=True)
@@ -659,7 +659,7 @@ class ConfigureGUI(QMainWindow):
             self.logger.info(f"Adding to MG List - {label}")
             _icon = (
                 qta.icon(icon_name_dict["window-close"], color="red")
-                if mg.terminated
+                if mg.terminated or not mg.connected
                 else qta.icon(icon_name_dict["check-circle"], color="green")
             )  # type: QIcon
             _item = QListWidgetItem(
@@ -690,7 +690,7 @@ class ConfigureGUI(QMainWindow):
         mg = self.rm.mgs[key]
 
         if not mg.terminated:
-            mg.terminate(delay_loop_stop=True)
+            mg.terminate(delay_loop_stop=True, disconnect_signals=True)
 
         self._mg_being_modified = mg
         self._spawn_mg_widget(mg)
@@ -812,7 +812,7 @@ class ConfigureGUI(QMainWindow):
         # terminate RunManager so we can avoid communication issue during
         # MotionGroup configuration
         if isinstance(self.rm, RunManager) and not self.rm.terminated:
-            self.rm.terminate()
+            self.rm.terminate(disconnect_signals=True)
 
         self._mg_widget = MGWidget(
             mg_config=config,
@@ -980,7 +980,7 @@ class ConfigureGUI(QMainWindow):
         self.configChanged.disconnect()
 
         if isinstance(self.rm, RunManager) and not self.rm.terminated:
-            self.rm.terminate()
+            self.rm.terminate(disconnect_signals=True)
             self.rm = None
 
         if isinstance(self._mg_widget, MGWidget):
