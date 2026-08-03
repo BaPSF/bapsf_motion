@@ -270,7 +270,7 @@ class DriveControlWidget(QWidget):
             self.unlink_motion_group()
             return
 
-        if mg.drive is None:
+        if not isinstance(mg.drive, Drive):
             # drive has not been set yet
             self.unlink_motion_group()
             return
@@ -1400,7 +1400,7 @@ class MGWidget(QWidget):
 
         self._spawn_motion_group()
 
-        if self.mg is None:
+        if not isinstance(self.mg, MotionGroup):
             # motion group is None, so do NOT need to do any more
             # Note: self._refresh_drive_control() will be triggered
             #       by the emitted configChanged signal in
@@ -1505,7 +1505,7 @@ class MGWidget(QWidget):
 
     def _refresh_drive_control(self):
         self.logger.info("Refreshing drive control widget.")
-        if self.mg is None or self.mg.drive is None:
+        if not isinstance(self.mg, MotionGroup) or not isinstance(self.mg.drive, Drive):
             self.drive_control_widget.unlink_motion_group()
             return
 
