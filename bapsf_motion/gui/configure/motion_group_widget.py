@@ -297,7 +297,7 @@ class DriveControlWidget(QWidget):
         if self.game_controller_widget is not None:
             self.game_controller_widget.link_motion_group(self.mg)
 
-        self.update_controller_displays()
+        self.update_controller_displays(block=True)
 
     def unlink_motion_group(self):
         self.desktop_controller_widget.unlink_motion_group()
