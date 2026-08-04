@@ -30,7 +30,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict, Union
+from typing import Any, Dict
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
 from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
@@ -59,7 +59,7 @@ class RunTOMLWidget(QWidget):
     tomlImported = Signal()
     tomlExported = Signal()
 
-    def __init__(self, parent: Union[QWidget, None]):
+    def __init__(self, parent: QWidget | None):
         super().__init__(parent=parent)
 
         # Initialize Attributes
@@ -368,7 +368,7 @@ class RunWidget(QWidget):
         return self._logger
 
     @property
-    def rm(self) -> Union[RunManager, None]:
+    def rm(self) -> RunManager | None:
         parent = self.parentWidget()  # type: "ConfigureGUI"
         try:
             return parent.rm
@@ -388,11 +388,12 @@ class ConfigureGUI(QMainWindow):
         *,
         config: Union[Path, str, Dict[str, Any], RunManagerConfig] = None,
         defaults: Union[Path, str, Dict[str, Any], None] = None,
+        config: Path | str | Dict[str, Any] | RunManagerConfig = None,
     ):
         super().__init__()
 
-        self._rm = None  # type: Union[RunManager, None]
-        self._mg_being_modified = None  # type: Union[MotionGroup, None]
+        self._rm = None  # type: RunManager | None
+        self._mg_being_modified = None  # type: MotionGroup | None
 
         # setup logger
         self._logging_config_dict = _deepcopy_dict(gui_logger_config_dict)
@@ -420,13 +421,13 @@ class ConfigureGUI(QMainWindow):
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
         self._run_widget = RunWidget(parent=self, enable_run_name=enable_run_name)
-        self._mg_widget = None  # type: Union[MGWidget, None]
+        self._mg_widget = None  # type: MGWidget | None
 
         self._stacked_widget = QStackedWidget(parent=self)
         self._stacked_widget.addWidget(self._run_widget)
 
         # set up menu bar
-        self._launched_windows = dict()  # type: Dict[str, Union[QMainWindow, QWidget]]
+        self._launched_windows = dict()  # type: Dict[str, QMainWindow | QWidget]
         self._define_menu_bar()
 
         layout = self._define_layout()
@@ -521,7 +522,7 @@ class ConfigureGUI(QMainWindow):
         return self._logger
 
     @property
-    def rm(self) -> Union[RunManager, None]:
+    def rm(self) -> RunManager | None:
         return self._rm
 
     @rm.setter
@@ -668,7 +669,7 @@ class ConfigureGUI(QMainWindow):
 
         self._mg_being_modified = None
 
-    def _set_defaults(self, defaults: Union[Path, str, Dict[str, Any], None]):
+    def _set_defaults(self, defaults: Path | str | Dict[str, Any] | None):
         if defaults is None:
             self._defaults = None
             return
@@ -943,8 +944,8 @@ class ConfigureApp(QApplication):
     def __init__(
         self,
         *args,
-        config: Union[Path, str, Dict[str, Any], RunManagerConfig] = None,
-        defaults: Union[Path, str, Dict[str, Any], None] = None,
+        config: Path | str | Dict[str, Any] | RunManagerConfig = None,
+        defaults: Path | str | Dict[str, Any] | None = None,
         **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
