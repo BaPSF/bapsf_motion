@@ -1234,8 +1234,11 @@ class DriveConfigOverlay(_ConfigOverlay):
 
         for axw in self.axis_widgets:
             axw.configChanged.disconnect()
-            axw.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
-            axw.axis = None
+
+            if isinstance(axw.axis, Axis):
+                axw.axis.terminate(delay_loop_stop=True, disconnect_signals=True)
+                axw.axis = None
+
             axw.close()
 
         self.returnConfig.emit(config)
