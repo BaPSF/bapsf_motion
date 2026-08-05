@@ -1022,7 +1022,7 @@ class ConfigureGUI(QMainWindow):
                 **_deepcopy_dict(mg.config["motion_builder"]),
             }
 
-    def _spawn_mg_widget(self, mg: MotionGroup = None):
+    def _spawn_mg_widget(self, mg: MotionGroup | None = None):
         config = None if not isinstance(mg, MotionGroup) else mg.config
 
         # terminate RunManager so we can avoid communication issue during
