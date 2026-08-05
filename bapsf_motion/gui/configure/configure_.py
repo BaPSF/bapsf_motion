@@ -416,6 +416,7 @@ class RunWidget(QWidget):
         self.rmo.configChanged.connect(self._handle_display_update)
 
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
+        self.run_name_widget.editingFinished.connect(self._handle_run_name_change)
 
         self.toml_widget.tomlImported.connect(self._handle_toml_import)
 
@@ -616,6 +617,11 @@ class RunWidget(QWidget):
         self.update_display_rm_name()
 
     @Slot()
+    def _handle_run_name_change(self):
+        name = self.run_name_widget.text()
+        self.rmo.change_run_name(name)
+
+    @Slot()
     def _handle_toml_import(self):
         # needs to update RMObject and allow the RMObject.configChanged
         # to update the RunWidget displays
@@ -714,7 +720,6 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.mg_remove_btn.clicked.connect(self._motion_group_remove_from_rm)
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_configure_modify)
 
-        self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
     def _connect_signals_mg_widget(self):
         self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
@@ -859,15 +864,6 @@ class ConfigureGUI(QMainWindow):
                 listview=self._run_widget.mg_list_widget,
             )
 
-    @Slot()
-    def change_run_name(self):
-        name = self._run_widget.run_name_widget.text()
-
-        if self.rm is None:
-            self.replace_rm({"name": name})
-        else:
-            self.rm.config.update_run_name(name)
-            self.configChanged.emit()
 
     @Slot()
     def _motion_group_configure_new(self):
