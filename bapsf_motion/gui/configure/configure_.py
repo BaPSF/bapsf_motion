@@ -674,7 +674,7 @@ class RunWidget(QWidget):
 
             is_valid = True
             tooltip = None
-            if not mg.terminated:
+            if not mg.connected:
                 is_valid = False
                 tooltip = "TCP connection not successfull for all axes."
             elif not isinstance(mg.mb, MotionBuilder):
