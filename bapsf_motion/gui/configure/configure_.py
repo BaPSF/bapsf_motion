@@ -661,9 +661,13 @@ class ConfigureGUI(QMainWindow):
     def _connect_signals(self):
         # Note: _mg_widget signals are connected in _spawn_mg_widget()
         #
-        self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
+        self._connect_signals_run_widget()
 
         self._rmo.configChanged.connect(self._config_changed_handler)
+        self.configChanged.connect(self._config_changed_handler)
+
+    def _connect_signals_run_widget(self):
+        self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
 
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
@@ -673,11 +677,11 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_configure_modify)
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
+
     def _connect_signals_mg_widget(self):
         self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
         self._mg_widget.closing.connect(partial(self._switch_stack, which="run"))
 
-        self.configChanged.connect(self._config_changed_handler)
 
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
