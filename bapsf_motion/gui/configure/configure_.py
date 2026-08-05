@@ -379,6 +379,8 @@ class RunTOMLWidget(QWidget):
 
 
 class RunWidget(QWidget):
+    updateDisplays = Signal()
+
     def __init__(
         self,
         rmo: RMObject,
@@ -410,7 +412,9 @@ class RunWidget(QWidget):
         self._connect_signals()
 
     def _connect_signals(self):
+        self.updateDisplays.connect(self._handle_display_update)
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
+
         self.toml_widget.tomlImported.connect(self._handle_toml_import)
 
     def _define_layout(self):
@@ -602,6 +606,9 @@ class RunWidget(QWidget):
             list_name
         )
         return (None, None) if match is None else (int(match.group("index")), match.group("name"))
+
+    @Slot()
+    def _handle_display_update(self): ...
 
     @Slot()
     def _handle_toml_import(self):
