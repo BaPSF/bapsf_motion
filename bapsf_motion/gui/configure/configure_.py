@@ -379,8 +379,14 @@ class RunTOMLWidget(QWidget):
 
 
 class RunWidget(QWidget):
-    def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
+    def __init__(
+        self,
+        rmo: RMObject,
+        parent: "ConfigureGUI",
+        enable_run_name: bool = True,
+    ):
         super().__init__(parent=parent)
+        self._rmo = rmo
 
         # Initialize attributes
         self._logger = gui_logger
@@ -578,12 +584,12 @@ class RunWidget(QWidget):
         return self._logger
 
     @property
+    def rmo(self) -> RMObject:
+        return self._rmo
+
+    @property
     def rm(self) -> RunManager | None:
-        parent = self.parentWidget()  # type: "ConfigureGUI"
-        try:
-            return parent.rm
-        except AttributeError:
-            return None
+        return self.rmo.rm
 
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing RunWidget")
@@ -628,7 +634,11 @@ class ConfigureGUI(QMainWindow):
 
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
-        self._run_widget = RunWidget(parent=self, enable_run_name=enable_run_name)
+        self._run_widget = RunWidget(
+            rmo=self._rmo,
+            parent=self,
+            enable_run_name=enable_run_name,
+        )
         self._mg_widget = None  # type: MGWidget | None
 
         self._stacked_widget = QStackedWidget(parent=self)
