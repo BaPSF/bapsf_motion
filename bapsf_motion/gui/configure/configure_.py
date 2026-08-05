@@ -1027,8 +1027,7 @@ class ConfigureGUI(QMainWindow):
 
         # terminate RunManager so we can avoid communication issue during
         # MotionGroup configuration
-        if isinstance(self.rm, RunManager) and not self.rm.terminated:
-            self.rm.terminate(disconnect_signals=True)
+        self.rmo.terminate(disconnect_signals=True)
 
         self._mg_widget = MGWidget(
             mg_config=config,
