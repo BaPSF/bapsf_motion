@@ -418,8 +418,8 @@ class MGWidget(QWidget):
         # gather deployed restricted values
         deployed_mg_names = []
         deployed_ips = []
-        if isinstance(self._parent.rm, RunManager):
-            for mg in self._parent.rm.mgs.values():
+        if isinstance(self._parent.rmo.rm, RunManager):
+            for mg in self._parent.rmo.rm.mgs.values():
                 if (
                     mg_config is not None
                     and mg_config["name"] == mg.config["name"]
