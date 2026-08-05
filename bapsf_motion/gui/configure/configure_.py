@@ -502,9 +502,8 @@ class ConfigureGUI(QMainWindow):
     def __init__(
         self,
         *,
-        config: Union[Path, str, Dict[str, Any], RunManagerConfig] = None,
-        defaults: Union[Path, str, Dict[str, Any], None] = None,
-        config: Path | str | Dict[str, Any] | RunManagerConfig = None,
+        config: Path | str | Dict[str, Any] | RunManagerConfig | None = None,
+        defaults: Path | str | Dict[str, Any] | None = None,
     ):
         super().__init__()
 
