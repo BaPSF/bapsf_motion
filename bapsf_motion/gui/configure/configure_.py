@@ -786,8 +786,8 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_configure_modify)
 
     def _connect_signals_mg_widget(self):
-        self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
         self._mg_widget.closing.connect(partial(self._switch_stack, which="run"))
+        self._mg_widget.returnConfig.connect(self._motion_group_configure_return)
 
 
     def _define_main_window(self):
@@ -1072,7 +1072,7 @@ class ConfigureGUI(QMainWindow):
             return
 
     @Slot(int, object)
-    def add_to_or_restart_run_manager(self, index: int, mg_config: Dict[str, Any]):
+    def _motion_group_configure_return(self, index: int, mg_config: Dict[str, Any]):
         if len(mg_config) == 0:
             # no config returned, just restart run manager
             self.restart_run_manager()
