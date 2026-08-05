@@ -864,10 +864,6 @@ class ConfigureGUI(QMainWindow):
     def rmo(self) -> RMObject:
         return self._rmo
 
-    @property
-    def rm(self) -> RunManager | None:
-        return self.rmo._rm
-
     @Slot()
     def _config_changed_handler(self):
         self._run_widget.updateDisplays.emit()
