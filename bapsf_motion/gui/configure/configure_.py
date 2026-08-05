@@ -1088,11 +1088,6 @@ class ConfigureGUI(QMainWindow):
         self.restart_run_manager()
         self._mg_being_modified = None
 
-    @staticmethod
-    def _generate_mg_list_name(index, mg_name):
-        return f"[{index:2d}]   {mg_name}"
-
-
     def _launch_lapd_xy_calculator(self):
         if "lapd_xy_calculator" in self._launched_windows:
             _window = self._launched_windows["lapd_xy_calculator"]
