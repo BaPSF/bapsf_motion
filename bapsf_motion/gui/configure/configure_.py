@@ -785,7 +785,6 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_configure_modify)
 
-
     def _connect_signals_mg_widget(self):
         self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
         self._mg_widget.closing.connect(partial(self._switch_stack, which="run"))
