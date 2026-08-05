@@ -613,6 +613,7 @@ class RunWidget(QWidget):
     def _handle_display_update(self):
         self.logger.info("Update displays")
         self.update_display_toml_text()
+        self.update_display_rm_name()
 
     @Slot()
     def _handle_toml_import(self):
@@ -624,6 +625,11 @@ class RunWidget(QWidget):
         rm = self.rm
         self.logger.info(f"Updating the run config toml: {rm.config.as_toml_string}")
         self.toml_widget.set_toml_text(rm.config.as_toml_string)
+
+    def update_display_rm_name(self):
+        rm = self.rm
+        rm_name = rm.config["name"]
+        self.run_name_widget.setText(rm_name)
 
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing RunWidget")
@@ -796,8 +802,8 @@ class ConfigureGUI(QMainWindow):
 
     @Slot()
     def _config_changed_handler(self):
-        self.update_display_rm_name()
         self.update_display_mg_list()
+        self._run_widget.updateDisplays.emit()
         self.update_motion_builder_defaults()
 
     def replace_rm(self, config):
@@ -830,10 +836,6 @@ class ConfigureGUI(QMainWindow):
 
         self.close()
         self.replace_rm(run_config)
-
-    def update_display_rm_name(self):
-        rm_name = self.rm.config["name"]
-        self._run_widget.run_name_widget.setText(rm_name)
 
     def update_display_mg_list(self):
         self._run_widget.mg_list_widget.clear()
