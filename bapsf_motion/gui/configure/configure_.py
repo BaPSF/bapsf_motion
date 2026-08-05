@@ -673,8 +673,8 @@ class ConfigureGUI(QMainWindow):
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
     def _connect_signals_mg_widget(self):
-        self._mg_widget.closing.connect(self._switch_stack)
         self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
+        self._mg_widget.closing.connect(partial(self._switch_stack, which="run"))
 
         self.configChanged.connect(self._config_changed_handler)
 
@@ -832,7 +832,7 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _motion_group_configure_new(self):
         self._spawn_mg_widget()
-        self._switch_stack()
+        self._switch_stack(which="configure")
 
     @Slot()
     def _motion_group_configure_modify(self):
@@ -846,7 +846,7 @@ class ConfigureGUI(QMainWindow):
         self._mg_being_modified = mg
         self._spawn_mg_widget(mg)
         self._mg_widget.mg_index = key
-        self._switch_stack()
+        self._switch_stack(which="configure")
 
     @Slot()
     def _motion_group_remove_from_rm(self):
@@ -974,19 +974,37 @@ class ConfigureGUI(QMainWindow):
 
         return self._mg_widget
 
-    @Slot()
-    def _switch_stack(self):
+    @Slot(str)
+    def _switch_stack(self, which: Literal["run", "configure", "control"] | None = None):
+        if not isinstance(which, str) or which not in ("run", "configure", "control"):
+            which = "run"
+
         _w = self._stacked_widget.currentWidget()
-        if isinstance(_w, RunWidget):
-            self._stacked_widget.addWidget(self._mg_widget)
-            self._stacked_widget.setCurrentWidget(self._mg_widget)
-        else:
-            # the stack widget is the MGWidget instance
+        if (
+            (which == "run" and isinstance(_w, RunWidget))
+            or (which == "configure" and isinstance(_w, MGWidget))
+            or (which == "control" and isinstance(_w, MultiControl))
+        ):
+            # requested stack widget already displayed
+            return
+
+        if not isinstance(_w, RunWidget):
             self._stacked_widget.removeWidget(_w)
-            self._stacked_widget.setCurrentIndex(0)
             _w.close()
             _w.deleteLater()
             self._mg_widget = None
+            self._control_widget = None
+
+        # switch to RunWidget
+        if which == "run":
+            self._stacked_widget.setCurrentIndex(0)
+            return
+
+        # switch to MGWidget
+        if which == "configure" and isinstance(self._mg_widget, MGWidget):
+            self._stacked_widget.addWidget(self._mg_widget)
+            self._stacked_widget.setCurrentWidget(self._mg_widget)
+            return
 
     @Slot(int, object)
     def add_to_or_restart_run_manager(self, index: int, mg_config: Dict[str, Any]):
