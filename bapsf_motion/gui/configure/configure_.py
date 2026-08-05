@@ -363,7 +363,6 @@ class RunTOMLWidget(QWidget):
         with open(file_name, "rb") as f:
             run_config = toml.load(f)
 
-        # self.replace_rm(run_config)
         self._TOML_FILE = file_name
         self.set_toml_text(toml.as_toml_string(run_config))
         self.logger.info(f"... Success!")
@@ -874,36 +873,12 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.updateDisplays.emit()
         self.update_motion_builder_defaults()
 
-    def replace_rm(self, config):
-        if isinstance(self.rm, RunManager):
-            self.rm.terminate(disconnect_signals=True)
-
-        self.logger.info(f"Replacing the run manager with new config: {config}.")
-        _rm = RunManager(config=config, auto_run=True, build_mode=True)
-
-        _remove = []
-        for key, mg in _rm.mgs.items():
-            if mg.drive.naxes != 2:
-                self.logger.warning(
-                    f"The Configuration GUI currently only supports motion"
-                    f" groups with a dimensionality of 2, got {mg.drive.naxes}"
-                    f" for motion group '{mg.name}'.  Removing motion group."
-                )
-                _remove.append(key)
-
-        for key in _remove:
-            _rm.remove_motion_group(key)
-
-        self.rm = _rm
-        self.configChanged.emit()
-
     @Slot()
     def save_and_close(self):
         # save the toml configuration
         # TODO: write code to save current toml configuration to a tmp file
 
         self.close()
-        self.replace_rm(run_config)
 
     @Slot()
     def _motion_group_configure_new(self):
