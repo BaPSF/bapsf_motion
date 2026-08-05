@@ -5,6 +5,8 @@ Module contains both the `~PySide6.QtWidgets.QMainWindow` in
 `ConfigureApp`.
 """
 
+from __future__ import annotations
+
 __all__ = ["ConfigureGUI", "ConfigureApp"]
 
 import logging
@@ -14,7 +16,7 @@ import re
 from functools import partial
 from pathlib import Path
 from PySide6.QtCore import QDir, Qt, Signal, Slot
-from PySide6.QtGui import QAction, QCloseEvent, QIcon
+from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QFileDialog,
@@ -31,7 +33,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import Any, Dict
+from typing import Any, Dict, Literal, TYPE_CHECKING
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
 from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
@@ -52,6 +54,11 @@ from bapsf_motion.utils import _deepcopy_dict, toml
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
+
+
+if TYPE_CHECKING:
+    from PySide6.QtGui import QCloseEvent
+
 
 _HERE = Path(__file__).parent
 
@@ -434,7 +441,7 @@ class RunWidget(QWidget):
         except AttributeError:
             return None
 
-    def closeEvent(self, event):
+    def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing RunWidget")
         event.accept()
 
@@ -975,7 +982,7 @@ class ConfigureGUI(QMainWindow):
 
         self.close()
 
-    def closeEvent(self, event: "QCloseEvent") -> None:
+    def closeEvent(self, event: QCloseEvent) -> None:
         self.logger.info("Closing ConfigureGUI")
 
         self.configChanged.disconnect()
