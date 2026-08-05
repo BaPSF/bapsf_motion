@@ -36,6 +36,8 @@ from PySide6.QtWidgets import (
 from typing import Any, Dict, Literal, TYPE_CHECKING
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
+from bapsf_motion.motion_builder import MotionBuilder
+from bapsf_motion.transform import BaseTransform
 from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
@@ -637,6 +639,49 @@ class RunWidget(QWidget):
         rm_name = rm.config["name"]
         self.run_name_widget.setText(rm_name)
 
+    def update_display_mg_list(self):
+        self.mg_list_widget.clear()
+        self.mg_remove_btn.setEnabled(False)
+        self.mg_config_btn.setEnabled(False)
+
+        rm = self.rm
+        if not isinstance(rm, RunManager) or len(rm.mgs) == 0:
+            return
+
+        for key, mg in rm.mgs.items():
+            label = self._generate_mg_list_name(key, mg.config["name"])
+            self.logger.info(f"Adding to MG List - {label}")
+
+            is_valid = True
+            tooltip = None
+            if not mg.terminated:
+                is_valid = False
+                tooltip = "TCP connection not successfull for all axes."
+            elif not isinstance(mg.mb, MotionBuilder):
+                is_valid = False
+                tooltip = "MotionBuilder not configured."
+            elif mg.mb.motion_list is None or mg.mb.motion_list.size == 0:
+                is_valid = False
+                tooltip = "Motion List is not configured."
+            elif not isinstance(mg.transform, BaseTransform):
+                is_valid = False
+                tooltip = "Transform not configured."
+            # TODO: ADD CASE WHEN ENCODER AND POSITION ARE NOT EQUAL
+
+            _icon = (
+                qta.icon(icon_name_dict["window-close"], color="red")
+                if not is_valid
+                else qta.icon(icon_name_dict["check-circle"], color="green")
+            )  # type: QIcon
+
+            _item = QListWidgetItem(
+                _icon,
+                label,
+                listview=self.mg_list_widget,
+            )
+            if not is_valid and tooltip is not None:
+                _item.setToolTip(tooltip)
+
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing RunWidget")
         event.accept()
@@ -807,7 +852,6 @@ class ConfigureGUI(QMainWindow):
 
     @Slot()
     def _config_changed_handler(self):
-        self.update_display_mg_list()
         self._run_widget.updateDisplays.emit()
         self.update_motion_builder_defaults()
 
@@ -841,29 +885,6 @@ class ConfigureGUI(QMainWindow):
 
         self.close()
         self.replace_rm(run_config)
-
-    def update_display_mg_list(self):
-        self._run_widget.mg_list_widget.clear()
-        self._run_widget.mg_remove_btn.setEnabled(False)
-        self._run_widget.mg_config_btn.setEnabled(False)
-
-        if self.rm.mgs is None or not self.rm.mgs:
-            return
-
-        for key, mg in self.rm.mgs.items():
-            label = self._generate_mg_list_name(key, mg.config["name"])
-            self.logger.info(f"Adding to MG List - {label}")
-            _icon = (
-                qta.icon(icon_name_dict["window-close"], color="red")
-                if mg.terminated or not mg.connected
-                else qta.icon(icon_name_dict["check-circle"], color="green")
-            )  # type: QIcon
-            _item = QListWidgetItem(
-                _icon,
-                label,
-                listview=self._run_widget.mg_list_widget,
-            )
-
 
     @Slot()
     def _motion_group_configure_new(self):
