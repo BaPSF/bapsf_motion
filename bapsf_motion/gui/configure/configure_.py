@@ -15,7 +15,7 @@ import re
 
 from functools import partial
 from pathlib import Path
-from PySide6.QtCore import QDir, Qt, Signal, Slot
+from PySide6.QtCore import QDir, Qt, Signal, Slot, QObject
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -60,6 +60,115 @@ if TYPE_CHECKING:
 
 
 _HERE = Path(__file__).parent
+
+
+class RMObject(QObject):
+    """
+    A `QObject` that contains the actual `RunManager` instance and
+    defines the supporting operations onto the `RunManger` that the
+    rest of `ConfigureGUI` can interact with.
+    """
+    configChanged = Signal()
+
+    def __init__(
+        self,
+        config: Path | str | Dict[str, Any] | RunManagerConfig,
+        parent: QObject | None = None,
+    ):
+        super().__init__(parent=parent)
+
+        # Initialize Attributes
+        self._logger = logging.getLogger(f"{gui_logger.name}.RMO")
+        self._rm = None  # type: RunManager | None
+
+        self.replace_rm(config=config)
+
+        self._connect_signals()
+
+    def _connect_signals(self): ...
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def rm(self) -> RunManager | None:
+        return self._rm
+
+    @rm.setter
+    def rm(self, new_rm):
+        if not isinstance(new_rm, RunManager):
+            return
+        elif isinstance(self._rm, RunManager):
+            self._rm.terminate(disconnect_signals=True)
+
+        self._rm = new_rm
+
+    def replace_rm(self, config):
+        if isinstance(self.rm, RunManager):
+            self.rm.terminate(disconnect_signals=True)
+
+        self.logger.info(f"Replacing the run manager with new config: {config}.")
+        _rm = RunManager(config=config, auto_run=True, build_mode=True)
+
+        _remove = []
+        for key, mg in _rm.mgs.items():
+            if mg.drive.naxes != 2:
+                self.logger.warning(
+                    f"The Configuration GUI currently only supports motion"
+                    f" groups with a dimensionality of 2, got {mg.drive.naxes}"
+                    f" for motion group '{mg.name}'.  Removing motion group."
+                )
+                _remove.append(key)
+
+        for key in _remove:
+            _rm.remove_motion_group(key)
+
+        self.rm = _rm
+        self.configChanged.emit()
+
+    def change_run_name(self, name: str):
+        if not isinstance(name, str):
+            return
+
+        rm = self.rm
+        if not isinstance(rm, RunManager):
+            self.replace_rm({"name": name})
+            return
+
+        rm.config.update_run_name(name)
+        self.configChanged.emit()
+
+    def restart_rm(self): ...
+
+    def add_motion_group(self): ...
+
+    @Slot(str)
+    def remove_motion_group(self, identifier: str | int):
+        rm = self.rm
+
+        if not isinstance(rm, RunManager):
+            return
+
+        if identifier in rm.mgs.keys():
+            rm.remove_motion_group(identifier=identifier)
+            self.configChanged.emit()
+            return
+
+        if isinstance(identifier, int):
+            identifier = f"{identifier}"
+        elif isinstance(identifier, str):
+            try:
+                identifier = int(identifier)
+            except ValueError:
+                return
+        else:
+            return
+
+        rm.remove_motion_group(identifier=identifier)
+        self.configChanged.emit()
+
+    def terminate(self): ...
 
 
 class RunTOMLWidget(QWidget):
