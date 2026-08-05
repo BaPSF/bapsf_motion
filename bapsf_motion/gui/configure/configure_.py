@@ -592,6 +592,17 @@ class RunWidget(QWidget):
     def rm(self) -> RunManager | None:
         return self.rmo.rm
 
+    @staticmethod
+    def _generate_mg_list_name(index, mg_name):
+        return f"[{index:2d}]   {mg_name}"
+
+    @staticmethod
+    def _get_mg_name_from_list_name(list_name: str):
+        match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
+            list_name
+        )
+        return (None, None) if match is None else (int(match.group("index")), match.group("name"))
+
     @Slot()
     def _handle_toml_import(self):
         # needs to update RMObject and allow the RMObject.configChanged
