@@ -617,6 +617,7 @@ class RunWidget(QWidget):
         self.logger.info("Update displays")
         self.update_display_toml_text()
         self.update_display_rm_name()
+        self.update_display_mg_list()
 
     @Slot()
     def _handle_run_name_change(self):
