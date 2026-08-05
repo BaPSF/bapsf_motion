@@ -914,8 +914,8 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _motion_group_configure_modify(self):
         item = self._run_widget.mg_list_widget.currentItem()
-        key, mg_name = self._get_mg_name_from_list_name(item.text())
         mg = self.rm.mgs[key]
+        key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
 
         if not mg.terminated:
             mg.terminate(delay_loop_stop=True, disconnect_signals=True)
@@ -1092,12 +1092,6 @@ class ConfigureGUI(QMainWindow):
     def _generate_mg_list_name(index, mg_name):
         return f"[{index:2d}]   {mg_name}"
 
-    @staticmethod
-    def _get_mg_name_from_list_name(list_name):
-        match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
-            list_name
-        )
-        return None if match is None else (int(match.group("index")), match.group("name"))
 
     def _launch_lapd_xy_calculator(self):
         if "lapd_xy_calculator" in self._launched_windows:
