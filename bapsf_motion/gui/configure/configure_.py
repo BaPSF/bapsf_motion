@@ -1073,9 +1073,16 @@ class ConfigureGUI(QMainWindow):
 
     @Slot(int, object)
     def _motion_group_configure_return(self, index: int, mg_config: Dict[str, Any]):
+        self._mg_being_modified = None
+
+        # ensure the RunManager is running
+        self.rmo.blockSignals(True)
+        self.rmo.restart_rm()
+        self.rmo.blockSignals(False)
+
         if len(mg_config) == 0:
             # no config returned, just restart run manager
-            self.restart_run_manager()
+            self.rmo.configChanged.emit()
             return
 
         self.add_mg_to_rm(index, mg_config)
