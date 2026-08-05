@@ -140,7 +140,23 @@ class RMObject(QObject):
         rm.config.update_run_name(name)
         self.configChanged.emit()
 
-    def restart_rm(self): ...
+    def restart_rm(self):
+        rm = self.rm
+        if not isinstance(rm, RunManager):
+            # No RunManager to restart
+            return
+
+        if (
+            isinstance(rm, RunManager)
+            and not rm.terminated
+            and all(mg.connected for mg in rm.mgs.values())
+        ):
+            # RunManager is still running, no need to restart
+            return
+
+        rm.run(auto_run=True)
+        self.configChanged.emit()
+
 
     def add_motion_group(self): ...
 
