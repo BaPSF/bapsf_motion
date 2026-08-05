@@ -413,6 +413,8 @@ class RunWidget(QWidget):
 
     def _connect_signals(self):
         self.updateDisplays.connect(self._handle_display_update)
+        self.rmo.configChanged.connect(self._handle_display_update)
+
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
 
         self.toml_widget.tomlImported.connect(self._handle_toml_import)
