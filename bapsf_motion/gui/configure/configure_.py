@@ -913,8 +913,12 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _motion_group_configure_modify(self):
         item = self._run_widget.mg_list_widget.currentItem()
-        mg = self.rm.mgs[key]
         key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
+
+        try:
+            mg = self.rmo.rm.mgs[key]
+        except KeyError:
+            return
 
         if not mg.terminated:
             mg.terminate(delay_loop_stop=True, disconnect_signals=True)
