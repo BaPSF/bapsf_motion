@@ -191,7 +191,19 @@ class RMObject(QObject):
         rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
-    def terminate(self): ...
+    def terminate(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = False,
+    ):
+        rm = self.rm
+        if not isinstance(rm, RunManager):
+            return
+
+        rm.terminate(
+            delay_loop_stop=delay_loop_stop,
+            disconnect_signals=disconnect_signals,
+        )
 
 
 class RunTOMLWidget(QWidget):
