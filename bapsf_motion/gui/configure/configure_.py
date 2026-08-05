@@ -928,19 +928,6 @@ class ConfigureGUI(QMainWindow):
         self._mg_widget.mg_index = key
         self._switch_stack(which="configure")
 
-    def restart_run_manager(self):
-        if isinstance(self.rm, RunManager) and not self.rm.terminated:
-            # RunManager is still running, no need to restart
-            return
-
-        if not isinstance(self.rm, RunManager):
-            # No RunManager to restart
-            return
-
-        self.replace_rm(self.rm.config)
-
-        self._mg_being_modified = None
-
     def _set_defaults(self, defaults: Path | str | Dict[str, Any] | None):
         if defaults is None:
             self._defaults = None
