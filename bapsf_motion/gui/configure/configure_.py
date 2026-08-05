@@ -1085,18 +1085,8 @@ class ConfigureGUI(QMainWindow):
             self.rmo.configChanged.emit()
             return
 
-        self.add_mg_to_rm(index, mg_config)
-
-    def add_mg_to_rm(self, index: int, mg_config: Dict[str, Any]):
-        index = None if index == -1 else index
-
-        self.logger.info(
-            f"Adding MotionGroup to the run: index = '{index}', config = {mg_config}."
-        )
-
-        self.rm.add_motion_group(config=mg_config, identifier=index)
-        self.restart_run_manager()
-        self._mg_being_modified = None
+        # add motion group
+        self.rmo.add_motion_group(index=index, mg_config=mg_config)
 
     def _launch_lapd_xy_calculator(self):
         if "lapd_xy_calculator" in self._launched_windows:
