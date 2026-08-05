@@ -613,7 +613,6 @@ class ConfigureGUI(QMainWindow):
         self._logging_config_dict = _deepcopy_dict(gui_logger_config_dict)
         logging.config.dictConfig(self._logging_config_dict)
         self._logger = gui_logger
-        self._rm_logger = logging.getLogger("RM")
 
         # setup defaults
         self._defaults = None  # original defaults
@@ -644,6 +643,9 @@ class ConfigureGUI(QMainWindow):
         self._stacked_widget = QStackedWidget(parent=self)
         self._stacked_widget.addWidget(self._run_widget)
 
+        # add the RunManater logger to the log_widget display
+        self.rmo.rm.logger.addHandler(self._log_widget.handler)
+
         # set up menu bar
         self._launched_windows = dict()  # type: Dict[str, QMainWindow | QWidget]
         self._define_menu_bar()
@@ -652,8 +654,6 @@ class ConfigureGUI(QMainWindow):
         widget = QWidget(parent=self)
         widget.setLayout(self._define_layout())
         self.setCentralWidget(widget)
-
-        self._rm_logger.addHandler(self._log_widget.handler)
 
         self._connect_signals()
         self._rmo.configChanged.emit()
