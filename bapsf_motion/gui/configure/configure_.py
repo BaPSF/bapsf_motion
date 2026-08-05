@@ -157,8 +157,15 @@ class RMObject(QObject):
         rm.run(auto_run=True)
         self.configChanged.emit()
 
+    def add_motion_group(self, index: int, mg_config: Dict[str, Any]):
+        index = None if index == -1 else index
 
-    def add_motion_group(self): ...
+        self.logger.info(
+            f"Adding MotionGroup to the run: index = '{index}', config = {mg_config}."
+        )
+
+        self.rm.add_motion_group(config=mg_config, identifier=index)
+        self.configChanged.emit()
 
     @Slot(str)
     def remove_motion_group(self, identifier: str | int):
