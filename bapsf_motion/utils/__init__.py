@@ -12,8 +12,10 @@ __all__ = [
     "loop_safe_stop",
     "dict_equal",
 ]
+
 import asyncio
 import re
+import threading
 import time
 
 from astropy import units
@@ -40,6 +42,7 @@ class SimpleSignal:
     def __init__(self):
         self._handlers = None
         self._block = False
+        self._main_thread = threading.main_thread()
 
     @property
     def handlers(self) -> List[Callable]:
