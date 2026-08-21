@@ -32,6 +32,42 @@ except PackageNotFoundError:
     try:
         # code most likely being used from source
         # if setuptools_scm is installed then generate a version
+        #
+        # Notes:
+        #  - setuptools_scm.get_version does not read configuration parameters
+        #    from the pyproject.toml and does NOT allows us to pass those
+        #    configuration parameters at call ... this is the case as of 20260820
+        #  - this means the FutureWarning for not explicityly definining
+        #    tools.setuptools_scm.tag.strict is unavoidable (at the moment)
+        #  - I [Erik] discovered a bit of a workaround, but it is not pretty
+        #    and I do not think it is necessary here.  Because, (1) this
+        #    block is only reached when bapsf_motion is NOT installed
+        #    and (2) setuptools_scm will eventually default to tag.strict = true
+        #    which is what is set in the pyproject.toml.  For completeness,
+        #    I am leaving the "ugly" code here:
+        #
+        #    from pathlib import Path
+        #    from setuptools_scm import _get_version
+        #    from vcs_versioning import PyProjectData, build_configuration_from_pyproject
+        #    from vcs_versioning.overrides import GlobalOverrides
+        #
+        #    _path = (Path(__file__).parent / ".." / "pyproject.toml").resolve()
+        #    with GlobalOverrides.from_env("SETUPTOOLS_SCM", dist_name="bapsf_motion"):
+        #        pyproject_data = PyProjectData.from_file(
+        #            _path,
+        #            _tool_names=["setuptools_scm", "vcs-versioning"],
+        #        )
+        #        config = build_configuration_from_pyproject(
+        #            pyproject_data=pyproject_data,
+        #            dist_name="bapsf_motion",
+        #            fallback_version=fallback_version,
+        #        )
+        #
+        #    __version__ = _get_version(config, force_write_version_files=True)
+        #
+        #  - I am going to leave the code as is and let the FuturWarning
+        #    remain.
+
         from setuptools_scm import get_version
 
         __version__ = get_version(
