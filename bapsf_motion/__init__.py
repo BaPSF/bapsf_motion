@@ -37,7 +37,7 @@ except PackageNotFoundError:
         #  - setuptools_scm.get_version does not read configuration parameters
         #    from the pyproject.toml and does NOT allows us to pass those
         #    configuration parameters at call ... this is the case as of 20260820
-        #  - this means the FutureWarning for not explicityly definining
+        #  - this means the FutureWarning for not explicitly defining
         #    tools.setuptools_scm.tag.strict is unavoidable (at the moment)
         #  - I [Erik] discovered a bit of a workaround, but it is not pretty
         #    and I do not think it is necessary here.  Because, (1) this
