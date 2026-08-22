@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
     QListWidgetItem,
     QMainWindow,
     QSizePolicy,
+    QSpacerItem,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -53,7 +54,6 @@ from bapsf_motion.utils import _deepcopy_dict, toml
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
-
 
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
@@ -378,105 +378,70 @@ class RunTOMLWidget(QWidget):
 
 
 class RunWidget(QWidget):
-    def __init__(self, parent: "ConfigureGUI", *, enable_run_name: bool = True):
+    def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
         super().__init__(parent=parent)
 
+        # Initialize attributes
         self._logger = gui_logger
         self._enable_run_name = (
             enable_run_name if isinstance(enable_run_name, bool) else True
         )
 
-        # Define BUTTONS
-
-        self.done_btn = DoneButton(parent=self)
-        self.quit_btn = DiscardButton("Discard && Quit", parent=self)
-
-        _btn = StyleButton("ADD", parent=self)
-        _btn.setFixedHeight(38)
-        _btn.setPointSize(16)
-        self.add_mg_btn = _btn
-
-        _btn = StyleButton("REMOVE", parent=self)
-        _btn.setFixedHeight(38)
-        _btn.setPointSize(16)
-        _btn.setEnabled(False)
-        self.remove_mg_btn = _btn
-
-        _btn = StyleButton("Edit / Control", parent=self)
-        _btn.setFixedHeight(38)
-        _btn.setPointSize(16)
-        _btn.setEnabled(False)
-        self.modify_mg_btn = _btn
-
-        # Define TEXT WIDGETS
-
-        # TOML config display widget
-        self.toml_widget = RunTOMLWidget(parent=self)
-        self.toml_widget.setSizePolicy(
-            QSizePolicy.Policy.Preferred,
-            QSizePolicy.Policy.Expanding,
-        )
-        self.toml_widget.setFixedWidth(500)
-
-        self.mg_list_widget = QListWidget(parent=self)
-        _font = self.mg_list_widget.font()
-        _font.setPointSize(14)
-        self.mg_list_widget.setFont(_font)
-
-        _txt_widget = QLineEdit(parent=self)
-        font = _txt_widget.font()
-        font.setPointSize(16)
-        _txt_widget.setFont(font)
-        self.run_name_widget = _txt_widget
-        self.run_name_widget.setVisible(self._enable_run_name)
-
-        _txt = QLabel("Run Name:  ", parent=self)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
-        _txt.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
-        font = _txt.font()
-        font.setPointSize(16)
-        _txt.setFont(font)
-        self.run_name_label = _txt
-        self.run_name_label.setVisible(self._enable_run_name)
+        # Initialize Widgets
+        self.done_btn = self._init_done_btn()
+        self.mg_add_btn = self._init_mg_add_btn()
+        self.mg_list_widget = self._init_mg_list_widget()
+        self.mg_config_btn = self._init_mg_config_btn()
+        self.mg_remove_btn = self._init_mg_remove_btn()
+        self.quit_btn = self._init_quit_btn()
+        self.run_name_label = self._init_run_name_label()
+        self.run_name_widget = self._init_run_name_widget()
+        self.toml_widget = self._init_toml_widget()
 
         self.setLayout(self._define_layout())
-
         self._connect_signals()
 
+    def _connect_signals(self):
+        self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
+
     def _define_layout(self):
-
-        # Create layout for banner (top header)
-        banner_layout = self._define_banner_layout()
-
-        # Create layout for controls
-        control_widget = QWidget(parent=self)
-        control_widget.setLayout(self._define_control_layout())
-
-        # Construct layout below top banner
-        layout = QHBoxLayout()
-        layout.addWidget(self.toml_widget)
-        layout.addWidget(VLinePlain(parent=self))
-        layout.addWidget(control_widget)
-
-        # Populate the main layout
-        main_layout = QVBoxLayout()
-        main_layout.addLayout(banner_layout)
-        main_layout.addLayout(layout)
-
-        return main_layout
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addLayout(self._define_banner_layout())
+        layout.addSpacing(8)
+        layout.addLayout(self._define_content_layout())
+        layout.addSpacing(8)
+        return layout
 
     def _define_banner_layout(self):
         layout = QHBoxLayout()
-
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addSpacerItem(
+            QSpacerItem(8, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
         layout.addWidget(self.quit_btn)
         layout.addStretch()
         layout.addWidget(self.done_btn)
+        layout.addSpacerItem(
+            QSpacerItem(8, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
+        return layout
 
+    def _define_content_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addSpacing(8)
+        layout.addWidget(self.toml_widget)
+        layout.addSpacing(12)
+        layout.addWidget(VLinePlain(parent=self))
+        layout.addSpacing(12)
+        layout.addLayout(self._define_control_layout())
+        layout.addSpacing(8)
         return layout
 
     def _define_control_layout(self):
-        layout = QVBoxLayout()
-
         mg_label = QLabel("Defined Motion Groups", parent=self)
         mg_label.setAlignment(
             Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignCenter
@@ -485,34 +450,117 @@ class RunWidget(QWidget):
         font.setPointSize(16)
         mg_label.setFont(font)
 
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addSpacerItem(
+            QSpacerItem(0, 8, QSizePolicy.Policy.Ignored, QSizePolicy.Policy.Fixed)
+        )
+
         if self._enable_run_name:
-            sub_layout = QHBoxLayout()
-            sub_layout.addWidget(self.run_name_label)
-            sub_layout.addWidget(self.run_name_widget)
-            layout.addSpacing(18)
-            layout.addLayout(sub_layout)
-            layout.addSpacing(18)
+            self.run_name_label.setVisible(True)
+            self.run_name_widget.setVisible(True)
+
+            layout.addLayout(self._define_control_run_name_layout())
+            layout.addSpacing(12)
 
         layout.addWidget(mg_label)
-        layout.addWidget(self.mg_list_widget)
-
-        sub_layout = QHBoxLayout()
-        sub_layout.addWidget(self.add_mg_btn)
-        sub_layout.addWidget(self.remove_mg_btn)
-        layout.addLayout(sub_layout)
-
-        layout.addWidget(self.modify_mg_btn)
-
+        layout.addSpacing(4)
+        layout.addWidget(self.mg_list_widget, stretch=1)
+        layout.addSpacing(8)
+        layout.addLayout(self._define_control_row1_button_layout())
+        layout.addSpacing(8)
+        layout.addWidget(self.mg_config_btn)
         return layout
 
-    def _connect_signals(self):
-        self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
+    def _define_control_run_name_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addSpacerItem(
+            QSpacerItem(18, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
+        layout.addWidget(self.run_name_label)
+        layout.addWidget(self.run_name_widget)
+        layout.addSpacerItem(
+            QSpacerItem(18, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
+        return layout
+
+    def _define_control_row1_button_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.mg_add_btn, stretch=1)
+        layout.addSpacing(8)
+        layout.addWidget(self.mg_remove_btn, stretch=1)
+        return layout
+
+    def _init_done_btn(self):
+        return DoneButton(parent=self)
+
+    def _init_mg_add_btn(self):
+        _btn = StyleButton("ADD", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
+        return _btn
+
+    def _init_mg_list_widget(self):
+        _widget = QListWidget(parent=self)
+        _font = _widget.font()
+        _font.setPointSize(14)
+        _widget.setFont(_font)
+        return _widget
+
+    def _init_mg_config_btn(self):
+        _btn = StyleButton("Configure", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_mg_remove_btn(self):
+        _btn = StyleButton("REMOVE", parent=self)
+        _btn.setFixedHeight(38)
+        _btn.setPointSize(16)
+        _btn.setEnabled(False)
+        return _btn
+
+    def _init_quit_btn(self):
+        return DiscardButton("Discard && Quit", parent=self)
+
+    def _init_run_name_label(self):
+        _txt = QLabel("Run Name:  ", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
+        _txt.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Fixed)
+        font = _txt.font()
+        font.setPointSize(16)
+        _txt.setFont(font)
+        _txt.setVisible(self._enable_run_name)
+        return _txt
+
+    def _init_run_name_widget(self):
+        _txt = QLineEdit(parent=self)
+        font = _txt.font()
+        font.setPointSize(16)
+        _txt.setFont(font)
+        _txt.setVisible(self._enable_run_name)
+        return _txt
+
+    def _init_toml_widget(self):
+        _widget = RunTOMLWidget(parent=self)
+        _widget.setSizePolicy(
+            QSizePolicy.Policy.Preferred,
+            QSizePolicy.Policy.Expanding,
+        )
+        _widget.setFixedWidth(500)
+        return _widget
 
     @Slot()
     def enable_mg_buttons(self):
-        self.add_mg_btn.setEnabled(True)
-        self.remove_mg_btn.setEnabled(True)
-        self.modify_mg_btn.setEnabled(True)
+        self.mg_add_btn.setEnabled(True)
+        self.mg_remove_btn.setEnabled(True)
+        self.mg_config_btn.setEnabled(True)
 
     @property
     def logger(self) -> logging.Logger:
@@ -608,9 +656,9 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
 
-        self._run_widget.add_mg_btn.clicked.connect(self._motion_group_configure_new)
-        self._run_widget.remove_mg_btn.clicked.connect(self._motion_group_remove_from_rm)
-        self._run_widget.modify_mg_btn.clicked.connect(self._motion_group_modify_existing)
+        self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
+        self._run_widget.mg_remove_btn.clicked.connect(self._motion_group_remove_from_rm)
+        self._run_widget.mg_config_btn.clicked.connect(self._motion_group_modify_existing)
 
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
@@ -737,8 +785,8 @@ class ConfigureGUI(QMainWindow):
 
     def update_display_mg_list(self):
         self._run_widget.mg_list_widget.clear()
-        self._run_widget.remove_mg_btn.setEnabled(False)
-        self._run_widget.modify_mg_btn.setEnabled(False)
+        self._run_widget.mg_remove_btn.setEnabled(False)
+        self._run_widget.mg_config_btn.setEnabled(False)
 
         if self.rm.mgs is None or not self.rm.mgs:
             return
