@@ -55,7 +55,6 @@ from bapsf_motion.utils import _deepcopy_dict, toml
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
 
-
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
