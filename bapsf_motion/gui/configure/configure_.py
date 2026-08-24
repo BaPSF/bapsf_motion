@@ -764,11 +764,12 @@ class ConfigureGUI(QMainWindow):
         self._defaults = defaults
 
     def update_motion_builder_defaults(self):
-        if not isinstance(self.rm, RunManager):
+        rm = self.rm
+        if not isinstance(rm, RunManager):
             self._defaults_updated = None
             return
 
-        if len(self.rm.mgs) == 0:
+        if len(rm.mgs) == 0:
             self._defaults_updated = None
             return
 
@@ -786,7 +787,7 @@ class ConfigureGUI(QMainWindow):
 
         mb_defaults = self._defaults_updated["motion_builder"]
         n_mb_configs = len(mb_defaults) - 1
-        for mg in self.rm.mgs.values():
+        for mg in rm.mgs.values():
             drive_name, ml_name = MGWidget.split_motion_group_name(mg.config["name"])
 
             _id = None
@@ -812,8 +813,9 @@ class ConfigureGUI(QMainWindow):
 
         # terminate RunManager so we can avoid communication issue during
         # MotionGroup configuration
-        if isinstance(self.rm, RunManager) and not self.rm.terminated:
-            self.rm.terminate(disconnect_signals=True)
+        rm = self.rm
+        if isinstance(rm, RunManager) and not rm.terminated:
+            rm.terminate(disconnect_signals=True)
 
         self._mg_widget = MGWidget(
             mg_config=config,
@@ -979,8 +981,9 @@ class ConfigureGUI(QMainWindow):
 
         self.configChanged.disconnect()
 
-        if isinstance(self.rm, RunManager) and not self.rm.terminated:
-            self.rm.terminate(disconnect_signals=True)
+        rm = self.rm
+        if isinstance(rm, RunManager) and not rm.terminated:
+            rm.terminate(disconnect_signals=True)
             self.rm = None
 
         if isinstance(self._mg_widget, MGWidget):
