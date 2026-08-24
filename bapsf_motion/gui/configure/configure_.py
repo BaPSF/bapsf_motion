@@ -484,10 +484,8 @@ class ConfigureGUI(QMainWindow):
         self._launched_windows = dict()  # type: Dict[str, QMainWindow | QWidget]
         self._define_menu_bar()
 
-        layout = self._define_layout()
-
         widget = QWidget(parent=self)
-        widget.setLayout(layout)
+        widget.setLayout(self._define_layout())
         self.setCentralWidget(widget)
 
         self._rm_logger.addHandler(self._log_widget.handler)
