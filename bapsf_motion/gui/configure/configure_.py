@@ -238,6 +238,7 @@ class RunWidget(QWidget):
 
     def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
         super().__init__(parent=parent)
+        self._configure_gui = parent  # type: "ConfigureGUI"
 
         # Initialize attributes
         self._logger = gui_logger
@@ -428,7 +429,7 @@ class RunWidget(QWidget):
 
     @property
     def rm(self) -> RunManager | None:
-        parent = self.parentWidget()  # type: "ConfigureGUI"
+        parent = self._configure_gui  # type: "ConfigureGUI"
         try:
             return parent.rm
         except AttributeError:
