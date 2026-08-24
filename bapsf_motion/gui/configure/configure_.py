@@ -264,6 +264,7 @@ class RunWidget(QWidget):
         self.updateDisplays.connect(self._handle_display_update)
 
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
+        self.run_name_widget.editingFinished.connect(self._handle_run_name_change)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -439,6 +440,12 @@ class RunWidget(QWidget):
     def _handle_display_update(self):
         self.logger.info("Update displays")
         self.update_display_toml_text()
+        self.update_display_rm_name()
+
+    @Slot()
+    def _handle_run_name_change(self):
+        name = self.run_name_widget.text()
+        self._configure_gui.change_run_name(name)
 
     def update_display_toml_text(self):
         rm = self.rm
@@ -446,6 +453,11 @@ class RunWidget(QWidget):
 
         self.logger.info(f"Updating the run config toml: {_toml}")
         self.toml_widget.set_toml_text(_toml)
+
+    def update_display_rm_name(self):
+        rm = self.rm
+        rm_name = rm.config["name"]
+        self.run_name_widget.setText(rm_name)
 
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing RunWidget")
@@ -534,7 +546,6 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.mg_remove_btn.clicked.connect(self._motion_group_remove_from_rm)
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_modify_existing)
-        self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
     def _connect_signals_mg_widget(self):
         # Note: used during _spawn_mg_widget()
@@ -615,7 +626,6 @@ class ConfigureGUI(QMainWindow):
     def _config_changed_handler(self):
         self._run_widget.updateDisplays.emit()
 
-        self.update_display_rm_name()
         self.update_display_mg_list()
         self.update_motion_builder_defaults()
 
@@ -654,10 +664,6 @@ class ConfigureGUI(QMainWindow):
         run_config = self._run_widget.toml_widget.get_toml_as_dict()
         self.replace_rm(run_config)
 
-    def update_display_rm_name(self):
-        rm_name = self.rm.config["name"]
-        self._run_widget.run_name_widget.setText(rm_name)
-
     def update_display_mg_list(self):
         self._run_widget.mg_list_widget.clear()
         self._run_widget.mg_remove_btn.setEnabled(False)
@@ -680,9 +686,9 @@ class ConfigureGUI(QMainWindow):
                 listview=self._run_widget.mg_list_widget,
             )
 
-    @Slot()
-    def change_run_name(self):
-        name = self._run_widget.run_name_widget.text()
+    def change_run_name(self, name: str):
+        if not isinstance(name, str):
+            return
 
         if self.rm is None:
             self.replace_rm({"name": name})
