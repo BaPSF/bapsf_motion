@@ -460,8 +460,6 @@ class ConfigureGUI(QMainWindow):
         self._defaults_updated = None  # updated with configs from configured MGs
         self._set_defaults(defaults=defaults)
 
-        self._define_main_window()
-
         enable_run_name = (
             False
             if (
@@ -484,6 +482,7 @@ class ConfigureGUI(QMainWindow):
         self._launched_windows = dict()  # type: Dict[str, QMainWindow | QWidget]
         self._define_menu_bar()
 
+        self._define_main_window()
         widget = QWidget(parent=self)
         widget.setLayout(self._define_layout())
         self.setCentralWidget(widget)
