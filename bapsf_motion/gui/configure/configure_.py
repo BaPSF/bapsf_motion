@@ -36,8 +36,6 @@ from PySide6.QtWidgets import (
 from typing import Any, Dict, Literal, TYPE_CHECKING
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
-from bapsf_motion.motion_builder import MotionBuilder
-from bapsf_motion.transform import BaseTransform
 from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
@@ -52,6 +50,8 @@ from bapsf_motion.gui.widgets import (
     StyleButton,
     VLinePlain,
 )
+from bapsf_motion.motion_builder import MotionBuilder
+from bapsf_motion.transform import BaseTransform
 from bapsf_motion.utils import _deepcopy_dict, toml
 
 # import of qtawesome must happen after the PySide6 imports
@@ -418,7 +418,6 @@ class RunWidget(QWidget):
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
         self.mg_remove_btn.clicked.connect(self._handle_remove_motion_group)
         self.run_name_widget.editingFinished.connect(self._handle_run_name_change)
-
         self.toml_widget.tomlImported.connect(self._handle_toml_import)
 
     def _define_layout(self):
@@ -609,7 +608,11 @@ class RunWidget(QWidget):
         match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
             list_name
         )
-        return (None, None) if match is None else (int(match.group("index")), match.group("name"))
+        return (
+            (None, None)
+            if match is None
+            else (int(match.group("index")), match.group("name"))
+        )
 
     @Slot()
     def _handle_display_update(self):
@@ -675,7 +678,7 @@ class RunWidget(QWidget):
             tooltip = None
             if not mg.connected:
                 is_valid = False
-                tooltip = "TCP connection not successfull for all axes."
+                tooltip = "TCP connection not successful for all axes."
             elif not isinstance(mg.mb, MotionBuilder):
                 is_valid = False
                 tooltip = "MotionBuilder not configured."
@@ -779,11 +782,12 @@ class ConfigureGUI(QMainWindow):
     def _connect_signals_run_widget(self):
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
-
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_configure_modify)
 
     def _connect_signals_mg_widget(self):
+        # Note: used during _spawn_mg_widget()
+        #
         self._mg_widget.closing.connect(partial(self._switch_stack, which="run"))
         self._mg_widget.returnConfig.connect(self._motion_group_configure_return)
 
