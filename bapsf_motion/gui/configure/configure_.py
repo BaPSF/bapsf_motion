@@ -268,6 +268,7 @@ class RunWidget(QWidget):
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
         self.mg_remove_btn.clicked.connect(self._handle_remove_motion_group)
         self.run_name_widget.editingFinished.connect(self._handle_run_name_change)
+        self.toml_widget.tomlImported.connect(self._handle_toml_import)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -484,6 +485,12 @@ class RunWidget(QWidget):
         name = self.run_name_widget.text()
         self._configure_gui.change_run_name(name)
 
+    @Slot()
+    def _handle_toml_import(self):
+        # needs to update RMObject and allow the RMObject.configChanged
+        # to update the RunWidget displays
+        ...
+
     def update_display_toml_text(self):
         rm = self.rm
         _toml = "" if not isinstance(rm, RunManager) else rm.config.as_toml_string
@@ -620,7 +627,6 @@ class ConfigureGUI(QMainWindow):
         self.configChanged.connect(self._config_changed_handler)
 
     def _connect_signals_run_widget(self):
-        self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
@@ -736,11 +742,6 @@ class ConfigureGUI(QMainWindow):
         # TODO: write code to save current toml configuration to a tmp file
 
         self.close()
-
-    @Slot()
-    def toml_import(self):
-        run_config = self._run_widget.toml_widget.get_toml_as_dict()
-        self.replace_rm(run_config)
 
     def change_run_name(self, name: str):
         if not isinstance(name, str):
