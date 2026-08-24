@@ -653,8 +653,10 @@ class RunWidget(QWidget):
 
     def update_display_toml_text(self):
         rm = self.rm
-        self.logger.info(f"Updating the run config toml: {rm.config.as_toml_string}")
-        self.toml_widget.set_toml_text(rm.config.as_toml_string)
+        _toml = "" if not isinstance(rm, RunManager) else rm.config.as_toml_string
+
+        self.logger.info(f"Updating the run config toml: {_toml}")
+        self.toml_widget.set_toml_text(_toml)
 
     def update_display_rm_name(self):
         rm = self.rm
