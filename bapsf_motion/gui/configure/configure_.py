@@ -523,6 +523,12 @@ class ConfigureGUI(QMainWindow):
 
         self.configChanged.connect(self._config_changed_handler)
 
+    def _connect_signals_mg_widget(self):
+        # Note: used during _spawn_mg_widget()
+        #
+        self._mg_widget.closing.connect(self._switch_stack)
+        self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
+
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
 
@@ -815,8 +821,7 @@ class ConfigureGUI(QMainWindow):
             defaults=self.defaults,
             parent=self,
         )
-        self._mg_widget.closing.connect(self._switch_stack)
-        self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
+        self._connect_signals_mg_widget()
 
         return self._mg_widget
 
