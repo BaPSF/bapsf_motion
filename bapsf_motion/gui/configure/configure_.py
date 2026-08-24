@@ -260,6 +260,8 @@ class RunWidget(QWidget):
         self._connect_signals()
 
     def _connect_signals(self):
+        self.updateDisplays.connect(self._handle_display_update)
+
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
 
     def _define_layout(self):
@@ -431,6 +433,10 @@ class RunWidget(QWidget):
             return parent.rm
         except AttributeError:
             return None
+
+    @Slot()
+    def _handle_display_update(self):
+        self.logger.info("Update displays")
 
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing RunWidget")
