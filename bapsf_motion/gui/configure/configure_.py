@@ -234,6 +234,8 @@ class RunTOMLWidget(QWidget):
 
 
 class RunWidget(QWidget):
+    updateDisplays = Signal()
+
     def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
         super().__init__(parent=parent)
 
