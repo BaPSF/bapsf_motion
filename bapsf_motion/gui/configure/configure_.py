@@ -450,7 +450,8 @@ class RunWidget(QWidget):
             list_name
         )
         return (
-            (None, None) if match is None
+            (None, None)
+            if match is None
             else (int(match.group("index")), match.group("name"))
         )
 
