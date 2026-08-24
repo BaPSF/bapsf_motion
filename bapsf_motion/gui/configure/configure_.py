@@ -510,18 +510,17 @@ class ConfigureGUI(QMainWindow):
     def _connect_signals(self):
         # Note: _mg_widget signals are connected in _spawn_mg_widget()
         #
-        self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
+        self._connect_signals_run_widget()
+        self.configChanged.connect(self._config_changed_handler)
 
+    def _connect_signals_run_widget(self):
+        self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
-
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
         self._run_widget.mg_remove_btn.clicked.connect(self._motion_group_remove_from_rm)
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_modify_existing)
-
         self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
-
-        self.configChanged.connect(self._config_changed_handler)
 
     def _connect_signals_mg_widget(self):
         # Note: used during _spawn_mg_widget()
