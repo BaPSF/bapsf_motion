@@ -50,6 +50,8 @@ from bapsf_motion.gui.widgets import (
     StyleButton,
     VLinePlain,
 )
+from bapsf_motion.motion_builder import MotionBuilder
+from bapsf_motion.transform import BaseTransform
 from bapsf_motion.utils import _deepcopy_dict, toml
 
 # import of qtawesome must happen after the PySide6 imports
@@ -378,8 +380,11 @@ class RunTOMLWidget(QWidget):
 
 
 class RunWidget(QWidget):
+    updateDisplays = Signal()
+
     def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
         super().__init__(parent=parent)
+        self._configure_gui = parent  # type: "ConfigureGUI"
 
         # Initialize attributes
         self._logger = gui_logger
@@ -402,7 +407,12 @@ class RunWidget(QWidget):
         self._connect_signals()
 
     def _connect_signals(self):
+        self.updateDisplays.connect(self._handle_display_update)
+
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
+        self.mg_remove_btn.clicked.connect(self._handle_remove_motion_group)
+        self.run_name_widget.editingFinished.connect(self._handle_run_name_change)
+        self.toml_widget.tomlImported.connect(self._handle_toml_import)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -568,11 +578,118 @@ class RunWidget(QWidget):
 
     @property
     def rm(self) -> RunManager | None:
-        parent = self.parentWidget()  # type: "ConfigureGUI"
+        parent = self._configure_gui  # type: "ConfigureGUI"
         try:
             return parent.rm
         except AttributeError:
             return None
+
+    @staticmethod
+    def _generate_mg_list_name(index, mg_name):
+        return f"[{index:2d}]   {mg_name}"
+
+    @staticmethod
+    def _get_mg_name_from_list_name(list_name: str):
+        match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
+            list_name
+        )
+        return (
+            (None, None)
+            if match is None
+            else (int(match.group("index")), match.group("name"))
+        )
+
+    @Slot()
+    def _handle_display_update(self):
+        self.logger.info("Update displays")
+        self.update_display_toml_text()
+        self.update_display_rm_name()
+        self.update_display_mg_list()
+
+    @Slot()
+    def _handle_remove_motion_group(self):
+        item = self.mg_list_widget.currentItem()
+        identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+
+        if identifier is None:
+            return
+
+        dialog = WarningMessageBox(
+            message=f"You are about to remove motion group '{mg_name}'.",
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
+        self._configure_gui.remove_motion_group(identifier=identifier)
+
+    @Slot()
+    def _handle_run_name_change(self):
+        name = self.run_name_widget.text()
+        self._configure_gui.change_run_name(name)
+
+    @Slot()
+    def _handle_toml_import(self):
+        # needs to update RMObject and allow the RMObject.configChanged
+        # to update the RunWidget displays
+        ...
+
+    def update_display_toml_text(self):
+        rm = self.rm
+        _toml = "" if not isinstance(rm, RunManager) else rm.config.as_toml_string
+
+        self.logger.info(f"Updating the run config toml: {_toml}")
+        self.toml_widget.set_toml_text(_toml)
+
+    def update_display_rm_name(self):
+        rm = self.rm
+        rm_name = rm.config["name"]
+        self.run_name_widget.setText(rm_name)
+
+    def update_display_mg_list(self):
+        self.mg_list_widget.clear()
+        self.mg_remove_btn.setEnabled(False)
+        self.mg_config_btn.setEnabled(False)
+
+        rm = self.rm
+        if not isinstance(rm, RunManager) or len(rm.mgs) == 0:
+            return
+
+        for key, mg in rm.mgs.items():
+            label = self._generate_mg_list_name(key, mg.config["name"])
+            self.logger.info(f"Adding to MG List - {label}")
+
+            is_valid = True
+            tooltip = None
+            if not mg.connected:
+                is_valid = False
+                tooltip = "TCP connection not successful for all axes."
+            elif not isinstance(mg.mb, MotionBuilder):
+                is_valid = False
+                tooltip = "MotionBuilder not configured."
+            elif mg.mb.motion_list is None or mg.mb.motion_list.size == 0:
+                is_valid = False
+                tooltip = "Motion List is not configured."
+            elif not isinstance(mg.transform, BaseTransform):
+                is_valid = False
+                tooltip = "Transform not configured."
+            # TODO: ADD CASE WHEN ENCODER AND POSITION ARE NOT EQUAL
+
+            _icon = (
+                qta.icon(icon_name_dict["window-close"], color="red")
+                if not is_valid
+                else qta.icon(icon_name_dict["check-circle"], color="green")
+            )  # type: QIcon
+
+            _item = QListWidgetItem(
+                _icon,
+                label,
+                listview=self.mg_list_widget,
+            )
+            if not is_valid and tooltip is not None:
+                _item.setToolTip(tooltip)
 
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing RunWidget")
@@ -655,13 +772,10 @@ class ConfigureGUI(QMainWindow):
         self.configChanged.connect(self._config_changed_handler)
 
     def _connect_signals_run_widget(self):
-        self._run_widget.toml_widget.tomlImported.connect(self.toml_import)
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
-        self._run_widget.mg_remove_btn.clicked.connect(self._motion_group_remove_from_rm)
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_modify_existing)
-        self._run_widget.run_name_widget.editingFinished.connect(self.change_run_name)
 
     def _connect_signals_mg_widget(self):
         # Note: used during _spawn_mg_widget()
@@ -740,9 +854,8 @@ class ConfigureGUI(QMainWindow):
 
     @Slot()
     def _config_changed_handler(self):
-        self.update_display_config_text()
-        self.update_display_rm_name()
-        self.update_display_mg_list()
+        self._run_widget.updateDisplays.emit()
+
         self.update_motion_builder_defaults()
 
     def replace_rm(self, config):
@@ -775,44 +888,9 @@ class ConfigureGUI(QMainWindow):
 
         self.close()
 
-    @Slot()
-    def toml_import(self):
-        run_config = self._run_widget.toml_widget.get_toml_as_dict()
-        self.replace_rm(run_config)
-
-    def update_display_config_text(self):
-        self.logger.info(f"Updating the run config toml: {self.rm.config.as_toml_string}")
-        self._run_widget.toml_widget.set_toml_text(self.rm.config.as_toml_string)
-
-    def update_display_rm_name(self):
-        rm_name = self.rm.config["name"]
-        self._run_widget.run_name_widget.setText(rm_name)
-
-    def update_display_mg_list(self):
-        self._run_widget.mg_list_widget.clear()
-        self._run_widget.mg_remove_btn.setEnabled(False)
-        self._run_widget.mg_config_btn.setEnabled(False)
-
-        if self.rm.mgs is None or not self.rm.mgs:
+    def change_run_name(self, name: str):
+        if not isinstance(name, str):
             return
-
-        for key, mg in self.rm.mgs.items():
-            label = self._generate_mg_list_name(key, mg.config["name"])
-            self.logger.info(f"Adding to MG List - {label}")
-            _icon = (
-                qta.icon(icon_name_dict["window-close"], color="red")
-                if mg.terminated or not mg.connected
-                else qta.icon(icon_name_dict["check-circle"], color="green")
-            )  # type: QIcon
-            _item = QListWidgetItem(
-                _icon,
-                label,
-                listview=self._run_widget.mg_list_widget,
-            )
-
-    @Slot()
-    def change_run_name(self):
-        name = self._run_widget.run_name_widget.text()
 
         if self.rm is None:
             self.replace_rm({"name": name})
@@ -828,7 +906,7 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _motion_group_modify_existing(self):
         item = self._run_widget.mg_list_widget.currentItem()
-        key, mg_name = self._get_mg_name_from_list_name(item.text())
+        key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
         mg = self.rm.mgs[key]
 
         if not mg.terminated:
@@ -839,21 +917,28 @@ class ConfigureGUI(QMainWindow):
         self._mg_widget.mg_index = key
         self._switch_stack()
 
-    @Slot()
-    def _motion_group_remove_from_rm(self):
-        item = self._run_widget.mg_list_widget.currentItem()
-        identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+    def remove_motion_group(self, identifier: str | int):
+        rm = self.rm
 
-        dialog = WarningMessageBox(
-            message=f"You are about to remove motion group '{mg_name}'.",
-            button_layout="approve",
-            parent=self,
-        )
-        proceed = bool(dialog.exec())
-        if not proceed:
+        if not isinstance(rm, RunManager):
             return
 
-        self.rm.remove_motion_group(identifier=identifier)
+        if identifier in rm.mgs.keys():
+            rm.remove_motion_group(identifier=identifier)
+            self.configChanged.emit()
+            return
+
+        if isinstance(identifier, int):
+            identifier = f"{identifier}"
+        elif isinstance(identifier, str):
+            try:
+                identifier = int(identifier)
+            except ValueError:
+                return
+        else:
+            return
+
+        rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
     def restart_run_manager(self):
@@ -1000,17 +1085,6 @@ class ConfigureGUI(QMainWindow):
         self.rm.add_motion_group(config=mg_config, identifier=index)
         self.restart_run_manager()
         self._mg_being_modified = None
-
-    @staticmethod
-    def _generate_mg_list_name(index, mg_name):
-        return f"[{index:2d}]   {mg_name}"
-
-    @staticmethod
-    def _get_mg_name_from_list_name(list_name):
-        match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
-            list_name
-        )
-        return None if match is None else (int(match.group("index")), match.group("name"))
 
     def _launch_lapd_xy_calculator(self):
         if "lapd_xy_calculator" in self._launched_windows:
