@@ -436,6 +436,10 @@ class RunWidget(QWidget):
         except AttributeError:
             return None
 
+    @staticmethod
+    def _generate_mg_list_name(index, mg_name):
+        return f"[{index:2d}]   {mg_name}"
+
     @Slot()
     def _handle_display_update(self):
         self.logger.info("Update displays")
@@ -876,10 +880,6 @@ class ConfigureGUI(QMainWindow):
         self.rm.add_motion_group(config=mg_config, identifier=index)
         self.restart_run_manager()
         self._mg_being_modified = None
-
-    @staticmethod
-    def _generate_mg_list_name(index, mg_name):
-        return f"[{index:2d}]   {mg_name}"
 
     @staticmethod
     def _get_mg_name_from_list_name(list_name):
