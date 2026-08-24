@@ -36,8 +36,6 @@ from PySide6.QtWidgets import (
 from typing import Any, Dict, Literal, TYPE_CHECKING
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
-from bapsf_motion.motion_builder import MotionBuilder
-from bapsf_motion.transform import BaseTransform
 from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
@@ -52,6 +50,8 @@ from bapsf_motion.gui.widgets import (
     StyleButton,
     VLinePlain,
 )
+from bapsf_motion.motion_builder import MotionBuilder
+from bapsf_motion.transform import BaseTransform
 from bapsf_motion.utils import _deepcopy_dict, toml
 
 # import of qtawesome must happen after the PySide6 imports
