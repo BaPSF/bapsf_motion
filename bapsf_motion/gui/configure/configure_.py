@@ -604,6 +604,8 @@ class ConfigureGUI(QMainWindow):
 
     @Slot()
     def _config_changed_handler(self):
+        self._run_widget.updateDisplays.emit()
+
         self.update_display_config_text()
         self.update_display_rm_name()
         self.update_display_mg_list()
