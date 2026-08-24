@@ -266,6 +266,7 @@ class RunWidget(QWidget):
         self.updateDisplays.connect(self._handle_display_update)
 
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
+        self.mg_remove_btn.clicked.connect(self._handle_remove_motion_group)
         self.run_name_widget.editingFinished.connect(self._handle_run_name_change)
 
     def _define_layout(self):
@@ -460,6 +461,25 @@ class RunWidget(QWidget):
         self.update_display_mg_list()
 
     @Slot()
+    def _handle_remove_motion_group(self):
+        item = self.mg_list_widget.currentItem()
+        identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+
+        if identifier is None:
+            return
+
+        dialog = WarningMessageBox(
+            message=f"You are about to remove motion group '{mg_name}'.",
+            button_layout="approve",
+            parent=self,
+        )
+        proceed = bool(dialog.exec())
+        if not proceed:
+            return
+
+        self._configure_gui.remove_motion_group(identifier=identifier)
+
+    @Slot()
     def _handle_run_name_change(self):
         name = self.run_name_widget.text()
         self._configure_gui.change_run_name(name)
@@ -604,7 +624,6 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
-        self._run_widget.mg_remove_btn.clicked.connect(self._motion_group_remove_from_rm)
         self._run_widget.mg_config_btn.clicked.connect(self._motion_group_modify_existing)
 
     def _connect_signals_mg_widget(self):
@@ -752,21 +771,28 @@ class ConfigureGUI(QMainWindow):
         self._mg_widget.mg_index = key
         self._switch_stack()
 
-    @Slot()
-    def _motion_group_remove_from_rm(self):
-        item = self._run_widget.mg_list_widget.currentItem()
-        identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+    def remove_motion_group(self, identifier: str | int):
+        rm = self.rm
 
-        dialog = WarningMessageBox(
-            message=f"You are about to remove motion group '{mg_name}'.",
-            button_layout="approve",
-            parent=self,
-        )
-        proceed = bool(dialog.exec())
-        if not proceed:
+        if not isinstance(rm, RunManager):
             return
 
-        self.rm.remove_motion_group(identifier=identifier)
+        if identifier in rm.mgs.keys():
+            rm.remove_motion_group(identifier=identifier)
+            self.configChanged.emit()
+            return
+
+        if isinstance(identifier, int):
+            identifier = f"{identifier}"
+        elif isinstance(identifier, str):
+            try:
+                identifier = int(identifier)
+            except ValueError:
+                return
+        else:
+            return
+
+        rm.remove_motion_group(identifier=identifier)
         self.configChanged.emit()
 
     def restart_run_manager(self):
