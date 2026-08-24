@@ -442,6 +442,16 @@ class RunWidget(QWidget):
     def _generate_mg_list_name(index, mg_name):
         return f"[{index:2d}]   {mg_name}"
 
+    @staticmethod
+    def _get_mg_name_from_list_name(list_name: str):
+        match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
+            list_name
+        )
+        return (
+            (None, None) if match is None
+            else (int(match.group("index")), match.group("name"))
+        )
+
     @Slot()
     def _handle_display_update(self):
         self.logger.info("Update displays")
@@ -731,7 +741,7 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _motion_group_modify_existing(self):
         item = self._run_widget.mg_list_widget.currentItem()
-        key, mg_name = self._get_mg_name_from_list_name(item.text())
+        key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
         mg = self.rm.mgs[key]
 
         if not mg.terminated:
@@ -903,13 +913,6 @@ class ConfigureGUI(QMainWindow):
         self.rm.add_motion_group(config=mg_config, identifier=index)
         self.restart_run_manager()
         self._mg_being_modified = None
-
-    @staticmethod
-    def _get_mg_name_from_list_name(list_name):
-        match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
-            list_name
-        )
-        return None if match is None else (int(match.group("index")), match.group("name"))
 
     def _launch_lapd_xy_calculator(self):
         if "lapd_xy_calculator" in self._launched_windows:
