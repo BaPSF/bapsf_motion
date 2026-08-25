@@ -596,7 +596,7 @@ class RunWidget(QWidget):
         return f"[{index:2d}]   {mg_name}"
 
     @staticmethod
-    def _get_mg_name_from_list_name(list_name: str):
+    def get_mg_name_from_list_name(list_name: str):
         match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
             list_name
         )
@@ -616,7 +616,7 @@ class RunWidget(QWidget):
     @Slot()
     def _handle_remove_motion_group(self):
         item = self.mg_list_widget.currentItem()
-        identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+        identifier, mg_name = self.get_mg_name_from_list_name(item.text())
 
         if identifier is None:
             return
@@ -882,7 +882,7 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _motion_group_configure_modify(self):
         item = self._run_widget.mg_list_widget.currentItem()
-        key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
+        key, mg_name = self._run_widget.get_mg_name_from_list_name(item.text())
 
         try:
             mg = self.rmo.rm.mgs[key]
