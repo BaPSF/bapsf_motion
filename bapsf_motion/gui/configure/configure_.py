@@ -737,11 +737,6 @@ class ConfigureGUI(QMainWindow):
         )
 
         # Initialize Qt widgets and objects
-        self._run_widget = RunWidget(
-            rmo=self._rmo,
-            parent=self,
-            enable_run_name=enable_run_name,
-        )
         self._log_widget = self._init_log_widget()
         self._mg_widget = None  # type: MGWidget | None
         self._rmo = self._init_rmo(config=config)
@@ -841,6 +836,13 @@ class ConfigureGUI(QMainWindow):
 
         _rmo = RMObject(config=config, parent=self)
         return _rmo
+
+    def _init_run_widget(self, enable_run_name):
+        return RunWidget(
+            rmo=self._rmo,
+            parent=self,
+            enable_run_name=enable_run_name,
+        )
 
     @property
     def defaults(self) -> Dict[str, Any]:
