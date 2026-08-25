@@ -142,7 +142,7 @@ class RMObject(QObject):
         rm.config.update_run_name(name)
         self.configChanged.emit()
 
-    def run(self):
+    def run(self, auto_run: bool = True, force_run: bool = True):
         rm = self.rm
         if not isinstance(rm, RunManager):
             # No RunManager to restart
@@ -156,7 +156,7 @@ class RMObject(QObject):
             # RunManager is still running, no need to restart
             return
 
-        rm.run(auto_run=True)
+        rm.run(auto_run=auto_run, force_run=force_run)
         self.configChanged.emit()
 
     def add_motion_group(self, index: int, mg_config: Dict[str, Any]):
