@@ -592,7 +592,7 @@ class RunWidget(QWidget):
         return self.rmo.rm
 
     @staticmethod
-    def _generate_mg_list_name(index, mg_name):
+    def generate_mg_list_name(index, mg_name):
         return f"[{index:2d}]   {mg_name}"
 
     @staticmethod
@@ -665,7 +665,7 @@ class RunWidget(QWidget):
             return
 
         for key, mg in rm.mgs.items():
-            label = self._generate_mg_list_name(key, mg.config["name"])
+            label = self.generate_mg_list_name(key, mg.config["name"])
             self.logger.info(f"Adding to MG List - {label}")
 
             is_valid = True
