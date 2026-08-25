@@ -737,20 +737,16 @@ class ConfigureGUI(QMainWindow):
         )
 
         # Initialize Qt widgets and objects
-        self._rmo = self._init_rmo(config=config)
-        self._log_widget = QLogger(self._logger, parent=self)
         self._run_widget = RunWidget(
             rmo=self._rmo,
             parent=self,
             enable_run_name=enable_run_name,
         )
+        self._log_widget = self._init_log_widget()
         self._mg_widget = None  # type: MGWidget | None
-
-        self._stacked_widget = QStackedWidget(parent=self)
-        self._stacked_widget.addWidget(self._run_widget)
-
-        # add the RunManater logger to the log_widget display
-        self.rmo.rm.logger.addHandler(self._log_widget.handler)
+        self._rmo = self._init_rmo(config=config)
+        self._run_widget = self._init_run_widget(enable_run_name=enable_run_name)
+        self._stacked_widget = self._init_stack_widget()
 
         # set up menu bar
         self._launched_windows = dict()  # type: Dict[str, QMainWindow | QWidget]
@@ -827,6 +823,9 @@ class ConfigureGUI(QMainWindow):
         layout.addWidget(self._log_widget)
 
         return layout
+
+    def _init_log_widget(self):
+        return QLogger(self._logger, parent=self)
 
     def _init_rmo(self, config):
         if isinstance(config, Path) and not config.exists():
