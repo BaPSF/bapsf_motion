@@ -629,12 +629,12 @@ class RunWidget(QWidget):
         if not proceed:
             return
 
-        self._configure_gui.remove_motion_group(identifier=identifier)
+        self.rmo.remove_motion_group(identifier=identifier)
 
     @Slot()
     def _handle_run_name_change(self):
         name = self.run_name_widget.text()
-        self._configure_gui.change_run_name(name)
+        self.rmo.change_run_name(name)
 
     @Slot()
     def _handle_toml_import(self):
