@@ -844,6 +844,11 @@ class ConfigureGUI(QMainWindow):
             enable_run_name=enable_run_name,
         )
 
+    def _init_stack_widget(self):
+        _w = QStackedWidget(parent=self)
+        _w.addWidget(self._run_widget)
+        return _w
+
     @property
     def defaults(self) -> Dict[str, Any]:
         if self._defaults_updated is not None:
