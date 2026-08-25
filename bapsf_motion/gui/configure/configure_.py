@@ -769,6 +769,7 @@ class ConfigureGUI(QMainWindow):
         #
         self._connect_signals_run_widget()
 
+        self._rmo.configChanged.connect(self._config_changed_handler)
         self.configChanged.connect(self._config_changed_handler)
 
     def _connect_signals_run_widget(self):
