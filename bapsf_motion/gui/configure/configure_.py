@@ -869,7 +869,7 @@ class ConfigureGUI(QMainWindow):
 
     @property
     def rm(self) -> RunManager | None:
-        # This is needed to keep backward compatability with
+        # This is needed to keep backward compatibility with
         # bapsfdaq_motion_lv ... it is highly encourage to always
         # access rm through the rmo property (i.e. self.rmo.rm)
         return self.rmo.rm
