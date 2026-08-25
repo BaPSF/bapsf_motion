@@ -582,12 +582,12 @@ class RunWidget(QWidget):
         return self._logger
 
     @property
+    def rmo(self) -> RMObject:
+        return self._rmo
+
+    @property
     def rm(self) -> RunManager | None:
-        parent = self._configure_gui  # type: "ConfigureGUI"
-        try:
-            return parent.rm
-        except AttributeError:
-            return None
+        return self.rmo.rm
 
     @staticmethod
     def _generate_mg_list_name(index, mg_name):
