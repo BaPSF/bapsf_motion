@@ -736,9 +736,8 @@ class ConfigureGUI(QMainWindow):
             else True
         )
 
+        # Initialize Qt widgets and objects
         self._rmo = self._init_rmo(config=config)
-
-        # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
         self._run_widget = RunWidget(
             rmo=self._rmo,
