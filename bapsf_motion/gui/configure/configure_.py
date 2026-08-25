@@ -866,45 +866,12 @@ class ConfigureGUI(QMainWindow):
         self._run_widget.updateDisplays.emit()
         self.update_motion_builder_defaults()
 
-    def replace_rm(self, config):
-        if isinstance(self.rm, RunManager):
-            self.rm.terminate(disconnect_signals=True)
-
-        self.logger.info(f"Replacing the run manager with new config: {config}.")
-        _rm = RunManager(config=config, auto_run=True, build_mode=True)
-
-        _remove = []
-        for key, mg in _rm.mgs.items():
-            if mg.drive.naxes != 2:
-                self.logger.warning(
-                    f"The Configuration GUI currently only supports motion"
-                    f" groups with a dimensionality of 2, got {mg.drive.naxes}"
-                    f" for motion group '{mg.name}'.  Removing motion group."
-                )
-                _remove.append(key)
-
-        for key in _remove:
-            _rm.remove_motion_group(key)
-
-        self.rm = _rm
-        self.configChanged.emit()
-
     @Slot()
     def save_and_close(self):
         # save the toml configuration
         # TODO: write code to save current toml configuration to a tmp file
 
         self.close()
-
-    def change_run_name(self, name: str):
-        if not isinstance(name, str):
-            return
-
-        if self.rm is None:
-            self.replace_rm({"name": name})
-        else:
-            self.rm.config.update_run_name(name)
-            self.configChanged.emit()
 
     @Slot()
     def _motion_group_configure_new(self):
@@ -928,43 +895,6 @@ class ConfigureGUI(QMainWindow):
         self._spawn_mg_widget(mg)
         self._mg_widget.mg_index = key
         self._switch_stack()
-
-    def remove_motion_group(self, identifier: str | int):
-        rm = self.rm
-
-        if not isinstance(rm, RunManager):
-            return
-
-        if identifier in rm.mgs.keys():
-            rm.remove_motion_group(identifier=identifier)
-            self.configChanged.emit()
-            return
-
-        if isinstance(identifier, int):
-            identifier = f"{identifier}"
-        elif isinstance(identifier, str):
-            try:
-                identifier = int(identifier)
-            except ValueError:
-                return
-        else:
-            return
-
-        rm.remove_motion_group(identifier=identifier)
-        self.configChanged.emit()
-
-    def restart_run_manager(self):
-        if isinstance(self.rm, RunManager) and not self.rm.terminated:
-            # RunManager is still running, no need to restart
-            return
-
-        if not isinstance(self.rm, RunManager):
-            # No RunManager to restart
-            return
-
-        self.replace_rm(self.rm.config)
-
-        self._mg_being_modified = None
 
     def _set_defaults(self, defaults: Path | str | Dict[str, Any] | None):
         if defaults is None:
