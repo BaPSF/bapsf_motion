@@ -871,6 +871,10 @@ class ConfigureGUI(QMainWindow):
     def logging_config_dict(self):
         return self._logging_config_dict
 
+    @property
+    def rmo(self) -> RMObject:
+        return self._rmo
+
     @Slot()
     def _config_changed_handler(self):
         self._run_widget.updateDisplays.emit()
