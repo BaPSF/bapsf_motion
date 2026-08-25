@@ -835,6 +835,10 @@ class ConfigureGUI(QMainWindow):
             config = {"name": run_name}
 
         _rmo = RMObject(config=config, parent=self)
+
+        if isinstance(_rmo.rm, RunManager):
+            _rmo.rm.logger.addHandler(self._log_widget.handler)
+
         return _rmo
 
     def _init_run_widget(self, enable_run_name):
