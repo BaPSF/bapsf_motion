@@ -381,9 +381,15 @@ class RunTOMLWidget(QWidget):
 class RunWidget(QWidget):
     updateDisplays = Signal()
 
-    def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
+    def __init__(
+        self,
+        rmo: RMObject,
+        parent: "ConfigureGUI",
+        enable_run_name: bool = True,
+    ):
         super().__init__(parent=parent)
         self._configure_gui = parent  # type: "ConfigureGUI"
+        self._rmo = rmo  # type: RMObject
 
         # Initialize attributes
         self._logger = gui_logger
