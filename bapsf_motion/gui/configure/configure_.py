@@ -70,6 +70,7 @@ class RMObject(QObject):
     defines the supporting operations onto the `RunManger` that the
     rest of `ConfigureGUI` can interact with.
     """
+
     configChanged = Signal()
 
     def __init__(
