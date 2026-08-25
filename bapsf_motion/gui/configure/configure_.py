@@ -740,7 +740,11 @@ class ConfigureGUI(QMainWindow):
 
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
-        self._run_widget = RunWidget(parent=self, enable_run_name=enable_run_name)
+        self._run_widget = RunWidget(
+            rmo=self._rmo,
+            parent=self,
+            enable_run_name=enable_run_name,
+        )
         self._mg_widget = None  # type: MGWidget | None
 
         self._stacked_widget = QStackedWidget(parent=self)
