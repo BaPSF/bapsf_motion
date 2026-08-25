@@ -59,7 +59,7 @@ from bapsf_motion.utils import _deepcopy_dict, dict_equal, loop_safe_stop, toml
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent, QResizeEvent
 
-    from bapsf_motion.gui.configure import configure_
+    from bapsf_motion.gui.configure.configure_ import ConfigureGUI
     from bapsf_motion.gui.configure.bases import _ConfigOverlay
 
 # import of qtawesome must happen after the PySide6 imports
@@ -406,7 +406,7 @@ class MGWidget(QWidget):
         *,
         mg_config: MotionGroupConfig | None = None,
         defaults: Dict[str, Any] | None = None,
-        parent: configure_.ConfigureGUI,
+        parent: ConfigureGUI,
     ):
         super().__init__(parent=parent)
 
