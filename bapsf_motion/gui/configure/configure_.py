@@ -713,7 +713,6 @@ class ConfigureGUI(QMainWindow):
     ):
         super().__init__()
 
-        self._rm = None  # type: RunManager | None
         self._mg_being_modified = None  # type: MotionGroup | None
 
         # setup logger
@@ -763,19 +762,7 @@ class ConfigureGUI(QMainWindow):
         self.setCentralWidget(widget)
 
         self._connect_signals()
-
-        if isinstance(config, Path) and not config.exists():
-            config = None
-
-        if config is None:
-            run_name = (
-                "A New Run"
-                if self.defaults is None
-                else self.defaults.get("run_name", "A New Run")
-            )
-            config = {"name": run_name}
-
-        self.replace_rm(config=config)
+        self._rmo.configChanged.emit()
 
     def _connect_signals(self):
         # Note: _mg_widget signals are connected in _spawn_mg_widget()
