@@ -142,7 +142,7 @@ class RMObject(QObject):
         rm.config.update_run_name(name)
         self.configChanged.emit()
 
-    def restart_rm(self):
+    def run(self):
         rm = self.rm
         if not isinstance(rm, RunManager):
             # No RunManager to restart
@@ -1014,7 +1014,7 @@ class ConfigureGUI(QMainWindow):
 
         # ensure the RunManager is running
         self.rmo.blockSignals(True)
-        self.rmo.restart_rm()
+        self.rmo.run()
         self.rmo.blockSignals(False)
 
         if len(mg_config) == 0:
