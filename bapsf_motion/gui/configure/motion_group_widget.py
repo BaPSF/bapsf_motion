@@ -59,7 +59,7 @@ from bapsf_motion.utils import _deepcopy_dict, dict_equal, loop_safe_stop, toml
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent, QResizeEvent
 
-    from bapsf_motion.gui.configure.configure_ import ConfigureGUI
+    from bapsf_motion.gui.configure.configure_ import ConfigureGUI, RMObject
     from bapsf_motion.gui.configure.bases import _ConfigOverlay
 
 # import of qtawesome must happen after the PySide6 imports
@@ -406,6 +406,7 @@ class MGWidget(QWidget):
         *,
         mg_config: MotionGroupConfig | None = None,
         defaults: Dict[str, Any] | None = None,
+        rmo: RMObject,
         parent: ConfigureGUI,
     ):
         super().__init__(parent=parent)
@@ -414,12 +415,13 @@ class MGWidget(QWidget):
         #       reason) we are losing reference to it...self.parent()
         #       eventually becomes a QStackedWidget ??
         self._configure_gui = parent
+        self._rmo = rmo
 
         # gather deployed restricted values
         deployed_mg_names = []
         deployed_ips = []
-        if isinstance(self._configure_gui.rmo.rm, RunManager):
-            for mg in self._configure_gui.rmo.rm.mgs.values():
+        if isinstance(self._rmo.rm, RunManager):
+            for mg in self._rmo.rm.mgs.values():
                 if (
                     mg_config is not None
                     and mg_config["name"] == mg.config["name"]

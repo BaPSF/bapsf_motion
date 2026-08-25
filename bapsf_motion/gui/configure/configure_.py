@@ -1004,6 +1004,7 @@ class ConfigureGUI(QMainWindow):
         self._mg_widget = MGWidget(
             mg_config=config,
             defaults=self.defaults,
+            rmo=self.rmo,
             parent=self,
         )
         self._connect_signals_mg_widget()
