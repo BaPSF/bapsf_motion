@@ -854,19 +854,6 @@ class ConfigureGUI(QMainWindow):
         return self._logger
 
     @property
-    def rm(self) -> RunManager | None:
-        return self._rm
-
-    @rm.setter
-    def rm(self, new_rm):
-        if not isinstance(new_rm, RunManager):
-            return
-        elif isinstance(self._rm, RunManager):
-            self._rm.terminate(disconnect_signals=True)
-
-        self._rm = new_rm
-
-    @property
     def logging_config_dict(self):
         return self._logging_config_dict
 
@@ -877,7 +864,6 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _config_changed_handler(self):
         self._run_widget.updateDisplays.emit()
-
         self.update_motion_builder_defaults()
 
     def replace_rm(self, config):
@@ -929,7 +915,11 @@ class ConfigureGUI(QMainWindow):
     def _motion_group_configure_modify(self):
         item = self._run_widget.mg_list_widget.currentItem()
         key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
-        mg = self.rm.mgs[key]
+
+        try:
+            mg = self.rmo.rm.mgs[key]
+        except KeyError:
+            return
 
         if not mg.terminated:
             mg.terminate(delay_loop_stop=True, disconnect_signals=True)
@@ -1012,11 +1002,12 @@ class ConfigureGUI(QMainWindow):
         self._defaults = defaults
 
     def update_motion_builder_defaults(self):
-        rm = self.rm
-        if not isinstance(rm, RunManager):
+        rmo = self.rmo
+        if not isinstance(rmo, RMObject) or not isinstance(rmo.rm, RunManager):
             self._defaults_updated = None
             return
 
+        rm = rmo.rm
         if len(rm.mgs) == 0:
             self._defaults_updated = None
             return
@@ -1061,9 +1052,7 @@ class ConfigureGUI(QMainWindow):
 
         # terminate RunManager so we can avoid communication issue during
         # MotionGroup configuration
-        rm = self.rm
-        if isinstance(rm, RunManager) and not rm.terminated:
-            rm.terminate(disconnect_signals=True)
+        self.rmo.terminate(disconnect_signals=True)
 
         self._mg_widget = MGWidget(
             mg_config=config,
@@ -1215,10 +1204,11 @@ class ConfigureGUI(QMainWindow):
 
         self.configChanged.disconnect()
 
-        rm = self.rm
+        rmo = self.rmo
+        rm = rmo.rm
         if isinstance(rm, RunManager) and not rm.terminated:
             rm.terminate(disconnect_signals=True)
-            self.rm = None
+            self.rmo.rm = None
 
         if isinstance(self._mg_widget, MGWidget):
             self._mg_widget.close()
