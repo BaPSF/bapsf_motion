@@ -868,6 +868,13 @@ class ConfigureGUI(QMainWindow):
         return self._logging_config_dict
 
     @property
+    def rm(self) -> RunManager | None:
+        # This is needed to keep backward compatability with
+        # bapsfdaq_motion_lv ... it is highly encourage to always
+        # access rm through the rmo property (i.e. self.rmo.rm)
+        return self.rmo.rm
+
+    @property
     def rmo(self) -> RMObject:
         return self._rmo
 
