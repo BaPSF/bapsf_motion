@@ -362,7 +362,6 @@ class RunTOMLWidget(QWidget):
         with open(file_name, "rb") as f:
             run_config = toml.load(f)
 
-        # self.replace_rm(run_config)
         self._TOML_FILE = file_name
         self.set_toml_text(toml.as_toml_string(run_config))
         self.logger.info(f"... Success!")
