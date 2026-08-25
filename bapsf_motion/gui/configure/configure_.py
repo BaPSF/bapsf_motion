@@ -15,7 +15,7 @@ import re
 
 from functools import partial
 from pathlib import Path
-from PySide6.QtCore import QDir, Qt, Signal, Slot, QObject
+from PySide6.QtCore import QDir, QObject, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
