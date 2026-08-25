@@ -730,6 +730,8 @@ class ConfigureGUI(QMainWindow):
             else True
         )
 
+        self._rmo = self._init_rmo(config=config)
+
         # define "important" qt widgets
         self._log_widget = QLogger(self._logger, parent=self)
         self._run_widget = RunWidget(parent=self, enable_run_name=enable_run_name)
@@ -826,6 +828,21 @@ class ConfigureGUI(QMainWindow):
         layout.addWidget(self._log_widget)
 
         return layout
+
+    def _init_rmo(self, config):
+        if isinstance(config, Path) and not config.exists():
+            config = None
+
+        if config is None:
+            run_name = (
+                "A New Run"
+                if self.defaults is None
+                else self.defaults.get("run_name", "A New Run")
+            )
+            config = {"name": run_name}
+
+        _rmo = RMObject(config=config, parent=self)
+        return _rmo
 
     @property
     def defaults(self) -> Dict[str, Any]:
