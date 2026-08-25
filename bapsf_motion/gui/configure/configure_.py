@@ -769,13 +769,16 @@ class ConfigureGUI(QMainWindow):
         # Note: _mg_widget signals are connected in _spawn_mg_widget()
         #
         self._connect_signals_run_widget()
+
         self.configChanged.connect(self._config_changed_handler)
 
     def _connect_signals_run_widget(self):
         self._run_widget.done_btn.clicked.connect(self.save_and_close)
         self._run_widget.quit_btn.clicked.connect(self.discard_close)
         self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
-        self._run_widget.mg_config_btn.clicked.connect(self._motion_group_modify_existing)
+        self._run_widget.mg_config_btn.clicked.connect(
+            self._motion_group_configure_modify
+        )
 
     def _connect_signals_mg_widget(self):
         # Note: used during _spawn_mg_widget()
@@ -904,7 +907,7 @@ class ConfigureGUI(QMainWindow):
         self._switch_stack()
 
     @Slot()
-    def _motion_group_modify_existing(self):
+    def _motion_group_configure_modify(self):
         item = self._run_widget.mg_list_widget.currentItem()
         key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
         mg = self.rm.mgs[key]
