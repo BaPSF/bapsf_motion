@@ -1177,7 +1177,7 @@ class ConfigureApp(QApplication):
     def __init__(
         self,
         *args,
-        config: Path | str | Dict[str, Any] | RunManagerConfig = None,
+        config: Path | str | Dict[str, Any] | RunManagerConfig | None = None,
         defaults: Path | str | Dict[str, Any] | None = None,
         **kwargs,
     ) -> None:
