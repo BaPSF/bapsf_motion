@@ -767,9 +767,7 @@ class ConfigureGUI(QMainWindow):
         self.run_widget.done_btn.clicked.connect(self.save_and_close)
         self.run_widget.quit_btn.clicked.connect(self.discard_close)
         self.run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
-        self.run_widget.mg_config_btn.clicked.connect(
-            self._motion_group_configure_modify
-        )
+        self.run_widget.mg_config_btn.clicked.connect(self._motion_group_configure_modify)
 
     def _connect_signals_mg_widget(self):
         # Note: used during _spawn_mg_widget()
