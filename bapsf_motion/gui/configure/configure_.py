@@ -1063,6 +1063,12 @@ class ConfigureGUI(QMainWindow):
             self._stacked_widget.setCurrentWidget(self.mg_widget)
             return
 
+        # switch to MultiControl
+        if which == "control" and isinstance(self.control_widget, MultiControl):
+            self._stacked_widget.addWidget(self.control_widget)
+            self._stacked_widget.setCurrentWidget(self.control_widget)
+            return
+
     @Slot(int, object)
     def _motion_group_configure_return(self, index: int, mg_config: Dict[str, Any]):
         self._mg_being_modified = None
