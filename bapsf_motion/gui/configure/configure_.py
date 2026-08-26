@@ -740,7 +740,7 @@ class ConfigureGUI(QMainWindow):
         self._log_widget = self._init_log_widget()
         self._mg_widget = None  # type: MGWidget | None
         self._rmo = self._init_rmo(config=config)
-        self._run_widget = self._init_run_widget(enable_run_name=enable_run_name)
+        self.run_widget = self._init_run_widget(enable_run_name=enable_run_name)
         self._stacked_widget = self._init_stack_widget()
 
         # set up menu bar
@@ -764,10 +764,10 @@ class ConfigureGUI(QMainWindow):
         self.configChanged.connect(self._config_changed_handler)
 
     def _connect_signals_run_widget(self):
-        self._run_widget.done_btn.clicked.connect(self.save_and_close)
-        self._run_widget.quit_btn.clicked.connect(self.discard_close)
-        self._run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
-        self._run_widget.mg_config_btn.clicked.connect(
+        self.run_widget.done_btn.clicked.connect(self.save_and_close)
+        self.run_widget.quit_btn.clicked.connect(self.discard_close)
+        self.run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
+        self.run_widget.mg_config_btn.clicked.connect(
             self._motion_group_configure_modify
         )
 
@@ -850,7 +850,7 @@ class ConfigureGUI(QMainWindow):
 
     def _init_stack_widget(self):
         _w = QStackedWidget(parent=self)
-        _w.addWidget(self._run_widget)
+        _w.addWidget(self.run_widget)
         return _w
 
     @property
@@ -880,7 +880,7 @@ class ConfigureGUI(QMainWindow):
 
     @Slot()
     def _config_changed_handler(self):
-        self._run_widget.updateDisplays.emit()
+        self.run_widget.updateDisplays.emit()
         self.update_motion_builder_defaults()
 
     @Slot()
@@ -897,8 +897,8 @@ class ConfigureGUI(QMainWindow):
 
     @Slot()
     def _motion_group_configure_modify(self):
-        item = self._run_widget.mg_list_widget.currentItem()
-        key, mg_name = self._run_widget.get_mg_name_from_list_name(item.text())
+        item = self.run_widget.mg_list_widget.currentItem()
+        key, mg_name = self.run_widget.get_mg_name_from_list_name(item.text())
 
         try:
             mg = self.rmo.rm.mgs[key]
@@ -1161,7 +1161,7 @@ class ConfigureGUI(QMainWindow):
         if isinstance(self._mg_widget, MGWidget):
             self._mg_widget.close()
 
-        self._run_widget.close()
+        self.run_widget.close()
 
         for _window in self._launched_windows.values():
             _window.close()
