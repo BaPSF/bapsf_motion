@@ -787,6 +787,9 @@ class ConfigureGUI(QMainWindow):
         self.mg_widget.closing.connect(partial(self._switch_stack, which="run"))
         self.mg_widget.returnConfig.connect(self._motion_group_configure_return)
 
+    def _connect_signals_control_widget(self):
+        self.control_widget.closing.connect(partial(self._switch_stack, which="run"))
+
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
 
