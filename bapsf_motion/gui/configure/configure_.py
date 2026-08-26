@@ -15,7 +15,7 @@ import re
 
 from functools import partial
 from pathlib import Path
-from PySide6.QtCore import QDir, Qt, Signal, Slot
+from PySide6.QtCore import QDir, QObject, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -62,6 +62,151 @@ if TYPE_CHECKING:
 
 
 _HERE = Path(__file__).parent
+
+
+class RMObject(QObject):
+    """
+    A `QObject` that contains the actual `RunManager` instance and
+    defines the supporting operations onto the `RunManger` that the
+    rest of `ConfigureGUI` can interact with.
+    """
+
+    configChanged = Signal()
+
+    def __init__(
+        self,
+        config: Path | str | Dict[str, Any] | RunManagerConfig,
+        parent: QObject | None = None,
+    ):
+        super().__init__(parent=parent)
+
+        # Initialize Attributes
+        self._logger = logging.getLogger(f"{gui_logger.name}.RMO")
+        self._rm = None  # type: RunManager | None
+
+        self.replace_rm(config=config)
+
+        self._connect_signals()
+
+    def _connect_signals(self): ...
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    @property
+    def rm(self) -> RunManager | None:
+        return self._rm
+
+    @rm.setter
+    def rm(self, new_rm):
+        if not isinstance(new_rm, RunManager):
+            return
+        elif isinstance(self._rm, RunManager):
+            self._rm.terminate(disconnect_signals=True)
+
+        self._rm = new_rm
+
+    def replace_rm(self, config):
+        if isinstance(self.rm, RunManager):
+            self.rm.terminate(disconnect_signals=True)
+
+        self.logger.info(f"Replacing the run manager with new config: {config}.")
+        _rm = RunManager(config=config, auto_run=True, build_mode=True)
+
+        _remove = []
+        for key, mg in _rm.mgs.items():
+            if mg.drive.naxes != 2:
+                self.logger.warning(
+                    f"The Configuration GUI currently only supports motion"
+                    f" groups with a dimensionality of 2, got {mg.drive.naxes}"
+                    f" for motion group '{mg.name}'.  Removing motion group."
+                )
+                _remove.append(key)
+
+        for key in _remove:
+            _rm.remove_motion_group(key)
+
+        self.rm = _rm
+        self.configChanged.emit()
+
+    def change_run_name(self, name: str):
+        if not isinstance(name, str):
+            return
+
+        rm = self.rm
+        if not isinstance(rm, RunManager):
+            self.replace_rm({"name": name})
+            return
+
+        rm.config.update_run_name(name)
+        self.configChanged.emit()
+
+    def run(self, auto_run: bool = True, force_run: bool = True):
+        rm = self.rm
+        if not isinstance(rm, RunManager):
+            # No RunManager to restart
+            return
+
+        if (
+            isinstance(rm, RunManager)
+            and not rm.terminated
+            and all(mg.connected for mg in rm.mgs.values())
+        ):
+            # RunManager is still running, no need to restart
+            return
+
+        rm.run(auto_run=auto_run, force_run=force_run)
+        self.configChanged.emit()
+
+    def add_motion_group(self, index: int, mg_config: Dict[str, Any]):
+        index = None if index == -1 else index
+
+        self.logger.info(
+            f"Adding MotionGroup to the run: index = '{index}', config = {mg_config}."
+        )
+
+        self.rm.add_motion_group(config=mg_config, identifier=index)
+        self.configChanged.emit()
+
+    @Slot(str)
+    def remove_motion_group(self, identifier: str | int):
+        rm = self.rm
+
+        if not isinstance(rm, RunManager):
+            return
+
+        if identifier in rm.mgs.keys():
+            rm.remove_motion_group(identifier=identifier)
+            self.configChanged.emit()
+            return
+
+        if isinstance(identifier, int):
+            identifier = f"{identifier}"
+        elif isinstance(identifier, str):
+            try:
+                identifier = int(identifier)
+            except ValueError:
+                return
+        else:
+            return
+
+        rm.remove_motion_group(identifier=identifier)
+        self.configChanged.emit()
+
+    def terminate(
+        self,
+        delay_loop_stop: bool = False,
+        disconnect_signals: bool = False,
+    ):
+        rm = self.rm
+        if not isinstance(rm, RunManager):
+            return
+
+        rm.terminate(
+            delay_loop_stop=delay_loop_stop,
+            disconnect_signals=disconnect_signals,
+        )
 
 
 class RunTOMLWidget(QWidget):
@@ -218,7 +363,6 @@ class RunTOMLWidget(QWidget):
         with open(file_name, "rb") as f:
             run_config = toml.load(f)
 
-        # self.replace_rm(run_config)
         self._TOML_FILE = file_name
         self.set_toml_text(toml.as_toml_string(run_config))
         self.logger.info(f"... Success!")
@@ -238,9 +382,15 @@ class RunTOMLWidget(QWidget):
 class RunWidget(QWidget):
     updateDisplays = Signal()
 
-    def __init__(self, *, parent: "ConfigureGUI", enable_run_name: bool = True):
+    def __init__(
+        self,
+        rmo: RMObject,
+        parent: "ConfigureGUI",
+        enable_run_name: bool = True,
+    ):
         super().__init__(parent=parent)
         self._configure_gui = parent  # type: "ConfigureGUI"
+        self._rmo = rmo  # type: RMObject
 
         # Initialize attributes
         self._logger = gui_logger
@@ -264,6 +414,7 @@ class RunWidget(QWidget):
 
     def _connect_signals(self):
         self.updateDisplays.connect(self._handle_display_update)
+        self.rmo.configChanged.connect(self._handle_display_update)
 
         self.mg_list_widget.itemClicked.connect(self.enable_mg_buttons)
         self.mg_remove_btn.clicked.connect(self._handle_remove_motion_group)
@@ -433,19 +584,19 @@ class RunWidget(QWidget):
         return self._logger
 
     @property
+    def rmo(self) -> RMObject:
+        return self._rmo
+
+    @property
     def rm(self) -> RunManager | None:
-        parent = self._configure_gui  # type: "ConfigureGUI"
-        try:
-            return parent.rm
-        except AttributeError:
-            return None
+        return self.rmo.rm
 
     @staticmethod
-    def _generate_mg_list_name(index, mg_name):
+    def generate_mg_list_name(index, mg_name):
         return f"[{index:2d}]   {mg_name}"
 
     @staticmethod
-    def _get_mg_name_from_list_name(list_name: str):
+    def get_mg_name_from_list_name(list_name: str):
         match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
             list_name
         )
@@ -465,7 +616,7 @@ class RunWidget(QWidget):
     @Slot()
     def _handle_remove_motion_group(self):
         item = self.mg_list_widget.currentItem()
-        identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+        identifier, mg_name = self.get_mg_name_from_list_name(item.text())
 
         if identifier is None:
             return
@@ -479,12 +630,12 @@ class RunWidget(QWidget):
         if not proceed:
             return
 
-        self._configure_gui.remove_motion_group(identifier=identifier)
+        self.rmo.remove_motion_group(identifier=identifier)
 
     @Slot()
     def _handle_run_name_change(self):
         name = self.run_name_widget.text()
-        self._configure_gui.change_run_name(name)
+        self.rmo.change_run_name(name)
 
     @Slot()
     def _handle_toml_import(self):
@@ -514,7 +665,7 @@ class RunWidget(QWidget):
             return
 
         for key, mg in rm.mgs.items():
-            label = self._generate_mg_list_name(key, mg.config["name"])
+            label = self.generate_mg_list_name(key, mg.config["name"])
             self.logger.info(f"Adding to MG List - {label}")
 
             is_valid = True
@@ -563,14 +714,12 @@ class ConfigureGUI(QMainWindow):
     ):
         super().__init__()
 
-        self._rm = None  # type: RunManager | None
         self._mg_being_modified = None  # type: MotionGroup | None
 
         # setup logger
         self._logging_config_dict = _deepcopy_dict(gui_logger_config_dict)
         logging.config.dictConfig(self._logging_config_dict)
         self._logger = gui_logger
-        self._rm_logger = logging.getLogger("RM")
 
         # setup defaults
         self._defaults = None  # original defaults
@@ -587,13 +736,12 @@ class ConfigureGUI(QMainWindow):
             else True
         )
 
-        # define "important" qt widgets
-        self._log_widget = QLogger(self._logger, parent=self)
-        self._run_widget = RunWidget(parent=self, enable_run_name=enable_run_name)
+        # Initialize Qt widgets and objects
+        self._log_widget = self._init_log_widget()
         self._mg_widget = None  # type: MGWidget | None
-
-        self._stacked_widget = QStackedWidget(parent=self)
-        self._stacked_widget.addWidget(self._run_widget)
+        self._rmo = self._init_rmo(config=config)
+        self._run_widget = self._init_run_widget(enable_run_name=enable_run_name)
+        self._stacked_widget = self._init_stack_widget()
 
         # set up menu bar
         self._launched_windows = dict()  # type: Dict[str, QMainWindow | QWidget]
@@ -604,28 +752,15 @@ class ConfigureGUI(QMainWindow):
         widget.setLayout(self._define_layout())
         self.setCentralWidget(widget)
 
-        self._rm_logger.addHandler(self._log_widget.handler)
-
         self._connect_signals()
-
-        if isinstance(config, Path) and not config.exists():
-            config = None
-
-        if config is None:
-            run_name = (
-                "A New Run"
-                if self.defaults is None
-                else self.defaults.get("run_name", "A New Run")
-            )
-            config = {"name": run_name}
-
-        self.replace_rm(config=config)
+        self._rmo.configChanged.emit()
 
     def _connect_signals(self):
         # Note: _mg_widget signals are connected in _spawn_mg_widget()
         #
         self._connect_signals_run_widget()
 
+        self._rmo.configChanged.connect(self._config_changed_handler)
         self.configChanged.connect(self._config_changed_handler)
 
     def _connect_signals_run_widget(self):
@@ -640,7 +775,7 @@ class ConfigureGUI(QMainWindow):
         # Note: used during _spawn_mg_widget()
         #
         self._mg_widget.closing.connect(self._switch_stack)
-        self._mg_widget.returnConfig.connect(self.add_to_or_restart_run_manager)
+        self._mg_widget.returnConfig.connect(self._motion_group_configure_return)
 
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
@@ -684,6 +819,40 @@ class ConfigureGUI(QMainWindow):
 
         return layout
 
+    def _init_log_widget(self):
+        return QLogger(self._logger, parent=self)
+
+    def _init_rmo(self, config):
+        if isinstance(config, Path) and not config.exists():
+            config = None
+
+        if config is None:
+            run_name = (
+                "A New Run"
+                if self.defaults is None
+                else self.defaults.get("run_name", "A New Run")
+            )
+            config = {"name": run_name}
+
+        _rmo = RMObject(config=config, parent=self)
+
+        if isinstance(_rmo.rm, RunManager):
+            _rmo.rm.logger.addHandler(self._log_widget.handler)
+
+        return _rmo
+
+    def _init_run_widget(self, enable_run_name):
+        return RunWidget(
+            rmo=self._rmo,
+            parent=self,
+            enable_run_name=enable_run_name,
+        )
+
+    def _init_stack_widget(self):
+        _w = QStackedWidget(parent=self)
+        _w.addWidget(self._run_widget)
+        return _w
+
     @property
     def defaults(self) -> Dict[str, Any]:
         if self._defaults_updated is not None:
@@ -695,50 +864,24 @@ class ConfigureGUI(QMainWindow):
         return self._logger
 
     @property
-    def rm(self) -> RunManager | None:
-        return self._rm
-
-    @rm.setter
-    def rm(self, new_rm):
-        if not isinstance(new_rm, RunManager):
-            return
-        elif isinstance(self._rm, RunManager):
-            self._rm.terminate(disconnect_signals=True)
-
-        self._rm = new_rm
-
-    @property
     def logging_config_dict(self):
         return self._logging_config_dict
+
+    @property
+    def rm(self) -> RunManager | None:
+        # This is needed to keep backward compatibility with
+        # bapsfdaq_motion_lv ... it is highly encourage to always
+        # access rm through the rmo property (i.e. self.rmo.rm)
+        return self.rmo.rm
+
+    @property
+    def rmo(self) -> RMObject:
+        return self._rmo
 
     @Slot()
     def _config_changed_handler(self):
         self._run_widget.updateDisplays.emit()
-
         self.update_motion_builder_defaults()
-
-    def replace_rm(self, config):
-        if isinstance(self.rm, RunManager):
-            self.rm.terminate(disconnect_signals=True)
-
-        self.logger.info(f"Replacing the run manager with new config: {config}.")
-        _rm = RunManager(config=config, auto_run=True, build_mode=True)
-
-        _remove = []
-        for key, mg in _rm.mgs.items():
-            if mg.drive.naxes != 2:
-                self.logger.warning(
-                    f"The Configuration GUI currently only supports motion"
-                    f" groups with a dimensionality of 2, got {mg.drive.naxes}"
-                    f" for motion group '{mg.name}'.  Removing motion group."
-                )
-                _remove.append(key)
-
-        for key in _remove:
-            _rm.remove_motion_group(key)
-
-        self.rm = _rm
-        self.configChanged.emit()
 
     @Slot()
     def save_and_close(self):
@@ -746,16 +889,6 @@ class ConfigureGUI(QMainWindow):
         # TODO: write code to save current toml configuration to a tmp file
 
         self.close()
-
-    def change_run_name(self, name: str):
-        if not isinstance(name, str):
-            return
-
-        if self.rm is None:
-            self.replace_rm({"name": name})
-        else:
-            self.rm.config.update_run_name(name)
-            self.configChanged.emit()
 
     @Slot()
     def _motion_group_configure_new(self):
@@ -765,8 +898,12 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _motion_group_configure_modify(self):
         item = self._run_widget.mg_list_widget.currentItem()
-        key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
-        mg = self.rm.mgs[key]
+        key, mg_name = self._run_widget.get_mg_name_from_list_name(item.text())
+
+        try:
+            mg = self.rmo.rm.mgs[key]
+        except KeyError:
+            return
 
         if not mg.terminated:
             mg.terminate(delay_loop_stop=True, disconnect_signals=True)
@@ -775,43 +912,6 @@ class ConfigureGUI(QMainWindow):
         self._spawn_mg_widget(mg)
         self._mg_widget.mg_index = key
         self._switch_stack()
-
-    def remove_motion_group(self, identifier: str | int):
-        rm = self.rm
-
-        if not isinstance(rm, RunManager):
-            return
-
-        if identifier in rm.mgs.keys():
-            rm.remove_motion_group(identifier=identifier)
-            self.configChanged.emit()
-            return
-
-        if isinstance(identifier, int):
-            identifier = f"{identifier}"
-        elif isinstance(identifier, str):
-            try:
-                identifier = int(identifier)
-            except ValueError:
-                return
-        else:
-            return
-
-        rm.remove_motion_group(identifier=identifier)
-        self.configChanged.emit()
-
-    def restart_run_manager(self):
-        if isinstance(self.rm, RunManager) and not self.rm.terminated:
-            # RunManager is still running, no need to restart
-            return
-
-        if not isinstance(self.rm, RunManager):
-            # No RunManager to restart
-            return
-
-        self.replace_rm(self.rm.config)
-
-        self._mg_being_modified = None
 
     def _set_defaults(self, defaults: Path | str | Dict[str, Any] | None):
         if defaults is None:
@@ -849,11 +949,12 @@ class ConfigureGUI(QMainWindow):
         self._defaults = defaults
 
     def update_motion_builder_defaults(self):
-        rm = self.rm
-        if not isinstance(rm, RunManager):
+        rmo = self.rmo
+        if not isinstance(rmo, RMObject) or not isinstance(rmo.rm, RunManager):
             self._defaults_updated = None
             return
 
+        rm = rmo.rm
         if len(rm.mgs) == 0:
             self._defaults_updated = None
             return
@@ -898,13 +999,12 @@ class ConfigureGUI(QMainWindow):
 
         # terminate RunManager so we can avoid communication issue during
         # MotionGroup configuration
-        rm = self.rm
-        if isinstance(rm, RunManager) and not rm.terminated:
-            rm.terminate(disconnect_signals=True)
+        self.rmo.terminate(disconnect_signals=True)
 
         self._mg_widget = MGWidget(
             mg_config=config,
             defaults=self.defaults,
+            rmo=self.rmo,
             parent=self,
         )
         self._connect_signals_mg_widget()
@@ -926,24 +1026,21 @@ class ConfigureGUI(QMainWindow):
             self._mg_widget = None
 
     @Slot(int, object)
-    def add_to_or_restart_run_manager(self, index: int, mg_config: Dict[str, Any]):
+    def _motion_group_configure_return(self, index: int, mg_config: Dict[str, Any]):
+        self._mg_being_modified = None
+
+        # ensure the RunManager is running
+        self.rmo.blockSignals(True)
+        self.rmo.run()
+        self.rmo.blockSignals(False)
+
         if len(mg_config) == 0:
             # no config returned, just restart run manager
-            self.restart_run_manager()
+            self.rmo.configChanged.emit()
             return
 
-        self.add_mg_to_rm(index, mg_config)
-
-    def add_mg_to_rm(self, index: int, mg_config: Dict[str, Any]):
-        index = None if index == -1 else index
-
-        self.logger.info(
-            f"Adding MotionGroup to the run: index = '{index}', config = {mg_config}."
-        )
-
-        self.rm.add_motion_group(config=mg_config, identifier=index)
-        self.restart_run_manager()
-        self._mg_being_modified = None
+        # add motion group
+        self.rmo.add_motion_group(index=index, mg_config=mg_config)
 
     def _launch_lapd_xy_calculator(self):
         if "lapd_xy_calculator" in self._launched_windows:
@@ -1055,10 +1152,11 @@ class ConfigureGUI(QMainWindow):
 
         self.configChanged.disconnect()
 
-        rm = self.rm
+        rmo = self.rmo
+        rm = rmo.rm
         if isinstance(rm, RunManager) and not rm.terminated:
             rm.terminate(disconnect_signals=True)
-            self.rm = None
+            self.rmo.rm = None
 
         if isinstance(self._mg_widget, MGWidget):
             self._mg_widget.close()
