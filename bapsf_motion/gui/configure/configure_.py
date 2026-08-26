@@ -15,7 +15,7 @@ import re
 
 from functools import partial
 from pathlib import Path
-from PySide6.QtCore import QDir, Qt, Signal, Slot, QObject
+from PySide6.QtCore import QDir, QObject, Qt, Signal, Slot
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -70,6 +70,7 @@ class RMObject(QObject):
     defines the supporting operations onto the `RunManger` that the
     rest of `ConfigureGUI` can interact with.
     """
+
     configChanged = Signal()
 
     def __init__(
@@ -141,7 +142,7 @@ class RMObject(QObject):
         rm.config.update_run_name(name)
         self.configChanged.emit()
 
-    def restart_rm(self):
+    def run(self, auto_run: bool = True, force_run: bool = True):
         rm = self.rm
         if not isinstance(rm, RunManager):
             # No RunManager to restart
@@ -155,7 +156,7 @@ class RMObject(QObject):
             # RunManager is still running, no need to restart
             return
 
-        rm.run(auto_run=True)
+        rm.run(auto_run=auto_run, force_run=force_run)
         self.configChanged.emit()
 
     def add_motion_group(self, index: int, mg_config: Dict[str, Any]):
@@ -388,7 +389,8 @@ class RunWidget(QWidget):
         enable_run_name: bool = True,
     ):
         super().__init__(parent=parent)
-        self._rmo = rmo
+        self._configure_gui = parent  # type: "ConfigureGUI"
+        self._rmo = rmo  # type: RMObject
 
         # Initialize attributes
         self._logger = gui_logger
@@ -600,11 +602,11 @@ class RunWidget(QWidget):
         return self.rmo.rm
 
     @staticmethod
-    def _generate_mg_list_name(index, mg_name):
+    def generate_mg_list_name(index, mg_name):
         return f"[{index:2d}]   {mg_name}"
 
     @staticmethod
-    def _get_mg_name_from_list_name(list_name: str):
+    def get_mg_name_from_list_name(list_name: str):
         match = re.compile(r"\[\s*(?P<index>[0-9]+)\]\s+(?P<name>.+)").fullmatch(
             list_name
         )
@@ -624,7 +626,7 @@ class RunWidget(QWidget):
     @Slot()
     def _handle_remove_motion_group(self):
         item = self.mg_list_widget.currentItem()
-        identifier, mg_name = self._get_mg_name_from_list_name(item.text())
+        identifier, mg_name = self.get_mg_name_from_list_name(item.text())
 
         if identifier is None:
             return
@@ -673,7 +675,7 @@ class RunWidget(QWidget):
             return
 
         for key, mg in rm.mgs.items():
-            label = self._generate_mg_list_name(key, mg.config["name"])
+            label = self.generate_mg_list_name(key, mg.config["name"])
             self.logger.info(f"Adding to MG List - {label}")
 
             is_valid = True
@@ -744,22 +746,12 @@ class ConfigureGUI(QMainWindow):
             else True
         )
 
-        self._rmo = self._init_rmo(config=config)
-
-        # define "important" qt widgets
-        self._log_widget = QLogger(self._logger, parent=self)
-        self._run_widget = RunWidget(
-            rmo=self._rmo,
-            parent=self,
-            enable_run_name=enable_run_name,
-        )
+        # Initialize Qt widgets and objects
+        self._log_widget = self._init_log_widget()
         self._mg_widget = None  # type: MGWidget | None
-
-        self._stacked_widget = QStackedWidget(parent=self)
-        self._stacked_widget.addWidget(self._run_widget)
-
-        # add the RunManater logger to the log_widget display
-        self.rmo.rm.logger.addHandler(self._log_widget.handler)
+        self._rmo = self._init_rmo(config=config)
+        self._run_widget = self._init_run_widget(enable_run_name=enable_run_name)
+        self._stacked_widget = self._init_stack_widget()
 
         # set up menu bar
         self._launched_windows = dict()  # type: Dict[str, QMainWindow | QWidget]
@@ -838,6 +830,9 @@ class ConfigureGUI(QMainWindow):
 
         return layout
 
+    def _init_log_widget(self):
+        return QLogger(self._logger, parent=self)
+
     def _init_rmo(self, config):
         if isinstance(config, Path) and not config.exists():
             config = None
@@ -851,7 +846,23 @@ class ConfigureGUI(QMainWindow):
             config = {"name": run_name}
 
         _rmo = RMObject(config=config, parent=self)
+
+        if isinstance(_rmo.rm, RunManager):
+            _rmo.rm.logger.addHandler(self._log_widget.handler)
+
         return _rmo
+
+    def _init_run_widget(self, enable_run_name):
+        return RunWidget(
+            rmo=self._rmo,
+            parent=self,
+            enable_run_name=enable_run_name,
+        )
+
+    def _init_stack_widget(self):
+        _w = QStackedWidget(parent=self)
+        _w.addWidget(self._run_widget)
+        return _w
 
     @property
     def defaults(self) -> Dict[str, Any]:
@@ -866,6 +877,13 @@ class ConfigureGUI(QMainWindow):
     @property
     def logging_config_dict(self):
         return self._logging_config_dict
+
+    @property
+    def rm(self) -> RunManager | None:
+        # This is needed to keep backward compatibility with
+        # bapsfdaq_motion_lv ... it is highly encourage to always
+        # access rm through the rmo property (i.e. self.rmo.rm)
+        return self.rmo.rm
 
     @property
     def rmo(self) -> RMObject:
@@ -891,7 +909,7 @@ class ConfigureGUI(QMainWindow):
     @Slot()
     def _motion_group_configure_modify(self):
         item = self._run_widget.mg_list_widget.currentItem()
-        key, mg_name = self._run_widget._get_mg_name_from_list_name(item.text())
+        key, mg_name = self._run_widget.get_mg_name_from_list_name(item.text())
 
         try:
             mg = self.rmo.rm.mgs[key]
@@ -997,6 +1015,7 @@ class ConfigureGUI(QMainWindow):
         self._mg_widget = MGWidget(
             mg_config=config,
             defaults=self.defaults,
+            rmo=self.rmo,
             parent=self,
         )
         self._connect_signals_mg_widget()
@@ -1041,7 +1060,7 @@ class ConfigureGUI(QMainWindow):
 
         # ensure the RunManager is running
         self.rmo.blockSignals(True)
-        self.rmo.restart_rm()
+        self.rmo.run()
         self.rmo.blockSignals(False)
 
         if len(mg_config) == 0:
