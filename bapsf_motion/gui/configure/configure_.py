@@ -40,6 +40,7 @@ from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
+from bapsf_motion.gui.configure.multi_control import MultiControl
 from bapsf_motion.gui.configure.toml_ import TOMLText
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict
@@ -747,6 +748,7 @@ class ConfigureGUI(QMainWindow):
         )
 
         # Initialize Qt widgets and objects
+        self.control_widget = None  # type: MultiControl | None
         self._log_widget = self._init_log_widget()
         self.mg_widget = None  # type: MGWidget | None
         self._rmo = self._init_rmo(config=config)
@@ -1019,6 +1021,16 @@ class ConfigureGUI(QMainWindow):
 
         return self.mg_widget
 
+    def _spawn_control_widget(self):
+        rm = self.rmo.rm
+        if not isinstance(rm, RunManager):
+            # nothing to control
+            return
+
+        self.control_widget = MultiControl(rmo=self.rmo, parent=self)
+        self._connect_signals_control_widget()
+        return self.control_widget
+
     @Slot(str)
     def _switch_stack(self, which: Literal["run", "configure", "control"] | None = None):
         if not isinstance(which, str) or which not in ("run", "configure", "control"):
@@ -1038,7 +1050,7 @@ class ConfigureGUI(QMainWindow):
             _w.close()
             _w.deleteLater()
             self.mg_widget = None
-            self._control_widget = None
+            self.control_widget = None
 
         # switch to RunWidget
         if which == "run":
