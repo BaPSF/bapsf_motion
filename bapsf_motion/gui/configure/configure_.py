@@ -489,7 +489,7 @@ class RunWidget(QWidget):
         layout.addLayout(self._define_control_row1_button_layout())
         layout.addSpacing(8)
         layout.addWidget(self.mg_config_btn)
-        layout.addSpacing(8)
+        layout.addSpacing(24)
         layout.addWidget(self.mg_control_btn)
         return layout
 
@@ -541,9 +541,9 @@ class RunWidget(QWidget):
 
     def _init_mg_control_btn(self):
         _btn = StyleButton("Control All", parent=self)
-        _btn.setFixedHeight(38)
+        _btn.setFixedHeight(7*8)
         _btn.setPointSize(16)
-        _btn.setEnabled(False)
+        _btn.setEnabled(True)
         return _btn
 
     def _init_mg_remove_btn(self):
