@@ -756,7 +756,7 @@ class ConfigureGUI(QMainWindow):
         self._rmo.configChanged.emit()
 
     def _connect_signals(self):
-        # Note: _mg_widget signals are connected in _spawn_mg_widget()
+        # Note: mg_widget signals are connected in _spawn_mg_widget()
         #
         self._connect_signals_run_widget()
 
