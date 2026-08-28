@@ -435,7 +435,7 @@ class MultiControl(QWidget):
     closing = Signal()
     returnConfig = Signal(int, object)
 
-    def __init__(self, *, rmo: RMObject,  parent: ConfigureGUI):
+    def __init__(self, *, rmo: RMObject, parent: ConfigureGUI):
         super().__init__(parent)
         self._rmo = rmo
         self._configure_gui = parent
@@ -518,7 +518,7 @@ class MultiControl(QWidget):
     def _init_stop_btn(self):
         btn = StopButton(parent=self)
         btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
-        btn.setFixedHeight(8*12)
+        btn.setFixedHeight(8 * 12)
 
         font = btn.font()
         font.setPixelSize(32)
