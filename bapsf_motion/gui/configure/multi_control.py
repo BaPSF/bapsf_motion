@@ -446,6 +446,7 @@ class MultiControl(QWidget):
         # Initialize Widgets
         self.return_btn = self._init_return_btn()
         self.stop_btn = self._init_stop_btn()
+        self.mgc_widgets = {}
 
         # Setup Self
         self.setLayout(self._define_layout())
@@ -463,6 +464,16 @@ class MultiControl(QWidget):
         layout.addWidget(HLinePlain(parent=self))
         layout.addSpacing(8)
         layout.addWidget(self.stop_btn)
+
+        for mg_id, mg in self.rm.mgs.items():
+            if mg.terminated or not mg.connected:
+                continue
+
+            _widget = self._spawn_mg_control_widget(mg_id)
+
+            layout.addSpacing(8)
+            layout.addWidget(_widget)
+
         layout.addStretch(1)
         return layout
 
@@ -526,6 +537,33 @@ class MultiControl(QWidget):
         btn.setFont(font)
 
         return btn
+
+    def _spawn_mg_control_widget(self, mg_id):
+        _widget = MGControl(
+            rmo=self.rmo,
+            motion_group_id=mg_id,
+            parent=self,
+        )
+        self.mgc_widgets[mg_id] = _widget
+
+        _frame_layout = QVBoxLayout()
+        _frame_layout.setContentsMargins(0, 0, 0, 0)
+        _frame_layout.setSpacing(0)
+        _frame_layout.addWidget(_widget)
+
+        _frame = QFrame(parent=self)
+        _frame.setObjectName("mgc_frame")
+        _frame.setLayout(_frame_layout)
+        _frame.setStyleSheet("""
+        QFrame#mgc_frame {
+            border: 2px solid rgb(60, 60, 60);
+            border-radius: 5px;
+            padding: 6px;
+            margin: 0px;
+        }
+        """)
+
+        return _frame
 
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing MultiControl")
