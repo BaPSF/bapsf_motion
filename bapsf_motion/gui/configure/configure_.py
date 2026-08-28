@@ -542,7 +542,7 @@ class RunWidget(QWidget):
 
     def _init_mg_control_btn(self):
         _btn = StyleButton("Control All", parent=self)
-        _btn.setFixedHeight(7*8)
+        _btn.setFixedHeight(7 * 8)
         _btn.setPointSize(16)
         _btn.setEnabled(True)
         return _btn
