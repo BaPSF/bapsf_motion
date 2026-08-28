@@ -335,6 +335,102 @@ class MGControlAxis(QWidget):
         return _txt
 
 
+class MGControl(QWidget):
+
+    def __init__(self, *, rmo: RMObject, motion_group_id: str | int, parent: QWidget):
+        super().__init__(parent)
+        self._rmo = rmo
+        self._mg_id = motion_group_id
+        self._mg = self._rmo.rm.mgs[motion_group_id]
+
+        # initialize widgets
+        self.drive_name_label = self._init_drive_name_label()
+        self.axis_control_widgets = []
+        for ax_id in range(len(self._mg.drive.axes)):
+            ax_control = MGControlAxis(
+                rmo=self._rmo,
+                mg_id=self._mg_id,
+                ax_id=ax_id,
+                parent=self,
+            )
+            self.axis_control_widgets.append(ax_control)
+
+        self.setLayout(self._define_layout())
+        self.setFixedHeight(12 * 12)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._connect_signals()
+
+    def _connect_signals(self): ...
+
+    def _define_layout(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addLayout(self._define_name_layout())
+        layout.addLayout(self._define_vdivider_layout())
+        layout.addSpacerItem(
+            QSpacerItem(120, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
+        )
+        for ax_widget in self.axis_control_widgets:
+            layout.addLayout(self._define_vdivider_layout())
+            layout.addWidget(ax_widget)
+
+        layout.addLayout(self._define_vdivider_layout())
+        layout.addStretch(1)
+        return layout
+
+    def _define_name_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addStretch(1)
+        layout.addWidget(
+            self.drive_name_label,
+            alignment=Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+        )
+        layout.addStretch(1)
+        return layout
+
+    def _define_vdivider_layout(self):
+        divider = VLinePlain(parent=self)
+        divider.set_color(60, 60, 60)
+        divider.setLineWidth(2)
+
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addSpacing(8)
+        layout.addWidget(divider)
+        layout.addSpacing(8)
+        return layout
+
+    def _init_drive_name_label(self):
+        label = QVerticalLabel(self.mg.drive.name, parent=self)
+        label.setObjectName("drive_label")
+        label.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignHCenter)
+        font = label.font()
+        font.setPixelSize(24)
+        font.setBold(True)
+        label.setFont(font)
+        label.setFixedWidth(32)
+        # label.setStyleSheet("""
+        # QVerticalLabel#drive_label {
+        #     border: 2px solid black;
+        #     padding: 0px;
+        #     margin: 0px;
+        # }
+        # """)
+        return label
+
+    @property
+    def mg(self) -> MotionGroup:
+        return self._mg
+
+    def closeEvent(self, event: QCloseEvent):
+        self.mg.stop()
+        self._mg = None
+        event.accept()
+
+
 class MultiControl(QWidget):
     closing = Signal()
     returnConfig = Signal(int, object)
