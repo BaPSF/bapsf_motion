@@ -53,6 +53,9 @@ class MGControlAxis(QWidget):
         parent: QWidget | None = None,
     ):
         super().__init__(parent=parent)
+
+        self._logger = gui_logger
+
         self._rmo = rmo
         self._mg_id = mg_id
         self._mg = self._rmo.rm.mgs[mg_id]
@@ -341,6 +344,10 @@ class MGControlAxis(QWidget):
     @property
     def axis_id(self) -> int:
         return self._ax_id
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
 
     @property
     def mg(self) -> MotionGroup:
