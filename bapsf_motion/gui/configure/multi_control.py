@@ -454,6 +454,7 @@ class MultiControl(QWidget):
 
     def _connect_signals(self):
         self.return_btn.clicked.connect(self.close)
+        self.stop_btn.clicked.connect(self.stop_all)
 
     def _define_layout(self):
         layout = QVBoxLayout()
