@@ -106,11 +106,8 @@ class MGControlAxis(QWidget):
         layout.addLayout(self._define_layout_position_label())
         layout.addSpacing(4)
         layout.addLayout(self._define_layout_encoder_label())
-        layout.addSpacing(4)
-        layout.addWidget(HLinePlain(parent=self))
-        layout.addSpacing(4)
-        layout.addLayout(self._define_layout_jog_delta_input())
         layout.addStretch(1)
+        layout.addLayout(self._define_layout_jog_delta_input())
         return layout
 
     def _define_layout_movement_column(self):
@@ -126,11 +123,10 @@ class MGControlAxis(QWidget):
     def _define_layout_title_and_enable_btn(self):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addStretch(1)
-        layout.addWidget(self.axis_name_label)
         layout.addSpacing(8)
-        layout.addWidget(self.enable_btn)
+        layout.addWidget(self.axis_name_label)
         layout.addStretch(1)
+        layout.addWidget(self.enable_btn)
         return layout
 
     def _define_layout_encoder_label(self):
@@ -206,6 +202,7 @@ class MGControlAxis(QWidget):
         _txt = QLabel(name, parent=self)
         font = _txt.font()
         font.setPointSize(14)
+        font.setBold(True)
         _txt.setFont(font)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _txt.setFixedHeight(18)
