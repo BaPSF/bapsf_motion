@@ -5,7 +5,7 @@ __all__ = ["MultiControl"]
 import logging
 import re
 
-from PySide6.QtCore import QSize, Qt, Signal
+from PySide6.QtCore import QSize, Qt, Signal, Slot
 from PySide6.QtGui import QColor, QDoubleValidator, QPainter
 from PySide6.QtWidgets import (
     QFrame,
@@ -82,7 +82,8 @@ class MGControlAxis(QWidget):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
-    def _connect_signals(self): ...
+    def _connect_signals(self):
+        self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
 
     def _define_layout(self):
 
@@ -363,6 +364,13 @@ class MGControlAxis(QWidget):
         val = position.value[self.axis_id]
         unit = position.unit
         return val * unit
+
+    @Slot()
+    def _validate_jog_delta_input(self):
+        _txt = self.jog_delta_input.text()
+        val = 0.0 if _txt == "" else float(_txt)
+        val = abs(val)
+        self.jog_delta_input.setText(f"{val:.2f}")
 
 
 class MGControl(QWidget):
