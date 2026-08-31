@@ -356,7 +356,7 @@ class MGControl(QWidget):
             self.axis_control_widgets.append(ax_control)
 
         self.setLayout(self._define_layout())
-        self.setFixedHeight(12 * 12)
+        self.setFixedHeight(int(12.5 * 12))
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._connect_signals()
 
@@ -368,13 +368,17 @@ class MGControl(QWidget):
         layout.setSpacing(0)
         layout.addLayout(self._define_name_layout())
         layout.addLayout(self._define_vdivider_layout())
+        layout.addSpacing(8)
         layout.addSpacerItem(
             QSpacerItem(120, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
         )
         for ax_widget in self.axis_control_widgets:
+            layout.addSpacing(8)
             layout.addLayout(self._define_vdivider_layout())
+            layout.addSpacing(8)
             layout.addWidget(ax_widget)
 
+        layout.addSpacing(8)
         layout.addLayout(self._define_vdivider_layout())
         layout.addStretch(1)
         return layout
