@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 )
 from typing import TYPE_CHECKING
 
-from bapsf_motion.actors import MotionGroup, RunManager
+from bapsf_motion.actors import Axis, MotionGroup, RunManager
 from bapsf_motion.gui.configure.helpers import gui_logger
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
@@ -333,6 +333,32 @@ class MGControlAxis(QWidget):
         _txt.setFont(font)
         _txt.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
         return _txt
+
+    @property
+    def axis(self) -> Axis:
+        return self._axis
+
+    @property
+    def axis_id(self) -> int:
+        return self._ax_id
+
+    @property
+    def mg(self) -> MotionGroup:
+        return self._mg
+
+    @property
+    def encoder(self) -> u.Quantity:
+        encoder = self.mg.encoder
+        val = encoder.value[self.axis_id]
+        unit = encoder.unit
+        return val * unit
+
+    @property
+    def position(self) -> u.Quantity:
+        position = self.mg.position
+        val = position.value[self.axis_id]
+        unit = position.unit
+        return val * unit
 
 
 class MGControl(QWidget):
