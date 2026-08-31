@@ -565,6 +565,11 @@ class MultiControl(QWidget):
 
         return _frame
 
+    @Slot()
+    def stop_all(self):
+        for mg in self.rm.mgs.values():
+            mg.stop()
+
     def closeEvent(self, event: QCloseEvent):
         self.logger.info("Closing MultiControl")
 
