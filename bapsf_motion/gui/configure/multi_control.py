@@ -122,6 +122,8 @@ class MGControlAxis(QWidget):
         self.limit_bwd_btn.clicked.connect(self._move_off_limit)
 
         self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
+        self.enable_btn.clicked.connect(self._set_motor_enabled_state)
+
         self.refreshDisplay.connect(self.update_displays)
 
     def _define_layout(self):
@@ -545,6 +547,12 @@ class MGControlAxis(QWidget):
             return
 
         axis.motor.move_off_limit()
+
+    @Slot()
+    def _set_motor_enabled_state(self):
+        current_enabled_state = self.axis.motor.status["enabled"]
+        cmd_string = "disable" if current_enabled_state else "enable"
+        self.axis.send_command(cmd_string)
 
     @Slot()
     def _validate_jog_delta_input(self):
