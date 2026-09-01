@@ -768,6 +768,16 @@ class MGControl(QWidget):
     def mg(self) -> MotionGroup:
         return self._mg
 
+    @property
+    def encoder(self) -> list:
+        encoder = self.mg.encoder.value  # type: np.ndarray
+        return encoder.tolist()
+
+    @property
+    def position(self) -> list:
+        pos = self.mg.position.value  # type: np.ndarray
+        return pos.tolist()
+
     def closeEvent(self, event: QCloseEvent):
         self.mg.stop()
         self._mg = None
