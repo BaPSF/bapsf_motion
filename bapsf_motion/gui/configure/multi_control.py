@@ -148,7 +148,7 @@ class MGControlAxis(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        layout.addLayout(self._define_layout_title_and_enable_btn())
+        layout.addLayout(self._define_layout_enable_btn())
         layout.addSpacing(4)
         layout.addLayout(self._define_layout_position_ind())
         layout.addSpacing(4)
@@ -167,13 +167,12 @@ class MGControlAxis(QWidget):
         layout.addWidget(self.limit_bwd_btn)
         return layout
 
-    def _define_layout_title_and_enable_btn(self):
+    def _define_layout_enable_btn(self):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
-        layout.addSpacing(8)
-        layout.addWidget(self.axis_name_label)
         layout.addStretch(1)
         layout.addWidget(self.enable_btn)
+        layout.addStretch(1)
         return layout
 
     def _define_layout_encoder_ind(self):
