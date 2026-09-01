@@ -112,6 +112,8 @@ class MGControlAxis(QWidget):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
+        self.refreshDisplay.emit()
+
     def _connect_signals(self):
         self._update_display_timer.timeout.connect(self._update_displays)
 
