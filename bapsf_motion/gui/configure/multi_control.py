@@ -45,6 +45,11 @@ if TYPE_CHECKING:
 
 
 class MGControlAxis(QWidget):
+    axisStatusChanged = Signal()
+
+    movementStarted = Signal(int)
+    movementStopped = Signal(int)
+
     def __init__(
         self,
         *,
