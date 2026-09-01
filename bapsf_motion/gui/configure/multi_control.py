@@ -55,6 +55,8 @@ class MGControlAxis(QWidget):
     lostConnection = Signal()
     establishedConnection = Signal()
 
+    refreshDisplay = Signal()
+
     _actorStatusChanged = Signal()
 
     def __init__(
@@ -114,6 +116,7 @@ class MGControlAxis(QWidget):
         self._update_display_timer.timeout.connect(self._update_displays)
 
         self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
+        self.refreshDisplay.connect(self.update_displays)
 
     def _define_layout(self):
 
