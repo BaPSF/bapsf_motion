@@ -50,6 +50,11 @@ class MGControlAxis(QWidget):
     movementStarted = Signal(int)
     movementStopped = Signal(int)
 
+    lostConnection = Signal()
+    establishedConnection = Signal()
+
+    _actorStatusChanged = Signal()
+
     def __init__(
         self,
         *,
