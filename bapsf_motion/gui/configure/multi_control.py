@@ -818,6 +818,20 @@ class MGControl(QWidget):
         pos = self.mg.position.value  # type: np.ndarray
         return pos.tolist()
 
+    @property
+    def target_position(self) -> list:
+        position = self.position
+        target_position = []
+        for ax_id, input_ in enumerate(self.axis_target_position_input):
+            try:
+                tp = float(input_.text())
+            except ValueError:
+                tp = position[ax_id]
+
+            target_position.append(tp)
+
+        return target_position
+
     def closeEvent(self, event: QCloseEvent):
         self.mg.stop()
         self._mg = None
