@@ -690,6 +690,7 @@ class MGControl(QWidget):
         self._mg = self._rmo.rm.mgs[motion_group_id]
 
         # initialize widgets
+        self.move_to_btn = self._init_move_to_btn()
         self.drive_name_label = self._init_drive_name_label()
         self.axis_control_widgets = []
         for ax_id in range(len(self._mg.drive.axes)):
@@ -763,6 +764,14 @@ class MGControl(QWidget):
         label.setFont(font)
         label.setFixedWidth(32)
         return label
+
+    def _init_move_to_btn(self):
+        _btn = StyleButton("Move To", parent=self)
+        _btn.setFixedHeight(4 * 12)
+        font = _btn.font()
+        font.setPointSize(16)
+        _btn.setFont(font)
+        return _btn
 
     @property
     def mg(self) -> MotionGroup:
