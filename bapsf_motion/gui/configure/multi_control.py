@@ -118,6 +118,9 @@ class MGControlAxis(QWidget):
     def _connect_signals(self):
         self._update_display_timer.timeout.connect(self._update_displays)
 
+        self.limit_fwd_btn.clicked.connect(self._move_off_limit)
+        self.limit_bwd_btn.clicked.connect(self._move_off_limit)
+
         self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
         self.refreshDisplay.connect(self.update_displays)
 
@@ -534,6 +537,14 @@ class MGControlAxis(QWidget):
             # was triggered during the wait for the last single shot
             self._update_display_timer.start(self._update_display_interval)
             self._display_timer_issue_new_single_shot = False
+
+    @Slot()
+    def _move_off_limit(self):
+        axis = self.axis
+        if axis is None:
+            return
+
+        axis.motor.move_off_limit()
 
     @Slot()
     def _validate_jog_delta_input(self):
