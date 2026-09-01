@@ -394,6 +394,22 @@ class MGControlAxis(QWidget):
             for callback in callbacks:
                 signal.disconnect(callback)
 
+    def motor_signals_set_blocking(self, block: bool):
+        if not isinstance(block, bool):
+            return
+
+        axis = self.axis
+        if not isinstance(axis, Axis):
+            return
+
+        for motor_signal in self._motor_signal_mapping.keys():
+            signal = getattr(axis.motor.signals, motor_signal, None)
+
+            if not isinstance(signal, SimpleSignal):
+                continue
+
+            signal.set_blocking(block)
+
     @Slot()
     def _validate_jog_delta_input(self):
         _txt = self.jog_delta_input.text()
