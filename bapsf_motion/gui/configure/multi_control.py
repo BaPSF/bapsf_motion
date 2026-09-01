@@ -527,6 +527,10 @@ class MGControlAxis(QWidget):
 
             signal.set_blocking(block)
 
+    def update_display_connected(self):
+        is_connected = self.axis.connected
+        self.connected_ind.setChecked(is_connected)
+
     def update_display_encoder(self, position: u.Quantity | float | int):
         if not isinstance(position, (u.Quantity, float)):
             return
