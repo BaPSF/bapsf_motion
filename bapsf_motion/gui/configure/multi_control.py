@@ -448,6 +448,26 @@ class MGControlAxis(QWidget):
 
             signal.set_blocking(block)
 
+    def update_display_encoder(self, position: u.Quantity | float | int):
+        if not isinstance(position, (u.Quantity, float)):
+            return
+        elif isinstance(position, u.Quantity):
+            _txt = f"{position.value:.2f} {position.unit}"
+        else:
+            _txt = f"{position:.2f}"
+
+        self.encoder_label.setText(_txt)
+
+    def update_display_position(self, position: u.Quantity | float | int):
+        if not isinstance(position, (u.Quantity, float)):
+            return
+        elif isinstance(position, u.Quantity):
+            _txt = f"{position.value:.2f} {position.unit}"
+        else:
+            _txt = f"{position:.2f}"
+
+        self.position_label.setText(_txt)
+
     @Slot()
     def _validate_jog_delta_input(self):
         _txt = self.jog_delta_input.text()
