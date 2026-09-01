@@ -122,6 +122,7 @@ class MGControlAxis(QWidget):
         self.limit_bwd_btn.clicked.connect(self._move_off_limit)
 
         self.jog_forward_btn.clicked.connect(self.jog_forward)
+        self.jog_backward_btn.clicked.connect(self.jog_backward)
         self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
         self.enable_btn.clicked.connect(self._set_motor_enabled_state)
 
@@ -509,6 +510,11 @@ class MGControlAxis(QWidget):
     @Slot()
     def jog_forward(self):
         pos = self.position.value + self._get_jog_delta()
+        self._move_to(pos)
+
+    @Slot()
+    def jog_backward(self):
+        pos = self.position.value - self._get_jog_delta()
         self._move_to(pos)
 
     @Slot()
