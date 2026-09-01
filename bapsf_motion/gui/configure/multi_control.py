@@ -710,20 +710,20 @@ class MGControl(QWidget):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        layout.addLayout(self._define_vdivider_layout())
         layout.addLayout(self._define_layout_drive_name())
+        layout.addLayout(self._define_layout_vdivider())
         layout.addSpacing(8)
         layout.addSpacerItem(
             QSpacerItem(120, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
         )
         for ax_widget in self.axis_control_widgets:
             layout.addSpacing(8)
-            layout.addLayout(self._define_vdivider_layout())
+            layout.addLayout(self._define_layout_vdivider())
             layout.addSpacing(8)
             layout.addWidget(ax_widget)
 
         layout.addSpacing(8)
-        layout.addLayout(self._define_vdivider_layout())
+        layout.addLayout(self._define_layout_vdivider())
         layout.addStretch(1)
         return layout
 
@@ -739,7 +739,7 @@ class MGControl(QWidget):
         layout.addStretch(1)
         return layout
 
-    def _define_vdivider_layout(self):
+    def _define_layout_vdivider(self):
         divider = VLinePlain(parent=self)
         divider.set_color(60, 60, 60)
         divider.setLineWidth(2)
