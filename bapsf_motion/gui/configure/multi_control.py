@@ -469,6 +469,57 @@ class MGControlAxis(QWidget):
         self.position_label.setText(_txt)
 
     @Slot()
+    def update_displays(self):
+        timer_active = self._update_display_timer.isActive()
+        if timer_active:
+            self._display_timer_issue_new_single_shot = True
+        else:
+            self._update_displays()
+
+            # start a timed update to start update frequency control
+            self._update_display_timer.start(self._update_display_interval)
+            self._display_timer_issue_new_single_shot = False
+
+    @Slot()
+    def _update_displays(self):
+        if self._mg.terminated:
+            self.setEnabled(False)
+            return
+
+        self.setEnabled(self.axis.connected)
+        if not self.isEnabled():
+            return
+
+        pos = self.position
+        self.update_display_position(pos)
+
+        encoder = self.encoder
+        self.update_display_encoder(encoder)
+
+        if np.isclose(pos.value, encoder.value, rtol=0.0, atol=0.02):
+            # encoder and absolute readingss are conssistent
+            self.position_label.setStyleSheet("color: black;")
+            self.encoder_label.setStyleSheet("color: black;")
+        else:
+            self.position_label.setStyleSheet("color: red;")
+            self.encoder_label.setStyleSheet("color: red;")
+
+        _motor_status = self.axis.motor.status
+
+        limits = _motor_status["limits"]
+        self.limit_fwd_btn.set_valid(state=limits["CW"])
+        self.limit_bwd_btn.set_valid(state=limits["CCW"])
+
+        enabled_state = _motor_status["enabled"]
+        self.enable_btn.setChecked(enabled_state)
+
+        if self._display_timer_issue_new_single_shot:
+            # start another single shot if update_displays()
+            # was triggered during the wait for the last single shot
+            self._update_display_timer.start(self._update_display_interval)
+            self._display_timer_issue_new_single_shot = False
+
+    @Slot()
     def _validate_jog_delta_input(self):
         _txt = self.jog_delta_input.text()
         val = 0.0 if _txt == "" else float(_txt)
