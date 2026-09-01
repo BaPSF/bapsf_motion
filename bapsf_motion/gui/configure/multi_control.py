@@ -400,6 +400,10 @@ class MGControlAxis(QWidget):
     def _actor_slot_status_changed(self):
         self._actorStatusChanged.emit()
 
+    def _get_jog_delta(self):
+        delta_str = self.jog_delta_input.text()
+        return float(delta_str)
+
     def motor_signals_connect(self):
         axis = self.axis
         if not isinstance(axis, Axis):
