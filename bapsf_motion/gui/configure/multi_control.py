@@ -33,6 +33,7 @@ from bapsf_motion.gui.widgets import (
     ValidButton,
     VLinePlain,
 )
+from bapsf_motion.utils import SimpleSignal
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
@@ -378,6 +379,20 @@ class MGControlAxis(QWidget):
 
             for callback in callbacks:
                 signal.connect(callback)
+
+    def motor_signals_disconnect(self):
+        axis = self.axis
+        if not isinstance(axis, Axis):
+            return
+
+        for motor_signal, callbacks in self._motor_signal_mapping.items():
+            signal = getattr(axis.motor.signals, motor_signal, None)
+
+            if not isinstance(signal, SimpleSignal):
+                continue
+
+            for callback in callbacks:
+                signal.disconnect(callback)
 
     @Slot()
     def _validate_jog_delta_input(self):
