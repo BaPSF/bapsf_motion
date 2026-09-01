@@ -425,6 +425,10 @@ class MGControlAxis(QWidget):
         val = abs(val)
         self.jog_delta_input.setText(f"{val:.2f}")
 
+    def closeEvent(self, event: QCloseEvent):
+        self.motor_signals_disconnect()
+        event.accept()
+
 
 class MGControl(QWidget):
 
