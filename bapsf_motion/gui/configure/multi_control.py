@@ -133,7 +133,25 @@ class MGControlAxis(QWidget):
         self.refreshDisplay.connect(self.update_displays)
 
     def _define_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addLayout(self._define_layout_header())
+        layout.addSpacing(8)
+        layout.addLayout(self._define_layout_control_area())
+        return layout
 
+    def _define_layout_header(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addStretch(1)
+        layout.addWidget(self.axis_name_label)
+        layout.addStretch(1)
+        layout.addWidget(self.connected_ind)
+        layout.addStretch(1)
+        return layout
+
+    def _define_layout_control_area(self):
         self.indicator_column_widget.setLayout(self._define_layout_indicator_column())
         self.movement_column_widget.setLayout(self._define_layout_movement_column())
 
