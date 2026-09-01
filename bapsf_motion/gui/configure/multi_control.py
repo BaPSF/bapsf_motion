@@ -106,8 +106,8 @@ class MGControlAxis(QWidget):
         self.limit_fwd_btn = self._init_limit_fwd_btn()
         self.mg_details_btn = None
         self.movement_column_widget = self._init_movement_column_widget()
-        self.position_label = self._init_position_label()
-        self.position_label_icon = self._init_position_label_icon()
+        self.position_ind = self._init_position_ind()
+        self.position_ind_icon = self._init_position_ind_icon()
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -150,7 +150,7 @@ class MGControlAxis(QWidget):
         layout.setSpacing(0)
         layout.addLayout(self._define_layout_title_and_enable_btn())
         layout.addSpacing(4)
-        layout.addLayout(self._define_layout_position_label())
+        layout.addLayout(self._define_layout_position_ind())
         layout.addSpacing(4)
         layout.addLayout(self._define_layout_encoder_ind())
         layout.addStretch(1)
@@ -222,12 +222,12 @@ class MGControlAxis(QWidget):
 
         return layout
 
-    def _define_layout_position_label(self):
+    def _define_layout_position_ind(self):
         layout = QGridLayout()
         layout.setContentsMargins(0, 0, 0, 0)
 
         layout.addWidget(
-            self.position_label,
+            self.position_ind,
             0,
             0,
             5,
@@ -235,7 +235,7 @@ class MGControlAxis(QWidget):
             alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignCenter,
         )
         layout.addWidget(
-            self.position_label_icon,
+            self.position_ind_icon,
             4,
             7,
             1,
@@ -355,7 +355,7 @@ class MGControlAxis(QWidget):
         _w.setFixedWidth(7 * 12)
         return _w
 
-    def _init_position_label(self):
+    def _init_position_ind(self):
         _txt = QLineEdit("", parent=self)
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _txt.setReadOnly(True)
@@ -365,7 +365,7 @@ class MGControlAxis(QWidget):
         _txt.setFont(font)
         return _txt
 
-    def _init_position_label_icon(self):
+    def _init_position_ind_icon(self):
         _txt = QLabel("P", parent=self)
         _txt.setObjectName("position_icon")
         _txt.setStyleSheet("""
@@ -505,7 +505,7 @@ class MGControlAxis(QWidget):
         else:
             _txt = f"{position:.2f}"
 
-        self.position_label.setText(_txt)
+        self.position_ind.setText(_txt)
 
     @Slot()
     def jog_forward(self):
@@ -547,10 +547,10 @@ class MGControlAxis(QWidget):
 
         if np.isclose(pos.value, encoder.value, rtol=0.0, atol=0.02):
             # encoder and absolute readingss are conssistent
-            self.position_label.setStyleSheet("color: black;")
+            self.position_ind.setStyleSheet("color: black;")
             self.encoder_ind.setStyleSheet("color: black;")
         else:
-            self.position_label.setStyleSheet("color: red;")
+            self.position_ind.setStyleSheet("color: red;")
             self.encoder_ind.setStyleSheet("color: red;")
 
         _motor_status = self.axis.motor.status
