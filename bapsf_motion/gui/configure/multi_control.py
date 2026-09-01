@@ -309,7 +309,7 @@ class MGControlAxis(QWidget):
 
     def _init_encoder_ind(self):
         _txt = QLineEdit("", parent=self)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
         _txt.setReadOnly(True)
         _txt.setToolTip(
             "Encoder read position.\n\n If different than motor position, "
@@ -319,7 +319,6 @@ class MGControlAxis(QWidget):
         font.setPointSize(14)
         _txt.setFont(font)
         _txt.setFixedHeight(30)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
         return _txt
 
     def _init_encoder_ind_icon(self):
@@ -401,14 +400,13 @@ class MGControlAxis(QWidget):
 
     def _init_position_ind(self):
         _txt = QLineEdit("", parent=self)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
         _txt.setReadOnly(True)
         _txt.setToolTip("Motor Position")
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
         _txt.setFixedHeight(30)
-        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
         return _txt
 
     def _init_position_ind_icon(self):
