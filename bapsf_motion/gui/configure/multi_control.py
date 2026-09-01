@@ -63,6 +63,14 @@ class MGControlAxis(QWidget):
         self._ax_id = ax_id
         self._axis = self._mg.drive.axes[ax_id]
 
+        self._motor_signal_mapping = {
+            "connection_established": [self._actor_slot_connection_established],
+            "connection_lost": [self._actor_slot_connection_lost],
+            "status_changed": [self._actor_slot_status_changed],
+            "movement_started": [self._actor_slot_movement_started],
+            "movement_finished": [self._actor_slot_movement_finished],
+        }
+
         # Initialize Widgets
         self.axis_name_label = self._init_axis_name_label(self._axis.name)
         self.enable_btn = self._init_enable_btn()
