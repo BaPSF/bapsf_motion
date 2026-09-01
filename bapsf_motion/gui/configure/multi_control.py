@@ -710,8 +710,8 @@ class MGControl(QWidget):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        layout.addLayout(self._define_name_layout())
         layout.addLayout(self._define_vdivider_layout())
+        layout.addLayout(self._define_layout_drive_name())
         layout.addSpacing(8)
         layout.addSpacerItem(
             QSpacerItem(120, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
@@ -727,7 +727,7 @@ class MGControl(QWidget):
         layout.addStretch(1)
         return layout
 
-    def _define_name_layout(self):
+    def _define_layout_drive_name(self):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
