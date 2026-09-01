@@ -294,6 +294,8 @@ class MGControlAxis(QWidget):
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
+        _txt.setFixedHeight(30)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
         return _txt
 
     def _init_encoder_ind_icon(self):
@@ -381,6 +383,8 @@ class MGControlAxis(QWidget):
         font = _txt.font()
         font.setPointSize(14)
         _txt.setFont(font)
+        _txt.setFixedHeight(30)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
         return _txt
 
     def _init_position_ind_icon(self):
