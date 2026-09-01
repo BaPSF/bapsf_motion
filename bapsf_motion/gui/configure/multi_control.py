@@ -648,7 +648,7 @@ class MGControl(QWidget):
             self.axis_control_widgets.append(ax_control)
 
         self.setLayout(self._define_layout())
-        self.setFixedHeight(int(12.5 * 12))
+        self.setFixedHeight(int(14 * 12))
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._connect_signals()
 
