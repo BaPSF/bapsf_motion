@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import TYPE_CHECKING
+from typing import List, TYPE_CHECKING
 
 from bapsf_motion.actors import Axis, MotionGroup, RunManager
 from bapsf_motion.gui.configure.helpers import gui_logger
@@ -690,9 +690,11 @@ class MGControl(QWidget):
         self._mg = self._rmo.rm.mgs[motion_group_id]
 
         # initialize widgets
-        self.move_to_btn = self._init_move_to_btn()
         self.drive_name_label = self._init_drive_name_label()
-        self.axis_control_widgets = []
+        self.move_to_btn = self._init_move_to_btn()
+
+        # initialize "lists" of widgets
+        self.axis_control_widgets = []  # type: List[MGControlAxis]
         for ax_id in range(len(self._mg.drive.axes)):
             ax_control = MGControlAxis(
                 rmo=self._rmo,
