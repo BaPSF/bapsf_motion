@@ -384,6 +384,9 @@ class MGControlAxis(QWidget):
         unit = position.unit
         return val * unit
 
+    def _actor_slot_connection_lost(self):
+        self.lostConnection.emit()
+
     def _actor_slot_movement_started(self):
         self.movementStarted.emit(self._ax_id)
 
