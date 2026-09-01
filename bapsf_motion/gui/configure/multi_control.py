@@ -428,6 +428,19 @@ class MGControlAxis(QWidget):
         delta_str = self.jog_delta_input.text()
         return float(delta_str)
 
+    def _move_to(self, target_ax_pos):
+        target_pos = self.mg.position.value
+        target_pos[self.axis_id] = target_ax_pos
+
+        if self.mg.drive.is_moving:
+            self.logger.info(
+                "Probe drive is currently moving.  Did NOT perform move "
+                f"to {target_pos}."
+            )
+            return
+
+        self.mg.move_to(target_pos)
+
     def motor_signals_connect(self):
         axis = self.axis
         if not isinstance(axis, Axis):
