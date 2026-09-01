@@ -694,8 +694,12 @@ class MGControl(QWidget):
         self.move_to_btn = self._init_move_to_btn()
 
         # initialize "lists" of widgets
+        self.axis_target_position_input = []  # type: List[QLineEdit]
         self.axis_control_widgets = []  # type: List[MGControlAxis]
         for ax_id in range(len(self._mg.drive.axes)):
+            ax_tp_input = self._init_target_position_input()
+            self.axis_target_position_input.append(ax_tp_input)
+
             ax_control = MGControlAxis(
                 rmo=self._rmo,
                 mg_id=self._mg_id,
@@ -774,6 +778,16 @@ class MGControl(QWidget):
         font.setPointSize(16)
         _btn.setFont(font)
         return _btn
+
+    def _init_target_position_input(self):
+        _txt = QLineEdit("", parent=self)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter)
+        _txt.setReadOnly(False)
+        font = _txt.font()
+        font.setPointSize(14)
+        _txt.setFont(font)
+        _txt.setFixedHeight(30)
+        return _txt
 
     @property
     def mg(self) -> MotionGroup:
