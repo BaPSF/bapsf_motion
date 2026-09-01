@@ -695,10 +695,15 @@ class MGControl(QWidget):
 
         # initialize "lists" of widgets
         self.axis_target_position_input = []  # type: List[QLineEdit]
+        self.axis_target_position_label = []  # type: List[QLabel]
         self.axis_control_widgets = []  # type: List[MGControlAxis]
         for ax_id in range(len(self._mg.drive.axes)):
             ax_tp_input = self._init_target_position_input()
             self.axis_target_position_input.append(ax_tp_input)
+
+            axis = self._mg.drive.axes[ax_id]
+            ax_tp_label = self._init_target_position_label(axis.name)
+            self.axis_target_position_label.append(ax_tp_label)
 
             ax_control = MGControlAxis(
                 rmo=self._rmo,
@@ -787,6 +792,16 @@ class MGControl(QWidget):
         font.setPointSize(14)
         _txt.setFont(font)
         _txt.setFixedHeight(30)
+        return _txt
+
+    def _init_target_position_label(self, name: str):
+        _txt = QLabel(name, parent=self)
+        font = _txt.font()
+        font.setPointSize(14)
+        font.setBold(True)
+        _txt.setFont(font)
+        _txt.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        _txt.setFixedHeight(18)
         return _txt
 
     @property
