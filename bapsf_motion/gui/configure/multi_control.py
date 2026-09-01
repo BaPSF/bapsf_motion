@@ -283,7 +283,11 @@ class MGControlAxis(QWidget):
         _btn.update_style_sheet(
             styles={"background-color": "rgb(129, 201, 149)"},
             action="checked",
-        )
+        )  # when checked set color to green
+        _btn.update_style_sheet(
+            styles={"border": _btn.base_style["border"]},
+            action="hover",
+        )  # removing the border highlighting during hover
 
         font = self.font()
         font.setPointSize(8)
