@@ -34,6 +34,7 @@ from bapsf_motion.gui.widgets import (
     VLinePlain,
 )
 from bapsf_motion.utils import SimpleSignal
+from bapsf_motion.utils import units as u
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
