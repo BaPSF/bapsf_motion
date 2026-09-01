@@ -3,6 +3,7 @@ from __future__ import annotations
 __all__ = ["MultiControl"]
 
 import logging
+import numpy as np
 import re
 
 from PySide6.QtCore import QSize, Qt, Signal, Slot
