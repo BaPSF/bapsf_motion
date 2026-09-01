@@ -112,6 +112,7 @@ class MGControlAxis(QWidget):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
+        self.motor_signals_connect()
         self.refreshDisplay.emit()
 
     def _connect_signals(self):
