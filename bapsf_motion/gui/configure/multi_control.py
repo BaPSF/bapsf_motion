@@ -396,6 +396,9 @@ class MGControlAxis(QWidget):
     def _actor_slot_movement_finished(self):
         self.movementStopped.emit(self._ax_id)
 
+    def _actor_slot_status_changed(self):
+        self._actorStatusChanged.emit()
+
     def motor_signals_connect(self):
         axis = self.axis
         if not isinstance(axis, Axis):
