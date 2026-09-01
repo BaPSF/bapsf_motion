@@ -130,6 +130,7 @@ class MGControlAxis(QWidget):
         self._actorStatusChanged.connect(self._handle_actor_status_changed)
         self.movementStopped.connect(self._handle_movement_stopped)
         self.establishedConnection.connect(self._handle_connection_established)
+        self.lostConnection.connect(self._handle_connection_lost)
 
         self.refreshDisplay.connect(self.update_displays)
 
@@ -632,6 +633,19 @@ class MGControlAxis(QWidget):
         self.setEnabled(True)
         self.update_displays()
         self.axisStatusChanged.emit()
+
+    @Slot()
+    def _handle_connection_lost(self):
+        # Note: This slot needs to be trigger from a PySide6 signal and
+        #       not from any of the SimpleSignals attached to Motor.
+        #       Having the SimpleSignal execute this code risks the
+        #       execution of an unsafe thread operation.  The Motor
+        #       event-loop is executing in a different thread that is
+        #       unmanaged by PySide6.
+        self.setEnabled(False)
+        for ax in self.mg.drive.axes:
+            if ax.connected:
+                ax.stop()
 
     @Slot()
     def _handle_movement_stopped(self):
