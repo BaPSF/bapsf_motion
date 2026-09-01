@@ -94,6 +94,7 @@ class MGControlAxis(QWidget):
 
         # Initialize Widgets
         self.axis_name_label = self._init_axis_name_label(self._axis.name)
+        self.connected_ind = self._init_connected_ind()
         self.enable_btn = self._init_enable_btn()
         self.encoder_ind = self._init_encoder_ind()
         self.encoder_ind_icon = self._init_encoder_ind_icon()
@@ -253,6 +254,24 @@ class MGControlAxis(QWidget):
         _txt.setAlignment(Qt.AlignmentFlag.AlignCenter)
         _txt.setFixedHeight(18)
         return _txt
+
+    def _init_connected_ind(self):
+        _btn = EnableIndicator(parent=self)
+        _btn._enabled_text = self.axis.ip
+        _btn._disabled_text = self.axis.ip
+        _btn.setChecked(False)
+        _btn.update_style_sheet(
+            styles={"background-color": "rgb(129, 201, 149)"},
+            action="checked",
+        )
+
+        font = self.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.setFixedHeight(24)
+        _btn.setFixedWidth(120)
+        return _btn
 
     def _init_enable_btn(self):
         _btn = EnableIndicator(parent=self)
