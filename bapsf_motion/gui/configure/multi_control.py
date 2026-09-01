@@ -762,13 +762,6 @@ class MGControl(QWidget):
         font.setBold(True)
         label.setFont(font)
         label.setFixedWidth(32)
-        # label.setStyleSheet("""
-        # QVerticalLabel#drive_label {
-        #     border: 2px solid black;
-        #     padding: 0px;
-        #     margin: 0px;
-        # }
-        # """)
         return label
 
     @property
