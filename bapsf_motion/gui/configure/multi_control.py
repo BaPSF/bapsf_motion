@@ -6,7 +6,7 @@ import logging
 import numpy as np
 import re
 
-from PySide6.QtCore import QSize, Qt, Signal, Slot
+from PySide6.QtCore import QSize, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QColor, QDoubleValidator, QPainter
 from PySide6.QtWidgets import (
     QFrame,
