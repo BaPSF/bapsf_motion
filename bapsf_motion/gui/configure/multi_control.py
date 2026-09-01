@@ -577,7 +577,10 @@ class MGControlAxis(QWidget):
     def _update_displays(self):
         if self._mg.terminated:
             self.setEnabled(False)
+            self.connected_ind.setChecked(False)
             return
+
+        self.update_display_connected()
 
         self.setEnabled(self.axis.connected)
         if not self.isEnabled():
