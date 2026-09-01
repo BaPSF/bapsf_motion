@@ -83,6 +83,13 @@ class MGControlAxis(QWidget):
             "movement_finished": [self._actor_slot_movement_finished],
         }
 
+        # Configure display update timer
+        # - to update widgets during a motor movement
+        self._update_display_interval = 250  # in msec
+        self._update_display_timer = QTimer()
+        self._update_display_timer.setSingleShot(True)
+        self._display_timer_issue_new_single_shot = False
+
         # Initialize Widgets
         self.axis_name_label = self._init_axis_name_label(self._axis.name)
         self.enable_btn = self._init_enable_btn()
@@ -104,6 +111,8 @@ class MGControlAxis(QWidget):
         self._connect_signals()
 
     def _connect_signals(self):
+        self._update_display_timer.timeout.connect(self._update_displays)
+
         self.jog_delta_input.editingFinished.connect(self._validate_jog_delta_input)
 
     def _define_layout(self):
