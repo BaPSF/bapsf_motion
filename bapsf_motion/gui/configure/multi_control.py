@@ -929,6 +929,7 @@ class MGControl(QWidget):
     @Slot()
     def _handle_connection_lost(self):
         self.set_enabled_for_movement(False)
+        self.terminate_run_btn.setEnabled(True)
 
     @Slot()
     def _handle_connection_established(self):
