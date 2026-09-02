@@ -1072,6 +1072,7 @@ class MGControl(QWidget):
         self.set_enabled_for_movement(True)
         self.movementStopped.emit()
 
+    @Slot()
     def _handle_terminate_run_clicked(self):
         state = self.terminate_run_btn.isChecked()
 
