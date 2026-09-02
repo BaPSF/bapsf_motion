@@ -780,6 +780,7 @@ class MGControlAxis(QWidget):
 class MGControl(QWidget):
     movementStarted = Signal()
     movementStopped = Signal()
+    requestDetailPopUp = Signal(str)
 
     def __init__(self, *, rmo: RMObject, motion_group_id: str | int, parent: QWidget):
         super().__init__(parent)
@@ -832,6 +833,7 @@ class MGControl(QWidget):
         self.update_display_target_position()
 
     def _connect_signals(self):
+        self.details_btn.clicked.connect(self._handle_details_btn_clicked)
         self.move_to_btn.clicked.connect(self._move_to)
         self.terminate_run_btn.clicked.connect(self._handle_terminate_run_clicked)
 
@@ -1058,6 +1060,10 @@ class MGControl(QWidget):
         for ax_control in self.axis_control_widgets:
             if not ax_control.isEnabled():
                 ax_control.establishedConnection.emit()
+
+    @Slot()
+    def _handle_details_btn_clicked(self):
+        self.requestDetailPopUp.emit(str(self._mg_id))
 
     @Slot()
     def _handle_movement_started(self):
