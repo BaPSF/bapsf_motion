@@ -22,7 +22,9 @@ from PySide6.QtWidgets import (
 from typing import List, TYPE_CHECKING
 
 from bapsf_motion.actors import Axis, MotionGroup, RunManager
+from bapsf_motion.gui.configure.bases import _OverlayWidget
 from bapsf_motion.gui.configure.helpers import gui_logger
+from bapsf_motion.gui.configure.toml_ import TOMLText
 from bapsf_motion.gui.icons import icon_name_dict
 from bapsf_motion.gui.widgets import (
     DoneButton,
@@ -45,6 +47,85 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
     from bapsf_motion.gui.configure.configure_ import ConfigureGUI, RMObject
+
+
+class MGDetailsOverlay(_OverlayWidget):
+    def __init__(self, *, mg: MotionGroup, parent: QWidget | None):
+        super().__init__(parent=parent)
+        self._mg = mg
+
+        base_logger = gui_logger if not hasattr(parent, "logger") else parent.logger
+        self._logger = logging.getLogger(f"{base_logger.name}.MGDO")
+
+        # instantiate widgets
+        self.config_btn = self._init_config_btn()
+        self.done_btn = self._init_done_btn()
+        self.toml_widget = self._init_toml_widget()
+
+        self.toml_widget.setPlainText(mg.config.as_toml_string)
+
+        self.setLayout(self._define_layout())
+        self._connect_signals()
+
+    def _connect_signals(self):
+        self.done_btn.clicked.connect(self.close)
+
+    def _define_layout(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(16, 16, 16, 16)
+        layout.setSpacing(0)
+        layout.addWidget(self.toml_widget, stretch=1)
+        layout.addSpacing(12)
+        layout.addLayout(self._define_layout_btn_row())
+        return layout
+
+    def _define_layout_btn_row(self):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addStretch(1)
+        layout.addWidget(self.config_btn)
+        layout.addSpacing(12)
+        layout.addWidget(self.done_btn)
+        layout.addStretch(1)
+        return layout
+
+    def _init_config_btn(self):
+        btn = StyleButton("Configure", parent=self)
+        font = btn.font()
+        font.setPixelSize(18)
+        btn.setFont(font)
+        btn.setFixedHeight(36)
+        btn.setMinimumWidth(12 * 12)
+        btn.setEnabled(False)
+        return btn
+
+    def _init_done_btn(self):
+        btn = DoneButton("DONE", parent=self)
+        font = btn.font()
+        font.setPixelSize(18)
+        btn.setFont(font)
+        btn.setFixedHeight(36)
+        return btn
+
+    def _init_toml_widget(self):
+        _widget = TOMLText(parent=self)
+        _widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+        )
+        _widget.setMinimumWidth(350)
+        return _widget
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
+
+    def closeEvent(self, event: QCloseEvent):
+        self.logger.info(f"Closing {self.__class__.__name__}")
+
+        self._mg = None
+        super().closeEvent(event)
 
 
 class MGControlAxis(QWidget):
