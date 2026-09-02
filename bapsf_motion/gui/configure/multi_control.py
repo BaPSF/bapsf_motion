@@ -507,14 +507,8 @@ class MGControlAxis(QWidget):
         if not isinstance(axis, Axis):
             return
 
-        for motor_signal, callbacks in self._motor_signal_mapping.items():
-            signal = getattr(axis.motor.signals, motor_signal, None)
-
-            if not isinstance(signal, SimpleSignal):
-                continue
-
-            for callback in callbacks:
-                signal.disconnect(callback)
+        axis.motor.signals.set_blocking(True)
+        axis.motor.signals.disconnect_all()
 
     def motor_signals_set_blocking(self, block: bool):
         if not isinstance(block, bool):
