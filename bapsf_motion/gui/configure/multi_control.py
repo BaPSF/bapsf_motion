@@ -742,6 +742,7 @@ class MGControl(QWidget):
 
     def _connect_signals(self):
         self.move_to_btn.clicked.connect(self._move_to)
+        self.terminate_run_btn.clicked.connect(self._handle_terminate_run_clicked)
 
         for input_ in self.axis_target_position_input:
             input_.editingFinished.connect(self.update_display_target_position)
@@ -953,6 +954,26 @@ class MGControl(QWidget):
             return
 
         self.set_enabled_for_movement(True)
+
+    def _handle_terminate_run_clicked(self):
+        state = self.terminate_run_btn.isChecked()
+
+        if not state:
+            # checked state is false and a motion group termination is requested
+            self.mg.terminate(delay_loop_stop=True, disconnect_signals=False)
+            self.terminate_run_btn.setChecked(True)
+            return
+
+        # check state is true and a motion group run is requested
+        self.mg.run()
+        self.terminate_run_btn.setChecked(False)
+
+        # setup timer to check if motors are reconnected
+        _timer = QTimer(parent=self)
+        _timer.setSingleShot(True)
+        _timer.setInterval(100)
+        _timer.timeout.connect(self._handle_connection_established)
+        _timer.start()
 
     def set_enabled_for_movement(self, state: bool):
         if not isinstance(state, bool):
