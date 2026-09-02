@@ -722,6 +722,7 @@ class MGControl(QWidget):
                 ax_id=ax_id,
                 parent=self,
             )
+            ax_control.movementStarted.connect(self._handle_movement_started)
             ax_control.lostConnection.connect(self._handle_connection_lost)
             ax_control.establishedConnection.connect(self._handle_connection_established)
             self.axis_control_widgets.append(ax_control)
@@ -910,6 +911,10 @@ class MGControl(QWidget):
             return
 
         self.set_enabled_for_movement(True)
+
+    @Slot()
+    def _handle_movement_started(self):
+        self.set_enabled_for_movement(False)
 
     def set_enabled_for_movement(self, state: bool):
         if not isinstance(state, bool):
