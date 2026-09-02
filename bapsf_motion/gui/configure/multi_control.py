@@ -726,6 +726,7 @@ class MGControl(QWidget):
         self.update_display_target_position()
 
     def _connect_signals(self):
+        self.move_to_btn.clicked.connect(self._move_to)
 
         for input_ in self.axis_target_position_input:
             input_.editingFinished.connect(self.update_display_target_position)
@@ -881,6 +882,11 @@ class MGControl(QWidget):
         position = self.target_position
         for value, input_ in zip(position, self.axis_target_position_input):
             input_.setText(f"{value:.2f}")
+
+    @Slot()
+    def _move_to(self):
+        target_position = self.target_position
+        self.mg.move_to(target_position)
 
     def closeEvent(self, event: QCloseEvent):
         self.mg.stop()
