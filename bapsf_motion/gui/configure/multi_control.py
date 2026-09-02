@@ -1366,6 +1366,11 @@ class MultiControl(QWidget):
 
         self._rmo = None
 
+        # Explicitly close overlay
+        overlay = self._overlay_widget
+        if isinstance(overlay, MGDetailsOverlay):
+            overlay.close()
+
         # Explicitly close the MGControl widgets
         for mg_control in self.mg_control_widgets.values():
             mg_control.close()
