@@ -770,7 +770,7 @@ class MGControlAxis(QWidget):
         self._mg = None
         self._rmo = None
 
-        event.accept()
+        super().closeEvent(event)
 
 
 class MGControl(QWidget):
@@ -1088,7 +1088,7 @@ class MGControl(QWidget):
         self._mg = None
         self._rmo = None
 
-        event.accept()
+        super().closeEvent(event)
 
 
 class MultiControl(QWidget):
@@ -1268,4 +1268,4 @@ class MultiControl(QWidget):
             mg_control.close()
 
         self.closing.emit()
-        event.accept()
+        super().closeEvent(event)
