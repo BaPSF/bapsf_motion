@@ -688,6 +688,7 @@ class MGControlAxis(QWidget):
 
 class MGControl(QWidget):
     movementStarted = Signal()
+    movementStopped = Signal()
 
     def __init__(self, *, rmo: RMObject, motion_group_id: str | int, parent: QWidget):
         super().__init__(parent)
@@ -956,6 +957,7 @@ class MGControl(QWidget):
             return
 
         self.set_enabled_for_movement(True)
+        self.movementStopped.emit()
 
     def _handle_terminate_run_clicked(self):
         state = self.terminate_run_btn.isChecked()
