@@ -33,9 +33,9 @@ from bapsf_motion.gui.widgets import (
     IconButton,
     QVerticalLabel,
     StopButton,
+    StyleButton,
     ValidButton,
     VLinePlain,
-    StyleButton,
 )
 from bapsf_motion.utils import SimpleSignal
 from bapsf_motion.utils import units as u
