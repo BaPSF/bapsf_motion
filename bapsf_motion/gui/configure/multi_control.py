@@ -33,6 +33,7 @@ from bapsf_motion.gui.widgets import (
     StopButton,
     ValidButton,
     VLinePlain,
+    StyleButton,
 )
 from bapsf_motion.utils import SimpleSignal
 from bapsf_motion.utils import units as u
@@ -728,12 +729,12 @@ class MGControl(QWidget):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
+
         layout.addLayout(self._define_layout_drive_name())
         layout.addLayout(self._define_layout_vdivider())
         layout.addSpacing(8)
-        layout.addSpacerItem(
-            QSpacerItem(120, 0, QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Ignored)
-        )
+        layout.addWidget(self.move_to_widget)
+
         for ax_widget in self.axis_control_widgets:
             layout.addSpacing(8)
             layout.addLayout(self._define_layout_vdivider())
