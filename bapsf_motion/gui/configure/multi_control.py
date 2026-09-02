@@ -1178,6 +1178,8 @@ class MultiControl(QWidget):
 
             # TODO: create a dialog to display waiting for motion to stop
 
+        self._rmo = None
+
         # Explicitly close the MGControl widgets
         for mg_control in self.mg_control_widgets.values():
             mg_control.close()
