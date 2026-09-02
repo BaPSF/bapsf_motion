@@ -1101,6 +1101,12 @@ class MultiControl(QWidget):
 
         return btn
 
+    def set_enabled_for_movement(self, state: bool):
+        if not isinstance(state, bool):
+            return
+
+        self.return_btn.setEnabled(state)
+
     def _spawn_mg_control_widget(self, mg_id):
         _widget = MGControl(
             rmo=self.rmo,
