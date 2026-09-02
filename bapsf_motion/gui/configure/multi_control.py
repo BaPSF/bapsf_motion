@@ -898,6 +898,14 @@ class MGControl(QWidget):
         target_position = self.target_position
         self.mg.move_to(target_position)
 
+    def set_enabled_for_movement(self, state: bool):
+        if not isinstance(state, bool):
+            return
+
+        self.move_to_btn.setEnabled(state)
+        for ax_control in self.axis_control_widgets:
+            ax_control.set_enabled_for_movement(state)
+
     def closeEvent(self, event: QCloseEvent):
         self.mg.stop()
         self._mg = None
