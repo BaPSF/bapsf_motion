@@ -1326,7 +1326,7 @@ class MultiControl(QWidget):
         if rm.is_moving:
             self.stop_all()
 
-        # retrieve motion group that details popup is requeted fro
+        # retrieve the motion group that requestDetailsPopUp requested
         try:
             mg = rm.mgs[mg_id]
         except KeyError:
