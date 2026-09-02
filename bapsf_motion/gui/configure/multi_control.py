@@ -1115,6 +1115,7 @@ class MultiControl(QWidget):
         )
         self.mgc_widgets[mg_id] = _widget
         _widget.movementStarted.connect(self._handle_movement_started)
+        _widget.movementStopped.connect(self._handle_movement_stopped)
 
         _frame_layout = QVBoxLayout()
         _frame_layout.setContentsMargins(0, 0, 0, 0)
@@ -1138,6 +1139,13 @@ class MultiControl(QWidget):
     @Slot()
     def _handle_movement_started(self):
         self.set_enabled_for_movement(False)
+
+    @Slot()
+    def _handle_movement_stopped(self):
+        if self.rm.is_moving:
+            return
+
+        self.set_enabled_for_movement(True)
 
     @Slot()
     def stop_all(self):
