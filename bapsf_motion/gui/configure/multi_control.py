@@ -1151,6 +1151,7 @@ class MultiControl(QWidget):
         self.return_btn = self._init_return_btn()
         self.stop_btn = self._init_stop_btn()
         self.mg_control_widgets = {}
+        self._overlay_widget = None  # type: MGDetailsOverlay | None
 
         # Setup Self
         self.setLayout(self._define_layout())
@@ -1243,11 +1244,35 @@ class MultiControl(QWidget):
 
         return btn
 
-    def set_enabled_for_movement(self, state: bool):
-        if not isinstance(state, bool):
+    @Slot()
+    def _overlay_close(self):
+        overlay = self._overlay_widget
+        if not isinstance(overlay, MGDetailsOverlay):
             return
 
-        self.return_btn.setEnabled(state)
+        overlay.deleteLater()
+        self._overlay_widget = None
+        self._overlay_shown = False
+
+    def _overlay_setup(self):
+        overlay = self._overlay_widget
+        if not isinstance(overlay, MGDetailsOverlay):
+            return
+
+        overlay.move(0, 0)
+        overlay._margins = [0.2, 0.05]
+        overlay._set_contents_margins(0.2, 0.05)
+        overlay.resize(self.width(), self.height())
+        overlay.closing.connect(self._overlay_close)
+
+    def _spawn_details_popup(self, mg: MotionGroup):
+        self._overlay_widget = MGDetailsOverlay(
+            mg=mg,
+            parent=self,
+        )
+        self._overlay_setup()
+        self._overlay_widget.show()
+        self._overlay_shown = True
 
     def _spawn_mg_control_widget(self, mg_id):
         _widget = MGControl(
@@ -1257,6 +1282,7 @@ class MultiControl(QWidget):
         )
         _widget.movementStarted.connect(self._handle_movement_started)
         _widget.movementStopped.connect(self._handle_movement_stopped)
+        _widget.requestDetailPopUp.connect(self._handle_request_details_popup)
         self.mg_control_widgets[mg_id] = _widget
 
         _frame_layout = QVBoxLayout()
@@ -1288,6 +1314,33 @@ class MultiControl(QWidget):
             return
 
         self.set_enabled_for_movement(True)
+
+    @Slot(str)
+    def _handle_request_details_popup(self, mg_id: str):
+        rm = self.rm
+        if not isinstance(rm, RunManager):
+            return
+
+        if rm.is_moving:
+            self.stop_all()
+
+        # retrieve motion group that details popup is requeted fro
+        try:
+            mg = rm.mgs[mg_id]
+        except KeyError:
+            # mg_id not found in mgs, try converting mg_id to an int
+            try:
+                mg_id = int(mg_id)
+            except ValueError:
+                return
+
+            try:
+                mg = rm.mgs[mg_id]
+            except KeyError:
+                # mg_id not found in mgs
+                return
+
+        self._spawn_details_popup(mg)
 
     @Slot()
     def stop_all(self):
