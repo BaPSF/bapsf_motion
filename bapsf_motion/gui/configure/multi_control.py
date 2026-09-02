@@ -791,6 +791,7 @@ class MGControl(QWidget):
         self._logger = logging.getLogger(f"{base_logger.name}.MGC")
 
         # initialize widgets
+        self.details_btn = self._init_details_btn()
         self.drive_name_label = self._init_drive_name_label()
         self.move_to_btn = self._init_move_to_btn()
         self.terminate_run_btn = self._init_terminate_run_btn()
@@ -856,6 +857,8 @@ class MGControl(QWidget):
         layout.addSpacing(8)
         layout.addLayout(self._define_layout_vdivider())
         layout.addStretch(1)
+        layout.addWidget(self.details_btn)
+        layout.addSpacing(8)
         layout.addWidget(self.terminate_run_btn)
         return layout
 
@@ -910,6 +913,27 @@ class MGControl(QWidget):
         layout.addSpacing(10)
         layout.addWidget(input_, stretch=1)
         return layout
+
+    def _init_details_btn(self):
+        _btn = EnableIndicator(parent=self)
+        _btn._enabled_text = "\n".join("DETAILS")
+        _btn._disabled_text = "\n".join("DETAILS")
+        _btn.setChecked(False)
+
+        font = self.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.setFixedWidth(28)
+        _btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+
+        _btn.update_style_sheet(
+            styles={},
+            action="base",
+            reset=True,
+        )
+
+        return _btn
 
     def _init_drive_name_label(self):
         label = QVerticalLabel(self.mg.drive.name, parent=self)
