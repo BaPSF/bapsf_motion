@@ -694,6 +694,8 @@ class MGControl(QWidget):
         self._mg_id = motion_group_id
         self._mg = self._rmo.rm.mgs[motion_group_id]
 
+        self._logger = gui_logger
+
         # initialize widgets
         self.drive_name_label = self._init_drive_name_label()
         self.move_to_btn = self._init_move_to_btn()
@@ -881,6 +883,10 @@ class MGControl(QWidget):
 
         _btn.setEnabled(False)
         return _btn
+
+    @property
+    def logger(self) -> logging.Logger:
+        return self._logger
 
     @property
     def mg(self) -> MotionGroup:
