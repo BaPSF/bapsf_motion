@@ -683,6 +683,11 @@ class MGControlAxis(QWidget):
 
     def closeEvent(self, event: QCloseEvent):
         self.motor_signals_disconnect()
+
+        self._axis = None
+        self._mg = None
+        self._rmo = None
+
         event.accept()
 
 
