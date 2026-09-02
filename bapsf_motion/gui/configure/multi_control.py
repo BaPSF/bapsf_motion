@@ -723,6 +723,8 @@ class MGControl(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._connect_signals()
 
+        self.update_display_target_position()
+
     def _connect_signals(self):
 
         for input_ in self.axis_target_position_input:
