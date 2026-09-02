@@ -915,10 +915,7 @@ class MGControl(QWidget):
         return layout
 
     def _init_details_btn(self):
-        _btn = EnableIndicator(parent=self)
-        _btn._enabled_text = "\n".join("DETAILS")
-        _btn._disabled_text = "\n".join("DETAILS")
-        _btn.setChecked(False)
+        _btn = StyleButton("\n".join("DETAILS"), parent=self)
 
         font = self.font()
         font.setPointSize(8)
