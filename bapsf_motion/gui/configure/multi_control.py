@@ -764,6 +764,10 @@ class MGControlAxis(QWidget):
         self.limit_fwd_btn.setEnabled(state)
 
     def closeEvent(self, event: QCloseEvent):
+        self.logger.info(
+            f"Closing {self.__class__.__name__} ({self._mg_id}-{self._ax_id})"
+        )
+
         self.motor_signals_disconnect()
 
         self._axis = None
@@ -1076,6 +1080,8 @@ class MGControl(QWidget):
             ax_control.set_enabled_for_movement(state)
 
     def closeEvent(self, event: QCloseEvent):
+        self.logger.info(f"Closing {self.__class__.__name__} ({self._mg_id})")
+
         # stop movement
         self.mg.stop()
 
@@ -1251,7 +1257,7 @@ class MultiControl(QWidget):
             mg.stop()
 
     def closeEvent(self, event: QCloseEvent):
-        self.logger.info("Closing MultiControl")
+        self.logger.info(f"Closing {self.__class__.__name__}")
 
         # stop any moving motor
         rm = self.rmo.rm
