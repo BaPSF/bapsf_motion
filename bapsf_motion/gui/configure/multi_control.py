@@ -1105,6 +1105,15 @@ class MGControl(QWidget):
     def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__} ({self._mg_id})")
 
+        for input_ in self.axis_target_position_input:
+            # Closing MGControl causes an axis_target_position_input to lose
+            # focus (if the cursor was in the line edit), and thus triggering
+            # and editingFinsihed signal and update_target_position().  This
+            # results in an AttributeError since _mg is set to None (below)
+            # before slot does its routine.
+            #
+            input_.blockSignals(True)
+
         # stop movement
         self.mg.stop()
 
