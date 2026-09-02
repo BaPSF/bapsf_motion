@@ -687,6 +687,7 @@ class MGControlAxis(QWidget):
 
 
 class MGControl(QWidget):
+    movementStarted = Signal()
 
     def __init__(self, *, rmo: RMObject, motion_group_id: str | int, parent: QWidget):
         super().__init__(parent)
@@ -947,6 +948,7 @@ class MGControl(QWidget):
     @Slot()
     def _handle_movement_started(self):
         self.set_enabled_for_movement(False)
+        self.movementStarted.emit()
 
     @Slot()
     def _handle_movement_stopped(self):
