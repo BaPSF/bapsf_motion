@@ -677,6 +677,16 @@ class MGControlAxis(QWidget):
         val = abs(val)
         self.jog_delta_input.setText(f"{val:.2f}")
 
+    def set_enabled_for_movement(self, state: bool):
+        if not isinstance(state, bool):
+            return
+
+        self.enable_btn.setEnabled(state)
+        self.jog_backward_btn.setEnabled(state)
+        self.jog_forward_btn.setEnabled(state)
+        self.limit_bwd_btn.setEnabled(state)
+        self.limit_fwd_btn.setEnabled(state)
+
     def closeEvent(self, event: QCloseEvent):
         self.motor_signals_disconnect()
         event.accept()
