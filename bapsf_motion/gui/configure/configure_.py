@@ -1214,6 +1214,9 @@ class ConfigureGUI(QMainWindow):
         if isinstance(self.mg_widget, MGWidget):
             self.mg_widget.close()
 
+        if isinstance(self.control_widget, MultiControl):
+            self.control_widget.close()
+
         self.run_widget.close()
 
         for _window in self._launched_windows.values():
@@ -1221,7 +1224,7 @@ class ConfigureGUI(QMainWindow):
             _window.deleteLater()
         self._launched_windows = dict()
 
-        event.accept()
+        super().closeEvent(event)
 
 
 class ConfigureApp(QApplication):
