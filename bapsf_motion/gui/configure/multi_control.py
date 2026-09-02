@@ -723,6 +723,7 @@ class MGControl(QWidget):
                 parent=self,
             )
             ax_control.lostConnection.connect(self._handle_connection_lost)
+            ax_control.establishedConnection.connect(self._handle_connection_established)
             self.axis_control_widgets.append(ax_control)
 
         # initialize "complex" widgets
@@ -902,6 +903,13 @@ class MGControl(QWidget):
     @Slot()
     def _handle_connection_lost(self):
         self.set_enabled_for_movement(False)
+
+    @Slot()
+    def _handle_connection_established(self):
+        if not self.mg.connected:
+            return
+
+        self.set_enabled_for_movement(True)
 
     def set_enabled_for_movement(self, state: bool):
         if not isinstance(state, bool):
