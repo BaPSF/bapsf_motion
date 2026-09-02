@@ -769,6 +769,8 @@ class MGControlAxis(QWidget):
         )
 
         self.motor_signals_disconnect()
+        self._update_display_timer.stop()
+        self.jog_delta_input.blockSignals(True)
 
         self._axis = None
         self._mg = None
