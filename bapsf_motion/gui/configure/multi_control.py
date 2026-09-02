@@ -1008,7 +1008,7 @@ class MultiControl(QWidget):
         # Initialize Widgets
         self.return_btn = self._init_return_btn()
         self.stop_btn = self._init_stop_btn()
-        self.mgc_widgets = {}
+        self.mg_control_widgets = {}
 
         # Setup Self
         self.setLayout(self._define_layout())
@@ -1113,9 +1113,9 @@ class MultiControl(QWidget):
             motion_group_id=mg_id,
             parent=self,
         )
-        self.mgc_widgets[mg_id] = _widget
         _widget.movementStarted.connect(self._handle_movement_started)
         _widget.movementStopped.connect(self._handle_movement_stopped)
+        self.mg_control_widgets[mg_id] = _widget
 
         _frame_layout = QVBoxLayout()
         _frame_layout.setContentsMargins(0, 0, 0, 0)
