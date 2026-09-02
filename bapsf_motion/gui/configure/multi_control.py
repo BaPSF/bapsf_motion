@@ -937,6 +937,11 @@ class MGControl(QWidget):
             return
 
         self.set_enabled_for_movement(True)
+        self.terminate_run_btn.setEnabled(False)
+
+        for ax_control in self.axis_control_widgets:
+            if not ax_control.isEnabled():
+                ax_control.establishedConnection.emit()
 
     @Slot()
     def _handle_movement_started(self):
