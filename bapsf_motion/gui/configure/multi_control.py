@@ -735,7 +735,7 @@ class MGControlAxis(QWidget):
     @Slot()
     def _move_off_limit(self):
         axis = self.axis
-        if axis is None:
+        if not isinstance(axis, Axis):
             return
 
         axis.motor.move_off_limit()
