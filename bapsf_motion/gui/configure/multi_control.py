@@ -993,7 +993,15 @@ class MGControl(QWidget):
             ax_control.set_enabled_for_movement(state)
 
     def closeEvent(self, event: QCloseEvent):
+        # stop movement
         self.mg.stop()
+
+        # TODO: create a dialog to display waiting for motion to stop
+
+        # Explicitly close MGControlAxis widgets
+        for ax_control in self.axis_control_widgets:
+            ax_control.close()
+
         self._mg = None
         self._rmo = None
 
