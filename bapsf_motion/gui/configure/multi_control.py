@@ -703,6 +703,7 @@ class MGControl(QWidget):
         # initialize widgets
         self.drive_name_label = self._init_drive_name_label()
         self.move_to_btn = self._init_move_to_btn()
+        self.terminate_run_btn = self._init_terminate_run_btn()
 
         # initialize "lists" of widgets
         self.axis_target_position_input = []  # type: List[QLineEdit]
@@ -764,6 +765,7 @@ class MGControl(QWidget):
         layout.addSpacing(8)
         layout.addLayout(self._define_layout_vdivider())
         layout.addStretch(1)
+        layout.addWidget(self.terminate_run_btn)
         return layout
 
     def _define_layout_drive_name(self):
@@ -862,6 +864,28 @@ class MGControl(QWidget):
         _txt.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         _txt.setFixedHeight(18)
         return _txt
+
+    def _init_terminate_run_btn(self):
+        _btn = EnableIndicator(parent=self)
+        _btn._enabled_text = "\n".join("RUN")
+        _btn._disabled_text = "\n".join("TERMINATE")
+        _btn.setChecked(False)
+
+        font = self.font()
+        font.setPointSize(8)
+        font.setBold(True)
+        _btn.setFont(font)
+        _btn.setFixedWidth(28)
+        _btn.setSizePolicy(QSizePolicy.Policy.Fixed, QSizePolicy.Policy.Expanding)
+
+        _btn.update_style_sheet(
+            styles={},
+            action="base",
+            reset=True,
+        )
+
+        _btn.setEnabled(False)
+        return _btn
 
     @property
     def mg(self) -> MotionGroup:
