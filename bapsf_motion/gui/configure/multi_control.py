@@ -995,6 +995,8 @@ class MGControl(QWidget):
     def closeEvent(self, event: QCloseEvent):
         self.mg.stop()
         self._mg = None
+        self._rmo = None
+
         event.accept()
 
 
