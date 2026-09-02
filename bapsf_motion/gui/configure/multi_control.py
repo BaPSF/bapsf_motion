@@ -713,6 +713,10 @@ class MGControl(QWidget):
             )
             self.axis_control_widgets.append(ax_control)
 
+        # initialize "complex" widgets
+        # - These widgets require the "base" widgets to be defined first
+        self.move_to_widget = self._init_move_to_widget()
+
         self.setLayout(self._define_layout())
         self.setFixedHeight(int(14 * 12))
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
@@ -765,6 +769,34 @@ class MGControl(QWidget):
         layout.addSpacing(8)
         return layout
 
+    def _define_layout_move_to_widget(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addWidget(self.move_to_btn)
+        layout.addStretch(1)
+
+        for label, input_ in zip(
+            self.axis_target_position_label, self.axis_target_position_input
+        ):
+            layout.addSpacing(3)
+            layout.addLayout(self._define_layout_target_position_row(label, input_))
+            layout.addSpacing(3)
+
+        layout.addStretch(1)
+        return layout
+
+    @staticmethod
+    def _define_layout_target_position_row(label: QLabel, input_: QLineEdit):
+        layout = QHBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+
+        layout.addWidget(label)
+        layout.addSpacing(10)
+        layout.addWidget(input_, stretch=1)
+        return layout
+
     def _init_drive_name_label(self):
         label = QVerticalLabel(self.mg.drive.name, parent=self)
         label.setObjectName("drive_label")
@@ -783,6 +815,12 @@ class MGControl(QWidget):
         font.setPointSize(16)
         _btn.setFont(font)
         return _btn
+
+    def _init_move_to_widget(self):
+        w = QWidget(parent=self)
+        w.setLayout(self._define_layout_move_to_widget())
+        w.setFixedWidth(14 * 12)
+        return w
 
     def _init_target_position_input(self):
         _txt = QLineEdit("", parent=self)
