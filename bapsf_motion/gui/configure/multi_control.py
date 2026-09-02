@@ -151,7 +151,8 @@ class MGControlAxis(QWidget):
     ):
         super().__init__(parent=parent)
 
-        self._logger = gui_logger
+        base_logger = gui_logger if not hasattr(parent, "logger") else parent.logger
+        self._logger = logging.getLogger(f"{base_logger.name}.MGCA")
 
         self._rmo = rmo
         self._mg_id = mg_id
@@ -782,7 +783,8 @@ class MGControl(QWidget):
         self._mg_id = motion_group_id
         self._mg = self._rmo.rm.mgs[motion_group_id]
 
-        self._logger = gui_logger
+        base_logger = gui_logger if not hasattr(parent, "logger") else parent.logger
+        self._logger = logging.getLogger(f"{base_logger.name}.MGC")
 
         # initialize widgets
         self.drive_name_label = self._init_drive_name_label()
