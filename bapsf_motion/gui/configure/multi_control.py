@@ -1098,6 +1098,7 @@ class MGControl(QWidget):
             return
 
         self.move_to_btn.setEnabled(state)
+        self.details_btn.setEnabled(state)
         for ax_control in self.axis_control_widgets:
             ax_control.set_enabled_for_movement(state)
 
