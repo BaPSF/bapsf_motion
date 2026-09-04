@@ -663,8 +663,23 @@ class MGControlAxis(QWidget):
 
         self.update_display_connected()
 
-        self.setEnabled(self.axis.connected)
-        if not self.isEnabled():
+        connected = self.axis.connected
+        self.setEnabled(connected)
+        if not connected:
+            return
+
+        _motor_status = self.axis.motor.status
+
+        limits = _motor_status["limits"]
+        self.limit_fwd_btn.set_valid(state=limits["CW"])
+        self.limit_bwd_btn.set_valid(state=limits["CCW"])
+
+        enabled_state = _motor_status["enabled"]
+        self.enable_btn.setChecked(enabled_state)
+
+        # do not update position / encoder dispalys if the whole motion
+        # group is not connected
+        if not self.mg.connected:
             return
 
         pos = self.position
@@ -680,15 +695,6 @@ class MGControlAxis(QWidget):
         else:
             self.position_ind.setStyleSheet("color: red;")
             self.encoder_ind.setStyleSheet("color: red;")
-
-        _motor_status = self.axis.motor.status
-
-        limits = _motor_status["limits"]
-        self.limit_fwd_btn.set_valid(state=limits["CW"])
-        self.limit_bwd_btn.set_valid(state=limits["CCW"])
-
-        enabled_state = _motor_status["enabled"]
-        self.enable_btn.setChecked(enabled_state)
 
         if self._display_timer_issue_new_single_shot:
             # start another single shot if update_displays()
