@@ -60,7 +60,7 @@ class MGDetailsOverlay(_OverlayWidget):
 
         # instantiate widgets
         self.config_btn = self._init_config_btn()
-        self.done_btn = self._init_done_btn()
+        self.close_btn = self._init_close_btn()
         self.toml_widget = self._init_toml_widget()
 
         self.toml_widget.setPlainText(mg.config.as_toml_string)
@@ -69,7 +69,7 @@ class MGDetailsOverlay(_OverlayWidget):
         self._connect_signals()
 
     def _connect_signals(self):
-        self.done_btn.clicked.connect(self.close)
+        self.close_btn.clicked.connect(self.close)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -87,7 +87,7 @@ class MGDetailsOverlay(_OverlayWidget):
         layout.addStretch(1)
         layout.addWidget(self.config_btn)
         layout.addSpacing(12)
-        layout.addWidget(self.done_btn)
+        layout.addWidget(self.close_btn)
         layout.addStretch(1)
         return layout
 
@@ -101,8 +101,8 @@ class MGDetailsOverlay(_OverlayWidget):
         btn.setEnabled(False)
         return btn
 
-    def _init_done_btn(self):
-        btn = DoneButton("DONE", parent=self)
+    def _init_close_btn(self):
+        btn = DoneButton("CLOSE", parent=self)
         font = btn.font()
         font.setPixelSize(18)
         btn.setFont(font)
@@ -678,7 +678,7 @@ class MGControlAxis(QWidget):
         enabled_state = _motor_status["enabled"]
         self.enable_btn.setChecked(enabled_state)
 
-        # do not update position / encoder dispalys if the whole motion
+        # do not update position / encoder displays if the whole motion
         # group is not connected
         if not self.mg.connected:
             return
