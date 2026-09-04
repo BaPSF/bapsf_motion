@@ -778,9 +778,11 @@ class ConfigureGUI(QMainWindow):
     def _connect_signals_run_widget(self):
         self.run_widget.done_btn.clicked.connect(self.save_and_close)
         self.run_widget.quit_btn.clicked.connect(self.discard_close)
-        self.run_widget.mg_config_btn.clicked.connect(self._motion_group_configure_modify)
         self.run_widget.mg_add_btn.clicked.connect(
             self._switch_to_motion_group_configure_new
+        )
+        self.run_widget.mg_config_btn.clicked.connect(
+            self._switch_to_motion_group_configure_existing
         )
         self.run_widget.mg_control_btn.clicked.connect(self._switch_to_run_control)
 
@@ -912,7 +914,7 @@ class ConfigureGUI(QMainWindow):
         self._switch_stack(which="configure")
 
     @Slot()
-    def _motion_group_configure_modify(self):
+    def _switch_to_motion_group_configure_existing(self):
         item = self.run_widget.mg_list_widget.currentItem()
         key, mg_name = self.run_widget.get_mg_name_from_list_name(item.text())
 
