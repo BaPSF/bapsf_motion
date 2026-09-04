@@ -1,3 +1,8 @@
+"""
+This module contains custom `QObjects` that are used withing the
+`bapsf_motion.gui.configure` framework.
+"""
+
 __all__ = ["RMObject"]
 
 import logging
