@@ -677,7 +677,7 @@ class MGControlAxis(QWidget):
         enabled_state = _motor_status["enabled"]
         self.enable_btn.setChecked(enabled_state)
 
-        # do not update position / encoder dispalys if the whole motion
+        # do not update position / encoder displays if the whole motion
         # group is not connected
         if not self.mg.connected:
             return
