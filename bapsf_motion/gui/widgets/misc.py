@@ -8,13 +8,14 @@ __all__ = [
     "HLinePlain",
     "VLinePlain",
     "QDoublePinnedValidator",
+    "QVerticalLabel",
 ]
 
 import ast
 import logging
 
-from PySide6.QtCore import Qt
-from PySide6.QtGui import QDoubleValidator
+from PySide6.QtCore import QSize, Qt
+from PySide6.QtGui import QDoubleValidator, QPainter
 from PySide6.QtWidgets import QLabel
 
 # import of qtawesome and bapsf_qt must happen after the PySide6 imports
@@ -69,3 +70,16 @@ class QDoublePinnedValidator(QDoubleValidator):
 
         if value > max_value:
             return f"{max_value}"
+
+
+class QVerticalLabel(QLabel):
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.translate(0, self.height())
+        painter.rotate(-90)
+        painter.drawText(0, 0, self.height(), self.width(), self.alignment(), self.text())
+
+    # Crucial: Swap size hints for layout management
+    def sizeHint(self):
+        s = super().sizeHint()
+        return QSize(s.height(), s.width())

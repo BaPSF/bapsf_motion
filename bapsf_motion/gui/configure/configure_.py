@@ -40,6 +40,7 @@ from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
+from bapsf_motion.gui.configure.multi_control import MultiControl
 from bapsf_motion.gui.configure.toml_ import TOMLText
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict
@@ -403,6 +404,7 @@ class RunWidget(QWidget):
         self.mg_add_btn = self._init_mg_add_btn()
         self.mg_list_widget = self._init_mg_list_widget()
         self.mg_config_btn = self._init_mg_config_btn()
+        self.mg_control_btn = self._init_mg_control_btn()
         self.mg_remove_btn = self._init_mg_remove_btn()
         self.quit_btn = self._init_quit_btn()
         self.run_name_label = self._init_run_name_label()
@@ -488,6 +490,8 @@ class RunWidget(QWidget):
         layout.addLayout(self._define_control_row1_button_layout())
         layout.addSpacing(8)
         layout.addWidget(self.mg_config_btn)
+        layout.addSpacing(24)
+        layout.addWidget(self.mg_control_btn)
         return layout
 
     def _define_control_run_name_layout(self):
@@ -534,6 +538,13 @@ class RunWidget(QWidget):
         _btn.setFixedHeight(38)
         _btn.setPointSize(16)
         _btn.setEnabled(False)
+        return _btn
+
+    def _init_mg_control_btn(self):
+        _btn = StyleButton("Control All", parent=self)
+        _btn.setFixedHeight(7 * 8)
+        _btn.setPointSize(16)
+        _btn.setEnabled(True)
         return _btn
 
     def _init_mg_remove_btn(self):
@@ -737,6 +748,7 @@ class ConfigureGUI(QMainWindow):
         )
 
         # Initialize Qt widgets and objects
+        self.control_widget = None  # type: MultiControl | None
         self._log_widget = self._init_log_widget()
         self.mg_widget = None  # type: MGWidget | None
         self._rmo = self._init_rmo(config=config)
@@ -766,14 +778,22 @@ class ConfigureGUI(QMainWindow):
     def _connect_signals_run_widget(self):
         self.run_widget.done_btn.clicked.connect(self.save_and_close)
         self.run_widget.quit_btn.clicked.connect(self.discard_close)
-        self.run_widget.mg_add_btn.clicked.connect(self._motion_group_configure_new)
-        self.run_widget.mg_config_btn.clicked.connect(self._motion_group_configure_modify)
+        self.run_widget.mg_add_btn.clicked.connect(
+            self._switch_to_motion_group_configure_new
+        )
+        self.run_widget.mg_config_btn.clicked.connect(
+            self._switch_to_motion_group_configure_existing
+        )
+        self.run_widget.mg_control_btn.clicked.connect(self._switch_to_run_control)
 
     def _connect_signals_mg_widget(self):
         # Note: used during _spawn_mg_widget()
         #
-        self.mg_widget.closing.connect(self._switch_stack)
+        self.mg_widget.closing.connect(partial(self._switch_stack, which="run"))
         self.mg_widget.returnConfig.connect(self._motion_group_configure_return)
+
+    def _connect_signals_control_widget(self):
+        self.control_widget.closing.connect(partial(self._switch_stack, which="run"))
 
     def _define_main_window(self):
         self.setWindowTitle("Run Configuration")
@@ -889,12 +909,12 @@ class ConfigureGUI(QMainWindow):
         self.close()
 
     @Slot()
-    def _motion_group_configure_new(self):
+    def _switch_to_motion_group_configure_new(self):
         self._spawn_mg_widget()
-        self._switch_stack()
+        self._switch_stack(which="configure")
 
     @Slot()
-    def _motion_group_configure_modify(self):
+    def _switch_to_motion_group_configure_existing(self):
         item = self.run_widget.mg_list_widget.currentItem()
         key, mg_name = self.run_widget.get_mg_name_from_list_name(item.text())
 
@@ -909,7 +929,12 @@ class ConfigureGUI(QMainWindow):
         self._mg_being_modified = mg
         self._spawn_mg_widget(mg)
         self.mg_widget.mg_index = key
-        self._switch_stack()
+        self._switch_stack(which="configure")
+
+    @Slot()
+    def _switch_to_run_control(self):
+        self._spawn_control_widget()
+        self._switch_stack(which="control")
 
     def _set_defaults(self, defaults: Path | str | Dict[str, Any] | None):
         if defaults is None:
@@ -1009,19 +1034,53 @@ class ConfigureGUI(QMainWindow):
 
         return self.mg_widget
 
-    @Slot()
-    def _switch_stack(self):
+    def _spawn_control_widget(self):
+        rm = self.rmo.rm
+        if not isinstance(rm, RunManager):
+            # nothing to control
+            return
+
+        self.control_widget = MultiControl(rmo=self.rmo, parent=self)
+        self._connect_signals_control_widget()
+        return self.control_widget
+
+    @Slot(str)
+    def _switch_stack(self, which: Literal["run", "configure", "control"] | None = None):
+        if not isinstance(which, str) or which not in ("run", "configure", "control"):
+            which = "run"
+
         _w = self._stacked_widget.currentWidget()
-        if isinstance(_w, RunWidget):
-            self._stacked_widget.addWidget(self.mg_widget)
-            self._stacked_widget.setCurrentWidget(self.mg_widget)
-        else:
-            # the stack widget is the MGWidget instance
+        if (
+            (which == "run" and isinstance(_w, RunWidget))
+            or (which == "configure" and isinstance(_w, MGWidget))
+            or (which == "control" and isinstance(_w, MultiControl))
+        ):
+            # requested stack widget already displayed
+            return
+
+        if not isinstance(_w, RunWidget):
             self._stacked_widget.removeWidget(_w)
-            self._stacked_widget.setCurrentIndex(0)
             _w.close()
             _w.deleteLater()
             self.mg_widget = None
+            self.control_widget = None
+
+        # switch to RunWidget
+        if which == "run":
+            self._stacked_widget.setCurrentIndex(0)
+            return
+
+        # switch to MGWidget
+        if which == "configure" and isinstance(self.mg_widget, MGWidget):
+            self._stacked_widget.addWidget(self.mg_widget)
+            self._stacked_widget.setCurrentWidget(self.mg_widget)
+            return
+
+        # switch to MultiControl
+        if which == "control" and isinstance(self.control_widget, MultiControl):
+            self._stacked_widget.addWidget(self.control_widget)
+            self._stacked_widget.setCurrentWidget(self.control_widget)
+            return
 
     @Slot(int, object)
     def _motion_group_configure_return(self, index: int, mg_config: Dict[str, Any]):
@@ -1159,6 +1218,9 @@ class ConfigureGUI(QMainWindow):
         if isinstance(self.mg_widget, MGWidget):
             self.mg_widget.close()
 
+        if isinstance(self.control_widget, MultiControl):
+            self.control_widget.close()
+
         self.run_widget.close()
 
         for _window in self._launched_windows.values():
@@ -1166,7 +1228,7 @@ class ConfigureGUI(QMainWindow):
             _window.deleteLater()
         self._launched_windows = dict()
 
-        event.accept()
+        super().closeEvent(event)
 
 
 class ConfigureApp(QApplication):
