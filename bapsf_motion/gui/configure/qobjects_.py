@@ -33,9 +33,13 @@ class RunManagerObject(QObject):
 
         # Initialize Attributes
         self._logger = logging.getLogger(f"{gui_logger.name}.RMO")
-        self._rm = None  # type: RunManager | None
 
+        self._rm = None
         self.replace_rm(config=config)
+        if not isinstance(self._rm, RunManager):
+            message = f"The specified RunManager configuration is not valid.\n {config}"
+            self.logger.error(message)
+            raise ValueError(message)
 
         self._connect_signals()
 
@@ -46,14 +50,15 @@ class RunManagerObject(QObject):
         return self._logger
 
     @property
-    def rm(self) -> RunManager | None:
+    def rm(self) -> RunManager:
         return self._rm
 
     @rm.setter
-    def rm(self, new_rm):
+    def rm(self, new_rm: RunManager):
         if not isinstance(new_rm, RunManager):
             return
-        elif isinstance(self._rm, RunManager):
+
+        if isinstance(self._rm, RunManager):
             self._rm.terminate(disconnect_signals=True)
 
         self._rm = new_rm
@@ -97,6 +102,9 @@ class RunManagerObject(QObject):
         rm = self.rm
         if not isinstance(rm, RunManager):
             # No RunManager to restart
+            self.logger.warning(
+                "Unable to run the RunManger instance.  There is NO instance to run."
+            )
             return
 
         if (
