@@ -37,11 +37,11 @@ from typing import Any, Dict, Literal, TYPE_CHECKING
 
 from bapsf_motion.actors import MotionGroup, RunManager, RunManagerConfig
 from bapsf_motion.gui.calculators import LaPDXYTransformCalculator
-from bapsf_motion.gui.configure.actor_objects import RMObject
 from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dict
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 from bapsf_motion.gui.configure.multi_control import MultiControl
+from bapsf_motion.gui.configure.qobjects_ import RMObject
 from bapsf_motion.gui.configure.toml_ import TOMLText
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict

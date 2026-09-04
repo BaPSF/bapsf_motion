@@ -60,8 +60,8 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent, QResizeEvent
 
     from bapsf_motion.gui.configure.bases import _ConfigOverlay
-    from bapsf_motion.gui.configure.actor_objects import RMObject
     from bapsf_motion.gui.configure.configure_ import ConfigureGUI
+    from bapsf_motion.gui.configure.qobjects_ import RMObject
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa

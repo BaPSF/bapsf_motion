@@ -46,8 +46,8 @@ import qtawesome as qta  # noqa
 if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
-    from bapsf_motion.gui.configure.actor_objects import RMObject
     from bapsf_motion.gui.configure.configure_ import ConfigureGUI
+    from bapsf_motion.gui.configure.qobjects_ import RMObject
 
 
 class MGDetailsOverlay(_OverlayWidget):
