@@ -101,7 +101,7 @@ class MGDetailsOverlay(_OverlayWidget):
         return btn
 
     def _init_done_btn(self):
-        btn = DoneButton("DONE", parent=self)
+        btn = DoneButton("CLOSE", parent=self)
         font = btn.font()
         font.setPixelSize(18)
         btn.setFont(font)
