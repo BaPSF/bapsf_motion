@@ -61,7 +61,7 @@ if TYPE_CHECKING:
 
     from bapsf_motion.gui.configure.bases import _ConfigOverlay
     from bapsf_motion.gui.configure.configure_ import ConfigureGUI
-    from bapsf_motion.gui.configure.qobjects_ import RMObject
+    from bapsf_motion.gui.configure.qobjects_ import RunManagerObject
 
 # import of qtawesome must happen after the PySide6 imports
 import qtawesome as qta  # noqa
@@ -407,7 +407,7 @@ class MGWidget(QWidget):
         *,
         mg_config: MotionGroupConfig | None = None,
         defaults: Dict[str, Any] | None = None,
-        rmo: RMObject,
+        rmo: RunManagerObject,
         parent: ConfigureGUI,
     ):
         super().__init__(parent=parent)

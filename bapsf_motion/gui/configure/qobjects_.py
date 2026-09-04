@@ -3,7 +3,7 @@ This module contains custom `QObjects` that are used withing the
 `bapsf_motion.gui.configure` framework.
 """
 
-__all__ = ["RMObject"]
+__all__ = ["RunManagerObject"]
 
 import logging
 
@@ -15,7 +15,7 @@ from bapsf_motion.actors import RunManager, RunManagerConfig
 from bapsf_motion.gui.configure.helpers import gui_logger
 
 
-class RMObject(QObject):
+class RunManagerObject(QObject):
     """
     A `QObject` that contains the actual `RunManager` instance and
     defines the supporting operations onto the `RunManger` that the

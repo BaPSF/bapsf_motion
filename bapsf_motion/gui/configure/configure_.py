@@ -41,7 +41,7 @@ from bapsf_motion.gui.configure.helpers import gui_logger, gui_logger_config_dic
 from bapsf_motion.gui.configure.message_boxes import WarningMessageBox
 from bapsf_motion.gui.configure.motion_group_widget import MGWidget
 from bapsf_motion.gui.configure.multi_control import MultiControl
-from bapsf_motion.gui.configure.qobjects_ import RMObject
+from bapsf_motion.gui.configure.qobjects_ import RunManagerObject
 from bapsf_motion.gui.configure.toml_ import TOMLText
 from bapsf_motion.gui.configure.transform_overlay import TransformConfigOverlay
 from bapsf_motion.gui.icons import icon_name_dict
@@ -241,13 +241,13 @@ class RunWidget(QWidget):
 
     def __init__(
         self,
-        rmo: RMObject,
+        rmo: RunManagerObject,
         parent: "ConfigureGUI",
         enable_run_name: bool = True,
     ):
         super().__init__(parent=parent)
         self._configure_gui = parent  # type: "ConfigureGUI"
-        self._rmo = rmo  # type: RMObject
+        self._rmo = rmo  # type: RunManagerObject
 
         # Initialize attributes
         self._logger = gui_logger
@@ -451,7 +451,7 @@ class RunWidget(QWidget):
         return self._logger
 
     @property
-    def rmo(self) -> RMObject:
+    def rmo(self) -> RunManagerObject:
         return self._rmo
 
     @property
@@ -506,7 +506,7 @@ class RunWidget(QWidget):
 
     @Slot()
     def _handle_toml_import(self):
-        # needs to update RMObject and allow the RMObject.configChanged
+        # needs to update RunManagerObject and allow the RunManagerObject.configChanged
         # to update the RunWidget displays
         ...
 
@@ -704,7 +704,7 @@ class ConfigureGUI(QMainWindow):
             )
             config = {"name": run_name}
 
-        _rmo = RMObject(config=config, parent=self)
+        _rmo = RunManagerObject(config=config, parent=self)
 
         if isinstance(_rmo.rm, RunManager):
             _rmo.rm.logger.addHandler(self._log_widget.handler)
@@ -745,7 +745,7 @@ class ConfigureGUI(QMainWindow):
         return self.rmo.rm
 
     @property
-    def rmo(self) -> RMObject:
+    def rmo(self) -> RunManagerObject:
         return self._rmo
 
     @Slot()
@@ -825,7 +825,7 @@ class ConfigureGUI(QMainWindow):
 
     def update_motion_builder_defaults(self):
         rmo = self.rmo
-        if not isinstance(rmo, RMObject) or not isinstance(rmo.rm, RunManager):
+        if not isinstance(rmo, RunManagerObject) or not isinstance(rmo.rm, RunManager):
             self._defaults_updated = None
             return
 

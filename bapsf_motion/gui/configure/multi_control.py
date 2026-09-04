@@ -47,7 +47,7 @@ if TYPE_CHECKING:
     from PySide6.QtGui import QCloseEvent
 
     from bapsf_motion.gui.configure.configure_ import ConfigureGUI
-    from bapsf_motion.gui.configure.qobjects_ import RMObject
+    from bapsf_motion.gui.configure.qobjects_ import RunManagerObject
 
 
 class MGDetailsOverlay(_OverlayWidget):
@@ -145,7 +145,7 @@ class MGControlAxis(QWidget):
     def __init__(
         self,
         *,
-        rmo: RMObject,
+        rmo: RunManagerObject,
         mg_id: str | int,
         ax_id: int,
         parent: QWidget | None = None,
@@ -785,7 +785,7 @@ class MGControl(QWidget):
     movementStopped = Signal()
     requestDetailPopUp = Signal(str)
 
-    def __init__(self, *, rmo: RMObject, motion_group_id: str | int, parent: QWidget):
+    def __init__(self, *, rmo: RunManagerObject, motion_group_id: str | int, parent: QWidget):
         super().__init__(parent)
         self._rmo = rmo
         self._mg_id = motion_group_id
@@ -1142,7 +1142,7 @@ class MultiControl(QWidget):
     closing = Signal()
     returnConfig = Signal(int, object)
 
-    def __init__(self, *, rmo: RMObject, parent: ConfigureGUI):
+    def __init__(self, *, rmo: RunManagerObject, parent: ConfigureGUI):
         super().__init__(parent)
         self._rmo = rmo
         self._configure_gui = parent
@@ -1203,7 +1203,7 @@ class MultiControl(QWidget):
         return self.rmo.rm
 
     @property
-    def rmo(self) -> RMObject:
+    def rmo(self) -> RunManagerObject:
         return self._rmo
 
     def _init_return_btn(self):
