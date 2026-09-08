@@ -796,7 +796,8 @@ class ConfigureGUI(QMainWindow):
         if defaults is None:
             self._defaults = None
             return
-        elif isinstance(defaults, str):
+
+        if isinstance(defaults, str):
             # could be path to TOML file or a TOML like string
             if Path(defaults).exists():
                 with open(defaults, "rb") as f:
