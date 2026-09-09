@@ -1307,6 +1307,7 @@ class MultiControl(QWidget):
             border-radius: 5px;
             padding: 6px;
             margin: 0px;
+            background-color: rgb(227, 227, 230);
         }
         """)
 
