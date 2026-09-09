@@ -415,6 +415,8 @@ class RunWidget(QWidget):
         self.setLayout(self._define_layout())
         self._connect_signals()
 
+        self.update_display_timer.start()
+
     def _connect_signals(self):
         self.updateDisplays.connect(self._handle_display_update)
         self.rmo.configChanged.connect(self._handle_display_update)
