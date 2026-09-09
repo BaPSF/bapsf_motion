@@ -588,7 +588,7 @@ class RunWidget(QWidget):
     def _init_update_display_timer(self):
         timer = QTimer(parent=self)
         timer.setInterval(500)
-        timer.setSingleShot(True)
+        timer.setSingleShot(False)
         return timer
 
     @Slot()
