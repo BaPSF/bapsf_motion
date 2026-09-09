@@ -673,10 +673,14 @@ class RunWidget(QWidget):
         rm_name = rm.config["name"]
         self.run_name_widget.setText(rm_name)
 
-    def update_display_mg_list(self):
-        self.mg_list_widget.clear()
-        self.mg_remove_btn.setEnabled(False)
-        self.mg_config_btn.setEnabled(False)
+    def update_display_mg_list(self, rewrite: bool = True):
+        # rewrite = True then the whole list will be rewritten
+        # rewrite = False contents are just refreshed
+        #
+        if rewrite:
+            self.mg_list_widget.clear()
+            self.mg_remove_btn.setEnabled(False)
+            self.mg_config_btn.setEnabled(False)
 
         rm = self.rm
         if not isinstance(rm, RunManager) or len(rm.mgs) == 0:
@@ -684,11 +688,12 @@ class RunWidget(QWidget):
 
         for key, mg in rm.mgs.items():
             label = self.generate_mg_list_name(key, mg.config["name"])
-            self.logger.info(f"Adding to MG List - {label}")
+            self.logger.debug(f"Adding to MG List - {label}")
 
             is_valid = True
-            tooltip = None
             if not mg.connected:
+            tooltip = ""
+            _icon = None
                 is_valid = False
                 tooltip = "TCP connection not successful for all axes."
             elif not isinstance(mg.mb, MotionBuilder):
@@ -702,18 +707,31 @@ class RunWidget(QWidget):
                 tooltip = "Transform not configured."
             # TODO: ADD CASE WHEN ENCODER AND POSITION ARE NOT EQUAL
 
-            _icon = (
-                qta.icon(icon_name_dict["window-close"], color="red")
-                if not is_valid
-                else qta.icon(icon_name_dict["check-circle"], color="green")
-            )  # type: QIcon
+            if _icon is None and is_valid:
+                _icon = qta.icon(icon_name_dict["check-circle"], color="green")
+            elif _icon is None:
+                _icon = qta.icon(icon_name_dict["window-close"], color="red")
 
-            _item = QListWidgetItem(
-                _icon,
-                label,
-                listview=self.mg_list_widget,
-            )
-            if not is_valid and tooltip is not None:
+            if rewrite:
+                _item = QListWidgetItem(
+                    _icon,
+                    label,
+                    listview=self.mg_list_widget,
+                )
+                _item.setToolTip(tooltip)
+            else:
+                items = self.mg_list_widget.findItems(label, Qt.MatchFlag.MatchExactly)
+
+                if len(items) != 1:
+                    # The motion groups defined in the RunManager do NOT perfectly
+                    # match the current list widget contents.  Must do a rewrite
+                    # instead of just a refresh.
+                    #
+                    self.updateDisplays.emit()
+                    return
+
+                _item = items[0]
+                _item.setIcon(_icon)
                 _item.setToolTip(tooltip)
 
     def closeEvent(self, event: QCloseEvent):
