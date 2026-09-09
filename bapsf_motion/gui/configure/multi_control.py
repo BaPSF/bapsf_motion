@@ -1180,9 +1180,8 @@ class MultiControl(QWidget):
         layout.addWidget(self.stop_btn)
 
         for mg_id, mg in self.rm.mgs.items():
-            if mg.terminated or not mg.connected:
-                continue
-
+            # if mg.terminated or not mg.connected:
+            #     continue
             _widget = self._spawn_mg_control_widget(mg_id)
 
             layout.addSpacing(8)
