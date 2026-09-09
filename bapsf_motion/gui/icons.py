@@ -13,5 +13,8 @@ icon_name_dict.update(
     {
         "arrow-left": f"{family}.arrow-left",
         "arrow-right": f"{family}.arrow-right",
+        "robot-dead": "mdi.robot-dead-outline",
+        "wifi-offline": "ri.wifi-off-line",
+        "wifi-online": "ri.wifi-line",
     }
 )
