@@ -803,6 +803,7 @@ class MGControl(QWidget):
         self.details_btn = self._init_details_btn()
         self.drive_name_label = self._init_drive_name_label()
         self.move_to_btn = self._init_move_to_btn()
+        self.park_btn = self._init_park_btn()
         self.terminate_run_btn = self._init_terminate_run_btn()
 
         # initialize "lists" of widgets
@@ -972,6 +973,28 @@ class MGControl(QWidget):
         w.setLayout(self._define_layout_move_to_widget())
         w.setFixedWidth(14 * 12)
         return w
+
+    def _init_park_btn(self):
+        _btn = IconButton(
+            icon_name_dict["park"],
+            color="rgb(52, 56, 75)",
+            parent=self,
+        )
+        _btn.setObjectName("park_btn")
+        _btn.setFixedHeight(3 * 12)
+        _btn.setFixedWidth(3 * 12)
+        _btn.setIconSize(int(2.5 * 12))
+        _btn.update_style_sheet(
+            # styles={"background-color": "rgb(165, 185, 233)"},
+            styles={"background-color": "rgb(180, 192, 255)"},
+            action="base",
+        )
+        _btn.setToolTip("Set target position to park position.")
+
+        if self.mg.drive.naxes != 2:
+            _btn.setVisible(False)
+
+        return _btn
 
     def _init_target_position_input(self):
         _txt = QLineEdit("", parent=self)
