@@ -838,6 +838,12 @@ class MGControl(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._connect_signals()
 
+        if self.mg.terminated or not self.mg.connected:
+            self._handle_connection_lost()
+            self.terminate_run_btn.setChecked(True)
+            self.terminate_run_btn.clicked.emit()
+            return
+
         self.update_display_target_position()
 
     def _connect_signals(self):
