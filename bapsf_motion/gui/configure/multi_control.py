@@ -850,6 +850,7 @@ class MGControl(QWidget):
     def _connect_signals(self):
         self.details_btn.clicked.connect(self._handle_details_btn_clicked)
         self.move_to_btn.clicked.connect(self._move_to)
+        self.park_btn.clicked.connect(self._handle_park_btn_clicked)
         self.terminate_run_btn.clicked.connect(self._handle_terminate_run_clicked)
 
         for input_ in self.axis_target_position_input:
@@ -1120,6 +1121,16 @@ class MGControl(QWidget):
 
         self.set_enabled_for_movement(True)
         self.movementStopped.emit()
+
+    @Slot()
+    def _handle_park_btn_clicked(self):
+        # set target position to (40, 0)
+        if self.mg.drive.naxes not in (2, 3):
+            return
+
+        park = [40.0, 0.0, 0.0]
+        for value, input_ in zip(park, self.axis_target_position_input):
+            input_.setText(f"{value:.2f}")
 
     @Slot()
     def _handle_terminate_run_clicked(self):
