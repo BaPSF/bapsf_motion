@@ -947,11 +947,13 @@ class ConfigureGUI(QMainWindow):
 
     @Slot()
     def _switch_to_motion_group_configure_new(self):
+        self.logger.info("Activating Motion Group Configure (new)...")
         self._spawn_mg_widget()
         self._switch_stack(which="configure")
 
     @Slot()
     def _switch_to_motion_group_configure_existing(self):
+        self.logger.info("Activating Motion Group Configure (existing)...")
         item = self.run_widget.mg_list_widget.currentItem()
         key, mg_name = self.run_widget.get_mg_name_from_list_name(item.text())
 
@@ -970,6 +972,7 @@ class ConfigureGUI(QMainWindow):
 
     @Slot()
     def _switch_to_run_control(self):
+        self.logger.info("Activating Multi-Control...")
         self._spawn_control_widget()
         self._switch_stack(which="control")
 
@@ -1104,6 +1107,7 @@ class ConfigureGUI(QMainWindow):
 
         # switch to RunWidget
         if which == "run":
+            self.logger.info("Activating (default) RunWidget...")
             self._stacked_widget.setCurrentIndex(0)
             return
 
