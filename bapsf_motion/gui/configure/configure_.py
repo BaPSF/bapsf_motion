@@ -691,11 +691,16 @@ class RunWidget(QWidget):
             self.logger.debug(f"Adding to MG List - {label}")
 
             is_valid = True
-            if not mg.connected:
             tooltip = ""
             _icon = None
+            if mg.terminated:
+                is_valid = False
+                tooltip = "Motion Group is Terminated.  Try to re-configure."
+                _icon = qta.icon(icon_name_dict["robot-dead"], color="red")
+            elif not mg.connected:
                 is_valid = False
                 tooltip = "TCP connection not successful for all axes."
+                _icon = qta.icon(icon_name_dict["wifi-offline"], color="red")
             elif not isinstance(mg.mb, MotionBuilder):
                 is_valid = False
                 tooltip = "MotionBuilder not configured."
