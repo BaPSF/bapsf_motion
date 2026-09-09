@@ -904,10 +904,16 @@ class MGControl(QWidget):
         return layout
 
     def _define_layout_move_to_widget(self):
+        btn_row_layout = QHBoxLayout()
+        btn_row_layout.setContentsMargins(0, 0, 0, 0)
+        btn_row_layout.setSpacing(8)
+        btn_row_layout.addWidget(self.park_btn)
+        btn_row_layout.addWidget(self.move_to_btn, stretch=1)
+
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        layout.addWidget(self.move_to_btn)
+        layout.addLayout(btn_row_layout)
         layout.addStretch(1)
 
         for label, input_ in zip(
