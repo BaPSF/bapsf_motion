@@ -992,7 +992,6 @@ class MGControl(QWidget):
         _btn.setFixedWidth(3 * 12)
         _btn.setIconSize(int(2.5 * 12))
         _btn.update_style_sheet(
-            # styles={"background-color": "rgb(165, 185, 233)"},
             styles={"background-color": "rgb(180, 192, 255)"},
             action="base",
         )
