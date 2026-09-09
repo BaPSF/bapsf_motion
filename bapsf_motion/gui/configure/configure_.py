@@ -691,7 +691,10 @@ class RunWidget(QWidget):
 
         rm = self.rm
         if not isinstance(rm, RunManager) or len(rm.mgs) == 0:
+            self.mg_control_btn.setEnabled(False)
             return
+
+        self.mg_control_btn.setEnabled(True)
 
         for key, mg in rm.mgs.items():
             label = self.generate_mg_list_name(key, mg.config["name"])
