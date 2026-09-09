@@ -423,6 +423,7 @@ class RunWidget(QWidget):
         self.mg_remove_btn.clicked.connect(self._handle_remove_motion_group)
         self.run_name_widget.editingFinished.connect(self._handle_run_name_change)
         self.toml_widget.tomlImported.connect(self._handle_toml_import)
+        self.update_display_timer.timeout.connect(self._handle_update_display_timer)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -630,6 +631,10 @@ class RunWidget(QWidget):
         self.update_display_toml_text()
         self.update_display_rm_name()
         self.update_display_mg_list()
+
+    @Slot()
+    def _handle_update_display_timer(self):
+        self.update_display_mg_list(rewrite=False)
 
     @Slot()
     def _handle_remove_motion_group(self):
