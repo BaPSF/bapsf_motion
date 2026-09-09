@@ -1115,12 +1115,14 @@ class ConfigureGUI(QMainWindow):
         if which == "configure" and isinstance(self.mg_widget, MGWidget):
             self._stacked_widget.addWidget(self.mg_widget)
             self._stacked_widget.setCurrentWidget(self.mg_widget)
+            self.run_widget.update_display_timer.stop()
             return
 
         # switch to MultiControl
         if which == "control" and isinstance(self.control_widget, MultiControl):
             self._stacked_widget.addWidget(self.control_widget)
             self._stacked_widget.setCurrentWidget(self.control_widget)
+            self.run_widget.update_display_timer.stop()
             return
 
     @Slot(int, object)
