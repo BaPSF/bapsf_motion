@@ -1362,6 +1362,9 @@ class MultiControl(QWidget):
 
         self.return_btn.setEnabled(state)
 
+        for mg_control in self.mg_control_widgets.values():
+            mg_control.details_btn.setEnabled(state)
+
     def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")
 
