@@ -1109,6 +1109,7 @@ class ConfigureGUI(QMainWindow):
         if which == "run":
             self.logger.info("Activating (default) RunWidget...")
             self._stacked_widget.setCurrentIndex(0)
+            self.run_widget.update_display_timer.start()
             return
 
         # switch to MGWidget
