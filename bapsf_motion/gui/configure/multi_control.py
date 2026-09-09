@@ -19,7 +19,7 @@ from PySide6.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from typing import List, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 
 from bapsf_motion.actors import Axis, MotionGroup, RunManager
 from bapsf_motion.gui.configure.bases import _OverlayWidget
@@ -1158,7 +1158,7 @@ class MultiControl(QWidget):
         # Initialize Widgets
         self.return_btn = self._init_return_btn()
         self.stop_btn = self._init_stop_btn()
-        self.mg_control_widgets = {}
+        self.mg_control_widgets = {}  # type: Dict[str | int, MGControl]
         self._overlay_widget = None  # type: MGDetailsOverlay | None
 
         # Setup Self
