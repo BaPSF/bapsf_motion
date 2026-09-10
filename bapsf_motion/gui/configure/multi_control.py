@@ -1218,6 +1218,10 @@ class MultiControl(QWidget):
         self.stop_btn.clicked.connect(self.stop_all)
 
     def _define_layout(self):
+        scroll_widget = QWidget(parent=self)
+        scroll_widget.setLayout(self._define_layout_mg_controls())
+        self.scroll_area.setWidget(scroll_widget)
+
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
@@ -1226,16 +1230,8 @@ class MultiControl(QWidget):
         layout.addWidget(HLinePlain(parent=self))
         layout.addSpacing(8)
         layout.addWidget(self.stop_btn)
-
-        for mg_id, mg in self.rm.mgs.items():
-            # if mg.terminated or not mg.connected:
-            #     continue
-            _widget = self._spawn_mg_control_widget(mg_id)
-
-            layout.addSpacing(8)
-            layout.addWidget(_widget)
-
-        layout.addStretch(1)
+        layout.addSpacing(8)
+        layout.addWidget(self.scroll_area, stretch=1)
         return layout
 
     def _define_layout_banner(self):
@@ -1244,6 +1240,18 @@ class MultiControl(QWidget):
         layout.setSpacing(0)
         layout.addWidget(self.return_btn)
         layout.addStretch()
+        return layout
+
+    def _define_layout_mg_controls(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+
+        for mg_id, mg in self.rm.mgs.items():
+            _widget = self._spawn_mg_control_widget(mg_id)
+            layout.addWidget(_widget)
+
+        layout.addStretch(1)
         return layout
 
     @property
