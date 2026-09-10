@@ -1239,7 +1239,7 @@ class MultiControl(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addWidget(self.return_btn)
-        layout.addStretch()
+        layout.addStretch(1)
         return layout
 
     def _define_layout_mg_controls(self):
