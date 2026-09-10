@@ -15,7 +15,7 @@ import re
 
 from functools import partial
 from pathlib import Path
-from PySide6.QtCore import QDir, QObject, Qt, Signal, Slot
+from PySide6.QtCore import QDir, QObject, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -123,6 +123,14 @@ class RMObject(QObject):
                     f" for motion group '{mg.name}'.  Removing motion group."
                 )
                 _remove.append(key)
+                continue
+
+            if not mg.connected:
+                # MotionGroup failed to fully connect on initialization.
+                # Terminate the MotionGroup and require the user to go
+                # into config mode to remedy the situation.
+                #
+                mg.terminate(delay_loop_stop=True)
 
         for key in _remove:
             _rm.remove_motion_group(key)
@@ -157,6 +165,15 @@ class RMObject(QObject):
             return
 
         rm.run(auto_run=auto_run, force_run=force_run)
+
+        for mg in rm.mgs.values():
+            if not mg.connected:
+                # MotionGroup failed to fully re-connect.
+                # Terminate the MotionGroup and require the user to go
+                # into config mode to remedy the situation.
+                #
+                mg.terminate(delay_loop_stop=True)
+
         self.configChanged.emit()
 
     def add_motion_group(self, index: int, mg_config: Dict[str, Any]):
@@ -408,9 +425,12 @@ class RunWidget(QWidget):
         self.run_name_label = self._init_run_name_label()
         self.run_name_widget = self._init_run_name_widget()
         self.toml_widget = self._init_toml_widget()
+        self.update_display_timer = self._init_update_display_timer()
 
         self.setLayout(self._define_layout())
         self._connect_signals()
+
+        self.update_display_timer.start()
 
     def _connect_signals(self):
         self.updateDisplays.connect(self._handle_display_update)
@@ -420,6 +440,7 @@ class RunWidget(QWidget):
         self.mg_remove_btn.clicked.connect(self._handle_remove_motion_group)
         self.run_name_widget.editingFinished.connect(self._handle_run_name_change)
         self.toml_widget.tomlImported.connect(self._handle_toml_import)
+        self.update_display_timer.timeout.connect(self._handle_update_display_timer)
 
     def _define_layout(self):
         layout = QVBoxLayout()
@@ -573,6 +594,12 @@ class RunWidget(QWidget):
         _widget.setFixedWidth(500)
         return _widget
 
+    def _init_update_display_timer(self):
+        timer = QTimer(parent=self)
+        timer.setInterval(500)
+        timer.setSingleShot(False)
+        return timer
+
     @Slot()
     def enable_mg_buttons(self):
         self.mg_add_btn.setEnabled(True)
@@ -612,6 +639,10 @@ class RunWidget(QWidget):
         self.update_display_toml_text()
         self.update_display_rm_name()
         self.update_display_mg_list()
+
+    @Slot()
+    def _handle_update_display_timer(self):
+        self.update_display_mg_list(rewrite=False)
 
     @Slot()
     def _handle_remove_motion_group(self):
@@ -655,10 +686,14 @@ class RunWidget(QWidget):
         rm_name = rm.config["name"]
         self.run_name_widget.setText(rm_name)
 
-    def update_display_mg_list(self):
-        self.mg_list_widget.clear()
-        self.mg_remove_btn.setEnabled(False)
-        self.mg_config_btn.setEnabled(False)
+    def update_display_mg_list(self, rewrite: bool = True):
+        # rewrite = True then the whole list will be rewritten
+        # rewrite = False contents are just refreshed
+        #
+        if rewrite:
+            self.mg_list_widget.clear()
+            self.mg_remove_btn.setEnabled(False)
+            self.mg_config_btn.setEnabled(False)
 
         rm = self.rm
         if not isinstance(rm, RunManager) or len(rm.mgs) == 0:
@@ -669,10 +704,20 @@ class RunWidget(QWidget):
             self.logger.info(f"Adding to MG List - {label}")
 
             is_valid = True
-            tooltip = None
-            if not mg.connected:
+            tooltip = ""
+            _icon = None
+            if mg.terminated:
+                is_valid = False
+                tooltip = (
+                    "Motion Group is Terminated.  It is likely the MG did NOT "
+                    "fully connect on initialization or re-run, and was forcibly "
+                    "terminated.   Try to re-configure."
+                )
+                _icon = qta.icon(icon_name_dict["robot-dead"], color="red")
+            elif not mg.connected:
                 is_valid = False
                 tooltip = "TCP connection not successful for all axes."
+                _icon = qta.icon(icon_name_dict["wifi-offline"], color="red")
             elif not isinstance(mg.mb, MotionBuilder):
                 is_valid = False
                 tooltip = "MotionBuilder not configured."
@@ -684,18 +729,31 @@ class RunWidget(QWidget):
                 tooltip = "Transform not configured."
             # TODO: ADD CASE WHEN ENCODER AND POSITION ARE NOT EQUAL
 
-            _icon = (
-                qta.icon(icon_name_dict["window-close"], color="red")
-                if not is_valid
-                else qta.icon(icon_name_dict["check-circle"], color="green")
-            )  # type: QIcon
+            if _icon is None and is_valid:
+                _icon = qta.icon(icon_name_dict["check-circle"], color="green")
+            elif _icon is None:
+                _icon = qta.icon(icon_name_dict["window-close"], color="red")
 
-            _item = QListWidgetItem(
-                _icon,
-                label,
-                listview=self.mg_list_widget,
-            )
-            if not is_valid and tooltip is not None:
+            if rewrite:
+                _item = QListWidgetItem(
+                    _icon,
+                    label,
+                    listview=self.mg_list_widget,
+                )
+                _item.setToolTip(tooltip)
+            else:
+                items = self.mg_list_widget.findItems(label, Qt.MatchFlag.MatchExactly)
+
+                if len(items) != 1:
+                    # The motion groups defined in the RunManager do NOT perfectly
+                    # match the current list widget contents.  Must do a rewrite
+                    # instead of just a refresh.
+                    #
+                    self.updateDisplays.emit()
+                    return
+
+                _item = items[0]
+                _item.setIcon(_icon)
                 _item.setToolTip(tooltip)
 
     def closeEvent(self, event: QCloseEvent):
@@ -1013,6 +1071,8 @@ class ConfigureGUI(QMainWindow):
     def _switch_stack(self):
         _w = self._stacked_widget.currentWidget()
         if isinstance(_w, RunWidget):
+            self.run_widget.update_display_timer.stop()
+
             self._stacked_widget.addWidget(self.mg_widget)
             self._stacked_widget.setCurrentWidget(self.mg_widget)
         else:
@@ -1022,6 +1082,8 @@ class ConfigureGUI(QMainWindow):
             _w.close()
             _w.deleteLater()
             self.mg_widget = None
+
+            self.run_widget.update_display_timer.start()
 
     @Slot(int, object)
     def _motion_group_configure_return(self, index: int, mg_config: Dict[str, Any]):
