@@ -15,7 +15,7 @@ import re
 
 from functools import partial
 from pathlib import Path
-from PySide6.QtCore import QDir, QObject, Qt, Signal, Slot
+from PySide6.QtCore import QDir, QObject, Qt, QTimer, Signal, Slot
 from PySide6.QtGui import QAction, QIcon
 from PySide6.QtWidgets import (
     QApplication,
@@ -425,6 +425,7 @@ class RunWidget(QWidget):
         self.run_name_label = self._init_run_name_label()
         self.run_name_widget = self._init_run_name_widget()
         self.toml_widget = self._init_toml_widget()
+        self.update_display_timer = self._init_update_display_timer()
 
         self.setLayout(self._define_layout())
         self._connect_signals()
@@ -589,6 +590,12 @@ class RunWidget(QWidget):
         )
         _widget.setFixedWidth(500)
         return _widget
+
+    def _init_update_display_timer(self):
+        timer = QTimer(parent=self)
+        timer.setInterval(500)
+        timer.setSingleShot(False)
+        return timer
 
     @Slot()
     def enable_mg_buttons(self):
