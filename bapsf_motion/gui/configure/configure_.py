@@ -697,10 +697,20 @@ class RunWidget(QWidget):
             self.logger.info(f"Adding to MG List - {label}")
 
             is_valid = True
-            if not mg.connected:
             tooltip = ""
+            _icon = None
+            if mg.terminated:
+                is_valid = False
+                tooltip = (
+                    "Motion Group is Terminated.  It is likely the MG did NOT "
+                    "fully connect on initialization or re-run, and was forcibly "
+                    "terminated.   Try to re-configure."
+                )
+                _icon = qta.icon(icon_name_dict["robot-dead"], color="red")
+            elif not mg.connected:
                 is_valid = False
                 tooltip = "TCP connection not successful for all axes."
+                _icon = qta.icon(icon_name_dict["wifi-offline"], color="red")
             elif not isinstance(mg.mb, MotionBuilder):
                 is_valid = False
                 tooltip = "MotionBuilder not configured."
@@ -712,11 +722,10 @@ class RunWidget(QWidget):
                 tooltip = "Transform not configured."
             # TODO: ADD CASE WHEN ENCODER AND POSITION ARE NOT EQUAL
 
-            _icon = (
-                qta.icon(icon_name_dict["window-close"], color="red")
-                if not is_valid
-                else qta.icon(icon_name_dict["check-circle"], color="green")
-            )  # type: QIcon
+            if _icon is None and is_valid:
+                _icon = qta.icon(icon_name_dict["check-circle"], color="green")
+            elif _icon is None:
+                _icon = qta.icon(icon_name_dict["window-close"], color="red")
 
             if rewrite:
                 _item = QListWidgetItem(
