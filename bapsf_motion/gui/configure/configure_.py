@@ -1071,6 +1071,8 @@ class ConfigureGUI(QMainWindow):
     def _switch_stack(self):
         _w = self._stacked_widget.currentWidget()
         if isinstance(_w, RunWidget):
+            self.run_widget.update_display_timer.stop()
+
             self._stacked_widget.addWidget(self.mg_widget)
             self._stacked_widget.setCurrentWidget(self.mg_widget)
         else:
