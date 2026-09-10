@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QScrollArea,
     QSizePolicy,
     QSpacerItem,
     QVBoxLayout,
@@ -1203,6 +1204,7 @@ class MultiControl(QWidget):
 
         # Initialize Widgets
         self.return_btn = self._init_return_btn()
+        self.scroll_area = self._init_scroll_area()
         self.stop_btn = self._init_stop_btn()
         self.mg_control_widgets = {}  # type: Dict[str | int, MGControl]
         self._overlay_widget = None  # type: MGDetailsOverlay | None
@@ -1284,6 +1286,19 @@ class MultiControl(QWidget):
         _icon = qta.icon(icon_name_dict["arrow-left"], color=txt_color)
         btn.setIcon(_icon)
         return btn
+
+    def _init_scroll_area(self):
+        scroll = QScrollArea(parent=self)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setObjectName("scroll_area")
+        scroll.setSizeAdjustPolicy(QScrollArea.SizeAdjustPolicy.AdjustToContents)
+        scroll.setStyleSheet("""
+        QScrollArea#scroll_area {
+            border: 0px;
+        }""")
+        return scroll
 
     def _init_stop_btn(self):
         btn = StopButton(parent=self)
