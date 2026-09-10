@@ -1083,6 +1083,8 @@ class ConfigureGUI(QMainWindow):
             _w.deleteLater()
             self.mg_widget = None
 
+            self.run_widget.update_display_timer.start()
+
     @Slot(int, object)
     def _motion_group_configure_return(self, index: int, mg_config: Dict[str, Any]):
         self._mg_being_modified = None
