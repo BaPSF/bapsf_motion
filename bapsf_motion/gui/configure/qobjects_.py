@@ -116,6 +116,15 @@ class RunManagerObject(QObject):
             return
 
         rm.run(auto_run=auto_run, force_run=force_run)
+
+        for mg in rm.mgs.values():
+            if not mg.connected:
+                # MotionGroup failed to fully re-connect.
+                # Terminate the MotionGroup and require the user to go
+                # into config mode to remedy the situation.
+                #
+                mg.terminate(delay_loop_stop=True)
+
         self.configChanged.emit()
 
     def add_motion_group(self, index: int, mg_config: Dict[str, Any]):
