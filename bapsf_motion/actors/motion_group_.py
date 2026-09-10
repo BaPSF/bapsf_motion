@@ -1044,7 +1044,7 @@ class MotionGroup(EventActor):
         self.drive.send_command("set_position", *drive_zero_point)
 
     @property
-    def is_moving(self):
+    def is_moving(self) -> bool:
         return any([ax.is_moving for ax in self.drive.axes])
 
     def replace_drive(self, drive: Union[Drive, Dict[str, Any]]):

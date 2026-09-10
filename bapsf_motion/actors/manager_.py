@@ -368,7 +368,7 @@ class RunManager(EventActor):
         )
 
     @property
-    def is_moving(self):
+    def is_moving(self) -> bool:
         return any([mg.is_moving for mg in self.mgs.values()])
 
     def validate_motion_group(
