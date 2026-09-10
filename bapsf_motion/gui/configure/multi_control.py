@@ -14,12 +14,13 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QScrollArea,
     QSizePolicy,
     QSpacerItem,
     QVBoxLayout,
     QWidget,
 )
-from typing import List, TYPE_CHECKING
+from typing import Dict, List, TYPE_CHECKING
 
 from bapsf_motion.actors import Axis, MotionGroup, RunManager
 from bapsf_motion.gui.configure.bases import _OverlayWidget
@@ -804,6 +805,7 @@ class MGControl(QWidget):
         self.details_btn = self._init_details_btn()
         self.drive_name_label = self._init_drive_name_label()
         self.move_to_btn = self._init_move_to_btn()
+        self.park_btn = self._init_park_btn()
         self.terminate_run_btn = self._init_terminate_run_btn()
 
         # initialize "lists" of widgets
@@ -839,11 +841,18 @@ class MGControl(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._connect_signals()
 
+        if self.mg.terminated or not self.mg.connected:
+            self._handle_connection_lost()
+            self.terminate_run_btn.setChecked(True)
+            self.terminate_run_btn.clicked.emit()
+            return
+
         self.update_display_target_position()
 
     def _connect_signals(self):
         self.details_btn.clicked.connect(self._handle_details_btn_clicked)
         self.move_to_btn.clicked.connect(self._move_to)
+        self.park_btn.clicked.connect(self._handle_park_btn_clicked)
         self.terminate_run_btn.clicked.connect(self._handle_terminate_run_clicked)
 
         for input_ in self.axis_target_position_input:
@@ -898,10 +907,16 @@ class MGControl(QWidget):
         return layout
 
     def _define_layout_move_to_widget(self):
+        btn_row_layout = QHBoxLayout()
+        btn_row_layout.setContentsMargins(0, 0, 0, 0)
+        btn_row_layout.setSpacing(8)
+        btn_row_layout.addWidget(self.park_btn)
+        btn_row_layout.addWidget(self.move_to_btn, stretch=1)
+
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        layout.addWidget(self.move_to_btn)
+        layout.addLayout(btn_row_layout)
         layout.addStretch(1)
 
         for label, input_ in zip(
@@ -967,6 +982,27 @@ class MGControl(QWidget):
         w.setLayout(self._define_layout_move_to_widget())
         w.setFixedWidth(14 * 12)
         return w
+
+    def _init_park_btn(self):
+        _btn = IconButton(
+            icon_name_dict["park"],
+            color="rgb(52, 56, 75)",
+            parent=self,
+        )
+        _btn.setObjectName("park_btn")
+        _btn.setFixedHeight(3 * 12)
+        _btn.setFixedWidth(3 * 12)
+        _btn.setIconSize(int(2.5 * 12))
+        _btn.update_style_sheet(
+            styles={"background-color": "rgb(180, 192, 255)"},
+            action="base",
+        )
+        _btn.setToolTip("Set target position to park position.")
+
+        if self.mg.drive.naxes != 2:
+            _btn.setVisible(False)
+
+        return _btn
 
     def _init_target_position_input(self):
         _txt = QLineEdit("", parent=self)
@@ -1088,6 +1124,16 @@ class MGControl(QWidget):
         self.movementStopped.emit()
 
     @Slot()
+    def _handle_park_btn_clicked(self):
+        # set target position to (40, 0)
+        if self.mg.drive.naxes not in (2, 3):
+            return
+
+        park = [40.0, 0.0, 0.0]
+        for value, input_ in zip(park, self.axis_target_position_input):
+            input_.setText(f"{value:.2f}")
+
+    @Slot()
     def _handle_terminate_run_clicked(self):
         state = self.terminate_run_btn.isChecked()
 
@@ -1113,6 +1159,7 @@ class MGControl(QWidget):
             return
 
         self.move_to_btn.setEnabled(state)
+        self.park_btn.setEnabled(state)
         self.details_btn.setEnabled(state)
         for ax_control in self.axis_control_widgets:
             ax_control.set_enabled_for_movement(state)
@@ -1158,8 +1205,9 @@ class MultiControl(QWidget):
 
         # Initialize Widgets
         self.return_btn = self._init_return_btn()
+        self.scroll_area = self._init_scroll_area()
         self.stop_btn = self._init_stop_btn()
-        self.mg_control_widgets = {}
+        self.mg_control_widgets = {}  # type: Dict[str | int, MGControl]
         self._overlay_widget = None  # type: MGDetailsOverlay | None
 
         # Setup Self
@@ -1171,33 +1219,40 @@ class MultiControl(QWidget):
         self.stop_btn.clicked.connect(self.stop_all)
 
     def _define_layout(self):
+        scroll_widget = QWidget(parent=self)
+        scroll_widget.setLayout(self._define_layout_mg_controls())
+        self.scroll_area.setWidget(scroll_widget)
+
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        layout.addLayout(self._define_banner_layout())
+        layout.addLayout(self._define_layout_banner())
         layout.addSpacing(8)
         layout.addWidget(HLinePlain(parent=self))
         layout.addSpacing(8)
         layout.addWidget(self.stop_btn)
-
-        for mg_id, mg in self.rm.mgs.items():
-            if mg.terminated or not mg.connected:
-                continue
-
-            _widget = self._spawn_mg_control_widget(mg_id)
-
-            layout.addSpacing(8)
-            layout.addWidget(_widget)
-
-        layout.addStretch(1)
+        layout.addSpacing(8)
+        layout.addWidget(self.scroll_area, stretch=1)
         return layout
 
-    def _define_banner_layout(self):
+    def _define_layout_banner(self):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
         layout.addWidget(self.return_btn)
-        layout.addStretch()
+        layout.addStretch(1)
+        return layout
+
+    def _define_layout_mg_controls(self):
+        layout = QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+
+        for mg_id, mg in self.rm.mgs.items():
+            _widget = self._spawn_mg_control_widget(mg_id)
+            layout.addWidget(_widget)
+
+        layout.addStretch(1)
         return layout
 
     @property
@@ -1240,6 +1295,19 @@ class MultiControl(QWidget):
         _icon = qta.icon(icon_name_dict["arrow-left"], color=txt_color)
         btn.setIcon(_icon)
         return btn
+
+    def _init_scroll_area(self):
+        scroll = QScrollArea(parent=self)
+        scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        scroll.setWidgetResizable(True)
+        scroll.setObjectName("scroll_area")
+        scroll.setSizeAdjustPolicy(QScrollArea.SizeAdjustPolicy.AdjustToContents)
+        scroll.setStyleSheet("""
+        QScrollArea#scroll_area {
+            border: 0px;
+        }""")
+        return scroll
 
     def _init_stop_btn(self):
         btn = StopButton(parent=self)
@@ -1308,6 +1376,7 @@ class MultiControl(QWidget):
             border-radius: 5px;
             padding: 6px;
             margin: 0px;
+            background-color: rgb(227, 227, 230);
         }
         """)
 
@@ -1361,6 +1430,9 @@ class MultiControl(QWidget):
             return
 
         self.return_btn.setEnabled(state)
+
+        for mg_control in self.mg_control_widgets.values():
+            mg_control.details_btn.setEnabled(state)
 
     def closeEvent(self, event: QCloseEvent):
         self.logger.info(f"Closing {self.__class__.__name__}")

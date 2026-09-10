@@ -13,5 +13,10 @@ icon_name_dict.update(
     {
         "arrow-left": f"{family}.arrow-left",
         "arrow-right": f"{family}.arrow-right",
+        "park": "ri.parking-box-line",
+        "park-solid": "ri.parking-box-fill",
+        "robot-dead": "mdi.robot-dead-outline",
+        "wifi-offline": "ri.wifi-off-line",
+        "wifi-online": "ri.wifi-line",
     }
 )
