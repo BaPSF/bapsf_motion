@@ -1219,7 +1219,7 @@ class MultiControl(QWidget):
         layout = QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
-        layout.addLayout(self._define_banner_layout())
+        layout.addLayout(self._define_layout_banner())
         layout.addSpacing(8)
         layout.addWidget(HLinePlain(parent=self))
         layout.addSpacing(8)
@@ -1236,7 +1236,7 @@ class MultiControl(QWidget):
         layout.addStretch(1)
         return layout
 
-    def _define_banner_layout(self):
+    def _define_layout_banner(self):
         layout = QHBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(0)
