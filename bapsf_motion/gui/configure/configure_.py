@@ -123,6 +123,14 @@ class RMObject(QObject):
                     f" for motion group '{mg.name}'.  Removing motion group."
                 )
                 _remove.append(key)
+                continue
+
+            if not mg.connected:
+                # MotionGroup failed to fully connect on initialization.
+                # Terminate the MotionGroup and require the user to go
+                # into config mode to remedy the situation.
+                #
+                mg.terminate(delay_loop_stop=True)
 
         for key in _remove:
             _rm.remove_motion_group(key)
