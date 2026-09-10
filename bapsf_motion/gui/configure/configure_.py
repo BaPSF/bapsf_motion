@@ -124,6 +124,14 @@ class RMObject(QObject):
                     f" for motion group '{mg.name}'.  Removing motion group."
                 )
                 _remove.append(key)
+                continue
+
+            if not mg.connected:
+                # MotionGroup failed to fully connect on initialization.
+                # Terminate the MotionGroup and require the user to go
+                # into config mode to remedy the situation.
+                #
+                mg.terminate(delay_loop_stop=True)
 
         for key in _remove:
             _rm.remove_motion_group(key)
@@ -158,6 +166,15 @@ class RMObject(QObject):
             return
 
         rm.run(auto_run=auto_run, force_run=force_run)
+
+        for mg in rm.mgs.values():
+            if not mg.connected:
+                # MotionGroup failed to fully re-connect.
+                # Terminate the MotionGroup and require the user to go
+                # into config mode to remedy the situation.
+                #
+                mg.terminate(delay_loop_stop=True)
+
         self.configChanged.emit()
 
     def add_motion_group(self, index: int, mg_config: Dict[str, Any]):
@@ -705,7 +722,11 @@ class RunWidget(QWidget):
             _icon = None
             if mg.terminated:
                 is_valid = False
-                tooltip = "Motion Group is Terminated.  Try to re-configure."
+                tooltip = (
+                    "Motion Group is Terminated.  It is likely the MG did NOT "
+                    "fully connect on initialization or re-run, and was forcibly "
+                    "terminated.   Try to re-configure."
+                )
                 _icon = qta.icon(icon_name_dict["robot-dead"], color="red")
             elif not mg.connected:
                 is_valid = False
